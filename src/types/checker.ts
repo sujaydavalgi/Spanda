@@ -11,6 +11,14 @@ import type {
 } from "../ast/nodes.js";
 import type { CapabilityDecl, MatchArm, TraitImplDecl } from "../foundations.js";
 import { resolveModuleImport, resolveTypeAlias } from "../foundations.js";
+import { resolveStdImport } from "../stdlib.js";
+import {
+  binaryPhysicalOpAllowed,
+  isActionProposalType,
+  isSafeActionType,
+  resolveTypeName,
+  typeKindName,
+} from "../type-system.js";
 import { resolveImport } from "../lib/registry.js";
 import { resolveAiImport } from "../ai/registry.js";
 import { getSocProfile, validateHalAgainstSoc } from "../soc/index.js";
@@ -73,7 +81,12 @@ class TypeChecker {
   checkProgram(program: Program): void {
     const imported = new Set<string>();
     for (const imp of program.imports) {
-      if (!resolveImport(imp.path) && !resolveAiImport(imp.path) && !resolveModuleImport(imp.path)) {
+      if (
+        !resolveImport(imp.path) &&
+        !resolveAiImport(imp.path) &&
+        !resolveModuleImport(imp.path) &&
+        !resolveStdImport(imp.path)
+      ) {
         this.error(`Unknown import '${imp.path}'`, imp.span.start.line, imp.span.start.column);
       } else {
         imported.add(imp.path);
@@ -154,19 +167,23 @@ class TypeChecker {
   }
 
   private typeNameToSpanda(typeName: string): SpandaType {
-    switch (resolveTypeAlias(typeName)) {
-      case "distance":
-        return { kind: "number", unit: "m" };
-      case "angle":
-        return { kind: "number", unit: "rad" };
-      case "path":
-        return { kind: "trajectory" };
-      case "velocity":
-        return { kind: "velocity" };
-      case "pose":
-        return { kind: "pose" };
-      default:
-        return { kind: "named", name: typeName };
+    try {
+      return resolveTypeName(typeName);
+    } catch {
+      switch (resolveTypeAlias(typeName)) {
+        case "distance":
+          return { kind: "number", unit: "m" };
+        case "angle":
+          return { kind: "number", unit: "rad" };
+        case "path":
+          return { kind: "trajectory" };
+        case "velocity":
+          return { kind: "velocity" };
+        case "pose":
+          return { kind: "pose" };
+        default:
+          return { kind: "named", name: typeName };
+      }
     }
   }
 
@@ -620,7 +637,23 @@ class TypeChecker {
   private checkStmt(stmt: Stmt): void {
     switch (stmt.kind) {
       case "VarDecl": {
-        const t = this.checkExpr(stmt.init);
+        const inferred = stmt.init ? this.checkExpr(stmt.init) : null;
+        let t: SpandaType;
+        if (stmt.typeAnnotation && inferred) {
+          this.assertCompatible(
+            stmt.typeAnnotation,
+            inferred,
+            stmt.span.start.line,
+            stmt.span.start.column,
+          );
+          t = stmt.typeAnnotation;
+        } else if (stmt.typeAnnotation) {
+          t = stmt.typeAnnotation;
+        } else if (inferred) {
+          t = inferred;
+        } else {
+          t = { kind: "void" };
+        }
         this.symbols.set(stmt.name, {
           name: stmt.name,
           roboType: t,
@@ -719,6 +752,16 @@ class TypeChecker {
       case "BinaryExpr": {
         const left = this.checkExpr(expr.left);
         const right = this.checkExpr(expr.right);
+        if (
+          ["+", "-", "<", "<=", ">", ">=", "==", "!="].includes(expr.op) &&
+          !binaryPhysicalOpAllowed(expr.op, left, right)
+        ) {
+          this.error(
+            `Invalid operation '${expr.op}' between incompatible types (${typeKindName(left)}, ${typeKindName(right)})`,
+            expr.span.start.line,
+            expr.span.start.column,
+          );
+        }
         const result = resultUnitForBinary(expr.op, left, right);
         if (!result) {
           this.error(
@@ -1007,11 +1050,27 @@ class TypeChecker {
 
     for (const arg of expr.args) {
       const actual = this.checkExpr(arg);
-      if (member.property === "validate" && typeName === "Safety") {
-        this.assertNamedType(actual, "ActionProposal", expr.span.start.line, expr.span.start.column);
+      if (typeName === "Safety" && member.property === "validate" && !isActionProposalType(actual)) {
+        this.error(
+          "safety.validate() expects ActionProposal",
+          expr.span.start.line,
+          expr.span.start.column,
+        );
       }
-      if (member.property === "execute" && typeName === "DifferentialDrive") {
-        this.assertNamedType(actual, "SafeAction", expr.span.start.line, expr.span.start.column);
+      if (typeName === "DifferentialDrive" && member.property === "execute") {
+        if (isActionProposalType(actual)) {
+          this.error(
+            "ActionProposal cannot be passed to actuator.execute() — call safety.validate() first",
+            expr.span.start.line,
+            expr.span.start.column,
+          );
+        } else if (!isSafeActionType(actual)) {
+          this.error(
+            "actuator.execute() requires SafeAction from safety.validate()",
+            expr.span.start.line,
+            expr.span.start.column,
+          );
+        }
       }
       if (member.property === "detect" && typeName === "VisionModel") {
         this.assertNamedType(actual, "CameraFrame", expr.span.start.line, expr.span.start.column);
@@ -1033,13 +1092,65 @@ class TypeChecker {
       if (expected.kind === "named" && actual.kind === "named") {
         return expected.name === actual.name || actual.name.includes(expected.name);
       }
+      if (expected.kind === "enum_variant" && actual.kind === "enum_variant") {
+        return expected.enumName === actual.enumName && expected.variant === actual.variant;
+      }
+      if (expected.kind === "generic" && actual.kind === "generic") {
+        return (
+          expected.name === actual.name &&
+          expected.typeArgs.length === actual.typeArgs.length &&
+          expected.typeArgs.every((e, i) => this.typesCompatible(e, actual.typeArgs[i]!))
+        );
+      }
       return true;
+    }
+    if (expected.kind === "named" && actual.kind === "enum_variant") {
+      return expected.name === actual.enumName;
+    }
+    if (expected.kind === "enum_variant" && actual.kind === "named") {
+      return expected.enumName === actual.name;
     }
     if (expected.kind === "named" && actual.kind === "scan" && expected.name.includes("Lidar")) {
       return true;
     }
     if (expected.kind === "scan" && actual.kind === "named") {
       return ["Detection", "CameraFrame", "Completion"].includes(actual.name);
+    }
+    if (
+      expected.kind === "int" &&
+      actual.kind === "number" &&
+      actual.unit === "none"
+    ) {
+      return true;
+    }
+    if (expected.kind === "float" && actual.kind === "number") {
+      return true;
+    }
+    if (
+      (expected.kind === "velocity" &&
+        actual.kind === "number" &&
+        actual.unit === "m/s") ||
+      (actual.kind === "velocity" &&
+        expected.kind === "number" &&
+        expected.unit === "m/s")
+    ) {
+      return true;
+    }
+    if (expected.kind === "named" && actual.kind === "number") {
+      switch (expected.name) {
+        case "Distance":
+          return actual.unit === "m";
+        case "Duration":
+          return actual.unit === "ms" || actual.unit === "s";
+        case "Angle":
+          return actual.unit === "rad" || actual.unit === "deg";
+        case "Acceleration":
+          return actual.unit === "m/s²";
+        case "AngularVelocity":
+          return actual.unit === "rad/s";
+        default:
+          return false;
+      }
     }
     return false;
   }

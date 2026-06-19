@@ -10,6 +10,8 @@ pub mod runtime;
 pub mod safety;
 pub mod ai;
 pub mod simulator;
+pub mod type_system;
+pub mod stdlib;
 pub mod format;
 pub mod hal;
 pub mod soc;

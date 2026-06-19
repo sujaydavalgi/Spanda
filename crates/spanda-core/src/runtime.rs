@@ -25,6 +25,10 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
+type AgentTraitImplBody = (Vec<crate::foundations::TraitParamDecl>, Vec<Stmt>);
+type BehaviorContracts = (Vec<Stmt>, Option<Expr>, Option<Expr>, Option<Expr>);
+type TaskContracts = (Vec<Stmt>, f64, Option<Expr>, Option<Expr>, Option<Expr>);
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct PoseValue {
     pub x: f64,
@@ -303,7 +307,7 @@ pub struct Interpreter<B: RobotBackend> {
     enum_variants: HashMap<String, Vec<String>>,
     variant_owner: HashMap<String, String>,
     struct_defs: HashMap<String, Vec<(String, String)>>,
-    agent_trait_impls: HashMap<String, HashMap<String, (Vec<crate::foundations::TraitParamDecl>, Vec<Stmt>)>>,
+    agent_trait_impls: HashMap<String, HashMap<String, AgentTraitImplBody>>,
 }
 
 impl<B: RobotBackend> Interpreter<B> {
@@ -375,23 +379,21 @@ impl<B: RobotBackend> Interpreter<B> {
         self.variant_owner.clear();
         self.struct_defs.clear();
         for enum_decl in enums {
-            if let EnumDecl::EnumDecl { name, variants, .. } = enum_decl {
-                self.enum_variants.insert(name.clone(), variants.clone());
-                for variant in variants {
-                    self.variant_owner.insert(variant.clone(), name.clone());
-                }
+            let EnumDecl::EnumDecl { name, variants, .. } = enum_decl;
+            self.enum_variants.insert(name.clone(), variants.clone());
+            for variant in variants {
+                self.variant_owner.insert(variant.clone(), name.clone());
             }
         }
         for struct_decl in structs {
-            if let StructDecl::StructDecl { name, fields, .. } = struct_decl {
-                self.struct_defs.insert(
-                    name.clone(),
-                    fields
-                        .iter()
-                        .map(|f| (f.name.clone(), f.type_name.clone()))
-                        .collect(),
-                );
-            }
+            let StructDecl::StructDecl { name, fields, .. } = struct_decl;
+            self.struct_defs.insert(
+                name.clone(),
+                fields
+                    .iter()
+                    .map(|f| (f.name.clone(), f.type_name.clone()))
+                    .collect(),
+            );
         }
         let _ = traits;
         for trait_decl in traits {
@@ -491,22 +493,20 @@ impl<B: RobotBackend> Interpreter<B> {
         }
         for trait_impl in trait_impls {
             use crate::foundations::TraitImplDecl;
-            if let TraitImplDecl::TraitImplDecl {
+            let TraitImplDecl::TraitImplDecl {
                 agent_name,
                 methods,
                 ..
-            } = trait_impl
-            {
-                let agent_methods = self
-                    .agent_trait_impls
-                    .entry(agent_name.clone())
-                    .or_default();
-                for method in methods {
-                    agent_methods.insert(
-                        method.name.clone(),
-                        (method.params.clone(), method.body.clone()),
-                    );
-                }
+            } = trait_impl;
+            let agent_methods = self
+                .agent_trait_impls
+                .entry(agent_name.clone())
+                .or_default();
+            for method in methods {
+                agent_methods.insert(
+                    method.name.clone(),
+                    (method.params.clone(), method.body.clone()),
+                );
             }
         }
 
@@ -979,8 +979,12 @@ impl<B: RobotBackend> Interpreter<B> {
     fn execute_stmt(&mut self, stmt: &Stmt) -> Result<(), SpandaError> {
         match stmt {
             Stmt::VarDecl { name, init, .. } => {
-                let value = self.eval_expr(init)?;
-                self.env.define(name.clone(), value);
+                if let Some(expr) = init {
+                    let value = self.eval_expr(expr)?;
+                    self.env.define(name.clone(), value);
+                } else {
+                    self.env.define(name.clone(), RuntimeValue::Void);
+                }
             }
             Stmt::IfStmt {
                 condition,
@@ -1137,7 +1141,7 @@ impl<B: RobotBackend> Interpreter<B> {
                     }
                 }
             }
-            Expr::MemberExpr { object, property, span } => {
+            Expr::MemberExpr { object, property, span: _ } => {
                 if let Expr::IdentExpr { name, .. } = object.as_ref() {
                     if let Some(variants) = self.enum_variants.get(name) {
                         if variants.iter().any(|v| v == property) {
@@ -1346,7 +1350,7 @@ impl<B: RobotBackend> Interpreter<B> {
                     arg_values.push(self.eval_expr(arg)?);
                 }
                 let saved = self.env.clone();
-                for (param, value) in params.iter().zip(arg_values.into_iter()) {
+                for (param, value) in params.iter().zip(arg_values) {
                     self.env.define(param.name.clone(), value);
                 }
                 self.current_agent = Some(name.clone());
@@ -1722,7 +1726,7 @@ impl<B: RobotBackend> Interpreter<B> {
     ) -> Result<String, SpandaError> {
         for arg in named_args {
             if arg.name == "field" {
-                return Ok(self.twin_field_from_expr(&arg.value, line)?);
+                return self.twin_field_from_expr(&arg.value, line);
             }
         }
         if let Some(arg) = args.first() {
@@ -1754,16 +1758,16 @@ impl<B: RobotBackend> Interpreter<B> {
         let motion_methods = [
             "drive", "move_to", "set_thrust", "grip", "release", "open", "hover", "follow",
         ];
-        if motion_methods.contains(&method) || method == "stop" {
-            if !self.check_safety_before_motion() {
-                if let Some(cb) = &self.options.on_motion_blocked {
-                    cb("Safety rule triggered — motion blocked".into());
-                }
-                self.backend.execute_motion(MotionCommand::Stop {
-                    actuator: name.to_string(),
-                });
-                return Ok(RuntimeValue::Void);
+        if (motion_methods.contains(&method) || method == "stop")
+            && !self.check_safety_before_motion()
+        {
+            if let Some(cb) = &self.options.on_motion_blocked {
+                cb("Safety rule triggered — motion blocked".into());
             }
+            self.backend.execute_motion(MotionCommand::Stop {
+                actuator: name.to_string(),
+            });
+            return Ok(RuntimeValue::Void);
         }
 
         match method {
@@ -2060,14 +2064,8 @@ fn pose_value_to_state(pose: &PoseValue) -> PoseState {
 // AST accessor extensions
 trait RobotDeclExt {
     fn first_behavior_name(&self) -> Option<String>;
-    fn behavior_with_contracts(
-        &self,
-        name: &str,
-    ) -> Option<(Vec<Stmt>, Option<Expr>, Option<Expr>, Option<Expr>)>;
-    fn task_with_contracts(
-        &self,
-        name: &str,
-    ) -> Option<(Vec<Stmt>, f64, Option<Expr>, Option<Expr>, Option<Expr>)>;
+    fn behavior_with_contracts(&self, name: &str) -> Option<BehaviorContracts>;
+    fn task_with_contracts(&self, name: &str) -> Option<TaskContracts>;
 }
 
 impl RobotDeclExt for RobotDecl {
@@ -2083,10 +2081,7 @@ impl RobotDeclExt for RobotDecl {
         })
     }
 
-    fn behavior_with_contracts(
-        &self,
-        name: &str,
-    ) -> Option<(Vec<Stmt>, Option<Expr>, Option<Expr>, Option<Expr>)> {
+    fn behavior_with_contracts(&self, name: &str) -> Option<BehaviorContracts> {
         let RobotDecl::RobotDecl { behaviors, .. } = self;
         behaviors.iter().find_map(|b| match b {
             BehaviorDecl::BehaviorDecl {
@@ -2106,10 +2101,7 @@ impl RobotDeclExt for RobotDecl {
         })
     }
 
-    fn task_with_contracts(
-        &self,
-        name: &str,
-    ) -> Option<(Vec<Stmt>, f64, Option<Expr>, Option<Expr>, Option<Expr>)> {
+    fn task_with_contracts(&self, name: &str) -> Option<TaskContracts> {
         let RobotDecl::RobotDecl { tasks, .. } = self;
         tasks.iter().find_map(|t| match t {
             TaskDecl::TaskDecl {

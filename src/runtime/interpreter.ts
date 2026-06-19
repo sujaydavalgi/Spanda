@@ -586,7 +586,11 @@ export class Interpreter {
   private executeStmt(stmt: Stmt): void {
     switch (stmt.kind) {
       case "VarDecl":
-        this.env.define(stmt.name, this.evalExpr(stmt.init));
+        if (stmt.init) {
+          this.env.define(stmt.name, this.evalExpr(stmt.init));
+        } else {
+          this.env.define(stmt.name, { kind: "void" });
+        }
         break;
       case "IfStmt": {
         const cond = this.evalExpr(stmt.condition);

@@ -1,0 +1,14 @@
+// Foundation types with explicit annotations.
+robot Demo {
+  actuator wheels: DifferentialDrive;
+
+  behavior run() {
+    let count: Int = 3;
+    let label: String = "spanda";
+    let active: Bool = true;
+    let ratio: Float = 0.5;
+    if active {
+      wheels.stop();
+    }
+  }
+}

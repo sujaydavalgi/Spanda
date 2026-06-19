@@ -169,6 +169,15 @@ pub fn resolve_module_import(path: &str) -> bool {
             | "navigation.localize"
             | "safety.validate"
             | "ai.reasoning"
+            | "std.time"
+            | "std.units"
+            | "std.spatial"
+            | "std.ai"
+            | "std.robotics"
+            | "std.sensors"
+            | "std.safety"
+            | "std.twin"
+            | "std.hri"
     )
 }
 

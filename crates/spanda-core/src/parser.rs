@@ -12,6 +12,8 @@ struct Parser {
     pos: usize,
 }
 
+type ContractClauses = (Option<Expr>, Option<Expr>, Option<Expr>);
+
 impl Parser {
     fn new(tokens: Vec<Token>) -> Self {
         Self { tokens, pos: 0 }
@@ -98,6 +100,47 @@ impl Parser {
         }
     }
 
+    fn parse_type_name_part(&mut self, message: &str) -> Result<String, SpandaError> {
+        if self.check(TokenType::Ident) {
+            return Ok(self.advance().lexeme);
+        }
+        self.parse_label(message)
+    }
+
+    fn parse_type_annotation(&mut self) -> Result<SpandaType, SpandaError> {
+        use crate::type_system::{resolve_generic_type, resolve_type_name};
+        let start = self.peek().clone();
+        let mut parts = vec![self.parse_type_name_part("Expected type name")?];
+        while self.match_types(&[TokenType::Dot]) {
+            parts.push(self.parse_type_name_part("Expected type name after '.'")?);
+        }
+        let qualified = parts.join(".");
+        if self.match_types(&[TokenType::Lt]) {
+            let mut args = Vec::new();
+            if !self.check(TokenType::Gt) {
+                loop {
+                    args.push(self.parse_type_annotation()?);
+                    if !self.match_types(&[TokenType::Comma]) {
+                        break;
+                    }
+                }
+            }
+            self.expect(TokenType::Gt, "Expected '>' to close generic type")?;
+            let base = parts.last().cloned().unwrap_or_default();
+            resolve_generic_type(&base, &args).map_err(|msg| SpandaError::Parse {
+                message: msg,
+                line: start.line,
+                column: start.column,
+            })
+        } else {
+            resolve_type_name(&qualified).map_err(|msg| SpandaError::Parse {
+                message: msg,
+                line: start.line,
+                column: start.column,
+            })
+        }
+    }
+
     fn parse_program(&mut self) -> Result<Program, SpandaError> {
         let start = self.peek().clone();
         let mut module_name = None;
@@ -145,14 +188,29 @@ impl Parser {
 
     fn parse_import(&mut self) -> Result<ImportDecl, SpandaError> {
         let start = self.advance();
-        let vendor = self.parse_label("Expected library vendor name")?;
+        let vendor = self.parse_import_segment("Expected library vendor name")?;
         self.expect(TokenType::Dot, "Expected '.' in import path")?;
-        let module = self.parse_label("Expected library module name")?;
+        let module = self.parse_import_segment("Expected library module name")?;
         self.expect(TokenType::Semicolon, "Expected ';' after import")?;
         Ok(ImportDecl::ImportDecl {
             path: format!("{}.{}", vendor, module),
             span: self.span_from(&start, self.previous()),
         })
+    }
+
+    fn parse_import_segment(&mut self, message: &str) -> Result<String, SpandaError> {
+        if self.check(TokenType::Ident) {
+            return Ok(self.advance().lexeme);
+        }
+        if self.check(TokenType::Eof) || self.check(TokenType::Dot) || self.check(TokenType::Semicolon) {
+            let t = self.peek();
+            return Err(SpandaError::Parse {
+                message: message.to_string(),
+                line: t.line,
+                column: t.column,
+            });
+        }
+        Ok(self.advance().lexeme)
     }
 
     fn parse_struct(&mut self) -> Result<StructDecl, SpandaError> {
@@ -921,9 +979,7 @@ impl Parser {
         })
     }
 
-    fn parse_contract_clauses(
-        &mut self,
-    ) -> Result<(Option<Expr>, Option<Expr>, Option<Expr>), SpandaError> {
+    fn parse_contract_clauses(&mut self) -> Result<ContractClauses, SpandaError> {
         let mut requires = None;
         let mut ensures = None;
         let mut invariant = None;
@@ -1089,11 +1145,28 @@ impl Parser {
         let start = self.peek().clone();
         if self.match_types(&[TokenType::Let]) {
             let name = self.parse_local_name("Expected variable name")?;
-            self.expect(TokenType::Assign, "Expected '=' in let declaration")?;
-            let init = self.parse_expr()?;
+            let type_annotation = if self.match_types(&[TokenType::Colon]) {
+                Some(self.parse_type_annotation()?)
+            } else {
+                None
+            };
+            let init = if self.match_types(&[TokenType::Assign]) {
+                Some(self.parse_expr()?)
+            } else {
+                None
+            };
+            if type_annotation.is_none() && init.is_none() {
+                let t = self.peek();
+                return Err(SpandaError::Parse {
+                    message: "Expected type annotation or initializer in let declaration".into(),
+                    line: t.line,
+                    column: t.column,
+                });
+            }
             self.expect(TokenType::Semicolon, "Expected ';' after let declaration")?;
             return Ok(Stmt::VarDecl {
                 name: name.lexeme,
+                type_annotation,
                 init,
                 span: self.span_from(&start, self.previous()),
             });

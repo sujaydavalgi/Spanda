@@ -129,7 +129,7 @@ describe("AI-native Spanda", () => {
           }
         }
       `),
-    ).toThrow(/SafeAction/);
+    ).toThrow(/ActionProposal/);
   });
 
   it("rejects unsafe AI drive at compile time", () => {
@@ -159,7 +159,7 @@ describe("AI-native Spanda", () => {
           }
         }
       `),
-    ).toThrow(/SafeAction/);
+    ).toThrow(/ActionProposal/);
   });
 
   it("runs agent plan from behavior loop", () => {

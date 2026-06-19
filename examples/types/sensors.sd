@@ -1,0 +1,14 @@
+import std.sensors;
+
+robot Perceive {
+  sensor lidar: Lidar on "/scan";
+  actuator wheels: DifferentialDrive;
+
+  behavior run() {
+    let scan: LidarScan;
+    let frame: CameraFrame;
+    let cloud: PointCloud;
+    let _ = scan;
+    wheels.stop();
+  }
+}

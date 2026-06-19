@@ -1,0 +1,18 @@
+import std.ai;
+
+robot Thinker {
+  sensor lidar: Lidar on "/scan";
+  actuator wheels: DifferentialDrive;
+  ai_model planner: LLM {
+    provider: "mock";
+    model: "safe-planner";
+    temperature: 0.1;
+  }
+
+  behavior run() {
+    let prompt: Prompt;
+    let proposal: ActionProposal = planner.reason(prompt: "scan ahead");
+    let action: SafeAction = safety.validate(proposal);
+    wheels.execute(action);
+  }
+}

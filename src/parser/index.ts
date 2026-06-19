@@ -1,5 +1,7 @@
 import type { Token } from "../lexer/index.js";
 import { unitFromLexeme } from "../lexer/index.js";
+import { resolveGenericType, resolveTypeName } from "../type-system.js";
+import type { SpandaType } from "../ast/nodes.js";
 import type {
   ActuatorDecl,
   ActionDecl,
@@ -183,9 +185,9 @@ class Parser {
 
   private parseImport(): ImportDecl {
     const start = this.advance();
-    const vendor = this.parseLabel("Expected library vendor name");
+    const vendor = this.parseImportSegment("Expected library vendor name");
     this.expect("DOT", "Expected '.' in import path");
-    const module = this.parseLabel("Expected library module name");
+    const module = this.parseImportSegment("Expected library module name");
     this.expect("SEMICOLON", "Expected ';' after import");
     const end = this.previous();
     return {
@@ -193,6 +195,54 @@ class Parser {
       path: `${vendor}.${module}`,
       span: this.spanFrom(start, end),
     };
+  }
+
+  private parseImportSegment(message: string): string {
+    if (this.check("IDENT")) {
+      return this.advance().lexeme;
+    }
+    if (this.check("EOF") || this.check("DOT") || this.check("SEMICOLON")) {
+      const t = this.peek();
+      throw new ParseError(message, t.line, t.column);
+    }
+    return this.advance().lexeme;
+  }
+
+  private parseTypeNamePart(message: string): string {
+    if (this.check("IDENT")) {
+      return this.advance().lexeme;
+    }
+    return this.parseLabel(message);
+  }
+
+  private parseTypeAnnotation(): SpandaType {
+    const parts = [this.parseTypeNamePart("Expected type name")];
+    while (this.match("DOT")) {
+      parts.push(this.parseTypeNamePart("Expected type name after '.'"));
+    }
+    const qualified = parts.join(".");
+    if (this.match("LT")) {
+      const args: SpandaType[] = [];
+      if (!this.check("GT")) {
+        do {
+          args.push(this.parseTypeAnnotation());
+        } while (this.match("COMMA"));
+      }
+      this.expect("GT", "Expected '>' to close generic type");
+      const base = parts[parts.length - 1] ?? qualified;
+      try {
+        return resolveGenericType(base, args);
+      } catch (e) {
+        const t = this.previous();
+        throw new ParseError((e as Error).message, t.line, t.column);
+      }
+    }
+    try {
+      return resolveTypeName(qualified);
+    } catch (e) {
+      const t = this.peek();
+      throw new ParseError((e as Error).message, t.line, t.column);
+    }
   }
 
   private parseStruct(): StructDecl {
@@ -1112,13 +1162,18 @@ class Parser {
 
     if (this.match("LET")) {
       const name = this.parseLocalName("Expected variable name");
-      this.expect("ASSIGN", "Expected '=' in let declaration");
-      const init = this.parseExpr();
+      const typeAnnotation = this.match("COLON") ? this.parseTypeAnnotation() : null;
+      const init = this.match("ASSIGN") ? this.parseExpr() : null;
+      if (!typeAnnotation && !init) {
+        const t = this.peek();
+        throw new ParseError("Expected type annotation or initializer in let declaration", t.line, t.column);
+      }
       this.expect("SEMICOLON", "Expected ';' after let declaration");
       const end = this.previous();
       return {
         kind: "VarDecl",
         name: name.lexeme,
+        typeAnnotation,
         init,
         span: this.spanFrom(start, end),
       };

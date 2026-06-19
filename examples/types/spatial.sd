@@ -1,0 +1,13 @@
+import std.spatial;
+
+robot Nav {
+  actuator wheels: DifferentialDrive;
+
+  behavior run() {
+    let pose: Pose;
+    let path: Path;
+    let waypoint: Waypoint;
+    let _ = pose;
+    wheels.stop();
+  }
+}

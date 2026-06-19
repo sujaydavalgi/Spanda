@@ -5,6 +5,8 @@ use crate::foundations::{
     EventHandlerDecl, MatchArm, StateMachineDecl, StructDecl, TaskDecl, TraitDecl, TraitImplDecl,
     TwinDecl,
 };
+use crate::stdlib::resolve_std_import;
+use crate::type_system::{binary_physical_op_allowed, is_action_proposal_type, resolve_type_name};
 use crate::error::{Diagnostic, SpandaError};
 use crate::hal::hal_member_from_decl;
 use crate::lib_registry::{all_library_sensor_types, resolve_import};
@@ -117,15 +119,23 @@ enum SymbolKind {
     Safety,
 }
 
+type TraitMethodSig = (Vec<(String, String)>, String);
+
 pub struct TypeChecker {
     pub errors: Vec<Diagnostic>,
     symbols: HashMap<String, SymbolEntry>,
     enum_variants: HashMap<String, Vec<String>>,
     variant_owner: HashMap<String, String>,
     struct_defs: HashMap<String, Vec<(String, String)>>,
-    trait_defs: HashMap<String, HashMap<String, (Vec<(String, String)>, String)>>,
+    trait_defs: HashMap<String, HashMap<String, TraitMethodSig>>,
     agent_trait_methods: HashMap<String, HashMap<String, SpandaType>>,
     state_machine_states: std::collections::HashSet<String>,
+}
+
+impl Default for TypeChecker {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl TypeChecker {
@@ -157,6 +167,7 @@ impl TypeChecker {
             if resolve_import(path).is_none()
                 && resolve_ai_import(path).is_none()
                 && !resolve_module_import(path)
+                && !resolve_std_import(path)
             {
                 self.error(
                     format!("Unknown import '{path}'"),
@@ -275,20 +286,9 @@ impl TypeChecker {
     }
 
     fn type_name_to_spanda(&self, type_name: &str) -> SpandaType {
-        match resolve_type_alias(type_name) {
-            Some("distance") => SpandaType::Number {
-                unit: UnitKind::M,
-            },
-            Some("angle") => SpandaType::Number {
-                unit: UnitKind::Rad,
-            },
-            Some("path") => SpandaType::Trajectory,
-            Some("velocity") => SpandaType::Velocity,
-            Some("pose") => SpandaType::Pose,
-            _ => SpandaType::Named {
-                name: type_name.to_string(),
-            },
-        }
+        resolve_type_name(type_name).unwrap_or(SpandaType::Named {
+            name: type_name.to_string(),
+        })
     }
 
     fn check_robot(&mut self, robot: &RobotDecl, imported: &std::collections::HashSet<String>) {
@@ -1086,8 +1086,27 @@ impl TypeChecker {
 
     fn check_stmt(&mut self, stmt: &Stmt) {
         match stmt {
-            Stmt::VarDecl { name, init, span: _ } => {
-                let t = self.check_expr(init);
+            Stmt::VarDecl {
+                name,
+                type_annotation,
+                init,
+                span,
+            } => {
+                let inferred = init.as_ref().map(|e| self.check_expr(e));
+                let t = match (type_annotation, inferred) {
+                    (Some(expected), Some(actual)) => {
+                        self.assert_compatible(
+                            expected,
+                            &actual,
+                            span.start.line,
+                            span.start.column,
+                        );
+                        expected.clone()
+                    }
+                    (Some(expected), None) => expected.clone(),
+                    (None, Some(actual)) => actual,
+                    (None, None) => SpandaType::Void,
+                };
                 self.symbols.insert(
                     name.clone(),
                     SymbolEntry {
@@ -1252,6 +1271,23 @@ impl TypeChecker {
             Expr::BinaryExpr { op, left, right, span } => {
                 let l = self.check_expr(left);
                 let r = self.check_expr(right);
+                if matches!(
+                    op,
+                    BinaryOp::Add | BinaryOp::Sub | BinaryOp::Lt | BinaryOp::Lte | BinaryOp::Gt
+                        | BinaryOp::Gte | BinaryOp::Eq | BinaryOp::Neq
+                ) && !binary_physical_op_allowed(*op, &l, &r)
+                {
+                    self.error(
+                        format!(
+                            "Invalid operation '{}' between incompatible types ({}, {})",
+                            op.as_str(),
+                            l.kind_name(),
+                            r.kind_name()
+                        ),
+                        span.start.line,
+                        span.start.column,
+                    );
+                }
                 if let Some(result) = result_unit_for_binary(*op, &l, &r) {
                     result
                 } else {
@@ -1639,11 +1675,27 @@ impl TypeChecker {
 
         for arg in args {
             let actual = self.check_expr(arg);
-            if type_name == "Safety" && property == "validate" {
-                self.assert_named_type(&actual, "ActionProposal", span.start.line, span.start.column);
+            if type_name == "Safety" && property == "validate" && !is_action_proposal_type(&actual) {
+                self.error(
+                    "safety.validate() expects ActionProposal".into(),
+                    span.start.line,
+                    span.start.column,
+                );
             }
             if type_name == "DifferentialDrive" && property == "execute" {
-                self.assert_named_type(&actual, "SafeAction", span.start.line, span.start.column);
+                if is_action_proposal_type(&actual) {
+                    self.error(
+                        "ActionProposal cannot be passed to actuator.execute() — call safety.validate() first".into(),
+                        span.start.line,
+                        span.start.column,
+                    );
+                } else if !crate::type_system::is_safe_action_type(&actual) {
+                    self.error(
+                        "actuator.execute() requires SafeAction from safety.validate()".into(),
+                        span.start.line,
+                        span.start.column,
+                    );
+                }
             }
             if type_name == "VisionModel" && property == "detect" {
                 self.assert_named_type(&actual, "CameraFrame", span.start.line, span.start.column);
@@ -1678,12 +1730,41 @@ impl TypeChecker {
                 (SpandaType::EnumVariant { enum_name, .. }, SpandaType::Named { name }) => {
                     name == enum_name
                 }
+                (SpandaType::Generic { name: n1, type_args: a1 }, SpandaType::Generic { name: n2, type_args: a2 }) => {
+                    n1 == n2
+                        && a1.len() == a2.len()
+                        && a1
+                            .iter()
+                            .zip(a2.iter())
+                            .all(|(e, a)| self.types_compatible(e, a))
+                }
                 _ => true,
             }
         } else if let (SpandaType::Named { name }, SpandaType::Scan) = (expected, actual) {
             name.contains("Lidar")
         } else if let (SpandaType::Scan, SpandaType::Named { name }) = (expected, actual) {
             ["Detection", "CameraFrame", "Completion"].contains(&name.as_str())
+        } else if matches!(expected, SpandaType::Int)
+            && matches!(actual, SpandaType::Number { unit: UnitKind::None, .. })
+            || matches!(expected, SpandaType::Float)
+                && matches!(actual, SpandaType::Number { .. })
+            || matches!(expected, SpandaType::Velocity)
+                && matches!(actual, SpandaType::Number { unit: UnitKind::MPerS, .. })
+            || matches!(actual, SpandaType::Velocity)
+                && matches!(expected, SpandaType::Number { unit: UnitKind::MPerS, .. })
+        {
+            true
+        } else if let (SpandaType::Named { name }, SpandaType::Number { unit, .. }) =
+            (expected, actual)
+        {
+            match name.as_str() {
+                "Distance" => *unit == UnitKind::M,
+                "Duration" => matches!(*unit, UnitKind::Ms | UnitKind::S),
+                "Angle" => matches!(*unit, UnitKind::Rad | UnitKind::Deg),
+                "Acceleration" => *unit == UnitKind::MPerS2,
+                "AngularVelocity" => *unit == UnitKind::RadPerS,
+                _ => false,
+            }
         } else {
             false
         }
@@ -1760,10 +1841,19 @@ impl SpandaTypeExt for SpandaType {
     fn kind_name(&self) -> &'static str {
         match self {
             SpandaType::Void => "void",
+            SpandaType::Int => "int",
+            SpandaType::Float => "float",
             SpandaType::Bool => "bool",
             SpandaType::Number { .. } => "number",
             SpandaType::String => "string",
+            SpandaType::Char => "char",
+            SpandaType::Bytes => "bytes",
+            SpandaType::Null => "null",
             SpandaType::Named { .. } => "named",
+            SpandaType::Generic { name, .. } => {
+                let _ = name;
+                "generic"
+            }
             SpandaType::Scan => "scan",
             SpandaType::Pose => "pose",
             SpandaType::Velocity => "velocity",

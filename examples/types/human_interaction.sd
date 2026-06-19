@@ -1,0 +1,13 @@
+import std.hri;
+
+robot Assistant {
+  actuator wheels: DifferentialDrive;
+
+  behavior run() {
+    let command: Command;
+    let speech: Speech;
+    let feedback: Feedback;
+    let _ = command;
+    wheels.stop();
+  }
+}

@@ -37,10 +37,16 @@ export type UnitKind =
 
 export type SpandaType =
   | { kind: "void" }
+  | { kind: "int" }
+  | { kind: "float" }
   | { kind: "bool" }
   | { kind: "number"; unit: UnitKind }
   | { kind: "string" }
+  | { kind: "char" }
+  | { kind: "bytes" }
+  | { kind: "null" }
   | { kind: "named"; name: string }
+  | { kind: "generic"; name: string; typeArgs: SpandaType[] }
   | { kind: "scan" }
   | { kind: "pose" }
   | { kind: "velocity" }
@@ -291,7 +297,8 @@ export type Stmt =
 export type VarDecl = {
   kind: "VarDecl";
   name: string;
-  init: Expr;
+  typeAnnotation: SpandaType | null;
+  init: Expr | null;
   span: Span;
 };
 

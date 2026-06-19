@@ -167,7 +167,7 @@ impl HalBackend for SimHalBackend {
     }
 
     fn transfer_spi(&self, _name: &str, data: &[u8]) -> Vec<u8> {
-        data.iter().map(|b| (b ^ 0xff) & 0xff).collect()
+        data.iter().map(|b| b ^ 0xff).collect()
     }
 
     fn read_uart(&self, name: &str) -> String {

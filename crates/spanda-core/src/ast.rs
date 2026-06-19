@@ -75,14 +75,29 @@ impl UnitKind {
 pub enum SpandaType {
     #[serde(rename = "void")]
     Void,
+    #[serde(rename = "int")]
+    Int,
+    #[serde(rename = "float")]
+    Float,
     #[serde(rename = "bool")]
     Bool,
     #[serde(rename = "number")]
     Number { unit: UnitKind },
     #[serde(rename = "string")]
     String,
+    #[serde(rename = "char")]
+    Char,
+    #[serde(rename = "bytes")]
+    Bytes,
+    #[serde(rename = "null")]
+    Null,
     #[serde(rename = "named")]
     Named { name: String },
+    #[serde(rename = "generic")]
+    Generic {
+        name: String,
+        type_args: Vec<SpandaType>,
+    },
     #[serde(rename = "scan")]
     Scan,
     #[serde(rename = "pose")]
@@ -382,7 +397,12 @@ pub enum BehaviorDecl {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind")]
 pub enum Stmt {
-    VarDecl { name: String, init: Expr, span: Span },
+    VarDecl {
+        name: String,
+        type_annotation: Option<SpandaType>,
+        init: Option<Expr>,
+        span: Span,
+    },
     IfStmt {
         condition: Expr,
         then_branch: Vec<Stmt>,

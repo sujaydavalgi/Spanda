@@ -1,0 +1,12 @@
+robot Bridge {
+  topic scan: LidarScan on "/scan";
+  actuator wheels: DifferentialDrive;
+
+  behavior run() {
+    let stream: Topic<LidarScan>;
+    let message: Message<LidarScan>;
+    let svc: Service<Command, Feedback>;
+    let _ = stream;
+    wheels.stop();
+  }
+}

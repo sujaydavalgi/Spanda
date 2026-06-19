@@ -1,0 +1,18 @@
+import std.twin;
+
+robot Shadow {
+  actuator wheels: DifferentialDrive;
+
+  twin RobotTwin {
+    mirror pose;
+    replay true;
+  }
+
+  behavior run() {
+    let state: SimulationState;
+    let telemetry: Telemetry;
+    let frames = RobotTwin.frame_count();
+    let _ = frames;
+    wheels.stop();
+  }
+}

@@ -126,6 +126,15 @@ export function resolveModuleImport(path: string): boolean {
     "navigation.localize",
     "safety.validate",
     "ai.reasoning",
+    "std.time",
+    "std.units",
+    "std.spatial",
+    "std.ai",
+    "std.robotics",
+    "std.sensors",
+    "std.safety",
+    "std.twin",
+    "std.hri",
   ].includes(path);
 }
 

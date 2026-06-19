@@ -1,0 +1,16 @@
+import std.units;
+import std.time;
+
+robot Rover {
+  actuator wheels: DifferentialDrive;
+
+  behavior run() {
+    let timeout: Duration = 500 ms;
+    let speed: Velocity = 1.5 m/s;
+    let distance: Distance = 2.0 m;
+    let turn: AngularVelocity = 0.5 rad/s;
+    let total: Distance = distance + 1.0 m;
+    let _ = total;
+    wheels.drive(linear: speed, angular: turn);
+  }
+}

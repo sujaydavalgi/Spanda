@@ -9,6 +9,7 @@ Spanda is an AI-native autonomous systems programming language. Source files use
 | [../README.md](../README.md) | Project overview, philosophy, quick start, and examples |
 | [spanda-architecture.md](./spanda-architecture.md) | Architecture diagram, compiler pipeline, safety model |
 | [spanda-language.md](./spanda-language.md) | Language reference for modules, traits, tasks, twins |
+| [spanda-type-system.md](./spanda-type-system.md) | Type system: units, generics, AI/safety types |
 | [roadmap.md](./roadmap.md) | Roadmap and self-hosting plan |
 | [migration.md](./migration.md) | Migration from legacy syntax and dual-backend notes |
 | [test-plan.md](./test-plan.md) | Test coverage plan |

@@ -41,8 +41,8 @@ fn negative_fixture_fails_type_check() {
     assert!(
         err.diagnostics()
             .iter()
-            .any(|d| d.message.contains("SafeAction")),
-        "expected SafeAction error, got: {:?}",
+            .any(|d| d.message.contains("SafeAction") || d.message.contains("ActionProposal")),
+        "expected SafeAction/ActionProposal error, got: {:?}",
         err.diagnostics()
     );
 }
