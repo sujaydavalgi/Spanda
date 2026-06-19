@@ -30,7 +30,9 @@ export function isActionProposal(value: RuntimeValue): boolean {
   return value.kind === "action_proposal";
 }
 
-export function isSafeAction(value: RuntimeValue): boolean {
+export function isSafeAction(
+  value: RuntimeValue,
+): value is Extract<RuntimeValue, { kind: "safe_action" }> {
   return value.kind === "safe_action";
 }
 

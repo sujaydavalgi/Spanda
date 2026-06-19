@@ -14,7 +14,7 @@ export const AI_LIB_REGISTRY: Record<string, AiLibModule> = {
     name: "runtime",
     version: "1.0.0",
     description: "ONNX Runtime inference backend",
-    runtime: "onIPPAPI",
+    runtime: "onnx",
   },
   "tflite.runtime": {
     id: "tflite.runtime",

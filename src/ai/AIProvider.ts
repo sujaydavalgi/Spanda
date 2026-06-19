@@ -22,7 +22,7 @@ export type EmbedRequest = {
 };
 
 export interface AIProvider {
-  complete(request: CompletionRequest): Promise<RuntimeValue>;
-  detect?(request: DetectionRequest): Promise<RuntimeValue>;
-  embed?(request: EmbedRequest): Promise<RuntimeValue>;
+  complete(request: CompletionRequest): RuntimeValue;
+  detect?(request: DetectionRequest): RuntimeValue;
+  embed?(request: EmbedRequest): RuntimeValue;
 }
