@@ -1,9 +1,11 @@
 import type {
   MotionCommand,
+  PoseValue,
   RobotBackend,
   RobotState,
   RuntimeValue,
 } from "../runtime/interpreter.js";
+import { createSimHal, type HalBackend } from "../hal/index.js";
 
 export type Obstacle = { x: number; y: number; radius: number };
 
@@ -13,6 +15,8 @@ export type SimulatorConfig = {
   lidarRange?: number;
   simulationSteps?: number;
 };
+
+type PublishedMessage = { topic: string; messageType: string; value: RuntimeValue };
 
 export class Simulator implements RobotBackend {
   private pose: { x: number; y: number; theta: number; z: number };
@@ -24,6 +28,11 @@ export class Simulator implements RobotBackend {
   private gripperClosed = false;
   private thrust = 0;
   private eventLog: string[] = [];
+  private published: PublishedMessage[] = [];
+  private followQueue: PoseValue[] = [];
+  private serviceLog: string[] = [];
+  private actionLog: string[] = [];
+  private hal: HalBackend = createSimHal();
 
   constructor(config: SimulatorConfig = {}) {
     this.pose = {
@@ -39,7 +48,7 @@ export class Simulator implements RobotBackend {
     this.lidarRange = config.lidarRange ?? 10;
   }
 
-  readSensor(sensorName: string, sensorType: string): RuntimeValue {
+  readSensor(_sensorName: string, sensorType: string, _topic?: string | null): RuntimeValue {
     switch (sensorType) {
       case "Lidar":
         return { kind: "scan", nearestDistance: this.simulateLidar() };
@@ -72,9 +81,48 @@ export class Simulator implements RobotBackend {
             force: { kind: "number", value: this.gripperClosed ? 5.0 : 0, unit: "none" },
           },
         };
+      case "Camera":
+        return {
+          kind: "object",
+          typeName: "CameraFrame",
+          fields: {
+            width: { kind: "number", value: 640, unit: "none" },
+            height: { kind: "number", value: 480, unit: "none" },
+          },
+        };
       default:
         return { kind: "void" };
     }
+  }
+
+  publishTopic(topicPath: string, messageType: string, value: RuntimeValue): void {
+    this.published.push({ topic: topicPath, messageType, value });
+    if (value.kind === "velocity") {
+      this.velocity = { linear: value.linear, angular: value.angular };
+    }
+    this.eventLog.push(`publish(${topicPath}, ${messageType})`);
+  }
+
+  callService(serviceName: string, serviceType: string): RuntimeValue {
+    this.serviceLog.push(`${serviceName}:${serviceType}`);
+    this.eventLog.push(`service(${serviceName})`);
+    return { kind: "bool", value: true };
+  }
+
+  sendAction(actionName: string, actionType: string, goal: RuntimeValue): RuntimeValue {
+    this.actionLog.push(`${actionName}:${actionType}`);
+    this.eventLog.push(`action(${actionName})`);
+    if (goal.kind === "pose") {
+      this.pose = { x: goal.x, y: goal.y, theta: goal.theta, z: goal.z };
+    }
+    if (goal.kind === "trajectory" && goal.waypoints.length > 0) {
+      this.followQueue = [...goal.waypoints];
+    }
+    return { kind: "bool", value: true };
+  }
+
+  getPublishedTopics(): PublishedMessage[] {
+    return [...this.published];
   }
 
   executeMotion(cmd: MotionCommand): void {
@@ -88,8 +136,13 @@ export class Simulator implements RobotBackend {
         this.velocity = { linear: cmd.linear, angular: cmd.angular };
         this.eventLog.push(`drive(${cmd.linear.toFixed(2)} m/s, ${cmd.angular.toFixed(2)} rad/s)`);
         break;
+      case "follow":
+        this.followQueue = [...cmd.waypoints];
+        this.eventLog.push(`follow(${cmd.waypoints.length} waypoints)`);
+        break;
       case "stop":
         this.velocity = { linear: 0, angular: 0 };
+        this.followQueue = [];
         this.eventLog.push("stop()");
         break;
       case "move_to":
@@ -128,6 +181,24 @@ export class Simulator implements RobotBackend {
 
     const dt = dtMs / 1000;
 
+    if (this.followQueue.length > 0) {
+      const target = this.followQueue[0];
+      const dx = target.x - this.pose.x;
+      const dy = target.y - this.pose.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 0.05) {
+        this.followQueue.shift();
+        this.pose = { ...this.pose, x: target.x, y: target.y, theta: target.theta };
+      } else {
+        const speed = 0.5;
+        this.pose.x += (dx / dist) * speed * dt;
+        this.pose.y += (dy / dist) * speed * dt;
+        this.pose.theta = Math.atan2(dy, dx);
+        this.velocity = { linear: speed, angular: 0 };
+      }
+      return;
+    }
+
     if (this.thrust > 0) {
       const climbRate = (this.thrust - 0.5) * 2;
       this.pose.z = Math.max(0, this.pose.z + climbRate * dt);
@@ -150,7 +221,14 @@ export class Simulator implements RobotBackend {
 
   setEmergencyStop(value: boolean): void {
     this.emergencyStop = value;
-    if (value) this.velocity = { linear: 0, angular: 0 };
+    if (value) {
+      this.velocity = { linear: 0, angular: 0 };
+      this.followQueue = [];
+    }
+  }
+
+  getHal(): HalBackend {
+    return this.hal;
   }
 
   getEventLog(): string[] {
@@ -159,6 +237,14 @@ export class Simulator implements RobotBackend {
 
   getArmPosition(): { x: number; y: number; z: number } {
     return { ...this.armPosition };
+  }
+
+  getServiceLog(): string[] {
+    return [...this.serviceLog];
+  }
+
+  getActionLog(): string[] {
+    return [...this.actionLog];
   }
 
   private simulateLidar(): number {

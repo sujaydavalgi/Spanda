@@ -8,16 +8,16 @@ import { ParseError } from "../parser/index.js";
 import { TypeCheckError } from "../types/index.js";
 import { RuntimeError } from "../runtime/index.js";
 
-const USAGE = `RoboLang — safe, strongly typed language for robot control
+const USAGE = `Synapse — safe, strongly typed language for robot control
 
 Usage:
-  robolang run <file.rl>   Run program with interpreter (simulated backend)
-  robolang sim <file.rl>   Run program in simulation mode with visual output
-  robolang check <file.rl> Type-check a RoboLang file
+  synapse run <file.syn>   Run program with interpreter (simulated backend)
+  synapse sim <file.syn>   Run program in simulation mode with visual output
+  synapse check <file.syn> Type-check a Synapse file
 
 Examples:
-  robolang run examples/lidar_avoidance.rl
-  robolang sim examples/differential_drive.rl
+  synapse run examples/lidar_avoidance.syn
+  synapse sim examples/differential_drive.syn
 `;
 
 function main(): void {

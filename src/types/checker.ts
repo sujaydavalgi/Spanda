@@ -4,15 +4,27 @@ import type {
   Program,
   RobotDecl,
   SafetyRule,
+  SafetyZoneDecl,
   Stmt,
   UnitKind,
-  RoboType,
+  SynapseType,
 } from "../ast/nodes.js";
+import { resolveImport } from "../lib/registry.js";
+import { getSocProfile, validateHalAgainstSoc } from "../soc/index.js";
+import { halMemberFromDecl } from "../hal/index.js";
 import {
+  ACTION_TYPES,
   ACTUATOR_TYPES,
+  BUILTIN_FUNCTIONS,
   BUILTIN_METHODS,
+  MESSAGE_TYPES,
+  OBJECT_PROPERTIES,
+  POSE_PROPERTIES,
+  ROBOT_METHODS,
   SCAN_PROPERTIES,
   SENSOR_TYPES,
+  SERVICE_TYPES,
+  VELOCITY_PROPERTIES,
   TypeCheckError,
   resultUnitForBinary,
   unitsCompatible,
@@ -21,10 +33,13 @@ import {
 
 type SymbolEntry = {
   name: string;
-  roboType: RoboType;
-  kind: "sensor" | "actuator" | "variable" | "behavior";
+  roboType: SynapseType;
+  kind: "sensor" | "actuator" | "variable" | "behavior" | "topic" | "service" | "action" | "robot";
   sensorType?: string;
   actuatorType?: string;
+  messageType?: string;
+  serviceType?: string;
+  actionType?: string;
 };
 
 export function typeCheck(program: Program): void {
@@ -41,18 +56,99 @@ class TypeChecker {
   private currentRobot: RobotDecl | null = null;
 
   checkProgram(program: Program): void {
+    const imported = new Set<string>();
+    for (const imp of program.imports) {
+      if (!resolveImport(imp.path)) {
+        this.error(`Unknown library '${imp.path}'`, imp.span.start.line, imp.span.start.column);
+      } else {
+        imported.add(imp.path);
+      }
+    }
+
     for (const robot of program.robots) {
-      this.checkRobot(robot);
+      this.checkRobot(robot, imported);
     }
   }
 
-  private checkRobot(robot: RobotDecl): void {
+  private checkRobot(robot: RobotDecl, imported: Set<string>): void {
     this.currentRobot = robot;
     this.symbols.clear();
+
+    if (robot.soc) {
+      if (!getSocProfile(robot.soc.profile)) {
+        this.error(`Unknown SoC profile '${robot.soc.profile}'`, robot.soc.span.start.line, robot.soc.span.start.column);
+      }
+    }
+
+    if (robot.hal && robot.soc) {
+      const profile = getSocProfile(robot.soc.profile);
+      if (profile) {
+        const members = robot.hal.members.map(halMemberFromDecl);
+        for (const err of validateHalAgainstSoc(profile, members)) {
+          this.error(err.message, robot.hal.span.start.line, robot.hal.span.start.column);
+        }
+      }
+    }
+
+    const halBusNames = new Set(robot.hal?.members.map((m) => m.name) ?? []);
+
+    for (const node of robot.nodes) {
+      if (!node.namespace) {
+        this.error("Node should specify namespace with 'on \"/namespace\"'", node.span.start.line, node.span.start.column);
+      }
+    }
+
+    for (const topic of robot.topics) {
+      if (!MESSAGE_TYPES[topic.messageType]) {
+        this.error(`Unknown message type '${topic.messageType}'`, topic.span.start.line, topic.span.start.column);
+      }
+      this.symbols.set(topic.name, {
+        name: topic.name,
+        roboType: MESSAGE_TYPES[topic.messageType] ?? { kind: "void" },
+        kind: "topic",
+        messageType: topic.messageType,
+      });
+    }
+
+    for (const service of robot.services) {
+      if (!SERVICE_TYPES[service.serviceType]) {
+        this.error(`Unknown service type '${service.serviceType}'`, service.span.start.line, service.span.start.column);
+      }
+      this.symbols.set(service.name, {
+        name: service.name,
+        roboType: SERVICE_TYPES[service.serviceType] ?? { kind: "void" },
+        kind: "service",
+        serviceType: service.serviceType,
+      });
+    }
+
+    for (const action of robot.actions) {
+      if (!ACTION_TYPES[action.actionType]) {
+        this.error(`Unknown action type '${action.actionType}'`, action.span.start.line, action.span.start.column);
+      }
+      this.symbols.set(action.name, {
+        name: action.name,
+        roboType: ACTION_TYPES[action.actionType] ?? { kind: "void" },
+        kind: "action",
+        actionType: action.actionType,
+      });
+    }
 
     for (const sensor of robot.sensors) {
       if (!SENSOR_TYPES[sensor.sensorType]) {
         this.error(`Unknown sensor type '${sensor.sensorType}'`, sensor.span.start.line, sensor.span.start.column);
+      }
+      if (sensor.library) {
+        if (!imported.has(sensor.library)) {
+          this.error(`Library '${sensor.library}' must be imported before use`, sensor.span.start.line, sensor.span.start.column);
+        }
+        const lib = resolveImport(sensor.library);
+        if (lib && !lib.sensors[sensor.sensorType]) {
+          this.error(`Sensor type '${sensor.sensorType}' not provided by library '${sensor.library}'`, sensor.span.start.line, sensor.span.start.column);
+        }
+      }
+      if (sensor.binding?.kind === "hal" && !halBusNames.has(sensor.binding.busName)) {
+        this.error(`Unknown HAL bus '${sensor.binding.busName}'`, sensor.span.start.line, sensor.span.start.column);
       }
       this.symbols.set(sensor.name, {
         name: sensor.name,
@@ -78,6 +174,9 @@ class TypeChecker {
       const saved = new Map(this.symbols);
       for (const rule of robot.safety.rules) {
         this.checkSafetyRule(rule);
+      }
+      for (const zone of robot.safety.zones) {
+        this.checkSafetyZone(zone);
       }
       this.symbols = saved;
     }
@@ -110,9 +209,35 @@ class TypeChecker {
     }
   }
 
+  private checkSafetyZone(zone: SafetyZoneDecl): void {
+    const x = this.checkExpr(zone.x);
+    const y = this.checkExpr(zone.y);
+    if (x.kind !== "number" || y.kind !== "number") {
+      this.error("Zone coordinates must be numeric", zone.span.start.line, zone.span.start.column);
+    }
+    if (zone.shape === "circle" && zone.radius) {
+      const r = this.checkExpr(zone.radius);
+      if (r.kind !== "number") {
+        this.error("Zone radius must be numeric", zone.span.start.line, zone.span.start.column);
+      }
+    }
+    if (zone.shape === "rect" && zone.width && zone.height) {
+      const w = this.checkExpr(zone.width);
+      const h = this.checkExpr(zone.height);
+      if (w.kind !== "number" || h.kind !== "number") {
+        this.error("Zone size must be numeric", zone.span.start.line, zone.span.start.column);
+      }
+    }
+  }
+
   private checkBehavior(behavior: BehaviorDecl): void {
     const parentScope = new Map(this.symbols);
     this.symbols = new Map(parentScope);
+    this.symbols.set("robot", {
+      name: "robot",
+      roboType: { kind: "named", name: "Robot" },
+      kind: "robot",
+    });
     for (const stmt of behavior.body) {
       this.checkStmt(stmt);
     }
@@ -143,6 +268,38 @@ class TypeChecker {
         for (const s of stmt.body) this.checkStmt(s);
         break;
       }
+      case "PublishStmt": {
+        const topic = this.symbols.get(stmt.topicName);
+        if (!topic || topic.kind !== "topic") {
+          this.error(`Unknown topic '${stmt.topicName}'`, stmt.span.start.line, stmt.span.start.column);
+        } else {
+          const val = this.checkExpr(stmt.value);
+          this.assertCompatible(topic.roboType, val, stmt.span.start.line, stmt.span.start.column);
+        }
+        break;
+      }
+      case "ServiceCallStmt": {
+        const service = this.symbols.get(stmt.serviceName);
+        if (!service || service.kind !== "service") {
+          this.error(`Unknown service '${stmt.serviceName}'`, stmt.span.start.line, stmt.span.start.column);
+        }
+        break;
+      }
+      case "ActionSendStmt": {
+        const action = this.symbols.get(stmt.actionName);
+        if (!action || action.kind !== "action") {
+          this.error(`Unknown action '${stmt.actionName}'`, stmt.span.start.line, stmt.span.start.column);
+        } else {
+          const goal = this.checkExpr(stmt.goal);
+          if (goal.kind !== "pose" && goal.kind !== "trajectory") {
+            this.error("Action goal must be pose or trajectory", stmt.span.start.line, stmt.span.start.column);
+          }
+        }
+        break;
+      }
+      case "EmergencyStopStmt":
+      case "ResetEmergencyStopStmt":
+        break;
       case "ExprStmt":
         this.checkExpr(stmt.expr);
         break;
@@ -152,7 +309,7 @@ class TypeChecker {
     }
   }
 
-  private checkExpr(expr: Expr): RoboType {
+  private checkExpr(expr: Expr): SynapseType {
     switch (expr.kind) {
       case "LiteralExpr":
         if (typeof expr.value === "boolean") return { kind: "bool" };
@@ -198,38 +355,80 @@ class TypeChecker {
         return expr.op === "not" ? { kind: "bool" } : operand;
       }
 
-      case "MemberExpr": {
-        const objType = this.checkExpr(expr.object);
-        if (objType.kind === "scan") {
-          const prop = SCAN_PROPERTIES[expr.property];
-          if (!prop) {
-            this.error(`Unknown scan property '${expr.property}'`, expr.span.start.line, expr.span.start.column);
-            return { kind: "void" };
-          }
-          return prop;
-        }
-        if (objType.kind === "named") {
-          const methods = BUILTIN_METHODS[objType.name];
-          if (methods && methods[expr.property]) {
-            return methods[expr.property].returns;
-          }
-        }
-        this.error(`Unknown member '${expr.property}'`, expr.span.start.line, expr.span.start.column);
-        return { kind: "void" };
-      }
+      case "MemberExpr":
+        return this.checkMember(expr);
 
-      case "CallExpr": {
+      case "CallExpr":
         return this.checkCall(expr);
-      }
 
       default:
         return { kind: "void" };
     }
   }
 
-  private checkCall(expr: import("../ast/nodes.js").CallExpr): RoboType {
-    if (expr.callee.kind !== "MemberExpr") {
-      this.error("Only method calls are supported", expr.span.start.line, expr.span.start.column);
+  private checkMember(expr: import("../ast/nodes.js").MemberExpr): SynapseType {
+    const objType = this.checkExpr(expr.object);
+
+    if (objType.kind === "scan") {
+      const prop = SCAN_PROPERTIES[expr.property];
+      if (!prop) {
+        this.error(`Unknown scan property '${expr.property}'`, expr.span.start.line, expr.span.start.column);
+        return { kind: "void" };
+      }
+      return prop;
+    }
+
+    if (objType.kind === "pose") {
+      const prop = POSE_PROPERTIES[expr.property];
+      if (!prop) {
+        this.error(`Unknown pose property '${expr.property}'`, expr.span.start.line, expr.span.start.column);
+        return { kind: "void" };
+      }
+      return prop;
+    }
+
+    if (objType.kind === "velocity") {
+      const prop = VELOCITY_PROPERTIES[expr.property];
+      if (!prop) {
+        this.error(`Unknown velocity property '${expr.property}'`, expr.span.start.line, expr.span.start.column);
+        return { kind: "void" };
+      }
+      return prop;
+    }
+
+    if (objType.kind === "named") {
+      const objProps = OBJECT_PROPERTIES[objType.name];
+      if (objProps?.[expr.property]) return objProps[expr.property];
+
+      const methods = BUILTIN_METHODS[objType.name];
+      if (methods?.[expr.property]) return methods[expr.property].returns;
+    }
+
+    this.error(`Unknown member '${expr.property}'`, expr.span.start.line, expr.span.start.column);
+    return { kind: "void" };
+  }
+
+  private checkCall(expr: import("../ast/nodes.js").CallExpr): SynapseType {
+    if (expr.callee.kind === "IdentExpr") {
+      const fn = BUILTIN_FUNCTIONS[expr.callee.name];
+      if (!fn) {
+        this.error(`Unknown function '${expr.callee.name}'`, expr.span.start.line, expr.span.start.column);
+        return { kind: "void" };
+      }
+      for (const arg of expr.namedArgs) {
+        const expected = fn.namedParams[arg.name];
+        if (!expected) {
+          this.error(`Unknown named argument '${arg.name}'`, arg.span.start.line, arg.span.start.column);
+          continue;
+        }
+        const actual = this.checkExpr(arg.value);
+        this.assertCompatible(expected, actual, arg.span.start.line, arg.span.start.column);
+      }
+      return fn.returns;
+    }
+
+    if (expr.callee.kind !== "MemberExpr" || expr.callee.object.kind !== "IdentExpr") {
+      this.error("Invalid call target", expr.span.start.line, expr.span.start.column);
       return { kind: "void" };
     }
 
@@ -238,11 +437,27 @@ class TypeChecker {
       this.error("Invalid call target", expr.span.start.line, expr.span.start.column);
       return { kind: "void" };
     }
-
-    const sym = this.symbols.get(member.object.name);
+    const targetName = member.object.name;
+    const sym = this.symbols.get(targetName);
     if (!sym) {
-      this.error(`Undefined identifier '${member.object.name}'`, expr.span.start.line, expr.span.start.column);
+      this.error(`Undefined identifier '${targetName}'`, expr.span.start.line, expr.span.start.column);
       return { kind: "void" };
+    }
+
+    if (sym.kind === "robot") {
+      const method = ROBOT_METHODS[member.property];
+      if (!method) {
+        this.error(`Unknown robot method '${member.property}'`, expr.span.start.line, expr.span.start.column);
+        return { kind: "void" };
+      }
+      for (let i = 0; i < expr.args.length; i++) {
+        const expected = method.params[i];
+        if (expected) {
+          const actual = this.checkExpr(expr.args[i]);
+          this.assertCompatible(expected, actual, expr.span.start.line, expr.span.start.column);
+        }
+      }
+      return method.returns;
     }
 
     let typeName = "";
@@ -285,21 +500,21 @@ class TypeChecker {
     return method.returns;
   }
 
-  private assertCompatible(expected: RoboType, actual: RoboType, line: number, column: number): void {
+  private assertCompatible(expected: SynapseType, actual: SynapseType, line: number, column: number): void {
     if (expected.kind === "void" && actual.kind === "void") return;
-    if (expected.kind === "number" && actual.kind === "number") {
-      if (!unitsCompatible(expected.unit, actual.unit)) {
-        this.error(
-          `Unit mismatch: expected '${expected.unit}', got '${actual.unit}'`,
-          line,
-          column,
-        );
+    if (expected.kind === actual.kind) {
+      if (expected.kind === "number" && actual.kind === "number") {
+        if (!unitsCompatible(expected.unit, actual.unit)) {
+          this.error(
+            `Unit mismatch: expected '${expected.unit}', got '${actual.unit}'`,
+            line,
+            column,
+          );
+        }
       }
       return;
     }
-    if (expected.kind !== actual.kind) {
-      this.error(`Type mismatch: expected ${expected.kind}, got ${actual.kind}`, line, column);
-    }
+    this.error(`Type mismatch: expected ${expected.kind}, got ${actual.kind}`, line, column);
   }
 
   private error(message: string, line: number, column: number): void {

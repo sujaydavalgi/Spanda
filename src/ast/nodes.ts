@@ -17,9 +17,10 @@ export type UnitKind =
   | "rad"
   | "m/s"
   | "rad/s"
-  | "deg";
+  | "deg"
+  | "Hz";
 
-export type RoboType =
+export type SynapseType =
   | { kind: "void" }
   | { kind: "bool" }
   | { kind: "number"; unit: UnitKind }
@@ -27,17 +28,32 @@ export type RoboType =
   | { kind: "named"; name: string }
   | { kind: "scan" }
   | { kind: "pose" }
-  | { kind: "velocity" };
+  | { kind: "velocity" }
+  | { kind: "trajectory" }
+  | { kind: "transform" };
 
 export type Program = {
   kind: "Program";
+  imports: ImportDecl[];
   robots: RobotDecl[];
+  span: Span;
+};
+
+export type ImportDecl = {
+  kind: "ImportDecl";
+  path: string;
   span: Span;
 };
 
 export type RobotDecl = {
   kind: "RobotDecl";
   name: string;
+  soc: SocDecl | null;
+  hal: HalBlock | null;
+  nodes: NodeDecl[];
+  topics: TopicDecl[];
+  services: ServiceDecl[];
+  actions: ActionDecl[];
   sensors: SensorDecl[];
   actuators: ActuatorDecl[];
   safety: SafetyBlock | null;
@@ -45,13 +61,113 @@ export type RobotDecl = {
   span: Span;
 };
 
+export type SocDecl = {
+  kind: "SocDecl";
+  profile: string;
+  span: Span;
+};
+
+export type HalBlock = {
+  kind: "HalBlock";
+  members: HalMemberDecl[];
+  span: Span;
+};
+
+export type HalMemberDecl =
+  | HalI2cDecl
+  | HalSpiDecl
+  | HalGpioDecl
+  | HalPwmDecl
+  | HalUartDecl
+  | HalAdcDecl;
+
+export type HalI2cDecl = {
+  kind: "HalI2cDecl";
+  name: string;
+  address: number;
+  span: Span;
+};
+
+export type HalSpiDecl = {
+  kind: "HalSpiDecl";
+  name: string;
+  bus: number;
+  csPin: number | null;
+  span: Span;
+};
+
+export type HalGpioDecl = {
+  kind: "HalGpioDecl";
+  name: string;
+  direction: "in" | "out";
+  pin: number;
+  span: Span;
+};
+
+export type HalPwmDecl = {
+  kind: "HalPwmDecl";
+  name: string;
+  pin: number;
+  frequencyHz: number;
+  span: Span;
+};
+
+export type HalUartDecl = {
+  kind: "HalUartDecl";
+  name: string;
+  device: string;
+  baud: number;
+  span: Span;
+};
+
+export type HalAdcDecl = {
+  kind: "HalAdcDecl";
+  name: string;
+  channel: number;
+  span: Span;
+};
+
+export type NodeDecl = {
+  kind: "NodeDecl";
+  name: string;
+  namespace: string | null;
+  span: Span;
+};
+
+export type TopicDecl = {
+  kind: "TopicDecl";
+  name: string;
+  messageType: string;
+  topic: string;
+  span: Span;
+};
+
+export type ServiceDecl = {
+  kind: "ServiceDecl";
+  name: string;
+  serviceType: string;
+  span: Span;
+};
+
+export type ActionDecl = {
+  kind: "ActionDecl";
+  name: string;
+  actionType: string;
+  span: Span;
+};
+
 export type SensorDecl = {
   kind: "SensorDecl";
   name: string;
   sensorType: string;
-  topic: string | null;
+  library: string | null;
+  binding: SensorBinding | null;
   span: Span;
 };
+
+export type SensorBinding =
+  | { kind: "topic"; path: string }
+  | { kind: "hal"; busName: string };
 
 export type ActuatorDecl = {
   kind: "ActuatorDecl";
@@ -63,6 +179,7 @@ export type ActuatorDecl = {
 export type SafetyBlock = {
   kind: "SafetyBlock";
   rules: SafetyRule[];
+  zones: SafetyZoneDecl[];
   span: Span;
 };
 
@@ -80,6 +197,18 @@ export type SafetyRule =
       span: Span;
     };
 
+export type SafetyZoneDecl = {
+  kind: "SafetyZoneDecl";
+  name: string;
+  shape: "circle" | "rect";
+  x: Expr;
+  y: Expr;
+  radius: Expr | null;
+  width: Expr | null;
+  height: Expr | null;
+  span: Span;
+};
+
 export type BehaviorDecl = {
   kind: "BehaviorDecl";
   name: string;
@@ -92,7 +221,12 @@ export type Stmt =
   | IfStmt
   | LoopStmt
   | ExprStmt
-  | ReturnStmt;
+  | ReturnStmt
+  | PublishStmt
+  | ServiceCallStmt
+  | ActionSendStmt
+  | EmergencyStopStmt
+  | ResetEmergencyStopStmt;
 
 export type VarDecl = {
   kind: "VarDecl";
@@ -128,6 +262,36 @@ export type ReturnStmt = {
   span: Span;
 };
 
+export type PublishStmt = {
+  kind: "PublishStmt";
+  topicName: string;
+  value: Expr;
+  span: Span;
+};
+
+export type ServiceCallStmt = {
+  kind: "ServiceCallStmt";
+  serviceName: string;
+  span: Span;
+};
+
+export type ActionSendStmt = {
+  kind: "ActionSendStmt";
+  actionName: string;
+  goal: Expr;
+  span: Span;
+};
+
+export type EmergencyStopStmt = {
+  kind: "EmergencyStopStmt";
+  span: Span;
+};
+
+export type ResetEmergencyStopStmt = {
+  kind: "ResetEmergencyStopStmt";
+  span: Span;
+};
+
 export type Expr =
   | LiteralExpr
   | UnitLiteralExpr
@@ -135,8 +299,7 @@ export type Expr =
   | BinaryExpr
   | UnaryExpr
   | CallExpr
-  | MemberExpr
-  | DriveArgsExpr;
+  | MemberExpr;
 
 export type LiteralExpr = {
   kind: "LiteralExpr";
@@ -193,13 +356,6 @@ export type MemberExpr = {
   span: Span;
 };
 
-export type DriveArgsExpr = {
-  kind: "DriveArgsExpr";
-  linear: Expr | null;
-  angular: Expr | null;
-  span: Span;
-};
-
 export type BinaryOp =
   | "+"
   | "-"
@@ -215,3 +371,7 @@ export type BinaryOp =
   | "or";
 
 export type UnaryOp = "-" | "not";
+
+export const MESSAGE_TYPES = ["Velocity", "Pose", "Scan", "String"] as const;
+export const SERVICE_TYPES = ["ResetCostmap", "ClearCostmap", "SetPose"] as const;
+export const ACTION_TYPES = ["NavigateTo", "FollowPath", "PickObject"] as const;

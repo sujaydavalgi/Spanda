@@ -1,0 +1,34 @@
+import bosch.bmp388;
+import adafruit.vl53l0x;
+import sparkfun.lsm9ds1;
+
+robot ESPBot {
+  soc ESP32;
+
+  hal {
+    i2c sensor_bus at 0x76;
+    i2c imu_bus at 0x6b;
+    adc battery on channel 0;
+    pwm buzzer on pin 25 frequency 1000 Hz;
+  }
+
+  actuator wheels: DifferentialDrive;
+
+  sensor barometer: BoschBMP388 from bosch.bmp388 on sensor_bus;
+  sensor tof: AdafruitVL53L0X from adafruit.vl53l0x on sensor_bus;
+  sensor imu: SparkfunLSM9DS1 from sparkfun.lsm9ds1 on imu_bus;
+
+  behavior navigate() {
+    loop every 50ms {
+      let altitude = barometer.read();
+      let distance = tof.read();
+      let heading = imu.read();
+
+      if distance < 0.3 m {
+        wheels.stop();
+      } else {
+        wheels.drive(linear: 0.3 m/s, angular: heading.yaw * 0.05 rad/s);
+      }
+    }
+  }
+}

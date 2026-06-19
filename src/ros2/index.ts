@@ -1,15 +1,11 @@
 import type { MotionCommand, RobotBackend, RobotState, RuntimeValue } from "../runtime/interpreter.js";
 
-/**
- * ROS2 adapter interface — stub for future hardware integration.
- * Maps RoboLang concepts to ROS2 nodes, topics, services, and actions.
- */
 export interface Ros2Adapter extends RobotBackend {
   connect(options: Ros2ConnectOptions): Promise<void>;
   disconnect(): Promise<void>;
-  publishTopic(topic: string, message: unknown): void;
-  callService(service: string, request: unknown): Promise<unknown>;
-  sendAction(action: string, goal: unknown): Promise<unknown>;
+  publishTopic(topic: string, messageType: string, message: RuntimeValue): void;
+  callService(service: string, serviceType: string): RuntimeValue;
+  sendAction(action: string, actionType: string, goal: RuntimeValue): RuntimeValue;
   isConnected(): boolean;
 }
 
@@ -26,30 +22,27 @@ export class Ros2AdapterStub implements Ros2Adapter {
     velocity: { linear: 0, angular: 0 },
     emergencyStop: false,
   };
+  private published: Array<{ topic: string; messageType: string; value: RuntimeValue }> = [];
 
   async connect(options: Ros2ConnectOptions): Promise<void> {
     this.connected = true;
-    console.log(`[ROS2 stub] Connected as node '${options.nodeName ?? "robolang_node"}'`);
+    console.log(`[ROS2] Connected as node '${options.nodeName ?? "synapse_node"}'`);
   }
 
   async disconnect(): Promise<void> {
     this.connected = false;
-    console.log("[ROS2 stub] Disconnected");
+    console.log("[ROS2] Disconnected");
   }
 
   readSensor(_sensorName: string, sensorType: string): RuntimeValue {
-    if (!this.connected) {
-      throw new Error("ROS2 adapter not connected");
-    }
-    if (sensorType === "Lidar") {
-      return { kind: "scan", nearestDistance: Infinity };
-    }
+    if (!this.connected) throw new Error("ROS2 adapter not connected");
+    if (sensorType === "Lidar") return { kind: "scan", nearestDistance: Infinity };
     return { kind: "void" };
   }
 
   executeMotion(cmd: MotionCommand): void {
     if (!this.connected) return;
-    console.log(`[ROS2 stub] Motion: ${JSON.stringify(cmd)}`);
+    console.log(`[ROS2] Motion: ${JSON.stringify(cmd)}`);
   }
 
   tick(dtMs: number): void {
@@ -63,18 +56,28 @@ export class Ros2AdapterStub implements Ros2Adapter {
     return { ...this.state, pose: { ...this.state.pose }, velocity: { ...this.state.velocity } };
   }
 
-  publishTopic(topic: string, message: unknown): void {
-    console.log(`[ROS2 stub] publish ${topic}:`, message);
+  setEmergencyStop(active: boolean): void {
+    this.state.emergencyStop = active;
+    if (active) this.state.velocity = { linear: 0, angular: 0 };
   }
 
-  async callService(service: string, request: unknown): Promise<unknown> {
-    console.log(`[ROS2 stub] service ${service}:`, request);
-    return {};
+  publishTopic(topic: string, messageType: string, message: RuntimeValue): void {
+    this.published.push({ topic, messageType, value: message });
+    console.log(`[ROS2] publish ${topic} (${messageType})`);
   }
 
-  async sendAction(action: string, goal: unknown): Promise<unknown> {
-    console.log(`[ROS2 stub] action ${action}:`, goal);
-    return { success: true };
+  callService(service: string, serviceType: string): RuntimeValue {
+    console.log(`[ROS2] service ${service} (${serviceType})`);
+    return { kind: "bool", value: true };
+  }
+
+  sendAction(action: string, actionType: string, goal: RuntimeValue): RuntimeValue {
+    console.log(`[ROS2] action ${action} (${actionType})`);
+    return { kind: "bool", value: true };
+  }
+
+  getPublishedTopics(): Array<{ topic: string; messageType: string; value: RuntimeValue }> {
+    return [...this.published];
   }
 
   isConnected(): boolean {

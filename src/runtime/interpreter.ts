@@ -1,4 +1,31 @@
-import type { Expr, Program, RobotDecl, SafetyRule, Stmt, UnitKind } from "../ast/nodes.js";
+import type {
+  Expr,
+  Program,
+  RobotDecl,
+  SafetyRule,
+  SafetyZoneDecl,
+  Stmt,
+  UnitKind,
+} from "../ast/nodes.js";
+import { createSimHal, halMemberFromDecl, type HalBackend } from "../hal/index.js";
+import { getSensorDriver, readWithDriver } from "../lib/registry.js";
+import { getSocProfile } from "../soc/index.js";
+import { SafetyMonitor, createSafetyConfigFromRobot, interpolatePoses } from "../safety/index.js";
+import type { SafetyZoneRuntime } from "../safety/index.js";
+import {
+  getNumber,
+  getPoseFields,
+  getString,
+  getTrajectoryWaypoints,
+  getVelocityFields,
+  poseFromState,
+  runtimePose,
+  runtimeTrajectory,
+  runtimeVelocity,
+  velocityFromState,
+} from "./values.js";
+
+export type PoseValue = { x: number; y: number; theta: number; z: number };
 
 export type RuntimeValue =
   | { kind: "number"; value: number; unit: UnitKind }
@@ -6,14 +33,23 @@ export type RuntimeValue =
   | { kind: "string"; value: string }
   | { kind: "void" }
   | { kind: "scan"; nearestDistance: number }
+  | { kind: "pose"; x: number; y: number; theta: number; z: number }
+  | { kind: "velocity"; linear: number; angular: number }
+  | { kind: "trajectory"; waypoints: PoseValue[] }
+  | { kind: "transform"; fromFrame: string; toFrame: string; pose: PoseValue }
   | { kind: "object"; typeName: string; fields: Record<string, RuntimeValue> }
-  | { kind: "sensor"; name: string; sensorType: string }
-  | { kind: "actuator"; name: string; actuatorType: string };
+  | { kind: "sensor"; name: string; sensorType: string; library?: string | null; halBinding?: string | null; topic?: string | null }
+  | { kind: "actuator"; name: string; actuatorType: string }
+  | { kind: "topic"; name: string; messageType: string; topicPath: string }
+  | { kind: "service"; name: string; serviceType: string }
+  | { kind: "action"; name: string; actionType: string }
+  | { kind: "robot" };
 
 export type MotionCommand =
   | { kind: "drive"; linear: number; angular: number; actuator: string }
   | { kind: "stop"; actuator: string }
   | { kind: "move_to"; x: number; y: number; z: number; actuator: string }
+  | { kind: "follow"; waypoints: PoseValue[]; actuator: string }
   | { kind: "grip"; actuator: string }
   | { kind: "release"; actuator: string }
   | { kind: "open"; actuator: string }
@@ -21,11 +57,16 @@ export type MotionCommand =
   | { kind: "hover"; actuator: string };
 
 export interface RobotBackend {
-  readSensor(sensorName: string, sensorType: string): RuntimeValue;
+  readSensor(sensorName: string, sensorType: string, topic?: string | null): RuntimeValue;
   executeMotion(cmd: MotionCommand): void;
   tick(dtMs: number): void;
   getState(): RobotState;
   setEmergencyStop?(active: boolean): void;
+  publishTopic?(topicPath: string, messageType: string, value: RuntimeValue): void;
+  callService?(serviceName: string, serviceType: string): RuntimeValue;
+  sendAction?(actionName: string, actionType: string, goal: RuntimeValue): RuntimeValue;
+  getPublishedTopics?(): Array<{ topic: string; messageType: string; value: RuntimeValue }>;
+  getHal?(): HalBackend | null;
 }
 
 export type RobotState = {
@@ -39,12 +80,6 @@ export type InterpreterOptions = {
   maxLoopIterations?: number;
   onMotionBlocked?: (reason: string) => void;
   onLog?: (message: string) => void;
-};
-
-export type SafetyContext = {
-  maxSpeed: number;
-  stopIfRules: Array<(env: Environment) => boolean>;
-  emergencyStop: boolean;
 };
 
 export class Environment {
@@ -71,16 +106,16 @@ export class Environment {
 
 export class Interpreter {
   private env = new Environment();
-  private safety: SafetyContext = {
-    maxSpeed: Infinity,
-    stopIfRules: [],
-    emergencyStop: false,
-  };
+  private safetyMonitor: SafetyMonitor | null = null;
+  private zones: import("../safety/index.js").SafetyZoneRuntime[] = [];
+  private hal: HalBackend | null = null;
   private currentRobot: RobotDecl | null = null;
+  private currentProgram: Program | null = null;
 
   constructor(private options: InterpreterOptions) {}
 
   run(program: Program, entryBehavior?: string): RobotState {
+    this.currentProgram = program;
     for (const robot of program.robots) {
       this.setupRobot(robot);
       const behaviorName = entryBehavior ?? robot.behaviors[0]?.name;
@@ -96,12 +131,55 @@ export class Interpreter {
   private setupRobot(robot: RobotDecl): void {
     this.currentRobot = robot;
     this.env = new Environment();
+    this.zones = [];
+
+    if (robot.soc) {
+      const profile = getSocProfile(robot.soc.profile);
+      this.options.onLog?.(`SoC: ${profile?.name ?? robot.soc.profile} (${profile?.architecture ?? "unknown"})`);
+    }
+
+    this.hal = this.options.backend.getHal?.() ?? createSimHal();
+    if (robot.hal) {
+      const members = robot.hal.members.map(halMemberFromDecl);
+      this.hal.configure(members);
+      this.options.onLog?.(`HAL configured: ${members.length} bus(es)/pin(s)`);
+    }
+
+    for (const topic of robot.topics) {
+      this.env.define(topic.name, {
+        kind: "topic",
+        name: topic.name,
+        messageType: topic.messageType,
+        topicPath: topic.topic,
+      });
+    }
+
+    for (const service of robot.services) {
+      this.env.define(service.name, {
+        kind: "service",
+        name: service.name,
+        serviceType: service.serviceType,
+      });
+    }
+
+    for (const action of robot.actions) {
+      this.env.define(action.name, {
+        kind: "action",
+        name: action.name,
+        actionType: action.actionType,
+      });
+    }
 
     for (const sensor of robot.sensors) {
+      const topic = sensor.binding?.kind === "topic" ? sensor.binding.path : null;
+      const halBinding = sensor.binding?.kind === "hal" ? sensor.binding.busName : null;
       this.env.define(sensor.name, {
         kind: "sensor",
         name: sensor.name,
         sensorType: sensor.sensorType,
+        library: sensor.library,
+        halBinding,
+        topic,
       });
     }
 
@@ -113,30 +191,52 @@ export class Interpreter {
       });
     }
 
-    this.safety = { maxSpeed: Infinity, stopIfRules: [], emergencyStop: false };
+    this.env.define("robot", { kind: "robot" });
+
+    const stopIfRules: Array<(env: Environment) => boolean> = [];
+    let maxSpeed = Infinity;
 
     if (robot.safety) {
       for (const rule of robot.safety.rules) {
-        this.registerSafetyRule(rule);
+        if (rule.kind === "MaxSpeedRule") {
+          const val = this.evalExpr(rule.value);
+          if (val.kind === "number") maxSpeed = val.value;
+        } else {
+          stopIfRules.push((env) => {
+            const saved = this.env;
+            this.env = env;
+            const result = this.evalExpr(rule.condition);
+            this.env = saved;
+            return result.kind === "bool" && result.value;
+          });
+        }
+      }
+
+      for (const zone of robot.safety.zones) {
+        this.zones.push(this.evalSafetyZone(zone));
       }
     }
+
+    this.safetyMonitor = new SafetyMonitor(
+      createSafetyConfigFromRobot(maxSpeed, stopIfRules, this.zones),
+    );
   }
 
-  private registerSafetyRule(rule: SafetyRule): void {
-    if (rule.kind === "MaxSpeedRule") {
-      const val = this.evalExpr(rule.value);
-      if (val.kind === "number") {
-        this.safety.maxSpeed = val.value;
-      }
-    } else {
-      this.safety.stopIfRules.push((env) => {
-        const saved = this.env;
-        this.env = env;
-        const result = this.evalExpr(rule.condition);
-        this.env = saved;
-        return result.kind === "bool" && result.value;
-      });
+  private evalSafetyZone(zone: SafetyZoneDecl): SafetyZoneRuntime {
+    const base: SafetyZoneRuntime = {
+      name: zone.name,
+      shape: zone.shape,
+      x: getNumber(this.evalExpr(zone.x)),
+      y: getNumber(this.evalExpr(zone.y)),
+    };
+    if (zone.shape === "circle" && zone.radius) {
+      base.radius = getNumber(this.evalExpr(zone.radius));
     }
+    if (zone.shape === "rect" && zone.width && zone.height) {
+      base.width = getNumber(this.evalExpr(zone.width));
+      base.height = getNumber(this.evalExpr(zone.height));
+    }
+    return base;
   }
 
   private executeBlock(stmts: Stmt[]): void {
@@ -147,11 +247,9 @@ export class Interpreter {
 
   private executeStmt(stmt: Stmt): void {
     switch (stmt.kind) {
-      case "VarDecl": {
-        const value = this.evalExpr(stmt.init);
-        this.env.define(stmt.name, value);
+      case "VarDecl":
+        this.env.define(stmt.name, this.evalExpr(stmt.init));
         break;
-      }
       case "IfStmt": {
         const cond = this.evalExpr(stmt.condition);
         if (cond.kind === "bool" && cond.value) {
@@ -166,10 +264,47 @@ export class Interpreter {
         for (let i = 0; i < maxIter; i++) {
           this.options.backend.tick(stmt.intervalMs);
           this.executeBlock(stmt.body);
-          if (this.safety.emergencyStop) break;
+          if (this.safetyMonitor?.isEmergencyStop()) break;
         }
         break;
       }
+      case "PublishStmt": {
+        const topic = this.env.get(stmt.topicName);
+        const value = this.evalExpr(stmt.value);
+        if (topic?.kind === "topic") {
+          this.options.backend.publishTopic?.(topic.topicPath, topic.messageType, value);
+          this.options.onLog?.(`publish ${topic.topicPath}`);
+        }
+        break;
+      }
+      case "ServiceCallStmt": {
+        const service = this.env.get(stmt.serviceName);
+        if (service?.kind === "service") {
+          this.options.backend.callService?.(service.name, service.serviceType);
+          this.options.onLog?.(`call ${service.name}()`);
+        }
+        break;
+      }
+      case "ActionSendStmt": {
+        const action = this.env.get(stmt.actionName);
+        const goal = this.evalExpr(stmt.goal);
+        if (action?.kind === "action") {
+          this.options.backend.sendAction?.(action.name, action.actionType, goal);
+          this.options.onLog?.(`send_goal ${action.name}`);
+        }
+        break;
+      }
+      case "EmergencyStopStmt":
+        this.safetyMonitor?.setEmergencyStop(true);
+        this.options.backend.setEmergencyStop?.(true);
+        this.options.backend.executeMotion({ kind: "stop", actuator: "all" });
+        this.options.onLog?.("EMERGENCY STOP triggered");
+        break;
+      case "ResetEmergencyStopStmt":
+        this.safetyMonitor?.reset();
+        this.options.backend.setEmergencyStop?.(false);
+        this.options.onLog?.("Emergency stop reset");
+        break;
       case "ExprStmt":
         this.evalExpr(stmt.expr);
         break;
@@ -185,22 +320,15 @@ export class Interpreter {
         if (typeof expr.value === "number") return { kind: "number", value: expr.value, unit: "none" };
         if (typeof expr.value === "string") return { kind: "string", value: expr.value };
         return { kind: "void" };
-
       case "UnitLiteralExpr":
         return { kind: "number", value: expr.value, unit: expr.unit };
-
       case "IdentExpr": {
         const val = this.env.get(expr.name);
         if (!val) throw new RuntimeError(`Undefined variable '${expr.name}'`, expr.span.start.line);
         return val;
       }
-
-      case "BinaryExpr": {
-        const left = this.evalExpr(expr.left);
-        const right = this.evalExpr(expr.right);
-        return this.evalBinary(expr.op, left, right);
-      }
-
+      case "BinaryExpr":
+        return this.evalBinary(expr.op, this.evalExpr(expr.left), this.evalExpr(expr.right));
       case "UnaryExpr": {
         const operand = this.evalExpr(expr.operand);
         if (expr.op === "not") {
@@ -211,46 +339,230 @@ export class Interpreter {
         }
         return { kind: "void" };
       }
-
-      case "MemberExpr": {
-        const obj = this.evalExpr(expr.object);
-        if (obj.kind === "scan") {
-          if (expr.property === "nearest_distance") {
-            return { kind: "number", value: obj.nearestDistance, unit: "m" };
-          }
-        }
-        return { kind: "void" };
-      }
-
+      case "MemberExpr":
+        return this.evalMember(expr);
       case "CallExpr":
         return this.evalCall(expr);
-
       default:
         return { kind: "void" };
     }
   }
 
-  private evalBinary(op: string, left: RuntimeValue, right: RuntimeValue): RuntimeValue {
-    if (op === "and") {
-      return {
-        kind: "bool",
-        value: (left.kind === "bool" && left.value) && (right.kind === "bool" && right.value),
-      };
-    }
-    if (op === "or") {
-      return {
-        kind: "bool",
-        value: (left.kind === "bool" && left.value) || (right.kind === "bool" && right.value),
-      };
+  private evalMember(expr: import("../ast/nodes.js").MemberExpr): RuntimeValue {
+    const obj = this.evalExpr(expr.object);
+
+    if (obj.kind === "scan" && expr.property === "nearest_distance") {
+      return { kind: "number", value: obj.nearestDistance, unit: "m" };
     }
 
-    if (left.kind === "bool" && right.kind === "bool") {
-      switch (op) {
-        case "==": return { kind: "bool", value: left.value === right.value };
-        case "!=": return { kind: "bool", value: left.value !== right.value };
+    if (obj.kind === "pose") {
+      const map: Record<string, RuntimeValue> = {
+        x: { kind: "number", value: obj.x, unit: "m" },
+        y: { kind: "number", value: obj.y, unit: "m" },
+        theta: { kind: "number", value: obj.theta, unit: "rad" },
+        z: { kind: "number", value: obj.z, unit: "m" },
+      };
+      return map[expr.property] ?? { kind: "void" };
+    }
+
+    if (obj.kind === "velocity") {
+      const map: Record<string, RuntimeValue> = {
+        linear: { kind: "number", value: obj.linear, unit: "m/s" },
+        angular: { kind: "number", value: obj.angular, unit: "rad/s" },
+      };
+      return map[expr.property] ?? { kind: "void" };
+    }
+
+    if (obj.kind === "object") {
+      return obj.fields[expr.property] ?? { kind: "void" };
+    }
+
+    return { kind: "void" };
+  }
+
+  private evalCall(expr: import("../ast/nodes.js").CallExpr): RuntimeValue {
+    if (expr.callee.kind === "IdentExpr") {
+      return this.evalBuiltinFunction(expr.callee.name, expr);
+    }
+
+    if (expr.callee.kind !== "MemberExpr" || expr.callee.object.kind !== "IdentExpr") {
+      return { kind: "void" };
+    }
+
+    const targetName = expr.callee.object.name;
+    const method = expr.callee.property;
+    const target = this.env.get(targetName);
+    if (!target) {
+      throw new RuntimeError(`Undefined '${targetName}'`, expr.span.start.line);
+    }
+
+    if (target.kind === "robot" || targetName === "robot") {
+      return this.evalRobotMethod(method, expr);
+    }
+
+    if (target.kind === "sensor" && method === "read") {
+      return this.readSensorValue(target);
+    }
+
+    if (target.kind === "actuator") {
+      return this.executeActuatorMethod(target.name, target.actuatorType, method, expr);
+    }
+
+    return { kind: "void" };
+  }
+
+  private readSensorValue(target: Extract<RuntimeValue, { kind: "sensor" }>): RuntimeValue {
+    const state = this.options.backend.getState();
+    if (target.library) {
+      const driver = getSensorDriver(target.library, target.sensorType);
+      if (driver) {
+        return readWithDriver(driver, {
+          hal: this.hal,
+          halBinding: target.halBinding ?? null,
+          topic: target.topic ?? null,
+          simState: { pose: state.pose },
+        });
+      }
+    }
+    return this.options.backend.readSensor(target.name, target.sensorType, target.topic);
+  }
+
+  private evalBuiltinFunction(name: string, expr: import("../ast/nodes.js").CallExpr): RuntimeValue {
+    switch (name) {
+      case "pose":
+        return runtimePose(
+          this.getNamedArgNumber(expr, "x", 0),
+          this.getNamedArgNumber(expr, "y", 0),
+          this.getNamedArgNumber(expr, "theta", 0),
+          this.getNamedArgNumber(expr, "z", 0),
+        );
+      case "velocity":
+        return runtimeVelocity(
+          this.getNamedArgNumber(expr, "linear", 0),
+          this.getNamedArgNumber(expr, "angular", 0),
+        );
+      case "trajectory": {
+        const fromVal = this.getNamedArgValue(expr, "from");
+        const toVal = this.getNamedArgValue(expr, "to");
+        const steps = this.getNamedArgNumber(expr, "steps", 5);
+        const from = getPoseFields(fromVal) ?? { x: 0, y: 0, theta: 0, z: 0 };
+        const to = getPoseFields(toVal) ?? { x: 0, y: 0, theta: 0, z: 0 };
+        return runtimeTrajectory(interpolatePoses(from, to, steps));
+      }
+      case "transform": {
+        const fromFrame = getString(this.getNamedArgValue(expr, "from"), "base");
+        const toFrame = getString(this.getNamedArgValue(expr, "to"), "map");
+        const pose = getPoseFields(this.getNamedArgValue(expr, "pose")) ?? { x: 0, y: 0, theta: 0, z: 0 };
+        return { kind: "transform", fromFrame, toFrame, pose };
+      }
+      default:
+        return { kind: "void" };
+    }
+  }
+
+  private evalRobotMethod(method: string, expr: import("../ast/nodes.js").CallExpr): RuntimeValue {
+    const state = this.options.backend.getState();
+    switch (method) {
+      case "pose":
+        return poseFromState(state.pose);
+      case "velocity":
+        return velocityFromState(state.velocity);
+      case "in_zone": {
+        const zoneName = expr.args[0] ? getString(this.evalExpr(expr.args[0])) : "";
+        const inZone = this.safetyMonitor?.isInZone(zoneName, state.pose) ?? false;
+        return { kind: "bool", value: inZone };
+      }
+      default:
+        return { kind: "void" };
+    }
+  }
+
+  private executeActuatorMethod(
+    name: string,
+    actuatorType: string,
+    method: string,
+    expr: import("../ast/nodes.js").CallExpr,
+  ): RuntimeValue {
+    const motionMethods = ["drive", "move_to", "set_thrust", "grip", "release", "open", "hover", "follow"];
+    if (motionMethods.includes(method) || method === "stop") {
+      if (!this.checkSafetyBeforeMotion()) {
+        this.options.onMotionBlocked?.("Safety rule triggered — motion blocked");
+        this.options.backend.executeMotion({ kind: "stop", actuator: name });
+        return { kind: "void" };
       }
     }
 
+    switch (method) {
+      case "stop":
+        this.options.backend.executeMotion({ kind: "stop", actuator: name });
+        break;
+      case "drive": {
+        const linear = this.getNamedArgNumber(expr, "linear", 0);
+        const angular = this.getNamedArgNumber(expr, "angular", 0);
+        const maxSpeed = this.safetyMonitor?.clampSpeed(linear) ?? linear;
+        this.options.backend.executeMotion({ kind: "drive", linear: maxSpeed, angular, actuator: name });
+        break;
+      }
+      case "follow": {
+        const pathVal = this.getNamedArgValue(expr, "path");
+        const waypoints = getTrajectoryWaypoints(pathVal) ?? [];
+        this.options.backend.executeMotion({ kind: "follow", waypoints, actuator: name });
+        break;
+      }
+      case "move_to":
+        this.options.backend.executeMotion({
+          kind: "move_to",
+          x: this.getNamedArgNumber(expr, "x", 0),
+          y: this.getNamedArgNumber(expr, "y", 0),
+          z: this.getNamedArgNumber(expr, "z", 0),
+          actuator: name,
+        });
+        break;
+      case "grip":
+        this.options.backend.executeMotion({ kind: "grip", actuator: name });
+        break;
+      case "release":
+        this.options.backend.executeMotion({ kind: "release", actuator: name });
+        break;
+      case "open":
+        this.options.backend.executeMotion({ kind: "open", actuator: name });
+        break;
+      case "set_thrust":
+        this.options.backend.executeMotion({
+          kind: "set_thrust",
+          thrust: this.getNamedArgNumber(expr, "thrust", 0),
+          actuator: name,
+        });
+        break;
+      case "hover":
+        this.options.backend.executeMotion({ kind: "hover", actuator: name });
+        break;
+    }
+
+    this.options.onLog?.(`${name}.${method}()`);
+    return { kind: "void" };
+  }
+
+  private getNamedArgValue(expr: import("../ast/nodes.js").CallExpr, name: string): RuntimeValue {
+    const arg = expr.namedArgs.find((a) => a.name === name);
+    return arg ? this.evalExpr(arg.value) : { kind: "void" };
+  }
+
+  private getNamedArgNumber(expr: import("../ast/nodes.js").CallExpr, name: string, defaultVal: number): number {
+    return getNumber(this.getNamedArgValue(expr, name), defaultVal);
+  }
+
+  private evalBinary(op: string, left: RuntimeValue, right: RuntimeValue): RuntimeValue {
+    if (op === "and") {
+      return { kind: "bool", value: (left.kind === "bool" && left.value) && (right.kind === "bool" && right.value) };
+    }
+    if (op === "or") {
+      return { kind: "bool", value: (left.kind === "bool" && left.value) || (right.kind === "bool" && right.value) };
+    }
+    if (left.kind === "bool" && right.kind === "bool") {
+      if (op === "==") return { kind: "bool", value: left.value === right.value };
+      if (op === "!=") return { kind: "bool", value: left.value !== right.value };
+    }
     if (left.kind === "number" && right.kind === "number") {
       switch (op) {
         case "+": return { kind: "number", value: left.value + right.value, unit: left.unit };
@@ -265,117 +577,19 @@ export class Interpreter {
         case "!=": return { kind: "bool", value: left.value !== right.value };
       }
     }
-
     return { kind: "void" };
-  }
-
-  private evalCall(expr: import("../ast/nodes.js").CallExpr): RuntimeValue {
-    if (expr.callee.kind !== "MemberExpr" || expr.callee.object.kind !== "IdentExpr") {
-      return { kind: "void" };
-    }
-
-    const targetName = expr.callee.object.name;
-    const method = expr.callee.property;
-    const target = this.env.get(targetName);
-
-    if (!target) {
-      throw new RuntimeError(`Undefined '${targetName}'`, expr.span.start.line);
-    }
-
-    if (target.kind === "sensor") {
-      if (method === "read") {
-        return this.options.backend.readSensor(target.name, target.sensorType);
-      }
-    }
-
-    if (target.kind === "actuator") {
-      return this.executeActuatorMethod(target.name, target.actuatorType, method, expr);
-    }
-
-    return { kind: "void" };
-  }
-
-  private executeActuatorMethod(
-    name: string,
-    actuatorType: string,
-    method: string,
-    expr: import("../ast/nodes.js").CallExpr,
-  ): RuntimeValue {
-    const motionMethods = ["drive", "move_to", "set_thrust", "grip", "release", "open", "hover"];
-    if (motionMethods.includes(method) || method === "stop") {
-      if (!this.checkSafetyBeforeMotion()) {
-        this.options.onMotionBlocked?.("Safety rule triggered — motion blocked");
-        this.options.backend.executeMotion({ kind: "stop", actuator: name });
-        return { kind: "void" };
-      }
-    }
-
-    switch (method) {
-      case "stop": {
-        this.options.backend.executeMotion({ kind: "stop", actuator: name });
-        break;
-      }
-      case "drive": {
-        const linear = this.getNamedArg(expr, "linear", 0);
-        const angular = this.getNamedArg(expr, "angular", 0);
-        const clampedLinear = Math.min(Math.abs(linear), this.safety.maxSpeed) * Math.sign(linear || 1);
-        this.options.backend.executeMotion({
-          kind: "drive",
-          linear: clampedLinear,
-          angular,
-          actuator: name,
-        });
-        break;
-      }
-      case "move_to": {
-        const x = this.getNamedArg(expr, "x", 0);
-        const y = this.getNamedArg(expr, "y", 0);
-        const z = this.getNamedArg(expr, "z", 0);
-        this.options.backend.executeMotion({ kind: "move_to", x, y, z, actuator: name });
-        break;
-      }
-      case "grip":
-        this.options.backend.executeMotion({ kind: "grip", actuator: name });
-        break;
-      case "release":
-        this.options.backend.executeMotion({ kind: "release", actuator: name });
-        break;
-      case "open":
-        this.options.backend.executeMotion({ kind: "open", actuator: name });
-        break;
-      case "set_thrust": {
-        const thrust = this.getNamedArg(expr, "thrust", 0);
-        this.options.backend.executeMotion({ kind: "set_thrust", thrust, actuator: name });
-        break;
-      }
-      case "hover":
-        this.options.backend.executeMotion({ kind: "hover", actuator: name });
-        break;
-    }
-
-    this.options.onLog?.(`${name}.${method}()`);
-    return { kind: "void" };
-  }
-
-  private getNamedArg(expr: import("../ast/nodes.js").CallExpr, name: string, defaultVal: number): number {
-    const arg = expr.namedArgs.find((a) => a.name === name);
-    if (!arg) return defaultVal;
-    const val = this.evalExpr(arg.value);
-    return val.kind === "number" ? val.value : defaultVal;
   }
 
   private checkSafetyBeforeMotion(): boolean {
-    if (this.safety.emergencyStop) return false;
-
-    for (const rule of this.safety.stopIfRules) {
-      if (rule(this.env)) {
-        this.safety.emergencyStop = true;
+    const state = this.options.backend.getState();
+    const result = this.safetyMonitor?.evaluateBeforeMotion(this.env, state.pose);
+    if (!result?.allowed) {
+      if (result?.emergencyStop) {
         this.options.backend.setEmergencyStop?.(true);
-        this.options.onLog?.("EMERGENCY STOP: safety rule triggered");
-        return false;
+        this.options.onLog?.(result.reason ?? "Safety blocked motion");
       }
+      return false;
     }
-
     return true;
   }
 }
@@ -386,4 +600,3 @@ export class RuntimeError extends Error {
     this.name = "RuntimeError";
   }
 }
-

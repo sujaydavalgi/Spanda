@@ -1,16 +1,16 @@
 {
-  "name": "robolang",
+  "name": "synapse",
   "version": "0.1.0",
-  "description": "A safe, strongly typed language for robot control and simulation",
+  "description": "Synapse — a safe, strongly typed language for robot control and simulation",
   "type": "module",
   "bin": {
-    "robolang": "./dist/cli/index.js"
+    "synapse": "./dist/cli/index.js"
   },
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
     "test:watch": "vitest",
-    "robolang": "node --import tsx src/cli/index.ts"
+    "synapse": "node --import tsx src/cli/index.ts"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

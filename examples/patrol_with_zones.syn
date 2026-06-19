@@ -1,0 +1,40 @@
+robot PatrolBot {
+  node navigation on "/nav";
+
+  topic cmd_vel: Velocity publish on "/cmd_vel";
+  topic pose_out: Pose publish on "/pose";
+
+  service reset_map: ResetCostmap;
+  action go_to: NavigateTo;
+
+  sensor lidar: Lidar on "/scan";
+  actuator wheels: DifferentialDrive;
+
+  safety {
+    max_speed = 1.0 m/s;
+    zone restricted circle at (1.8 m, 0.0 m) radius 0.4 m;
+    stop_if robot.in_zone("restricted");
+  }
+
+  behavior patrol() {
+    let start = robot.pose();
+    let target = pose(x: 2.5 m, y: 0.0 m, theta: 0.0 rad);
+    let path = trajectory(from: start, to: target, steps: 8);
+
+    publish cmd_vel with velocity(linear: 0.3 m/s, angular: 0.0 rad/s);
+    call reset_map();
+    send_goal go_to with target;
+
+    loop every 100ms {
+      let current = robot.pose();
+
+      if robot.in_zone("restricted") {
+        emergency_stop;
+        wheels.stop();
+      } else {
+        reset_emergency_stop;
+        wheels.follow(path: path);
+      }
+    }
+  }
+}

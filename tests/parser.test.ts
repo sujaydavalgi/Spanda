@@ -35,7 +35,7 @@ describe("parser", () => {
     expect(robot.name).toBe("Rover");
     expect(robot.sensors).toHaveLength(1);
     expect(robot.sensors[0].name).toBe("lidar");
-    expect(robot.sensors[0].topic).toBe("/scan");
+    expect(robot.sensors[0].binding).toEqual({ kind: "topic", path: "/scan" });
     expect(robot.actuators).toHaveLength(1);
     expect(robot.safety).not.toBeNull();
     expect(robot.safety!.rules).toHaveLength(2);

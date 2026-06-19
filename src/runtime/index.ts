@@ -5,5 +5,5 @@ export type {
   RobotBackend,
   RobotState,
   InterpreterOptions,
-  SafetyContext,
+  PoseValue,
 } from "./interpreter.js";

@@ -18,7 +18,7 @@ describe("safety", () => {
       ]),
     );
 
-    const result = monitor.evaluateBeforeMotion(env);
+    const result = monitor.evaluateBeforeMotion(env, { x: 0, y: 0 });
     expect(result.allowed).toBe(false);
     expect(result.emergencyStop).toBe(true);
   });
@@ -36,8 +36,18 @@ describe("safety", () => {
       ]),
     );
 
-    const result = monitor.evaluateBeforeMotion(env);
+    const result = monitor.evaluateBeforeMotion(env, { x: 0, y: 0 });
     expect(result.allowed).toBe(true);
+  });
+
+  it("detects safety zone entry", () => {
+    const monitor = new SafetyMonitor(
+      createSafetyConfigFromRobot(1.5, [], [
+        { name: "keepout", shape: "circle", x: 0, y: 0, radius: 1.0 },
+      ]),
+    );
+    expect(monitor.isInZone("keepout", { x: 0.5, y: 0 })).toBe(true);
+    expect(monitor.isInZone("keepout", { x: 5, y: 5 })).toBe(false);
   });
 
   it("clamps speed to max_speed", () => {

@@ -1,0 +1,30 @@
+import bosch.bno055;
+import velodyne.vlp16;
+
+robot PiBot {
+  soc RaspberryPi4;
+
+  hal {
+    i2c imu_bus at 0x68;
+    gpio status_led out pin 17;
+    uart lidar_uart on "/dev/ttyUSB0" baud 230400;
+  }
+
+  actuator wheels: DifferentialDrive;
+
+  sensor imu: BoschBNO055 from bosch.bno055 on imu_bus;
+  sensor lidar: VelodyneVLP16 from velodyne.vlp16 on "/velodyne_points";
+
+  behavior sense_and_drive() {
+    loop every 100ms {
+      let orientation = imu.read();
+      let scan = lidar.read();
+
+      if scan.nearest_distance > 0.8 m {
+        wheels.drive(linear: 0.4 m/s, angular: orientation.yaw * 0.1 rad/s);
+      } else {
+        wheels.stop();
+      }
+    }
+  }
+}

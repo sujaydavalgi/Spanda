@@ -1,5 +1,24 @@
 export type TokenType =
+  | "IMPORT"
+  | "HAL"
+  | "SOC"
+  | "FROM"
+  | "I2C"
+  | "SPI"
+  | "UART"
+  | "GPIO"
+  | "PWM"
+  | "ADC"
+  | "OUT"
+  | "IN"
+  | "BAUD"
+  | "FREQUENCY"
+  | "PIN"
   | "ROBOT"
+  | "NODE"
+  | "TOPIC"
+  | "SERVICE"
+  | "ACTION"
   | "SENSOR"
   | "ACTUATOR"
   | "SAFETY"
@@ -10,6 +29,18 @@ export type TokenType =
   | "IF"
   | "ELSE"
   | "STOP_IF"
+  | "PUBLISH"
+  | "CALL"
+  | "SEND_GOAL"
+  | "WITH"
+  | "ZONE"
+  | "CIRCLE"
+  | "RECT"
+  | "AT"
+  | "RADIUS"
+  | "SIZE"
+  | "EMERGENCY_STOP"
+  | "RESET_EMERGENCY_STOP"
   | "ON"
   | "TRUE"
   | "FALSE"
@@ -41,7 +72,7 @@ export type TokenType =
   | "NEQ"
   | "EOF";
 
-export type UnitLexeme = "m" | "s" | "ms" | "rad" | "m/s" | "rad/s" | "deg";
+export type UnitLexeme = "m" | "s" | "ms" | "rad" | "m/s" | "rad/s" | "deg" | "Hz";
 
 export type Token = {
   type: TokenType;
@@ -65,7 +96,26 @@ export class LexerError extends Error {
 }
 
 const KEYWORDS: Record<string, TokenType> = {
+  import: "IMPORT",
+  hal: "HAL",
+  soc: "SOC",
+  from: "FROM",
+  i2c: "I2C",
+  spi: "SPI",
+  uart: "UART",
+  gpio: "GPIO",
+  pwm: "PWM",
+  adc: "ADC",
+  out: "OUT",
+  in: "IN",
+  baud: "BAUD",
+  frequency: "FREQUENCY",
+  pin: "PIN",
   robot: "ROBOT",
+  node: "NODE",
+  topic: "TOPIC",
+  service: "SERVICE",
+  action: "ACTION",
   sensor: "SENSOR",
   actuator: "ACTUATOR",
   safety: "SAFETY",
@@ -76,6 +126,18 @@ const KEYWORDS: Record<string, TokenType> = {
   if: "IF",
   else: "ELSE",
   stop_if: "STOP_IF",
+  publish: "PUBLISH",
+  call: "CALL",
+  send_goal: "SEND_GOAL",
+  with: "WITH",
+  zone: "ZONE",
+  circle: "CIRCLE",
+  rect: "RECT",
+  at: "AT",
+  radius: "RADIUS",
+  size: "SIZE",
+  emergency_stop: "EMERGENCY_STOP",
+  reset_emergency_stop: "RESET_EMERGENCY_STOP",
   on: "ON",
   true: "TRUE",
   false: "FALSE",
@@ -84,7 +146,7 @@ const KEYWORDS: Record<string, TokenType> = {
   not: "NOT",
 };
 
-const UNIT_SUFFIXES: UnitLexeme[] = ["m/s", "rad/s", "ms", "deg", "rad", "m", "s"];
+const UNIT_SUFFIXES: UnitLexeme[] = ["m/s", "rad/s", "ms", "deg", "rad", "m", "s", "Hz"];
 
 export function tokenize(source: string): Token[] {
   const tokens: Token[] = [];
@@ -258,6 +320,20 @@ export function tokenize(source: string): Token[] {
       continue;
     }
 
+    if (ch === "0" && (source[i + 1] === "x" || source[i + 1] === "X")) {
+      i += 2;
+      column += 2;
+      let hexStr = "";
+      while (i < source.length && isHexDigit(source[i])) {
+        hexStr += source[i];
+        i++;
+        column++;
+      }
+      const num = parseInt(hexStr, 16);
+      tokens.push({ type: "NUMBER", lexeme: `0x${hexStr}`, value: num, ...start });
+      continue;
+    }
+
     if (isDigit(ch) || (ch === "." && isDigit(source[i + 1]))) {
       let numStr = "";
       while (i < source.length && (isDigit(source[i]) || source[i] === ".")) {
@@ -326,6 +402,10 @@ export function tokenize(source: string): Token[] {
     offset: i,
   });
   return tokens;
+}
+
+function isHexDigit(ch: string): boolean {
+  return isDigit(ch) || (ch >= "a" && ch <= "f") || (ch >= "A" && ch <= "F");
 }
 
 function isDigit(ch: string): boolean {
