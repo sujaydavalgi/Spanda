@@ -9,7 +9,17 @@ import type {
 } from "../ast/nodes.js";
 import { createSimHal, halMemberFromDecl, type HalBackend } from "../hal/index.js";
 import { getSensorDriver, readWithDriver } from "../lib/registry.js";
-import { runInference, type AiModelRuntime } from "../ai/index.js";
+import {
+  createAIModel,
+  safeActionFromProposal,
+  isActionProposal,
+  isSafeAction,
+  proposalFromValue,
+  type AIModel,
+} from "../ai/index.js";
+import { createAgentRuntime, executeAgentPlan, type AgentRuntime } from "../ai/Agent.js";
+import { MemoryStore } from "../ai/MemoryStore.js";
+import { mockAnalyzeFrame, mockCameraFrame } from "../ai/MockAIProvider.js";
 import { getSocProfile } from "../soc/index.js";
 import { SafetyMonitor, createSafetyConfigFromRobot, interpolatePoses } from "../safety/index.js";
 import type { SafetyZoneRuntime } from "../safety/index.js";
@@ -44,7 +54,14 @@ export type RuntimeValue =
   | { kind: "topic"; name: string; messageType: string; topicPath: string }
   | { kind: "service"; name: string; serviceType: string }
   | { kind: "action"; name: string; actionType: string }
-  | { kind: "robot" };
+  | { kind: "robot" }
+  | { kind: "agent"; name: string }
+  | { kind: "safety_ctx" }
+  | { kind: "ai_model"; name: string; modelType: string; provider: string }
+  | { kind: "action_proposal"; linear: number; angular: number; source: string; trusted: false }
+  | { kind: "safe_action"; linear: number; angular: number; trusted: true }
+  | { kind: "completion"; text: string; model?: string }
+  | { kind: "embedding"; dimensions: number; vector: number[] };
 
 export type MotionCommand =
   | { kind: "drive"; linear: number; angular: number; actuator: string }
@@ -110,7 +127,8 @@ export class Interpreter {
   private safetyMonitor: SafetyMonitor | null = null;
   private zones: import("../safety/index.js").SafetyZoneRuntime[] = [];
   private hal: HalBackend | null = null;
-  private aiModels = new Map<string, AiModelRuntime>();
+  private ai_models = new Map<string, AIModel>();
+  private agents = new Map<string, AgentRuntime>();
   private currentRobot: RobotDecl | null = null;
   private currentProgram: Program | null = null;
 
@@ -193,24 +211,27 @@ export class Interpreter {
       });
     }
 
-    this.aiModels.clear();
-    if (robot.ai) {
-      for (const model of robot.ai.models) {
-        const runtime: AiModelRuntime = {
-          name: model.name,
-          outputType: model.outputType,
-          path: model.path,
-          library: model.library,
-          inputs: model.inputs.map((typeName) => ({
-            name: typeName.toLowerCase(),
-            typeName,
-          })),
-        };
-        this.aiModels.set(model.name, runtime);
-        this.options.onLog?.(
-          `AI model '${model.name}': ${model.outputType} (${model.library ?? "builtin"}) -> ${model.path}`,
-        );
-      }
+    this.ai_models.clear();
+    this.agents.clear();
+    for (const modelDecl of robot.ai_models ?? []) {
+      const model = createAIModel(modelDecl);
+      this.ai_models.set(modelDecl.name, model);
+      this.env.define(modelDecl.name, model.toRuntimeValue());
+      this.options.onLog?.(
+        `AI model '${modelDecl.name}': ${modelDecl.modelType} (${model.config.provider}/${model.config.model})`,
+      );
+    }
+
+    for (const agentDecl of robot.agents ?? []) {
+      const memory = agentDecl.memoryKind ? new MemoryStore(agentDecl.memoryKind) : null;
+      const agent = createAgentRuntime(agentDecl, memory);
+      this.agents.set(agentDecl.name, agent);
+      this.env.define(agentDecl.name, { kind: "agent", name: agentDecl.name });
+      this.options.onLog?.(`Agent '${agentDecl.name}': ${agentDecl.goal}`);
+    }
+
+    if (robot.safety) {
+      this.env.define("safety", { kind: "safety_ctx" });
     }
 
     this.env.define("robot", { kind: "robot" });
@@ -365,8 +386,6 @@ export class Interpreter {
         return this.evalMember(expr);
       case "CallExpr":
         return this.evalCall(expr);
-      case "InferExpr":
-        return this.evalInfer(expr);
       default:
         return { kind: "void" };
     }
@@ -397,37 +416,30 @@ export class Interpreter {
       return map[expr.property] ?? { kind: "void" };
     }
 
+    if (obj.kind === "sensor" && expr.property === "nearest_distance") {
+      const reading = this.readSensorValue(obj);
+      if (reading.kind === "scan") {
+        return { kind: "number", value: reading.nearestDistance, unit: "m" };
+      }
+    }
+
+    if (obj.kind === "action_proposal" || obj.kind === "safe_action") {
+      const map: Record<string, RuntimeValue> = {
+        linear: { kind: "number", value: obj.linear, unit: "m/s" },
+        angular: { kind: "number", value: obj.angular, unit: "rad/s" },
+      };
+      return map[expr.property] ?? { kind: "void" };
+    }
+
+    if (obj.kind === "completion" && expr.property === "text") {
+      return { kind: "string", value: obj.text };
+    }
+
     if (obj.kind === "object") {
       return obj.fields[expr.property] ?? { kind: "void" };
     }
 
     return { kind: "void" };
-  }
-
-  private evalInfer(expr: import("../ast/nodes.js").InferExpr): RuntimeValue {
-    const model = this.aiModels.get(expr.modelName);
-    if (!model) {
-      throw new RuntimeError(`Unknown AI model '${expr.modelName}'`, expr.span.start.line);
-    }
-
-    const inputs: Record<string, RuntimeValue> = {};
-    for (const arg of expr.namedArgs) {
-      inputs[arg.name] = this.evalExpr(arg.value);
-    }
-
-    const state = this.options.backend.getState();
-    const result = runInference(model, {
-      pose: {
-        x: state.pose.x,
-        y: state.pose.y,
-        theta: state.pose.theta,
-        z: state.pose.z ?? 0,
-      },
-      inputs,
-    });
-
-    this.options.onLog?.(`infer ${expr.modelName} -> ${model.outputType}`);
-    return result;
   }
 
   private evalCall(expr: import("../ast/nodes.js").CallExpr): RuntimeValue {
@@ -450,8 +462,58 @@ export class Interpreter {
       return this.evalRobotMethod(method, expr);
     }
 
-    if (target.kind === "sensor" && method === "read") {
-      return this.readSensorValue(target);
+    if (target.kind === "sensor") {
+      if (method === "read") {
+        return this.readSensorValue(target);
+      }
+      if (target.sensorType === "Camera") {
+        if (method === "frame") return mockCameraFrame();
+        if (method === "analyze") {
+          const frame = mockCameraFrame();
+          return mockAnalyzeFrame(frame, target.name);
+        }
+      }
+    }
+
+    if (target.kind === "agent" && method === "plan") {
+      const agent = this.agents.get(targetName);
+      if (!agent) {
+        throw new RuntimeError(`Unknown agent '${targetName}'`, expr.span.start.line);
+      }
+      executeAgentPlan(agent, { executeBlock: (stmts) => this.executeBlock(stmts) });
+      this.options.onLog?.(`agent ${targetName}.plan()`);
+      return { kind: "void" };
+    }
+
+    if (target.kind === "safety_ctx" && method === "validate") {
+      return this.evalSafetyValidate(expr);
+    }
+
+    const aiModel = this.ai_models.get(targetName);
+    if (aiModel || target.kind === "ai_model") {
+      const model = aiModel ?? this.ai_models.get(targetName);
+      if (!model) return { kind: "void" };
+      if (method === "reason") {
+        const prompt = getString(this.getNamedArgValue(expr, "prompt"));
+        const input = this.getNamedArgValue(expr, "input");
+        const result = model.reason(prompt, input.kind === "void" ? undefined : input);
+        this.options.onLog?.(`ai ${targetName}.reason() -> ActionProposal`);
+        return result;
+      }
+      if (method === "summarize") {
+        const input = this.getNamedArgValue(expr, "input");
+        return model.summarize(input.kind === "void" ? undefined : input);
+      }
+      if (method === "detect") {
+        const frame = expr.args[0] ? this.evalExpr(expr.args[0]) : this.getNamedArgValue(expr, "frame");
+        return model.detect(frame);
+      }
+      if (method === "drive") {
+        throw new RuntimeError(
+          "Unsafe AI action: LLM cannot drive actuators directly — use safety.validate() then wheels.execute()",
+          expr.span.start.line,
+        );
+      }
     }
 
     if (target.kind === "actuator") {
@@ -508,6 +570,26 @@ export class Interpreter {
       default:
         return { kind: "void" };
     }
+  }
+
+  private evalSafetyValidate(expr: import("../ast/nodes.js").CallExpr): RuntimeValue {
+    const arg = expr.args[0] ? this.evalExpr(expr.args[0]) : this.getNamedArgValue(expr, "proposal");
+    const proposal = proposalFromValue(arg);
+    if (!proposal) {
+      throw new RuntimeError("safety.validate() expects ActionProposal", expr.span.start.line);
+    }
+    const state = this.options.backend.getState();
+    const result = this.safetyMonitor?.validateActionProposal(
+      proposal.linear,
+      proposal.angular,
+      this.env,
+      state.pose,
+    );
+    if (!result?.ok) {
+      throw new RuntimeError(result?.reason ?? "Safety validation failed for AI action", expr.span.start.line);
+    }
+    this.options.onLog?.("safety.validate() approved ActionProposal");
+    return safeActionFromProposal(result.linear, result.angular);
   }
 
   private evalRobotMethod(method: string, expr: import("../ast/nodes.js").CallExpr): RuntimeValue {
@@ -587,6 +669,35 @@ export class Interpreter {
       case "hover":
         this.options.backend.executeMotion({ kind: "hover", actuator: name });
         break;
+      case "execute": {
+        const actionVal = expr.args[0]
+          ? this.evalExpr(expr.args[0])
+          : this.getNamedArgValue(expr, "action");
+        if (!isSafeAction(actionVal)) {
+          if (isActionProposal(actionVal)) {
+            throw new RuntimeError(
+              "Unsafe AI action: ActionProposal cannot execute actuators — call safety.validate() first",
+              expr.span.start.line,
+            );
+          }
+          throw new RuntimeError(
+            "Actuator execute() requires SafeAction from safety.validate()",
+            expr.span.start.line,
+          );
+        }
+        if (!this.checkSafetyBeforeMotion()) {
+          this.options.onMotionBlocked?.("Safety rule triggered — motion blocked");
+          this.options.backend.executeMotion({ kind: "stop", actuator: name });
+          return { kind: "void" };
+        }
+        this.options.backend.executeMotion({
+          kind: "drive",
+          linear: actionVal.linear,
+          angular: actionVal.angular,
+          actuator: name,
+        });
+        break;
+      }
     }
 
     this.options.onLog?.(`${name}.${method}()`);

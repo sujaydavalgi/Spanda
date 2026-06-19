@@ -15,8 +15,8 @@ import { getSocProfile, validateHalAgainstSoc } from "../soc/index.js";
 import { halMemberFromDecl } from "../hal/index.js";
 import {
   ACTION_TYPES,
-  AI_INPUT_TYPES,
-  AI_OUTPUT_TYPES,
+  AI_MODEL_TYPES,
+  AI_VALUE_TYPES,
   ACTUATOR_TYPES,
   BUILTIN_FUNCTIONS,
   BUILTIN_METHODS,
@@ -37,7 +37,7 @@ import {
 type SymbolEntry = {
   name: string;
   roboType: SynapseType;
-  kind: "sensor" | "actuator" | "variable" | "behavior" | "topic" | "service" | "action" | "robot" | "ai_model";
+  kind: "sensor" | "actuator" | "variable" | "behavior" | "topic" | "service" | "action" | "robot" | "ai_model" | "agent" | "safety";
   sensorType?: string;
   actuatorType?: string;
   messageType?: string;
@@ -184,10 +184,22 @@ class TypeChecker {
       this.symbols = saved;
     }
 
-    if (robot.ai) {
-      for (const model of robot.ai.models) {
-        this.checkAiModel(model, imported);
+    if (robot.ai_models.length > 0) {
+      for (const model of robot.ai_models ?? []) {
+        this.checkAiModel(model);
       }
+    }
+
+    if (robot.safety) {
+      this.symbols.set("safety", {
+        name: "safety",
+        roboType: { kind: "named", name: "Safety" },
+        kind: "safety",
+      });
+    }
+
+    for (const agent of robot.agents) {
+      this.checkAgent(agent);
     }
 
     for (const behavior of robot.behaviors) {
@@ -239,40 +251,13 @@ class TypeChecker {
     }
   }
 
-  private checkAiModel(
-    model: import("../ast/nodes.js").AiModelDecl,
-    imported: Set<string>,
-  ): void {
-    if (!AI_OUTPUT_TYPES[model.outputType]) {
+  private checkAiModel(model: import("../ast/nodes.js").AiModelDecl): void {
+    if (!AI_MODEL_TYPES[model.modelType]) {
       this.error(
-        `Unknown AI output type '${model.outputType}'`,
+        `Unknown AI model type '${model.modelType}'`,
         model.span.start.line,
         model.span.start.column,
       );
-    }
-    if (model.library) {
-      if (!imported.has(model.library)) {
-        this.error(
-          `AI library '${model.library}' must be imported before use`,
-          model.span.start.line,
-          model.span.start.column,
-        );
-      } else if (!resolveAiImport(model.library)) {
-        this.error(
-          `Unknown AI library '${model.library}'`,
-          model.span.start.line,
-          model.span.start.column,
-        );
-      }
-    }
-    for (const inputType of model.inputs) {
-      if (!AI_INPUT_TYPES[inputType] && !SENSOR_TYPES[inputType]) {
-        this.error(
-          `Unknown AI input type '${inputType}'`,
-          model.span.start.line,
-          model.span.start.column,
-        );
-      }
     }
     if (this.symbols.has(model.name)) {
       this.error(
@@ -283,9 +268,49 @@ class TypeChecker {
     }
     this.symbols.set(model.name, {
       name: model.name,
-      roboType: AI_OUTPUT_TYPES[model.outputType] ?? { kind: "void" },
+      roboType: AI_MODEL_TYPES[model.modelType] ?? { kind: "void" },
       kind: "ai_model",
     });
+  }
+
+  private checkAgent(agent: import("../ast/nodes.js").AgentDecl): void {
+    if (this.symbols.has(agent.name)) {
+      this.error(
+        `Duplicate agent name '${agent.name}`,
+        agent.span.start.line,
+        agent.span.start.column,
+      );
+    }
+    for (const modelName of agent.usesAi) {
+      const model = this.symbols.get(modelName);
+      if (!model || model.kind !== "ai_model") {
+        this.error(
+          `Agent '${agent.name} references unknown ai model '${modelName}`,
+          agent.span.start.line,
+          agent.span.start.column,
+        );
+      }
+    }
+    for (const tool of agent.tools) {
+      if (!this.symbols.has(tool)) {
+        this.error(
+          `Agent '${agent.name} references unknown tool '${tool}`,
+          agent.span.start.line,
+          agent.span.start.column,
+        );
+      }
+    }
+    this.symbols.set(agent.name, {
+      name: agent.name,
+      roboType: AI_VALUE_TYPES.Agent ?? { kind: "named", name: "Agent" },
+      kind: "agent",
+    });
+
+    const saved = new Map(this.symbols);
+    for (const stmt of agent.planBody) {
+      this.checkStmt(stmt);
+    }
+    this.symbols = saved;
   }
 
   private checkBehavior(behavior: BehaviorDecl): void {
@@ -419,15 +444,19 @@ class TypeChecker {
       case "CallExpr":
         return this.checkCall(expr);
 
-      case "InferExpr":
-        return this.checkInfer(expr);
-
       default:
         return { kind: "void" };
     }
   }
 
   private checkMember(expr: import("../ast/nodes.js").MemberExpr): SynapseType {
+    if (expr.object.kind === "IdentExpr") {
+      const sym = this.symbols.get(expr.object.name);
+      if (sym?.kind === "sensor" && sym.sensorType === "Lidar" && expr.property === "nearest_distance") {
+        return { kind: "number", unit: "m" };
+      }
+    }
+
     const objType = this.checkExpr(expr.object);
 
     if (objType.kind === "scan") {
@@ -508,7 +537,7 @@ class TypeChecker {
     if (sym.kind === "robot") {
       const method = ROBOT_METHODS[member.property];
       if (!method) {
-        this.error(`Unknown robot method '${member.property}'`, expr.span.start.line, expr.span.start.column);
+        this.error(`Unknown robot method '${member.property}`, expr.span.start.line, expr.span.start.column);
         return { kind: "void" };
       }
       for (let i = 0; i < expr.args.length; i++) {
@@ -521,9 +550,20 @@ class TypeChecker {
       return method.returns;
     }
 
+    if (sym.kind === "agent") {
+      const agentMethod = BUILTIN_METHODS.Agent?.[member.property];
+      if (!agentMethod) {
+        this.error(`Unknown agent method '${member.property}`, expr.span.start.line, expr.span.start.column);
+        return { kind: "void" };
+      }
+      return agentMethod.returns;
+    }
+
     let typeName = "";
     if (sym.kind === "sensor" && sym.sensorType) typeName = sym.sensorType;
     else if (sym.kind === "actuator" && sym.actuatorType) typeName = sym.actuatorType;
+    else if (sym.kind === "safety") typeName = "Safety";
+    else if (sym.kind === "ai_model" && sym.roboType.kind === "named") typeName = sym.roboType.name;
     else if (sym.roboType.kind === "named") typeName = sym.roboType.name;
     else if (sym.roboType.kind === "scan") typeName = "Scan";
 
@@ -532,6 +572,15 @@ class TypeChecker {
     if (!method) {
       this.error(
         `Unknown method '${member.property}' on ${typeName}`,
+        expr.span.start.line,
+        expr.span.start.column,
+      );
+      return { kind: "void" };
+    }
+
+    if (typeName === "LLM" && member.property === "drive") {
+      this.error(
+        "AI models cannot control actuators directly — use reason(), safety.validate(), then actuator.execute()",
         expr.span.start.line,
         expr.span.start.column,
       );
@@ -551,7 +600,16 @@ class TypeChecker {
     }
 
     for (const arg of expr.args) {
-      this.checkExpr(arg);
+      const actual = this.checkExpr(arg);
+      if (member.property === "validate" && typeName === "Safety") {
+        this.assertNamedType(actual, "ActionProposal", expr.span.start.line, expr.span.start.column);
+      }
+      if (member.property === "execute" && typeName === "DifferentialDrive") {
+        this.assertNamedType(actual, "SafeAction", expr.span.start.line, expr.span.start.column);
+      }
+      if (member.property === "detect" && typeName === "VisionModel") {
+        this.assertNamedType(actual, "CameraFrame", expr.span.start.line, expr.span.start.column);
+      }
     }
 
     if (member.property === "read" && typeName === "Lidar") {
@@ -559,45 +617,6 @@ class TypeChecker {
     }
 
     return method.returns;
-  }
-
-  private checkInfer(expr: import("../ast/nodes.js").InferExpr): SynapseType {
-    const model = this.symbols.get(expr.modelName);
-    if (!model || model.kind !== "ai_model") {
-      this.error(
-        `Unknown AI model '${expr.modelName}'`,
-        expr.span.start.line,
-        expr.span.start.column,
-      );
-      return { kind: "void" };
-    }
-
-    const aiModel = this.currentRobot?.ai?.models.find((m) => m.name === expr.modelName);
-    if (aiModel && aiModel.inputs.length > 0) {
-      for (const arg of expr.namedArgs) {
-        const matchesInput = aiModel.inputs.some((inputType) => {
-          const expected = AI_INPUT_TYPES[inputType] ?? SENSOR_TYPES[inputType];
-          if (!expected) return inputType.toLowerCase() === arg.name.toLowerCase();
-          const actual = this.checkExpr(arg.value);
-          return this.typesCompatible(expected, actual);
-        });
-        if (!matchesInput) {
-          this.error(
-            `Input '${arg.name}' does not match declared model inputs [${aiModel.inputs.join(", ")}]`,
-            arg.span.start.line,
-            arg.span.start.column,
-          );
-        } else {
-          this.checkExpr(arg.value);
-        }
-      }
-    } else {
-      for (const arg of expr.namedArgs) {
-        this.checkExpr(arg.value);
-      }
-    }
-
-    return model.roboType;
   }
 
   private typesCompatible(expected: SynapseType, actual: SynapseType): boolean {
@@ -613,24 +632,30 @@ class TypeChecker {
     if (expected.kind === "named" && actual.kind === "scan" && expected.name.includes("Lidar")) {
       return true;
     }
+    if (expected.kind === "scan" && actual.kind === "named") {
+      return ["Detection", "CameraFrame", "Completion"].includes(actual.name);
+    }
     return false;
+  }
+
+  private assertNamedType(actual: SynapseType, typeName: string, line: number, column: number): void {
+    if (actual.kind === "named" && actual.name === typeName) return;
+    this.error(`Expected ${typeName}, got ${actual.kind}`, line, column);
   }
 
   private assertCompatible(expected: SynapseType, actual: SynapseType, line: number, column: number): void {
     if (expected.kind === "void" && actual.kind === "void") return;
-    if (expected.kind === actual.kind) {
+    if (!this.typesCompatible(expected, actual)) {
       if (expected.kind === "number" && actual.kind === "number") {
-        if (!unitsCompatible(expected.unit, actual.unit)) {
-          this.error(
-            `Unit mismatch: expected '${expected.unit}', got '${actual.unit}'`,
-            line,
-            column,
-          );
-        }
+        this.error(
+          `Unit mismatch: expected '${expected.unit}', got '${actual.unit}'`,
+          line,
+          column,
+        );
+        return;
       }
-      return;
+      this.error(`Type mismatch: expected ${expected.kind}, got ${actual.kind}`, line, column);
     }
-    this.error(`Type mismatch: expected ${expected.kind}, got ${actual.kind}`, line, column);
   }
 
   private error(message: string, line: number, column: number): void {

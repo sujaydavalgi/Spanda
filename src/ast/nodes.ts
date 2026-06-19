@@ -57,7 +57,8 @@ export type RobotDecl = {
   sensors: SensorDecl[];
   actuators: ActuatorDecl[];
   safety: SafetyBlock | null;
-  ai: AiBlock | null;
+  ai_models: AiModelDecl[];
+  agents: AgentDecl[];
   behaviors: BehaviorDecl[];
   span: Span;
 };
@@ -184,19 +185,28 @@ export type SafetyBlock = {
   span: Span;
 };
 
-export type AiBlock = {
-  kind: "AiBlock";
-  models: AiModelDecl[];
+export type AiConfigEntry = {
+  key: string;
+  value: string | number | boolean;
   span: Span;
 };
 
 export type AiModelDecl = {
   kind: "AiModelDecl";
   name: string;
-  outputType: string;
-  path: string;
-  library: string | null;
-  inputs: string[];
+  modelType: string;
+  config: AiConfigEntry[];
+  span: Span;
+};
+
+export type AgentDecl = {
+  kind: "AgentDecl";
+  name: string;
+  usesAi: string[];
+  memoryKind: "short_term" | "long_term" | null;
+  tools: string[];
+  goal: string;
+  planBody: Stmt[];
   span: Span;
 };
 
@@ -316,15 +326,7 @@ export type Expr =
   | BinaryExpr
   | UnaryExpr
   | CallExpr
-  | MemberExpr
-  | InferExpr;
-
-export type InferExpr = {
-  kind: "InferExpr";
-  modelName: string;
-  namedArgs: NamedArg[];
-  span: Span;
-};
+  | MemberExpr;
 
 export type LiteralExpr = {
   kind: "LiteralExpr";

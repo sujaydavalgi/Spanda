@@ -28,13 +28,20 @@ export class SafetyMonitor {
   constructor(private config: SafetyConfig) {}
 
   evaluateBeforeMotion(env: Environment, pose: { x: number; y: number }): SafetyEvaluation {
+    const peek = this.peekBeforeMotion(env, pose);
+    if (!peek.allowed && peek.emergencyStop) {
+      this.emergencyStop = true;
+    }
+    return peek;
+  }
+
+  peekBeforeMotion(env: Environment, pose: { x: number; y: number }): SafetyEvaluation {
     if (this.emergencyStop) {
       return { allowed: false, reason: "Emergency stop active", emergencyStop: true };
     }
 
     for (const rule of this.config.stopIfRules) {
       if (rule(env)) {
-        this.emergencyStop = true;
         return {
           allowed: false,
           reason: "stop_if safety rule triggered",
@@ -45,7 +52,6 @@ export class SafetyMonitor {
 
     for (const zone of this.config.zones) {
       if (this.isPointInZone(pose.x, pose.y, zone)) {
-        this.emergencyStop = true;
         return {
           allowed: false,
           reason: `Robot entered safety zone '${zone.name}'`,
@@ -55,6 +61,19 @@ export class SafetyMonitor {
     }
 
     return { allowed: true, emergencyStop: false };
+  }
+
+  validateActionProposal(
+    linear: number,
+    angular: number,
+    env: Environment,
+    pose: { x: number; y: number },
+  ): { ok: true; linear: number; angular: number } | { ok: false; reason: string } {
+    const peek = this.peekBeforeMotion(env, pose);
+    if (!peek.allowed) {
+      return { ok: false, reason: peek.reason ?? "Safety validation failed" };
+    }
+    return { ok: true, linear: this.clampSpeed(linear), angular };
   }
 
   isInZone(zoneName: string, pose: { x: number; y: number }): boolean {

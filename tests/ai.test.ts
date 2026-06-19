@@ -4,104 +4,190 @@ import { parse } from "../src/parser/index.js";
 import { compile, run } from "../src/compile.js";
 import { createDefaultSimulator } from "../src/simulator/index.js";
 
-describe("AI support", () => {
-  it("tokenizes ai keywords", () => {
-    const tokens = tokenize("ai model file infer output input");
+describe("AI-native Synapse", () => {
+  it("tokenizes ai_model and agent keywords", () => {
+    const tokens = tokenize("ai_model agent uses tools goal plan memory provider");
     const types = tokens.filter((t) => t.type !== "EOF").map((t) => t.type);
-    expect(types).toContain("AI");
-    expect(types).toContain("MODEL");
-    expect(types).toContain("FILE");
-    expect(types).toContain("INFER");
-    expect(types).toContain("OUTPUT");
-    expect(types).toContain("INPUT");
+    expect(types).toContain("AI_MODEL");
+    expect(types).toContain("AGENT");
+    expect(types).toContain("USES");
+    expect(types).toContain("TOOLS");
+    expect(types).toContain("GOAL");
+    expect(types).toContain("PLAN");
+    expect(types).toContain("MEMORY");
   });
 
-  it("parses ai block with model declarations", () => {
+  it("parses ai_model declarations", () => {
     const source = `
       robot R {
-        ai {
-          model nav output NavigationPolicy file "nav.onJsii" input Lidar;
+        ai_model planner: LLM {
+          provider: "mock";
+          model: "safe-planner";
+          temperature: 0.1;
         }
       }
     `;
     const ast = parse(tokenize(source));
-    const ai = ast.robots[0].ai!;
-    expect(ai.models).toHaveLength(1);
-    expect(ai.models[0].name).toBe("nav");
-    expect(ai.models[0].outputType).toBe("NavigationPolicy");
-    expect(ai.models[0].path).toBe("nav.onJsii");
-    expect(ai.models[0].inputs).toEqual(["Lidar"]);
+    const model = ast.robots[0].ai_models[0];
+    expect(model.name).toBe("planner");
+    expect(model.modelType).toBe("LLM");
+    expect(model.config.find((c) => c.key === "provider")?.value).toBe("mock");
   });
 
-  it("parses infer expressions", () => {
+  it("parses agent declarations", () => {
     const source = `
       robot R {
-        ai {
-          model nav output Velocity file "nav.onJSImport";
+        ai_model planner: LLM { provider: "mock"; model: "p"; }
+        sensor lidar: Lidar on "/scan";
+        actuator wheels: DifferentialDrive;
+        agent Navigator {
+          uses planner;
+          tools [lidar, wheels];
+          memory short_term;
+          goal "Navigate safely";
+          plan {
+            let x = lidar.read();
+          }
         }
+      }
+    `;
+    const ast = parse(tokenize(source));
+    const agent = ast.robots[0].agents[0];
+    expect(agent.name).toBe("Navigator");
+    expect(agent.usesAi).toEqual(["planner"]);
+    expect(agent.tools).toEqual(["lidar", "wheels"]);
+    expect(agent.memoryKind).toBe("short_term");
+    expect(agent.goal).toBe("Navigate safely");
+    expect(agent.planBody).toHaveLength(1);
+  });
+
+  it("type-checks mock LLM reason and safety validate flow", () => {
+    expect(() => compile(`
+      robot R {
+        sensor lidar: Lidar on "/scan";
+        actuator wheels: DifferentialDrive;
+        ai_model planner: LLM { provider: "mock"; model: "p"; }
+        safety { max_speed = 1.0 m/s; }
         behavior demo() {
-          let cmd = infer nav with scan: lidar.read();
+          let scan = lidar.read();
+          let proposal = planner.reason(prompt: "Go", input: scan);
+          let action = safety.validate(proposal);
+          wheels.execute(action);
         }
       }
-    `;
-    const ast = parse(tokenize(source));
-    const init = ast.robots[0].behaviors[0].body[0];
-    expect(init.kind).toBe("VarDecl");
-    if (init.kind === "VarDecl") {
-      expect(init.init.kind).toBe("InferExpr");
-    }
+    `)).not.toThrow();
   });
 
-  it("type-checks ai models and infer calls", () => {
-    expect(() =>
-      compile(`
-        import onnx.runtime;
-        robot R {
-          sensor lidar: Lidar on "/scan";
-          ai {
-            model nav from onnx.runtime output NavigationPolicy file "nav.onJsii" input Lidar;
-          }
-          behavior demo() {
-            let cmd = infer nav with scan: lidar.read();
-          }
-        }
-      `),
-    ).not.toThrow();
-  });
-
-  it("runs ai-driven navigation in simulation", () => {
+  it("runs mock LLM navigation through safety validation", () => {
     const source = `
       robot R {
         sensor lidar: Lidar on "/scan";
         actuator wheels: DifferentialDrive;
-        ai {
-          model nav output NavigationPolicy file "nav.onJsii" input Lidar;
-        }
+        ai_model planner: LLM { provider: "mock"; model: "p"; }
+        safety { max_speed = 1.0 m/s; }
         behavior demo() {
-          loop every 50ms {
-            let scan = lidar.read();
-            let cmd = infer nav with scan: scan;
-            wheels.drive(linear: cmd.linear, angular: cmd.angular);
-          }
+          let scan = lidar.read();
+          let proposal = planner.reason(prompt: "Go", input: scan);
+          let action = safety.validate(proposal);
+          wheels.execute(action);
         }
       }
     `;
     const { program } = compile(source);
     const sim = createDefaultSimulator();
-    run(program, { backend: sim, maxLoopIterations: 10 });
-    const log = sim.getEventLog();
-    expect(log.some((e) => e.includes("drive("))).toBe(true);
+    run(program, { backend: sim, maxLoopIterations: 1 });
+    expect(sim.getEventLog().some((e) => e.includes("drive("))).toBe(true);
   });
 
-  it("rejects unknown ai output types", () => {
+  it("runs vision detect call", () => {
+    const source = `
+      robot R {
+        sensor camera: Camera on "/camera";
+        ai_model vision: VisionModel { provider: "mock"; model: "yolo"; }
+        behavior demo() {
+          let frame = camera.frame();
+          let object = vision.detect(frame);
+        }
+      }
+    `;
+    expect(() => compile(source)).not.toThrow();
+    const { program } = compile(source);
+    run(program, { backend: createDefaultSimulator(), maxLoopIterations: 1 });
+  });
+
+  it("rejects direct ActionProposal execution at compile time", () => {
     expect(() =>
       compile(`
         robot R {
-          ai {
-            model bad output UnknownType file "x.onJsii";
+          sensor lidar: Lidar on "/scan";
+          actuator wheels: DifferentialDrive;
+          ai_model planner: LLM { provider: "mock"; model: "p"; }
+          behavior demo() {
+            let scan = lidar.read();
+            let proposal = planner.reason(prompt: "Go", input: scan);
+            wheels.execute(proposal);
           }
         }
       `),
-    ).toThrow(/Unknown AI output type/);
+    ).toThrow(/SafeAction/);
+  });
+
+  it("rejects unsafe AI drive at compile time", () => {
+    expect(() =>
+      compile(`
+        robot R {
+          actuator wheels: DifferentialDrive;
+          ai_model planner: LLM { provider: "mock"; model: "p"; }
+          behavior demo() {
+            planner.drive(wheels);
+          }
+        }
+      `),
+    ).toThrow(/cannot control actuators/);
+  });
+
+  it("rejects unvalidated ActionProposal passed to actuator.execute at compile time", () => {
+    expect(() =>
+      compile(`
+        robot R {
+          sensor lidar: Lidar on "/scan";
+          actuator wheels: DifferentialDrive;
+          ai_model planner: LLM { provider: "mock"; model: "p"; }
+          behavior demo() {
+            let proposal = planner.reason(prompt: "Go", input: lidar.read());
+            wheels.execute(proposal);
+          }
+        }
+      `),
+    ).toThrow(/SafeAction/);
+  });
+
+  it("runs agent plan from behavior loop", () => {
+    const { program } = compile(`
+      robot R {
+        sensor lidar: Lidar on "/scan";
+        sensor camera: Camera on "/camera";
+        actuator wheels: DifferentialDrive;
+        ai_model planner: LLM { provider: "mock"; model: "p"; }
+        safety { max_speed = 1.0 m/s; }
+        agent Nav {
+          uses planner;
+          tools [lidar, camera, wheels];
+          goal "Go";
+          plan {
+            let scene = camera.analyze();
+            let proposal = planner.reason(prompt: "Go", input: scene);
+            let action = safety.validate(proposal);
+            wheels.execute(action);
+          }
+        }
+        behavior run() {
+          loop every 50ms { Nav.plan(); }
+        }
+      }
+    `);
+    const sim = createDefaultSimulator();
+    run(program, { backend: sim, maxLoopIterations: 5 });
+    expect(sim.getEventLog().length).toBeGreaterThan(0);
   });
 });

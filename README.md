@@ -14,7 +14,7 @@ Source files use the **`.syn`** extension.
 - **HAL (Hardware Abstraction Layer)** — `i2c`, `spi`, `gpio`, `pwm`, `uart`, `adc` buses and pins
 - **SoC profiles** — Raspberry Pi, ESP32, STM32, Jetson, Arduino with capability validation
 - **Sensor libraries** — manufacturer drivers (Velodyne, Hokuyo, Bosch, Intel, YDLIDAR, Adafruit, SparkFun, Waveshare)
-- **AI inference** — declare models in an `ai { }` block and run them with `infer`
+- **AI-native agents** — `ai_model`, `agent`, LLM/Vision calls with mandatory safety validation
 - **Motion types** — `pose()`, `velocity()`, `trajectory()`, `transform()`
 - **Safety zones** — circular and rectangular keep-out regions
 - **Emergency stop** — `emergency_stop` and `reset_emergency_stop` statements
@@ -83,35 +83,109 @@ robot PiBot {
 | TensorFlow | `tflite.runtime` | TensorFlow Lite inference backend |
 | NVIDIA | `tensorrt.runtime` | TensorRT inference for Jetson |
 
-## AI Models and Inference
+## AI-Native Autonomous Systems
 
-Declare models inside an `ai { }` block and call them from behaviors with `infer`:
+Synapse combines **robotics**, **AI agents**, **simulation**, and **safety validation** in one language. AI outputs are treated as **untrusted** by default — an LLM or vision model can propose actions, but only a `SafeAction` from `safety.validate()` may reach actuators.
+
+### Key ideas
+
+- **`ai_model`** — declare LLM, VisionModel, or EmbeddingModel with provider config
+- **`agent`** — autonomous planner with `uses`, `tools`, `memory`, `goal`, and `plan` blocks
+- **Mock backend first** — deterministic `MockAIProvider` for tests and simulation (no live API keys required)
+- **Real providers later** — optional `AIProvider` interface for OpenAI, local models, etc.
+- **Safety gate** — `ActionProposal` cannot call `actuator.execute()`; only `SafeAction` can
 
 ```synapse
-import onnx.runtime;
-
-robot SmartBot {
+robot Rover {
   sensor lidar: Lidar on "/scan";
+  sensor camera: Camera on "/camera";
   actuator wheels: DifferentialDrive;
 
-  ai {
-    model nav_policy from onnx.runtime output NavigationPolicy file "models/nav.onJsii" input Lidar;
-    model detector output Detections file "models/yolo.on_jsii" input Lidar;
+  ai_model planner: LLM {
+    provider: "mock";
+    model: "safe-planner";
+    temperature: 0.1;
   }
 
-  behavior navigate() {
-    loop every 50ms {
-      let scan = lidar.read();
-      let cmd = infer nav_policy with scan: scan;
-      wheels.drive(linear: cmd.linear, angular: cmd.angular);
+  safety {
+    max_speed = 1.0 m/s;
+    stop_if lidar.nearest_distance < 0.5 m;
+  }
+
+  agent Navigator {
+    uses planner;
+    tools [lidar, camera, wheels];
+    memory short_term;
+
+    goal "Reach destination while avoiding obstacles";
+
+    plan {
+      let scene = camera.analyze();
+      let proposal = planner.reason(
+        prompt: "Create a safe navigation action",
+        input: scene
+      );
+
+      let action = safety.validate(proposal);
+      wheels.execute(action);
+    }
+  }
+
+  behavior run() {
+    loop every 100ms {
+      Navigator.plan();
     }
   }
 }
 ```
 
-Supported output types: `NavigationPolicy`, `Velocity`, `Detections`, `Classification`.
+### AI function calls
 
-AI-driven motion still passes through safety rules — `max_speed` and `stop_if` apply before actuators move.
+```synapse
+let proposal = planner.reason(prompt: "Plan safe path", input: scan);
+let objects = vision.detect(camera.frame());
+let summary = planner.summarize(scan);
+```
+
+### Safety rules around AI
+
+Invalid — AI driving actuators directly:
+
+```synapse
+planner.drive(wheels);  // compile error
+wheels.execute(proposal);  // compile error: requires SafeAction
+```
+
+Valid — propose, validate, then execute:
+
+```synapse
+let proposal = planner.reason(prompt: "...", input: data);
+let action = safety.validate(proposal);
+wheels.execute(action);
+```
+
+### AI types
+
+| Type | Role |
+|------|------|
+| `LLM` | Reasoning, summarization |
+| `VisionModel` | Object detection |
+| `EmbeddingModel` | Vector embeddings |
+| `Agent` | Goal-driven planner |
+| `ActionProposal` | Untrusted AI motion suggestion |
+| `SafeAction` | Safety-approved motion command |
+| `Detection` / `Completion` / `Plan` | AI outputs |
+
+### AI examples
+
+- `examples/ai_navigation.syn` — agent + LLM planner with safety validation
+- `examples/vision_pick_place.syn` — vision model for pick-and-place
+- `examples/llm_robot_assistant.syn` — LLM summarization and reasoning
+- `examples/ai_safety_violation.syn` — demonstrates blocked unsafe AI patterns
+
+### Legacy inference runtimes
+
+Import-based ONNX/TFLite/TensorRT backends remain available under `src/ai/registry.ts` for classical model inference workflows.
 
 ## Language Overview
 
@@ -170,7 +244,7 @@ src/
   runtime/     Tree-walking interpreter
   simulator/   Physics-lite simulation backend
   safety/      Safety rule evaluation
-  ai/          AI model registry and simulated inference
+  ai/          Mock AI provider, agents, memory, prompt runtime
   hal/         Hardware abstraction (I2C, SPI, GPIO, PWM, UART, ADC)
   soc/         SoC profiles and HAL validation
   lib/         Manufacturer sensor driver registry
@@ -196,7 +270,8 @@ tests/         Lexer, parser, type, safety, interpreter, simulator tests
 | `trajectory()` | Interpolated path between two poses |
 | `transform()` | Coordinate frame transform |
 | `safety` / `zone` | Rules and geometric keep-out regions |
-| `ai` / `model` / `infer` | AI model declarations and inference calls |
+| `ai_model` / `agent` | AI models and goal-driven agents |
+| `ActionProposal` / `SafeAction` | Untrusted AI output vs safety-approved motion |
 | `emergency_stop` | Immediate halt and safety lockout |
 | `behavior` | Named control loop or task |
 | `loop every Nms` | Deterministic periodic execution |
@@ -212,7 +287,10 @@ tests/         Lexer, parser, type, safety, interpreter, simulator tests
 - `examples/patrol_with_zones.syn` — topics, services, actions, zones, trajectories
 - `examples/raspberry_pi_hal.syn` — Raspberry Pi with HAL and Velodyne/Bosch libraries
 - `examples/esp32_sensors.syn` — ESP32 with multi-vendor I2C sensors
-- `examples/ai_navigation.syn` — AI-driven obstacle avoidance with ONNX runtime
+- `examples/ai_navigation.syn` — AI agent navigation with safety validation
+- `examples/vision_pick_place.syn` — vision model pick-and-place
+- `examples/llm_robot_assistant.syn` — LLM reasoning assistant
+- `examples/ai_safety_violation.syn` — unsafe AI patterns (blocked at compile time)
 
 ## Safety Model
 

@@ -22,12 +22,14 @@ export type TokenType =
   | "SENSOR"
   | "ACTUATOR"
   | "SAFETY"
-  | "AI"
-  | "MODEL"
-  | "FILE"
-  | "INFER"
-  | "OUTPUT"
-  | "INPUT"
+  | "AI_MODEL"
+  | "AGENT"
+  | "USES"
+  | "TOOLS"
+  | "GOAL"
+  | "PLAN"
+  | "MEMORY"
+  | "PROVIDER"
   | "BEHAVIOR"
   | "LOOP"
   | "EVERY"
@@ -59,6 +61,8 @@ export type TokenType =
   | "UNIT_LITERAL"
   | "LBRACE"
   | "RBRACE"
+  | "LBRACKET"
+  | "RBRACKET"
   | "LPAREN"
   | "RPAREN"
   | "SEMICOLON"
@@ -125,12 +129,14 @@ const KEYWORDS: Record<string, TokenType> = {
   sensor: "SENSOR",
   actuator: "ACTUATOR",
   safety: "SAFETY",
-  ai: "AI",
-  model: "MODEL",
-  file: "FILE",
-  infer: "INFER",
-  output: "OUTPUT",
-  input: "INPUT",
+  ai_model: "AI_MODEL",
+  agent: "AGENT",
+  uses: "USES",
+  tools: "TOOLS",
+  goal: "GOAL",
+  plan: "PLAN",
+  memory: "MEMORY",
+  provider: "PROVIDER",
   behavior: "BEHAVIOR",
   loop: "LOOP",
   every: "EVERY",
@@ -193,6 +199,18 @@ export function tokenize(source: string): Token[] {
 
     const start = loc();
 
+    if (ch === "[") {
+      tokens.push({ type: "LBRACKET", lexeme: "[", value: null, ...start });
+      i++;
+      column++;
+      continue;
+    }
+    if (ch === "]") {
+      tokens.push({ type: "RBRACKET", lexeme: "]", value: null, ...start });
+      i++;
+      column++;
+      continue;
+    }
     if (ch === "{") {
       tokens.push({ type: "LBRACE", lexeme: "{", value: null, ...start });
       i++;

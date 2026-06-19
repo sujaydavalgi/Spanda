@@ -1,0 +1,26 @@
+robot AssistantBot {
+  sensor lidar: Lidar on "/scan";
+
+  ai_model assistant: LLM {
+    provider: "mock";
+    model: "robot-assistant";
+    temperature: 0.2;
+    max_tokens: 256;
+  }
+
+  agent Helper {
+    uses assistant;
+    tools [lidar];
+    memory short_term;
+    goal "Summarize sensor state for the operator";
+
+    plan {
+      let scan = lidar.read();
+      let summary = assistant.summarize(input: scan);
+    }
+  }
+
+  behavior report() {
+    Helper.plan();
+  }
+}

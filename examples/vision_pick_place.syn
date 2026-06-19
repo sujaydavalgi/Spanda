@@ -1,0 +1,32 @@
+robot PickBot {
+  sensor camera: Camera on "/camera";
+  actuator arm: RoboticArm;
+  actuator gripper: Gripper;
+
+  ai_model vision: VisionModel {
+    provider: "mock";
+    model: "yolo-v8";
+  }
+
+  agent PickAgent {
+    uses vision;
+    tools [camera, arm, gripper];
+    goal "Detect object and pick it";
+
+    plan {
+      let frame = camera.frame();
+      let object = vision.detect(frame);
+
+      if object.label == "object" {
+        arm.move_to(x: 0.4 m, y: 0.0 m, z: 0.1 m);
+        gripper.close();
+      }
+    }
+  }
+
+  behavior pick_loop() {
+    loop every 200ms {
+      PickAgent.plan();
+    }
+  }
+}

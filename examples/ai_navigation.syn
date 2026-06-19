@@ -1,30 +1,42 @@
-import onnx.runtime;
-
-robot SmartRover {
+robot Rover {
   sensor lidar: Lidar on "/scan";
+  sensor camera: Camera on "/camera";
   actuator wheels: DifferentialDrive;
 
-  ai {
-    model nav_policy from onnx.runtime output NavigationPolicy file "models/nav.onJsii" input Lidar;
-    model detector output Detections file "models/yolo.on_jsii" input Lidar;
+  ai_model planner: LLM {
+    provider: "mock";
+    model: "safe-planner";
+    temperature: 0.1;
+    max_tokens: 512;
   }
 
   safety {
     max_speed = 1.0 m/s;
-    stop_if lidar.read().nearest_distance < 0.3 m;
+    stop_if lidar.nearest_distance < 0.5 m;
   }
 
-  behavior ai_avoid() {
-    loop every 50ms {
-      let scan = lidar.read();
-      let detections = infer detector with scan: scan;
-      let cmd = infer nav_policy with scan: scan;
+  agent Navigator {
+    uses planner;
+    tools [lidar, camera, wheels];
+    memory short_term;
 
-      if detections.nearest_distance < 0.4 m {
-        wheels.stop();
-      } else {
-        wheels.drive(linear: cmd.linear, angular: cmd.angular);
-      }
+    goal "Reach destination while avoiding obstacles";
+
+    plan {
+      let scene = camera.analyze();
+      let proposal = planner.reason(
+        prompt: "Create a safe navigation action",
+        input: scene
+      );
+
+      let action = safety.validate(proposal);
+      wheels.execute(action);
+    }
+  }
+
+  behavior run() {
+    loop every 100ms {
+      Navigator.plan();
     }
   }
 }

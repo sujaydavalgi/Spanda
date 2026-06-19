@@ -36,6 +36,7 @@ export function resultUnitForBinary(
       if (unitsCompatible(left.unit, right.unit)) return { kind: "bool" };
     }
     if (left.kind === "bool" && right.kind === "bool") return { kind: "bool" };
+    if (left.kind === "string" && right.kind === "string") return { kind: "bool" };
     return null;
   }
 
@@ -124,21 +125,23 @@ export const ACTUATOR_TYPES: Record<string, SynapseType> = {
   Gripper: { kind: "named", name: "Gripper" },
 };
 
-export const AI_OUTPUT_TYPES: Record<string, SynapseType> = {
-  Velocity: { kind: "velocity" },
-  NavigationPolicy: { kind: "named", name: "NavigationPolicy" },
-  Detections: { kind: "named", name: "Detections" },
-  Classification: { kind: "named", name: "Classification" },
+export const AI_MODEL_TYPES: Record<string, SynapseType> = {
+  LLM: { kind: "named", name: "LLM" },
+  VisionModel: { kind: "named", name: "VisionModel" },
+  EmbeddingModel: { kind: "named", name: "EmbeddingModel" },
 };
 
-/** Maps sensor read types and runtime values to AI input type names. */
-export const AI_INPUT_TYPES: Record<string, SynapseType> = {
-  Scan: { kind: "scan" },
-  Lidar: { kind: "scan" },
-  Camera: { kind: "named", name: "CameraFrame" },
-  IMU: { kind: "named", name: "IMUReading" },
-  AltitudeSensor: { kind: "number", unit: "m" },
-  Image: { kind: "named", name: "CameraFrame" },
+export const AI_VALUE_TYPES: Record<string, SynapseType> = {
+  ActionProposal: { kind: "named", name: "ActionProposal" },
+  SafeAction: { kind: "named", name: "SafeAction" },
+  Completion: { kind: "named", name: "Completion" },
+  Detection: { kind: "named", name: "Detection" },
+  Classification: { kind: "named", name: "Classification" },
+  Plan: { kind: "named", name: "Plan" },
+  Agent: { kind: "named", name: "Agent" },
+  CameraFrame: { kind: "named", name: "CameraFrame" },
+  Memory: { kind: "named", name: "Memory" },
+  Prompt: { kind: "string" },
 };
 
 export const BUILTIN_FUNCTIONS: Record<
@@ -191,6 +194,12 @@ export const BUILTIN_METHODS: Record<
 > = {
   Lidar: {
     read: { params: [], returns: { kind: "scan" } },
+    nearest_distance: { params: [], returns: { kind: "number", unit: "m" } },
+  },
+  Camera: {
+    read: { params: [], returns: { kind: "named", name: "CameraFrame" } },
+    analyze: { params: [], returns: { kind: "named", name: "Detection" } },
+    frame: { params: [], returns: { kind: "named", name: "CameraFrame" } },
   },
   IMU: {
     read: { params: [], returns: { kind: "named", name: "IMUReading" } },
@@ -208,6 +217,10 @@ export const BUILTIN_METHODS: Record<
         linear: { kind: "number", unit: "m/s" },
         angular: { kind: "number", unit: "rad/s" },
       },
+      returns: { kind: "void" },
+    },
+    execute: {
+      params: [{ kind: "named", name: "SafeAction" }],
       returns: { kind: "void" },
     },
     follow: {
@@ -255,6 +268,46 @@ export const BUILTIN_METHODS: Record<
   ForceTorqueReading: {
     force: { params: [], returns: { kind: "number", unit: "none" } },
   },
+  LLM: {
+    reason: {
+      params: [],
+      namedParams: {
+        prompt: { kind: "string" },
+        input: { kind: "scan" },
+      },
+      returns: { kind: "named", name: "ActionProposal" },
+    },
+    summarize: {
+      params: [],
+      namedParams: {
+        input: { kind: "scan" },
+      },
+      returns: { kind: "named", name: "Completion" },
+    },
+    drive: {
+      params: [],
+      namedParams: {
+        linear: { kind: "number", unit: "m/s" },
+        angular: { kind: "number", unit: "rad/s" },
+      },
+      returns: { kind: "void" },
+    },
+  },
+  VisionModel: {
+    detect: {
+      params: [{ kind: "named", name: "CameraFrame" }],
+      returns: { kind: "named", name: "Detection" },
+    },
+  },
+  Agent: {
+    plan: { params: [], returns: { kind: "void" } },
+  },
+  Safety: {
+    validate: {
+      params: [{ kind: "named", name: "ActionProposal" }],
+      returns: { kind: "named", name: "SafeAction" },
+    },
+  },
 };
 
 export const SCAN_PROPERTIES: Record<string, SynapseType> = {
@@ -269,6 +322,19 @@ export const OBJECT_PROPERTIES: Record<string, Record<string, SynapseType>> = {
     linear: { kind: "number", unit: "m/s" },
     angular: { kind: "number", unit: "rad/s" },
   },
+  ActionProposal: {
+    linear: { kind: "number", unit: "m/s" },
+    angular: { kind: "number", unit: "rad/s" },
+  },
+  SafeAction: {
+    linear: { kind: "number", unit: "m/s" },
+    angular: { kind: "number", unit: "rad/s" },
+  },
+  Detection: {
+    label: { kind: "string" },
+    confidence: { kind: "number", unit: "none" },
+    nearest_distance: { kind: "number", unit: "m" },
+  },
   Detections: {
     count: { kind: "number", unit: "none" },
     nearest_distance: { kind: "number", unit: "m" },
@@ -277,6 +343,9 @@ export const OBJECT_PROPERTIES: Record<string, Record<string, SynapseType>> = {
   Classification: {
     label: { kind: "string" },
     confidence: { kind: "number", unit: "none" },
+  },
+  Completion: {
+    text: { kind: "string" },
   },
 };
 
