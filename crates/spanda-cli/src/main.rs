@@ -88,8 +88,9 @@ fn usage() {
            spanda check [--json] [<file.sd> | --project]\n\
            spanda verify [--json] [--target <HardwareProfile>] [--all-targets] [--simulate] <file.sd>\n\
            spanda compatibility [--json] [--target <HardwareProfile>] [--all-targets] [--simulate] <file.sd>\n\
-           spanda run [--json] [--verbose] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] <file.sd>\n\
-           spanda sim [--json] [--replay] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] <file.sd>\n\
+           spanda run [--json] [--verbose] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] [--trace-realtime] [--metrics-json] [--record] <file.sd>\n\
+           spanda sim [--json] [--replay] [--trace-realtime] [--metrics-json] [--record] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] <file.sd>\n\
+           spanda replay <mission.trace> [--from T+mm:ss] [--deterministic]\n\
            spanda fleet run [--json] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] <file.sd>\n\
            spanda fmt [--json] <file.sd>\n\
            spanda lint [--json] <file.sd>\n\
@@ -225,6 +226,52 @@ fn human_check(source: &str, file: &str) {
             }
             process::exit(1);
         }
+    }
+}
+
+fn human_replay(trace_file: &str, from: Option<&str>, deterministic: bool, as_json: bool) {
+    use spanda_core::replay::{parse_replay_offset, MissionTrace};
+    let trace = MissionTrace::load(trace_file).unwrap_or_else(|e| {
+        eprintln!("{e}");
+        process::exit(1);
+    });
+    let offset_ms = if let Some(raw) = from {
+        parse_replay_offset(raw).unwrap_or_else(|e| {
+            eprintln!("{e}");
+            process::exit(1);
+        })
+    } else {
+        0.0
+    };
+    let frames = trace.frames_from(offset_ms);
+    if as_json {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&serde_json::json!({
+                "ok": true,
+                "source": trace.source,
+                "deterministic": deterministic || trace.deterministic,
+                "offset_ms": offset_ms,
+                "frames": frames,
+            }))
+            .unwrap()
+        );
+        return;
+    }
+    println!(
+        "Replay {} ({} frames from {:.0}ms)",
+        trace_file,
+        frames.len(),
+        offset_ms
+    );
+    for frame in frames.iter().take(20) {
+        println!(
+            "  t={:.1}ms {} {:?}",
+            frame.sim_time_ms, frame.event, frame.payload
+        );
+    }
+    if frames.len() > 20 {
+        println!("  ... {} more frames", frames.len() - 20);
     }
 }
 
@@ -869,6 +916,11 @@ fn main() {
     let mut trace_triggers = false;
     let mut trace_events = false;
     let mut replay_trace = false;
+    let mut trace_realtime = false;
+    let mut record_trace = false;
+    let mut metrics_json = false;
+    let mut replay_deterministic = false;
+    let mut replay_from: Option<String> = None;
     let mut i = 2;
 
     // Repeat while i < args.len().
@@ -882,6 +934,21 @@ fn main() {
             "--trace-triggers" => trace_triggers = true,
             "--trace-events" => trace_events = true,
             "--replay" => replay_trace = true,
+            "--trace-realtime" => trace_realtime = true,
+            "--metrics-json" => {
+                metrics_json = true;
+                json = true;
+            }
+            "--record" => record_trace = true,
+            "--deterministic" => replay_deterministic = true,
+            "--from" => {
+                i += 1;
+                if i >= args.len() {
+                    eprintln!("--from requires a replay offset (e.g. T+00:30)");
+                    process::exit(1);
+                }
+                replay_from = Some(args[i].clone());
+            }
             "--project" => project_mode = true,
             "--target" => {
                 i += 1;
@@ -963,6 +1030,22 @@ fn main() {
         i += 1;
     }
 
+    if command == "replay" {
+        let trace_file = file.unwrap_or_else(|| {
+            eprintln!("Missing trace file path");
+            usage();
+            process::exit(1);
+        });
+        human_replay(
+            &trace_file,
+            replay_from.as_deref(),
+            replay_deterministic,
+            json,
+        );
+        let _ = io::stdout().flush();
+        return;
+    }
+
     // Match on command and handle each case.
     match command {
         "check" => {
@@ -1024,12 +1107,16 @@ fn main() {
                 trace_tasks,
                 trace_triggers,
                 trace_events,
+                trace_realtime,
+                record_trace: record_trace || (command == "sim" && replay_trace),
+                trace_source: Some(file.clone()),
+                metrics_json,
                 replay_trace: command == "sim" && replay_trace,
                 ..Default::default()
             };
 
             // Take this path when json.
-            if json {
+            if json || metrics_json {
                 print_run_json(run(&source, opts));
             } else {
                 human_run(

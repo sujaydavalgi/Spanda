@@ -5,6 +5,23 @@ All notable changes to Spanda are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Deadline-aware tasks: `deadline`, `jitter <=`, `priority`, `isolated`
+- Latency pipelines: `pipeline name budget Nms { … }`
+- Watchdogs, operating `mode` blocks, `recover from`, `retry`/`fallback`
+- First-class regex: literals, `Regex` type, string methods, triggers, subscribe filters, `validate` rules
+- Mission trace replay: `spanda replay`, `--record`, `--trace-realtime`, `--metrics-json`
+- Runtime telemetry: `PipelineMetrics`, `WatchdogMetrics`
+- Docs: `docs/realtime.md`, `docs/reliability.md`, `docs/watchdogs.md`, `docs/degraded-modes.md`, `docs/replay.md`, `docs/regex.md`
+- Examples under `examples/realtime/` and `examples/regex/`
+
+### Changed
+
+- Runtime now executes watchdogs (task heartbeats), `run_pipeline`, retry/fallback on injected faults, recovery handlers, jitter telemetry, and mission trace recording (`--record` writes `<file>.trace`)
+
 ## [0.1.0-alpha] - 2026-06-20
 
 First public alpha release. Spanda is ready for community evaluation.

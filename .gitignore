@@ -38,6 +38,7 @@ packages/native/index.d.ts
 // spanda
 .spanda-*.sd
 .spanda/
+*.trace
 
 //python
 __pycache__/
