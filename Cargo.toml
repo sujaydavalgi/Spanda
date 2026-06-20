@@ -18,7 +18,16 @@ resolver = "2"
 version = "0.1.0"
 edition = "2021"
 repository = "https://github.com/sujaydavalgi/Spanda"
+license = "Apache-2.0"
+authors = ["Sujay Davalgi <sujay@davalgi.com>"]
+homepage = "https://github.com/sujaydavalgi/Spanda"
+description = "Spanda — safety-first language for robotics and autonomous systems"
 
 [profile.release]
 lto = true
 codegen-units = 1
+
+# The profile that 'dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"

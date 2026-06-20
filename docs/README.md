@@ -8,6 +8,7 @@ Spanda is an AI-native autonomous systems programming language. Source files use
 |----------|-------------|
 | [../README.md](../README.md) | Project overview, philosophy, quick start, and examples |
 | [getting-started.md](./getting-started.md) | **First robot in 10 minutes** |
+| [installation.md](./installation.md) | **Prebuilt packages for Linux, macOS, and Windows** |
 | [architecture.md](./architecture.md) | **Compiler pipeline with diagrams** |
 | [triggers.md](./triggers.md) | **Unified trigger-driven execution** (`on`, `every`, `when`, safety, state, AI) |
 | [concurrency.md](./concurrency.md) | **Tasks, spawn, channels, fleet CLI, and runtime telemetry** |

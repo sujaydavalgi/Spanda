@@ -1,12 +1,19 @@
 [package]
 name = "spanda-dap"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
+repository.workspace = true
+license.workspace = true
+authors.workspace = true
+homepage.workspace = true
 description = "Debug Adapter Protocol server for Spanda"
 
 [[bin]]
 name = "spanda-dap"
 path = "src/main.rs"
+
+[package.metadata.dist]
+dist = false
 
 [dependencies]
 spanda-core = { path = "../spanda-core" }

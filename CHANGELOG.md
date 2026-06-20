@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Cross-platform installable packages:** cargo-dist release pipeline (Linux/macOS/Windows archives, shell/PowerShell installers, Windows MSI, Homebrew formula); see [docs/installation.md](docs/installation.md)
 - Deadline-aware tasks: `deadline`, `jitter <=`, `priority`, `isolated`
 - Latency pipelines: `pipeline name budget Nms { … }`
 - Watchdogs, operating `mode` blocks, `recover from`, `retry`/`fallback`

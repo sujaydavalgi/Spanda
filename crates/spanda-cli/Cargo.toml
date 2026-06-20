@@ -1,12 +1,26 @@
 [package]
 name = "spanda-cli"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
+repository.workspace = true
+license.workspace = true
+authors.workspace = true
+homepage.workspace = true
 description = "Spanda native CLI (check / run / sim with JSON output)"
+readme = "../../README.md"
 
 [[bin]]
 name = "spanda"
 path = "src/main.rs"
+
+[package.metadata.dist]
+dist = true
+
+[package.metadata.wix]
+upgrade-guid = "A9E1251D-7646-466A-A79F-710DB9C62AA3"
+path-guid = "003EC466-FDCC-4BFB-8A46-71D8540816E8"
+license = false
+eula = false
 
 [dependencies]
 spanda-core = { path = "../spanda-core" }

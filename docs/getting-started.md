@@ -6,20 +6,26 @@ Build and run your first autonomous robot program in under 10 minutes.
 
 ## Installation
 
-### 1. Clone the repository
+Install prebuilt packages for Linux, macOS, and Windows from [GitHub Releases](https://github.com/sujaydavalgi/Spanda/releases), or build from source below.
+
+See [installation.md](./installation.md) for shell/MSI/PowerShell installers and platform archives.
+
+### Build from source
+
+#### 1. Clone the repository
 
 ```bash
 git clone https://github.com/sujaydavalgi/Spanda.git
 cd Spanda
 ```
 
-### 2. Install dependencies
+#### 2. Install dependencies
 
 ```bash
 npm install
 ```
 
-### 3. Build the native CLI
+#### 3. Build the native CLI
 
 ```bash
 npm run build:rust

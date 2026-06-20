@@ -167,13 +167,29 @@ Real-time and reliability demos in [`examples/realtime/`](examples/realtime/); r
 
 ## Installation
 
-### Prerequisites
+### Prebuilt packages (Linux, macOS, Windows)
+
+Download installable packages from [GitHub Releases](https://github.com/sujaydavalgi/Spanda/releases):
+
+```bash
+# Linux / macOS
+curl --proto '=https' --tlsv1.2 -LsSf \
+  https://github.com/sujaydavalgi/Spanda/releases/download/v0.1.0/spanda-cli-installer.sh | sh
+```
+
+Windows: use the `.msi` installer or PowerShell script from the same release page.
+
+Full install guide: [docs/installation.md](docs/installation.md)
+
+### Build from source
+
+#### Prerequisites
 
 - **Node.js** 18+ (for TypeScript tooling and tests)
 - **Rust** stable (for native CLI and authoritative runtime)
 - **npm** (workspace manager)
 
-### Clone and build
+#### Clone and build
 
 ```bash
 git clone https://github.com/sujaydavalgi/Spanda.git
