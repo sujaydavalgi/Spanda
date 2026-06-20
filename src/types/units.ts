@@ -296,6 +296,30 @@ export const BUILTIN_FUNCTIONS: Record<
     },
     returns: { kind: "bool" },
   },
+  channel: {
+    namedParams: {},
+    returns: { kind: "named", name: "Channel" },
+  },
+  send: {
+    namedParams: {},
+    returns: { kind: "void" },
+  },
+  recv: {
+    namedParams: {},
+    returns: { kind: "void" },
+  },
+  serialize: {
+    namedParams: { format: { kind: "string" } },
+    returns: { kind: "string" },
+  },
+  deserialize: {
+    namedParams: { format: { kind: "string" } },
+    returns: { kind: "void" },
+  },
+  assert: {
+    namedParams: {},
+    returns: { kind: "void" },
+  },
 };
 
 export const ROBOT_METHODS: Record<string, { params: SpandaType[]; returns: SpandaType }> = {

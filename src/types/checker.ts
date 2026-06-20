@@ -12,7 +12,7 @@ import type {
   ServiceDecl,
   ActionDecl,
 } from "../ast/nodes.js";
-import type { CapabilityDecl, MatchArm, TraitImplDecl } from "../foundations.js";
+import type { CapabilityDecl, ExternFnDecl, MatchArm, ModuleFnDecl, TraitImplDecl } from "../foundations.js";
 import { resolveModuleImport, resolveTypeAlias } from "../foundations.js";
 import { resolveStdImport } from "../stdlib.js";
 import {
@@ -92,8 +92,13 @@ class TypeChecker {
   private agentNames = new Set<string>();
   private deviceNames = new Set<string>();
   private peerRobotNames = new Set<string>();
+  private moduleFunctions = new Map<string, ModuleFnDecl>();
+  private externFunctions = new Map<string, ExternFnDecl>();
+  private typeParamScope = new Map<string, SpandaType>();
 
   checkProgram(program: Program): void {
+    this.moduleFunctions.clear();
+    this.externFunctions.clear();
     const imported = new Set<string>();
     for (const imp of program.imports) {
       if (
@@ -116,6 +121,15 @@ class TypeChecker {
     }
     for (const traitDecl of program.traits) {
       this.checkTrait(traitDecl);
+    }
+
+    this.checkExternFunctions(program.externFunctions);
+    this.checkModuleFunctions(program.functions);
+
+    for (const test of program.tests) {
+      for (const stmt of test.body) {
+        this.checkStmt(stmt);
+      }
     }
 
     this.messageRegistry = MessageRegistry.fromProgram(program.messages, program.structs);
@@ -234,6 +248,87 @@ class TypeChecker {
         default:
           return { kind: "named", name: typeName };
       }
+    }
+  }
+
+  private validateTypeAnnotation(ty: SpandaType, line: number, column: number): void {
+    if (ty.kind === "named") {
+      if (
+        this.structDefs.has(ty.name) ||
+        this.typeParamScope.has(ty.name) ||
+        this.enumVariants.has(ty.name)
+      ) {
+        return;
+      }
+      try {
+        resolveTypeName(ty.name);
+      } catch {
+        this.error(`Unknown type '${ty.name}'`, line, column);
+      }
+      return;
+    }
+    if (ty.kind === "generic") {
+      for (const arg of ty.typeArgs) {
+        this.validateTypeAnnotation(arg, line, column);
+      }
+    }
+  }
+
+  private resolveTypeAnn(ty: SpandaType): SpandaType {
+    if (ty.kind === "named" && this.typeParamScope.has(ty.name)) {
+      return this.typeParamScope.get(ty.name)!;
+    }
+    if (ty.kind === "generic") {
+      return {
+        kind: "generic",
+        name: ty.name,
+        typeArgs: ty.typeArgs.map((a) => this.resolveTypeAnn(a)),
+      };
+    }
+    return ty;
+  }
+
+  private static futureType(inner: SpandaType): SpandaType {
+    return { kind: "generic", name: "Future", typeArgs: [inner] };
+  }
+
+  private checkModuleFunctions(functions: ModuleFnDecl[]): void {
+    for (const func of functions) {
+      const savedScope = new Map(this.typeParamScope);
+      this.typeParamScope.clear();
+      for (const tp of func.typeParams) {
+        this.typeParamScope.set(tp, { kind: "named", name: tp });
+      }
+      for (const param of func.params) {
+        this.validateTypeAnnotation(param.typeAnn, param.span.start.line, param.span.start.column);
+        const resolved = this.resolveTypeAnn(param.typeAnn);
+        this.symbols.set(param.name, {
+          name: param.name,
+          roboType: resolved,
+          kind: "variable",
+        });
+      }
+      for (const stmt of func.body) {
+        this.checkStmt(stmt);
+      }
+      for (const param of func.params) {
+        this.symbols.delete(param.name);
+      }
+      if (func.visibility === "export" || func.visibility === "public") {
+        this.moduleFunctions.set(func.name, func);
+      }
+      this.resolveTypeAnn(func.returnType);
+      this.typeParamScope = savedScope;
+    }
+  }
+
+  private checkExternFunctions(functions: ExternFnDecl[]): void {
+    for (const func of functions) {
+      for (const param of func.params) {
+        this.validateTypeAnnotation(param.typeAnn, param.span.start.line, param.span.start.column);
+      }
+      this.resolveTypeAnn(func.returnType);
+      this.externFunctions.set(func.name, func);
     }
   }
 
@@ -1126,6 +1221,27 @@ class TypeChecker {
       case "ReturnStmt":
         if (stmt.value) this.checkExpr(stmt.value);
         break;
+      case "SpawnStmt": {
+        if (stmt.callee.kind === "IdentExpr" && !this.moduleFunctions.has(stmt.callee.name)) {
+          this.error(
+            `Unknown spawn target '${stmt.callee.name}'`,
+            stmt.span.start.line,
+            stmt.span.start.column,
+          );
+        }
+        for (const arg of stmt.args) {
+          this.checkExpr(arg);
+        }
+        break;
+      }
+      case "SelectStmt":
+        for (const arm of stmt.arms) {
+          this.checkExpr(arm.channel);
+          for (const s of arm.body) {
+            this.checkStmt(s);
+          }
+        }
+        break;
     }
   }
 
@@ -1194,6 +1310,16 @@ class TypeChecker {
 
       case "CallExpr":
         return this.checkCall(expr);
+
+      case "AwaitExpr": {
+        const inner = this.checkExpr(expr.operand);
+        if (inner.kind === "generic" && inner.name === "Future") {
+          const t = inner.typeArgs[0];
+          if (t) return t;
+        }
+        this.error("await requires a Future value", expr.span.start.line, expr.span.start.column);
+        return { kind: "void" };
+      }
 
       case "MatchExpr":
         return this.checkMatch(expr);
@@ -1288,6 +1414,31 @@ class TypeChecker {
     const armNames = new Set(arms.map((a) => a.variant));
     if (armNames.size === 0) return;
 
+    if (armNames.has("Ok") || armNames.has("Err")) {
+      for (const required of ["Ok", "Err"]) {
+        if (!armNames.has(required)) {
+          this.error(
+            `Non-exhaustive match on Result: missing '${required}' arm`,
+            span.start.line,
+            span.start.column,
+          );
+        }
+      }
+      return;
+    }
+    if (armNames.has("Some") || armNames.has("None")) {
+      for (const required of ["Some", "None"]) {
+        if (!armNames.has(required)) {
+          this.error(
+            `Non-exhaustive match on Option: missing '${required}' arm`,
+            span.start.line,
+            span.start.column,
+          );
+        }
+      }
+      return;
+    }
+
     for (const variants of this.enumVariants.values()) {
       const variantSet = new Set(variants);
       if ([...armNames].every((name) => variantSet.has(name))) {
@@ -1363,11 +1514,91 @@ class TypeChecker {
     return { kind: "void" };
   }
 
+  private checkResultOptionCtor(
+    name: string,
+    args: Expr[],
+    span: import("../ast/nodes.js").Span,
+  ): SpandaType {
+    if (name === "Ok" || name === "Some") {
+      const arg = args[0];
+      if (!arg) {
+        this.error(`'${name}' requires a value argument`, span.start.line, span.start.column);
+        return { kind: "void" };
+      }
+      const inner = this.checkExpr(arg);
+      if (name === "Ok") {
+        return {
+          kind: "generic",
+          name: "Result",
+          typeArgs: [inner, { kind: "named", name: "Error" }],
+        };
+      }
+      return { kind: "generic", name: "Option", typeArgs: [inner] };
+    }
+    if (name === "Err") {
+      const inner = args[0] ? this.checkExpr(args[0]) : { kind: "named" as const, name: "Error" };
+      return {
+        kind: "generic",
+        name: "Result",
+        typeArgs: [{ kind: "void" }, inner],
+      };
+    }
+    return { kind: "generic", name: "Option", typeArgs: [{ kind: "void" }] };
+  }
+
   private checkCall(expr: import("../ast/nodes.js").CallExpr): SpandaType {
     if (expr.callee.kind === "IdentExpr") {
-      const fn = BUILTIN_FUNCTIONS[expr.callee.name];
+      const name = expr.callee.name;
+      const moduleFn = this.moduleFunctions.get(name);
+      if (moduleFn) {
+        const saved = new Map(this.typeParamScope);
+        for (let i = 0; i < moduleFn.typeParams.length; i++) {
+          const tp = moduleFn.typeParams[i];
+          const arg = expr.args[i];
+          if (tp && arg) {
+            this.typeParamScope.set(tp, this.checkExpr(arg));
+          }
+        }
+        for (let i = 0; i < expr.args.length; i++) {
+          const param = moduleFn.params[i];
+          if (param) {
+            const expected = this.resolveTypeAnn(param.typeAnn);
+            const actual = this.checkExpr(expr.args[i]!);
+            this.assertCompatible(expected, actual, expr.span.start.line, expr.span.start.column);
+          }
+        }
+        const ret = this.resolveTypeAnn(moduleFn.returnType);
+        this.typeParamScope = saved;
+        return moduleFn.isAsync ? TypeChecker.futureType(ret) : ret;
+      }
+      const externFn = this.externFunctions.get(name);
+      if (externFn) {
+        for (let i = 0; i < expr.args.length; i++) {
+          const param = externFn.params[i];
+          if (param) {
+            const expected = this.resolveTypeAnn(param.typeAnn);
+            const actual = this.checkExpr(expr.args[i]!);
+            this.assertCompatible(expected, actual, expr.span.start.line, expr.span.start.column);
+          }
+        }
+        return this.resolveTypeAnn(externFn.returnType);
+      }
+      if (name === "assert") {
+        const arg = expr.args[0];
+        if (arg) {
+          const t = this.checkExpr(arg);
+          if (t.kind !== "bool") {
+            this.error("assert requires a boolean condition", expr.span.start.line, expr.span.start.column);
+          }
+        }
+        return { kind: "void" };
+      }
+      if (name === "Ok" || name === "Err" || name === "Some" || name === "None") {
+        return this.checkResultOptionCtor(name, expr.args, expr.span);
+      }
+      const fn = BUILTIN_FUNCTIONS[name];
       if (!fn) {
-        this.error(`Unknown function '${expr.callee.name}'`, expr.span.start.line, expr.span.start.column);
+        this.error(`Unknown function '${name}'`, expr.span.start.line, expr.span.start.column);
         return { kind: "void" };
       }
       for (const arg of expr.namedArgs) {

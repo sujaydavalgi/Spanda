@@ -890,6 +890,9 @@ export class Interpreter {
         break;
       case "ReturnStmt":
         break;
+      case "SpawnStmt":
+      case "SelectStmt":
+        break;
     }
   }
 

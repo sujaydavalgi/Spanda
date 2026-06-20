@@ -1,4 +1,46 @@
-import type { Expr, Span, Stmt } from "./ast/nodes.js";
+import type { Expr, Span, SpandaType, Stmt } from "./ast/nodes.js";
+
+export type Visibility = "private" | "public" | "export";
+
+export type ModuleParamDecl = {
+  name: string;
+  typeAnn: SpandaType;
+  span: Span;
+};
+
+export type ModuleFnDecl = {
+  kind: "ModuleFnDecl";
+  name: string;
+  visibility: Visibility;
+  typeParams: string[];
+  params: ModuleParamDecl[];
+  returnType: SpandaType;
+  isAsync: boolean;
+  body: Stmt[];
+  span: Span;
+};
+
+export type ExternFnDecl = {
+  kind: "ExternFnDecl";
+  name: string;
+  library: string | null;
+  params: ModuleParamDecl[];
+  returnType: SpandaType;
+  span: Span;
+};
+
+export type TestDecl = {
+  kind: "TestDecl";
+  name: string;
+  body: Stmt[];
+  span: Span;
+};
+
+export type SelectArm = {
+  channel: Expr;
+  body: Stmt[];
+  span: Span;
+};
 
 export type FieldDecl = {
   name: string;

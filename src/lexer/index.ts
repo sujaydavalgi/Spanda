@@ -8,6 +8,15 @@ export type TokenType =
   | "FOR"
   | "MATCH"
   | "FN"
+  | "EXPORT"
+  | "PUBLIC"
+  | "PRIVATE"
+  | "RETURN"
+  | "ASYNC"
+  | "AWAIT"
+  | "SPAWN"
+  | "SELECT"
+  | "EXTERN"
   | "STATE_MACHINE"
   | "TASK"
   | "SKILL"
@@ -272,6 +281,15 @@ const KEYWORDS: Record<string, TokenType> = {
   for: "FOR",
   match: "MATCH",
   fn: "FN",
+  export: "EXPORT",
+  public: "PUBLIC",
+  private: "PRIVATE",
+  return: "RETURN",
+  async: "ASYNC",
+  await: "AWAIT",
+  spawn: "SPAWN",
+  select: "SELECT",
+  extern: "EXTERN",
   state_machine: "STATE_MACHINE",
   task: "TASK",
   skill: "SKILL",

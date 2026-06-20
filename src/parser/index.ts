@@ -50,6 +50,12 @@ import type {
   EventHandlerDecl,
   FieldDecl,
   MatchArm,
+  ModuleFnDecl,
+  ExternFnDecl,
+  TestDecl,
+  SelectArm,
+  ModuleParamDecl,
+  Visibility,
   StateMachineDecl,
   StructDecl,
   TaskDecl,
@@ -89,6 +95,7 @@ export function parse(tokens: Token[]): Program {
 
 class Parser {
   private pos = 0;
+  private typeParamNames = new Set<string>();
 
   constructor(private tokens: Token[]) {}
 
@@ -152,6 +159,8 @@ class Parser {
       "EMIT",
       "EXECUTE",
       "DISCOVER",
+      "FROM",
+      "TO",
       "SUBSCRIBE",
       "RECEIVE",
       "MESSAGE",
@@ -207,6 +216,8 @@ class Parser {
       "FAULT",
       "EXECUTE",
       "DISCOVER",
+      "FROM",
+      "TO",
       "SUBSCRIBE",
       "RECEIVE",
       "MESSAGE",
@@ -230,11 +241,14 @@ class Parser {
 
     if (this.check("MODULE")) {
       this.advance();
-      moduleName = this.parseLabel("Expected module name after 'module'");
+      moduleName = this.parseDottedName("Expected module name after 'module'");
       this.expect("SEMICOLON", "Expected ';' after module declaration");
     }
 
     const imports: ImportDecl[] = [];
+    const functions: ModuleFnDecl[] = [];
+    const externFunctions: ExternFnDecl[] = [];
+    const tests: TestDecl[] = [];
     const structs: StructDecl[] = [];
     const enums: EnumDecl[] = [];
     const traits: TraitDecl[] = [];
@@ -246,7 +260,13 @@ class Parser {
     }
 
     while (!this.check("EOF")) {
-      if (this.check("STRUCT")) {
+      if (this.isModuleFnStart()) {
+        functions.push(this.parseModuleFn());
+      } else if (this.match("EXTERN")) {
+        externFunctions.push(this.parseExternFn());
+      } else if (this.check("IDENT") && this.peek().lexeme === "test") {
+        tests.push(this.parseTest());
+      } else if (this.check("STRUCT")) {
         structs.push(this.parseStruct());
       } else if (this.check("ENUM")) {
         enums.push(this.parseEnum());
@@ -267,11 +287,143 @@ class Parser {
       kind: "Program",
       moduleName,
       imports,
+      functions,
+      tests,
+      externFunctions,
       structs,
       enums,
       traits,
       messages,
       robots,
+      span: this.spanFrom(start, end),
+    };
+  }
+
+  private parseDottedName(message: string): string {
+    const parts = [this.parseImportSegment(message)];
+    while (this.match("DOT")) {
+      parts.push(this.parseImportSegment("Expected name after '.'"));
+    }
+    return parts.join(".");
+  }
+
+  private isModuleFnStart(): boolean {
+    return (
+      this.check("EXPORT") ||
+      this.check("PUBLIC") ||
+      this.check("PRIVATE") ||
+      this.check("ASYNC") ||
+      this.check("FN")
+    );
+  }
+
+  private parseTypeParams(): string[] {
+    if (!this.match("LT")) return [];
+    const params: string[] = [];
+    if (!this.check("GT")) {
+      do {
+        params.push(this.parseLabel("Expected type parameter name"));
+      } while (this.match("COMMA"));
+    }
+    this.expect("GT", "Expected '>' after type parameters");
+    return params;
+  }
+
+  private parseModuleFn(): ModuleFnDecl {
+    const start = this.peek();
+    let visibility: Visibility = "private";
+    if (this.match("EXPORT")) visibility = "export";
+    else if (this.match("PUBLIC")) visibility = "public";
+    else if (this.match("PRIVATE")) visibility = "private";
+    const isAsync = this.match("ASYNC");
+    this.expect("FN", "Expected 'fn' in module function");
+    const name = this.parseLabel("Expected function name");
+    const typeParams = this.parseTypeParams();
+    const savedTypeParams = this.typeParamNames;
+    this.typeParamNames = new Set(typeParams);
+    this.expect("LPAREN", "Expected '(' after function name");
+    const params: ModuleParamDecl[] = [];
+    if (!this.check("RPAREN")) {
+      do {
+        const pstart = this.peek();
+        const pname = this.parseLabel("Expected parameter name");
+        this.expect("COLON", "Expected ':' after parameter name");
+        const typeAnn = this.parseTypeAnnotation();
+        params.push({
+          name: pname,
+          typeAnn,
+          span: this.spanFrom(pstart, this.previous()),
+        });
+      } while (this.match("COMMA"));
+    }
+    this.expect("RPAREN", "Expected ')' after parameters");
+    this.expect("ARROW", "Expected '->' after function parameters");
+    const returnType = this.parseTypeAnnotation();
+    this.expect("LBRACE", "Expected '{' after function return type");
+    const body = this.parseBlock();
+    const end = this.expect("RBRACE", "Expected '}' to close function");
+    this.typeParamNames = savedTypeParams;
+    return {
+      kind: "ModuleFnDecl",
+      name,
+      visibility,
+      typeParams,
+      params,
+      returnType,
+      isAsync,
+      body,
+      span: this.spanFrom(start, end),
+    };
+  }
+
+  private parseExternFn(): ExternFnDecl {
+    const start = this.previous();
+    let library: string | null = null;
+    if (this.match("STRING")) {
+      library = this.previous().value as string;
+    }
+    this.expect("FN", "Expected 'fn' in extern declaration");
+    const name = this.parseLabel("Expected extern function name");
+    this.expect("LPAREN", "Expected '(' after extern function name");
+    const params: ModuleParamDecl[] = [];
+    if (!this.check("RPAREN")) {
+      do {
+        const pstart = this.peek();
+        const pname = this.parseLabel("Expected parameter name");
+        this.expect("COLON", "Expected ':' after parameter name");
+        const typeAnn = this.parseTypeAnnotation();
+        params.push({
+          name: pname,
+          typeAnn,
+          span: this.spanFrom(pstart, this.previous()),
+        });
+      } while (this.match("COMMA"));
+    }
+    this.expect("RPAREN", "Expected ')' after extern parameters");
+    this.expect("ARROW", "Expected '->' after extern parameters");
+    const returnType = this.parseTypeAnnotation();
+    const end = this.expect("SEMICOLON", "Expected ';' after extern declaration");
+    return {
+      kind: "ExternFnDecl",
+      name,
+      library,
+      params,
+      returnType,
+      span: this.spanFrom(start, end),
+    };
+  }
+
+  private parseTest(): TestDecl {
+    const start = this.advance();
+    const nameTok = this.expect("STRING", "Expected test name string");
+    const name = nameTok.value as string;
+    this.expect("LBRACE", "Expected '{' after test name");
+    const body = this.parseBlock();
+    const end = this.expect("RBRACE", "Expected '}' to close test");
+    return {
+      kind: "TestDecl",
+      name,
+      body,
       span: this.spanFrom(start, end),
     };
   }
@@ -333,6 +485,9 @@ class Parser {
     try {
       return resolveTypeName(qualified);
     } catch (e) {
+      if (this.typeParamNames.has(qualified) || this.typeParamNames.has(parts[parts.length - 1] ?? qualified)) {
+        return { kind: "named", name: parts[parts.length - 1] ?? qualified };
+      }
       const t = this.peek();
       throw new ParseError((e as Error).message, t.line, t.column);
     }
@@ -2014,6 +2169,66 @@ class Parser {
       return { kind: "RememberStmt", key, value, span: this.spanFrom(start, end) };
     }
 
+    if (this.match("RETURN")) {
+      const value = this.check("SEMICOLON") ? null : this.parseExpr();
+      this.expect("SEMICOLON", "Expected ';' after return");
+      const end = this.previous();
+      return { kind: "ReturnStmt", value, span: this.spanFrom(start, end) };
+    }
+
+    if (this.match("SPAWN")) {
+      const calleeName = this.parseLabel("Expected function name after spawn");
+      const callee: Expr = {
+        kind: "IdentExpr",
+        name: calleeName,
+        span: this.spanFrom(start, this.previous()),
+      };
+      const args: Expr[] = [];
+      if (this.match("LPAREN")) {
+        if (!this.check("RPAREN")) {
+          do {
+            args.push(this.parseExpr());
+          } while (this.match("COMMA"));
+        }
+        this.expect("RPAREN", "Expected ')' after spawn arguments");
+      }
+      this.expect("SEMICOLON", "Expected ';' after spawn");
+      const end = this.previous();
+      return { kind: "SpawnStmt", callee, args, span: this.spanFrom(start, end) };
+    }
+
+    if (this.match("SELECT")) {
+      this.expect("LBRACE", "Expected '{' after select");
+      const arms: SelectArm[] = [];
+      while (!this.check("RBRACE") && !this.check("EOF")) {
+        const armStart = this.peek();
+        const recv = this.expect("IDENT", "Expected 'recv' in select arm");
+        if (recv.lexeme !== "recv") {
+          throw new ParseError("Expected 'recv' in select arm", recv.line, recv.column);
+        }
+        this.expect("LPAREN", "Expected '(' after recv");
+        const channel = this.parseExpr();
+        this.expect("RPAREN", "Expected ')' after channel");
+        this.expect("FAT_ARROW", "Expected '=>' in select arm");
+        let body: Stmt[];
+        if (this.check("LBRACE")) {
+          this.advance();
+          body = this.parseBlock();
+          this.expect("RBRACE", "Expected '}' to close select arm");
+        } else {
+          body = [this.parseStmt()];
+        }
+        arms.push({
+          channel,
+          body,
+          span: this.spanFrom(armStart, this.previous()),
+        });
+      }
+      const end = this.expect("RBRACE", "Expected '}' to close select");
+      this.expect("SEMICOLON", "Expected ';' after select");
+      return { kind: "SelectStmt", arms, span: this.spanFrom(start, end) };
+    }
+
     const expr = this.parseExpr();
     this.expect("SEMICOLON", "Expected ';' after expression");
     const end = this.previous();
@@ -2203,6 +2418,15 @@ class Parser {
   }
 
   private parseUnary(): Expr {
+    if (this.match("AWAIT")) {
+      const start = this.previous();
+      const operand = this.parseUnary();
+      return {
+        kind: "AwaitExpr",
+        operand,
+        span: this.spanFrom(start, this.previous()),
+      };
+    }
     if (this.match("MINUS", "NOT")) {
       const opTok = this.previous();
       const op = (opTok.type === "NOT" ? "not" : "-") as import("../ast/nodes.js").UnaryOp;
@@ -2460,6 +2684,8 @@ class Parser {
         "FAULT",
         "EXECUTE",
         "DISCOVER",
+        "FROM",
+        "TO",
         "SUBSCRIBE",
         "RECEIVE",
         "MESSAGE",

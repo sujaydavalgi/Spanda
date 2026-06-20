@@ -33,10 +33,13 @@ function genericArity(name: string): number | undefined {
     case "Topic":
     case "Message":
     case "Endpoint":
+    case "Future":
+    case "Option":
       return 1;
     case "Map":
     case "Service":
     case "Tuple":
+    case "Result":
       return 2;
     case "Action":
       return 3;

@@ -155,6 +155,9 @@ export type Program = {
   kind: "Program";
   moduleName: string | null;
   imports: ImportDecl[];
+  functions: import("../foundations.js").ModuleFnDecl[];
+  tests: import("../foundations.js").TestDecl[];
+  externFunctions: import("../foundations.js").ExternFnDecl[];
   structs: StructDecl[];
   enums: EnumDecl[];
   traits: TraitDecl[];
@@ -409,6 +412,8 @@ export type Stmt =
   | LoopStmt
   | ExprStmt
   | ReturnStmt
+  | SpawnStmt
+  | SelectStmt
   | PublishStmt
   | ServiceCallStmt
   | ActionSendStmt
@@ -421,6 +426,19 @@ export type Stmt =
   | ExecuteStmt
   | DiscoverStmt
   | ReceiveStmt;
+
+export type SpawnStmt = {
+  kind: "SpawnStmt";
+  callee: Expr;
+  args: Expr[];
+  span: Span;
+};
+
+export type SelectStmt = {
+  kind: "SelectStmt";
+  arms: import("../foundations.js").SelectArm[];
+  span: Span;
+};
 
 export type RememberStmt = {
   kind: "RememberStmt";
@@ -539,6 +557,7 @@ export type Expr =
   | IdentExpr
   | BinaryExpr
   | UnaryExpr
+  | AwaitExpr
   | CallExpr
   | MemberExpr
   | MatchExpr
@@ -546,6 +565,12 @@ export type Expr =
   | ServiceCallExpr
   | ExecuteExpr
   | DiscoverExpr;
+
+export type AwaitExpr = {
+  kind: "AwaitExpr";
+  operand: Expr;
+  span: Span;
+};
 
 export type LiteralExpr = {
   kind: "LiteralExpr";
