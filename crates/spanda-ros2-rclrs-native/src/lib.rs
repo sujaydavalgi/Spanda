@@ -51,7 +51,8 @@ fn set_string_payload(message: &mut DynamicMessage, payload: &str) -> bool {
     // let result = spanda_ros2_rclrs_native::set_string_payload(message, payload);
 
     // Compute Some for the following logic.
-    let Some(ValueMut::Simple(SimpleValueMut::BoundedString(field))) = message.get_mut("data") else {
+    let Some(ValueMut::Simple(SimpleValueMut::BoundedString(mut field))) = message.get_mut("data")
+    else {
         return false;
     };
     field.try_assign(payload).is_ok()
