@@ -1,0 +1,127 @@
+//! Optional live transport hooks via the Python bridge subprocess.
+
+use crate::bridge::python::{bridge_script_path, python_available};
+use crate::bridge::protocol::call_subprocess_bridge;
+use crate::runtime::RuntimeValue;
+use std::path::PathBuf;
+use std::process::Command;
+
+fn python_cmd() -> Option<String> {
+    for cmd in ["python3", "python"] {
+        if Command::new(cmd)
+            .arg("-c")
+            .arg("import sys")
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null())
+            .status()
+            .map(|s| s.success())
+            .unwrap_or(false)
+        {
+            return Some(cmd.to_string());
+        }
+    }
+    None
+}
+
+fn payload_string(value: &RuntimeValue) -> String {
+    match value {
+        RuntimeValue::String { value } => value.clone(),
+        RuntimeValue::Number { value, .. } => value.to_string(),
+        RuntimeValue::Bool { value } => value.to_string(),
+        other => format!("{other:?}"),
+    }
+}
+
+fn invoke_bridge(fn_name: &str, args: &[RuntimeValue]) -> bool {
+    if !python_available() {
+        return false;
+    }
+    let script = match bridge_script_path() {
+        Some(path) => path,
+        None => return false,
+    };
+    let python = match python_cmd() {
+        Some(cmd) => cmd,
+        None => return false,
+    };
+    let decl = crate::foundations::ExternFnDecl {
+        name: fn_name.into(),
+        library: Some("python".into()),
+        bridge: crate::foundations::BridgeKind::Python,
+        params: vec![],
+        return_type: crate::ast::SpandaType::String,
+        span: crate::ast::Span {
+            start: crate::ast::SourceLocation {
+                line: 0,
+                column: 0,
+                offset: 0,
+            },
+            end: crate::ast::SourceLocation {
+                line: 0,
+                column: 0,
+                offset: 0,
+            },
+        },
+    };
+    call_subprocess_bridge(
+        "Python",
+        &PathBuf::from(python),
+        &[script.to_str().unwrap()],
+        &decl,
+        args,
+    )
+    .is_ok()
+}
+
+pub fn ros2_live_enabled() -> bool {
+    std::env::var("SPANDA_ROS2_LIVE").is_ok()
+}
+
+pub fn mqtt_live_enabled() -> bool {
+    std::env::var("SPANDA_MQTT_LIVE").is_ok()
+}
+
+pub fn try_ros2_publish(topic: &str, value: &RuntimeValue) -> bool {
+    if !ros2_live_enabled() {
+        return false;
+    }
+    invoke_bridge(
+        "ros2_publish",
+        &[
+            RuntimeValue::String {
+                value: topic.to_string(),
+            },
+            RuntimeValue::String {
+                value: payload_string(value),
+            },
+        ],
+    )
+}
+
+pub fn try_mqtt_publish(topic: &str, value: &RuntimeValue) -> bool {
+    if !mqtt_live_enabled() {
+        return false;
+    }
+    invoke_bridge(
+        "mqtt_publish",
+        &[
+            RuntimeValue::String {
+                value: topic.to_string(),
+            },
+            RuntimeValue::String {
+                value: payload_string(value),
+            },
+        ],
+    )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn live_flags_default_off() {
+        std::env::remove_var("SPANDA_ROS2_LIVE");
+        assert!(!ros2_live_enabled());
+    }
+}

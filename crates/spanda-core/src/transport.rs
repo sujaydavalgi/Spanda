@@ -3,6 +3,7 @@
 //! Each adapter records operations for simulation/testing and exposes a uniform
 //! interface that real broker/node integrations can implement later.
 
+use crate::transport_live as live;
 use crate::comm::{
     CommBus, DiscoverFilter, DiscoverTarget, InMemoryCommBus, PublishedCommMessage,
     SimNetworkConfig, TransportKind,
@@ -164,7 +165,75 @@ macro_rules! stub_adapter {
     };
 }
 
-stub_adapter!(Ros2TransportAdapter, TransportKind::Ros2);
+/// ROS2 transport adapter — logs locally; optionally forwards via Python bridge.
+#[derive(Debug, Default)]
+pub struct Ros2TransportAdapter {
+    state: StubTransportState,
+}
+
+impl TransportAdapter for Ros2TransportAdapter {
+    fn kind(&self) -> TransportKind {
+        TransportKind::Ros2
+    }
+
+    fn connect(&mut self, config: &TransportConfig) -> Result<(), String> {
+        self.state.connected = true;
+        self.state.config = config.clone();
+        Ok(())
+    }
+
+    fn disconnect(&mut self) {
+        self.state.connected = false;
+    }
+
+    fn is_connected(&self) -> bool {
+        self.state.connected
+    }
+
+    fn publish(&mut self, topic: &str, message_type: &str, value: RuntimeValue) {
+        if self.state.connected {
+            self.state.publish(topic, message_type, value.clone());
+        }
+        let _ = live::try_ros2_publish(topic, &value);
+    }
+
+    fn subscribe(&mut self, topic: &str) {
+        if self.state.connected {
+            self.state.subscribe(topic);
+        }
+    }
+
+    fn receive(&mut self, topic: &str) -> Option<RuntimeValue> {
+        if self.state.connected {
+            self.state.receive(topic)
+        } else {
+            None
+        }
+    }
+
+    fn call_service(
+        &mut self,
+        _service: &str,
+        service_type: &str,
+        _request: Option<RuntimeValue>,
+    ) -> RuntimeValue {
+        StubTransportState::service_result(service_type)
+    }
+
+    fn send_action(
+        &mut self,
+        _action: &str,
+        action_type: &str,
+        _goal: RuntimeValue,
+    ) -> RuntimeValue {
+        StubTransportState::action_result(action_type)
+    }
+
+    fn published(&self) -> Vec<AdapterMessage> {
+        self.state.published.clone()
+    }
+}
+
 stub_adapter!(MqttTransportAdapter, TransportKind::Mqtt);
 stub_adapter!(DdsTransportAdapter, TransportKind::Dds);
 stub_adapter!(WebsocketTransportAdapter, TransportKind::Websocket);
