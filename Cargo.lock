@@ -739,6 +739,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "spanda-dap"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "spanda-core",
+]
+
+[[package]]
 name = "spanda-node"
 version = "0.1.0"
 dependencies = [

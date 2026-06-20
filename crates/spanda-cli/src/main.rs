@@ -2,9 +2,11 @@ mod package;
 
 use serde::Serialize;
 use spanda_core::{
-    check, format_source, generate_markdown, lint, run, verify_compatibility, CompatSeverity,
-    RunOptions, SpandaError, VerifyOptions,
+    check, codegen, format_source, generate_markdown, lint, run, run_debug, verify_compatibility,
+    wasm_deploy_manifest, CodegenTarget, CompatSeverity, DebugOptions, RunOptions, SpandaError,
+    VerifyOptions,
 };
+use std::collections::HashSet;
 use std::env;
 use std::fs;
 use std::io::{self, Write};
@@ -66,7 +68,10 @@ fn usage() {
            spanda sim [--json] <file.sd>\n\
            spanda fmt [--json] <file.sd>\n\
            spanda lint [--json] <file.sd>\n\
-           spanda doc [--json] [--out <file.md>] <file.sd>\n\n\
+           spanda doc [--json] [--out <file.md>] <file.sd>\n\
+           spanda codegen [--target native|wasm|esp32] [--out <file>] <file.sd>\n\
+           spanda deploy --target wasm [--out <file.json>] <file.sd>\n\
+           spanda debug [--break <line>] <file.sd>\n\n\
          Package commands:\n\
            spanda init [name] [--description <text>]\n\
            spanda build [--project <dir>]\n\
@@ -305,6 +310,8 @@ fn main() {
     let mut simulate = false;
     let mut project_mode = false;
     let mut out_path: Option<String> = None;
+    let mut codegen_target = CodegenTarget::Native;
+    let mut breakpoints: Vec<u32> = Vec::new();
     let mut file: Option<String> = None;
 
     let mut i = 2;
@@ -316,10 +323,34 @@ fn main() {
             "--target" => {
                 i += 1;
                 if i >= args.len() {
-                    eprintln!("--target requires a hardware profile name");
+                    eprintln!("--target requires a value");
                     process::exit(1);
                 }
-                target = Some(args[i].clone());
+                match command {
+                    "codegen" | "deploy" => {
+                        codegen_target = match args[i].as_str() {
+                            "native" => CodegenTarget::Native,
+                            "wasm" => CodegenTarget::Wasm,
+                            "esp32" => CodegenTarget::Esp32,
+                            other => {
+                                eprintln!("Unknown codegen target: {other}");
+                                process::exit(1);
+                            }
+                        };
+                    }
+                    _ => target = Some(args[i].clone()),
+                }
+            }
+            "--break" => {
+                i += 1;
+                if i >= args.len() {
+                    eprintln!("--break requires a line number");
+                    process::exit(1);
+                }
+                breakpoints.push(args[i].parse().unwrap_or_else(|_| {
+                    eprintln!("Invalid line number for --break");
+                    process::exit(1);
+                }));
             }
             "--all-targets" => all_targets = true,
             "--simulate" => simulate = true,
@@ -505,6 +536,92 @@ fn main() {
                     if json {
                         let resp = DocResponse { ok: true, markdown };
                         println!("{}", serde_json::to_string(&resp).unwrap());
+                    }
+                }
+                Err(e) => {
+                    eprintln!("Error: {e}");
+                    process::exit(1);
+                }
+            }
+        }
+        "codegen" => {
+            let file = file.unwrap_or_else(|| {
+                eprintln!("Missing file path");
+                usage();
+                process::exit(1);
+            });
+            let source = read_source(&file);
+            match codegen(&source, codegen_target) {
+                Ok(output) => {
+                    if let Some(ref out) = out_path {
+                        fs::write(out, &output).unwrap_or_else(|e| {
+                            eprintln!("Error writing {out}: {e}");
+                            process::exit(1);
+                        });
+                        println!("✓ wrote codegen output to {out}");
+                    } else {
+                        print!("{output}");
+                    }
+                }
+                Err(e) => {
+                    eprintln!("Error: {e}");
+                    process::exit(1);
+                }
+            }
+        }
+        "deploy" => {
+            let file = file.unwrap_or_else(|| {
+                eprintln!("Missing file path");
+                usage();
+                process::exit(1);
+            });
+            if codegen_target != CodegenTarget::Wasm {
+                eprintln!("deploy currently supports --target wasm only");
+                process::exit(1);
+            }
+            let source = read_source(&file);
+            match wasm_deploy_manifest(&source) {
+                Ok(manifest) => {
+                    if let Some(ref out) = out_path {
+                        fs::write(out, &manifest).unwrap_or_else(|e| {
+                            eprintln!("Error writing {out}: {e}");
+                            process::exit(1);
+                        });
+                        println!("✓ wrote wasm deploy manifest to {out}");
+                    } else {
+                        print!("{manifest}");
+                    }
+                }
+                Err(e) => {
+                    eprintln!("Error: {e}");
+                    process::exit(1);
+                }
+            }
+        }
+        "debug" => {
+            let file = file.unwrap_or_else(|| {
+                eprintln!("Missing file path");
+                usage();
+                process::exit(1);
+            });
+            let source = read_source(&file);
+            let mut bp = HashSet::new();
+            bp.extend(breakpoints);
+            match run_debug(
+                &source,
+                DebugOptions {
+                    breakpoints: bp,
+                    step: false,
+                },
+            ) {
+                Ok(session) => {
+                    if session.pauses.is_empty() {
+                        println!("✓ {file} — completed without hitting breakpoints");
+                    } else {
+                        println!("Debug pauses in {file}:");
+                        for pause in session.pauses {
+                            println!("  line {} — {}", pause.line, pause.reason);
+                        }
                     }
                 }
                 Err(e) => {

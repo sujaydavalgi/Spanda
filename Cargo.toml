@@ -5,6 +5,7 @@ members = [
     "crates/spanda-security",
     "crates/spanda-package",
     "crates/spanda-cli",
+    "crates/spanda-dap",
     "crates/spanda-node",
     "crates/spanda-wasm",
 ]
