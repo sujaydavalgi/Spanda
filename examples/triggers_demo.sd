@@ -1,0 +1,97 @@
+// Unified trigger-based execution demo for Spanda autonomous systems.
+
+message PoseMsg {
+  x: Distance;
+  y: Distance;
+}
+
+robot TriggerDemo {
+  sensor lidar: Lidar on "/scan";
+  actuator wheels: DifferentialDrive;
+
+  topic lidar_scan: String subscribe on "/scan";
+  topic status: String publish on "/status";
+
+  safety {
+    max_speed = 1.0 m/s;
+    stop_if lidar.nearest_distance < 0.5 m;
+  }
+
+  // Event trigger
+  event ObstacleDetected;
+
+  on ObstacleDetected {
+    wheels.stop();
+  }
+
+  // Message trigger (topic)
+  on lidar_scan {
+    publish status with "scan_received";
+  }
+
+  // Timer triggers
+  every 100ms {
+    publish status with "pose_tick";
+  }
+
+  every 1s {
+    publish status with "status_heartbeat";
+  }
+
+  // Condition trigger
+  when lidar.nearest_distance < 1.0 m {
+    wheels.stop();
+  }
+
+  // Safety trigger with priority
+  on safety EmergencyStop priority critical {
+    wheels.stop();
+  }
+
+  // State machine triggers
+  state_machine Mission {
+    state Idle;
+    state Navigating;
+    transition Idle -> Navigating;
+  }
+
+  on state Entered(Navigating) {
+    publish status with "navigation_started";
+  }
+
+  on state Exited(Navigating) {
+    publish status with "navigation_stopped";
+  }
+
+  // System category triggers
+  on hardware LidarFailure {
+    publish status with "lidar_fault";
+  }
+
+  on ai GoalCompleted {
+    publish status with "goal_done";
+  }
+
+  on verification Warning {
+    publish status with "verify_warning";
+  }
+
+  on twin DivergenceDetected {
+    publish status with "twin_divergence";
+  }
+
+  topic camera_frame: String subscribe on "/camera";
+
+  agent Vision {
+    on camera_frame {
+      publish status with "agent_frame";
+    }
+  }
+
+  task control every 50ms {
+    let scan = lidar.read();
+    if scan.nearest_distance < 0.5 m {
+      emit ObstacleDetected;
+    }
+  }
+}
