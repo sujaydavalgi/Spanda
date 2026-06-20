@@ -74,7 +74,7 @@ fn invoke_bridge(fn_name: &str, args: &[RuntimeValue]) -> bool {
 }
 
 pub fn ros2_live_enabled() -> bool {
-    std::env::var("SPANDA_ROS2_LIVE").is_ok()
+    std::env::var("SPANDA_ROS2_LIVE").is_ok() || std::env::var("SPANDA_ROS2_RCLRS").is_ok()
 }
 
 pub fn ros2_native_enabled() -> bool {

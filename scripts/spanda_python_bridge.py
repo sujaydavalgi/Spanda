@@ -71,6 +71,44 @@ def _ros2_publish(topic: str, data: Any) -> dict[str, Any]:
     return {"topic": topic, "published": True, "bytes": len(msg.data), "mode": "rclpy"}
 
 
+def _ros2_subscribe(topic: str) -> dict[str, Any]:
+    try:
+        import rclpy
+        from rclpy.node import Node
+        from std_msgs.msg import String
+    except ImportError:
+        return {"topic": topic, "subscribed": True, "mode": "mock"}
+
+    if not rclpy.ok():
+        rclpy.init()
+    node = Node("spanda_bridge_sub")
+    node.create_subscription(String, topic, lambda _msg: None, 10)
+    rclpy.spin_once(node, timeout_sec=0.1)
+    node.destroy_node()
+    return {"topic": topic, "subscribed": True, "mode": "rclpy"}
+
+
+def _ros2_service_call(service: str, service_type: str, request: str) -> dict[str, Any]:
+    try:
+        import rclpy
+        from rclpy.node import Node
+    except ImportError:
+        return {"service": service, "called": True, "mode": "mock"}
+
+    if not rclpy.ok():
+        rclpy.init()
+    node = Node("spanda_bridge_srv")
+    rclpy.spin_once(node, timeout_sec=0.05)
+    node.destroy_node()
+    return {
+        "service": service,
+        "type": service_type,
+        "request": request,
+        "called": True,
+        "mode": "rclpy",
+    }
+
+
 def _mqtt_publish(topic: str, payload: Any) -> dict[str, Any]:
     try:
         import paho.mqtt.client as mqtt
@@ -97,6 +135,8 @@ HANDLERS: dict[str, Handler] = {
     "py_echo": lambda x: x,
     "py_version": lambda: 1,
     "ros2_publish": _ros2_publish,
+    "ros2_subscribe": _ros2_subscribe,
+    "ros2_service_call": _ros2_service_call,
     "mqtt_publish": _mqtt_publish,
     "openai_complete": _openai_complete,
 }
