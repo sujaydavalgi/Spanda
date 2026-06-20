@@ -65,8 +65,49 @@ Package dependencies expose import paths via the registry (see [registry.md](./r
 | `std.hri` | Speech, gestures |
 | `std.units` | Physical units |
 | `std.spatial` | Pose, path, trajectory |
+| `std.core` | Result, Option, Error |
+| `std.security` | Identity, signatures, trust |
+| `std.audit` | Audit logs, provenance records |
+| `std.crypto` | Hashing and signing |
 
-## Declaring capabilities
+See [standard-library.md](./standard-library.md) for the full namespace list.
+
+## Audit and blockchain packages (optional)
+
+Blockchain is **not** part of the language core. Audit/provenance is built-in; ledger anchoring uses optional packages:
+
+| Package | Purpose |
+|---------|---------|
+| `spanda-provenance` | Mission provenance helpers |
+| `spanda-ledger` | Mock ledger backend (MVP) |
+| `spanda-did` | Device decentralized identity |
+| `spanda-supply-chain` | Hardware supply-chain traceability |
+
+Example manifest for an audit-enabled robot app:
+
+```toml
+[package]
+name = "example_robot"
+version = "0.1.0"
+license = "Apache-2.0"
+
+[dependencies]
+spanda-ros2 = "0.1.0"
+spanda-provenance = "0.1.0"
+
+[capabilities]
+required = [
+  "camera.read",
+  "lidar.read",
+  "network.outbound",
+  "audit.write"
+]
+
+[safety]
+level = "simulation_only"
+```
+
+See [audit-provenance.md](./audit-provenance.md) and [future-blockchain-support.md](./future-blockchain-support.md).
 
 Packages declare what permissions they need in `[capabilities]`:
 
