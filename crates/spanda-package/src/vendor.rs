@@ -4,6 +4,7 @@ use crate::dependency::LockedSource;
 use crate::error::{PackageError, PackageResult};
 use crate::lockfile::Lockfile;
 use crate::registry::registry_package_dir;
+use crate::registry_fetch::fetch_registry_tarball;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -31,7 +32,7 @@ pub fn vendor_dependencies(
                     .push(format!("{name} (local path {})", path.display()));
             }
             LockedSource::Registry { .. } => {
-                match vendor_registry_package(project_root, name, &vendor_root)? {
+                match vendor_registry_package(project_root, name, &dep.version, &vendor_root)? {
                     Some(path) => report.vendored.push(format!("{name} → {}", path.display())),
                     None => report.warnings.push(format!(
                         "registry package '{name}' has no local source tree — lockfile only"
@@ -66,18 +67,27 @@ pub fn vendor_dependencies(
 fn vendor_registry_package(
     project_root: &Path,
     name: &str,
+    version: &str,
     vendor_root: &Path,
 ) -> PackageResult<Option<PathBuf>> {
-    let Some(src) = registry_package_dir(name) else {
-        return Ok(None);
-    };
     let dest = vendor_root.join(name);
     if dest.exists() {
         fs::remove_dir_all(&dest).map_err(PackageError::Io)?;
     }
-    copy_dir_recursive(&src, &dest)?;
-    let _ = project_root;
-    Ok(Some(dest))
+
+    if let Some(src) = registry_package_dir(name) {
+        copy_dir_recursive(&src, &dest)?;
+        let _ = project_root;
+        return Ok(Some(dest));
+    }
+
+    match fetch_registry_tarball(name, version, &dest) {
+        Ok(path) => Ok(Some(path)),
+        Err(err) => {
+            let _ = err;
+            Ok(None)
+        }
+    }
 }
 
 fn vendor_git(

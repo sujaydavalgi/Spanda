@@ -9,6 +9,7 @@ pub mod manifest;
 pub mod project;
 pub mod publish;
 pub mod registry;
+pub mod registry_fetch;
 pub mod registry_remote;
 pub mod resolver;
 pub mod safety;
@@ -39,6 +40,7 @@ pub use registry_remote::{
     find_remote_entry, load_remote_registry, lookup_registry_entry, registry_base_url,
     search_remote_registry, RegistryEntryLookup, RemoteRegistryEntry,
 };
+pub use registry_fetch::{fetch_registry_tarball, registry_tarball_url};
 pub use resolver::{resolve_dependencies, ResolveOptions, ResolveResult};
 pub use safety::{SafetyLevel, SafetyMetadata};
 pub use validation::{
