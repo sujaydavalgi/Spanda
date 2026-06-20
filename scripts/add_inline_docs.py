@@ -20,12 +20,58 @@ RUST_FN_HEAD = re.compile(
 )
 
 
+def skip_string_literal(text: str, i: int) -> int:
+    if i >= len(text):
+        return i
+    if text.startswith("r#", i):
+        hash_count = 0
+        j = i + 1
+        while j < len(text) and text[j] == "#":
+            hash_count += 1
+            j += 1
+        if j < len(text) and text[j] in "\"'":
+            quote = text[j]
+            j += 1
+            while j < len(text):
+                if text[j] == quote:
+                    if hash_count == 0:
+                        break
+                    if text[j + 1 : j + 1 + hash_count] == "#" * hash_count:
+                        j += hash_count
+                        break
+                j += 1
+            return j
+    if text[i] in "\"'":
+        quote = text[i]
+        j = i + 1
+        while j < len(text):
+            if text[j] == "\\":
+                j += 2
+                continue
+            if text[j] == quote:
+                return j
+            j += 1
+        return j
+    return i
+
+
 def scan_balanced(text: str, start: int, open_ch: str, close_ch: str) -> int | None:
     if start >= len(text) or text[start] != open_ch:
         return None
     depth = 0
     i = start
     while i < len(text):
+        if text.startswith("//", i):
+            i = text.find("\n", i)
+            if i == -1:
+                return None
+            continue
+        if text.startswith("/*", i):
+            end = text.find("*/", i + 2)
+            if end == -1:
+                return None
+            i = end + 2
+            continue
         ch = text[i]
         if ch == open_ch:
             depth += 1
@@ -33,16 +79,10 @@ def scan_balanced(text: str, start: int, open_ch: str, close_ch: str) -> int | N
             depth -= 1
             if depth == 0:
                 return i
-        elif ch in "\"'":
-            quote = ch
-            i += 1
-            while i < len(text):
-                if text[i] == "\\":
-                    i += 2
-                    continue
-                if text[i] == quote:
-                    break
-                i += 1
+        elif ch in "\"'" or (
+            text.startswith("r", i) and i + 1 < len(text) and text[i + 1] in "'\""
+        ):
+            i = skip_string_literal(text, i)
         i += 1
     return None
 
@@ -378,6 +418,14 @@ def process_rust(path: Path) -> bool:
 
     for pos, doc in reversed(inserts):
         text = text[:pos] + "\n" + doc + text[pos:]
+
+    if text != original:
+        path.write_text(text, encoding="utf-8")
+        return True
+    return False
+
+
+def find_ts_callables(text: str, is_method: bool) -> list[FnMatch]:
     head = re.compile(
         r"(?m)^(?P<indent>\s+)"
         r"(?:(?:public|private|protected|static|async|readonly)\s+)+"
