@@ -1,3 +1,8 @@
+/**
+ * index module (comm/index.ts).
+ * @module
+ */
+
 import type { FieldDecl, StructDecl } from "../foundations.js";
 import type { SpandaType, Span } from "../ast/nodes.js";
 import type { RuntimeValue } from "../runtime/values.js";
@@ -5,6 +10,20 @@ import type { RuntimeValue } from "../runtime/values.js";
 export type TransportKind = "local" | "ros2" | "mqtt" | "dds" | "websocket" | "sim";
 
 export function transportFromIdent(s: string): TransportKind | null {
+  // TransportFromIdent.
+  //
+  // Parameters:
+  // - `s` — input value
+  //
+  // Returns:
+  // `Some` / non-null value on success, otherwise `None` / null.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = transportFromIdent(s);
+
   switch (s) {
     case "local":
       return "local";
@@ -24,6 +43,20 @@ export function transportFromIdent(s: string): TransportKind | null {
 }
 
 export function transportAsStr(t: TransportKind): string {
+  // TransportAsStr.
+  //
+  // Parameters:
+  // - `t` — input value
+  //
+  // Returns:
+  // Text result.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = transportAsStr(t);
+
   return t;
 }
 
@@ -112,10 +145,38 @@ export class MessageRegistry {
   private builtin = new Set(["Velocity", "Pose", "Scan", "String"]);
 
   static new(): MessageRegistry {
+    // Create a new instance.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // MessageRegistry.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = new();
+
     return new MessageRegistry();
   }
 
   register(decl: MessageDecl): void {
+    // Register the value.
+    //
+    // Parameters:
+    // - `decl` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = register(decl);
+
     this.schemas.set(decl.name, {
       name: decl.name,
       fields: decl.fields.map((f) => [f.name, f.typeName]),
@@ -124,6 +185,21 @@ export class MessageRegistry {
   }
 
   static fromProgram(messages: MessageDecl[], structs: StructDecl[]): MessageRegistry {
+    // FromProgram.
+    //
+    // Parameters:
+    // - `messages` — input value
+    // - `structs` — input value
+    //
+    // Returns:
+    // MessageRegistry.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = fromProgram(messages, structs);
+
     const reg = MessageRegistry.new();
     for (const msg of messages) reg.register(msg);
     for (const s of structs) {
@@ -137,10 +213,38 @@ export class MessageRegistry {
   }
 
   isKnown(name: string): boolean {
+    // IsKnown.
+    //
+    // Parameters:
+    // - `name` — input value
+    //
+    // Returns:
+    // true or false.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = isKnown(name);
+
     return this.builtin.has(name) || this.schemas.has(name);
   }
 
   resolveType(name: string): SpandaType | null {
+    // ResolveType.
+    //
+    // Parameters:
+    // - `name` — input value
+    //
+    // Returns:
+    // Some value on success, otherwise none.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = resolveType(name);
+
     switch (name) {
       case "Velocity":
         return { kind: "velocity" };
@@ -193,6 +297,23 @@ export class InMemoryCommBus {
     value: RuntimeValue,
     transport: TransportKind,
   ): void {
+    // Publish.
+    //
+    // Parameters:
+    // - `topicPath` — input value
+    // - `messageType` — input value
+    // - `value` — input value
+    // - `transport` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = publish(topicPath, messageType, value, transport);
+
     if (this.faults.includes("NetworkOutage")) return;
     if (this.network.packetLoss > 0) {
       const hash = topicPath.length + messageType.length;
@@ -204,6 +325,21 @@ export class InMemoryCommBus {
   }
 
   subscribe(topicPath: string, handler: string): void {
+    // Subscribe.
+    //
+    // Parameters:
+    // - `topicPath` — input value
+    // - `handler` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = subscribe(topicPath, handler);
+
     const subs = this.subscriptions.get(topicPath) ?? [];
     subs.push(handler);
     this.subscriptions.set(topicPath, subs);
@@ -211,11 +347,39 @@ export class InMemoryCommBus {
   }
 
   receive(topicPath: string): RuntimeValue | null {
+    // Receive.
+    //
+    // Parameters:
+    // - `topicPath` — input value
+    //
+    // Returns:
+    // Some value on success, otherwise none.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = receive(topicPath);
+
     const buf = this.buffers.get(topicPath);
     return buf?.shift() ?? null;
   }
 
   callService(serviceType: string): RuntimeValue {
+    // CallService.
+    //
+    // Parameters:
+    // - `serviceType` — input value
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = callService(serviceType);
+
     return {
       kind: "object",
       typeName: serviceType,
@@ -224,6 +388,20 @@ export class InMemoryCommBus {
   }
 
   sendAction(actionType: string): RuntimeValue {
+    // SendAction.
+    //
+    // Parameters:
+    // - `actionType` — input value
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = sendAction(actionType);
+
     return {
       kind: "object",
       typeName: actionType,
@@ -232,6 +410,21 @@ export class InMemoryCommBus {
   }
 
   discover(target: DiscoverTarget, filter: DiscoverFilter): string[] {
+    // Discover.
+    //
+    // Parameters:
+    // - `target` — input value
+    // - `filter` — input value
+    //
+    // Returns:
+    // string[].
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = discover(target, filter);
+
     const base =
       target === "robots"
         ? this.discoveredRobots
@@ -279,14 +472,57 @@ export class InMemoryCommBus {
 export const COMM_CAPABILITIES = ["subscribe", "publish", "call", "execute", "discover"] as const;
 
 export function isCommCapability(action: string): boolean {
+  // IsCommCapability.
+  //
+  // Parameters:
+  // - `action` — input value
+  //
+  // Returns:
+  // `true` or `false`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = isCommCapability(action);
+
   return (COMM_CAPABILITIES as readonly string[]).includes(action);
 }
 
 export function estimateTopicBandwidthMbps(rateHz: number, messageSizeBytes: number): number {
+  // EstimateTopicBandwidthMbps.
+  //
+  // Parameters:
+  // - `rateHz` — input value
+  // - `messageSizeBytes` — input value
+  //
+  // Returns:
+  // Numeric result.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = estimateTopicBandwidthMbps(rateHz, messageSizeBytes);
+
   return (rateHz * messageSizeBytes * 8) / 1_000_000;
 }
 
 export function defaultMessageSize(messageType: string): number {
+  // DefaultMessageSize.
+  //
+  // Parameters:
+  // - `messageType` — input value
+  //
+  // Returns:
+  // Numeric result.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = defaultMessageSize(messageType);
+
   switch (messageType) {
     case "Scan":
     case "LidarScan":

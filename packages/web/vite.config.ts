@@ -1,3 +1,8 @@
+/**
+ * vite.config module (vite.config.ts).
+ * @module
+ */
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 

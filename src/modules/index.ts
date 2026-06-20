@@ -1,3 +1,8 @@
+/**
+ * index module (modules/index.ts).
+ * @module
+ */
+
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { tokenize } from "../lexer/index.js";
@@ -13,6 +18,21 @@ export class ModuleRegistry {
   private modules = new Map<string, ModuleExports>();
 
   register(moduleName: string, program: Program): void {
+    // Register the value.
+    //
+    // Parameters:
+    // - `moduleName` — input value
+    // - `program` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = register(moduleName, program);
+
     const exports: ModuleExports = { functions: new Map() };
     for (const func of program.functions) {
       if (func.visibility === "export" || func.visibility === "public") {
@@ -44,6 +64,21 @@ export class ModuleRegistry {
 }
 
 function collectModules(dir: string, out: Array<[string, Program]>): void {
+  // CollectModules.
+  //
+  // Parameters:
+  // - `dir` — input value
+  // - `out` — input value
+  //
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = collectModules(dir, out);
+
   for (const entry of readdirSync(dir)) {
     const path = join(dir, entry);
     if (statSync(path).isDirectory()) {
@@ -61,6 +96,20 @@ function collectModules(dir: string, out: Array<[string, Program]>): void {
 }
 
 export function loadProjectModules(projectRoot: string): ModuleRegistry {
+  // LoadProjectModules.
+  //
+  // Parameters:
+  // - `projectRoot` — input value
+  //
+  // Returns:
+  // `ModuleRegistry`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = loadProjectModules(projectRoot);
+
   const entries: Array<[string, Program]> = [];
   for (const sub of ["src", "tests"]) {
     const dir = join(projectRoot, sub);
@@ -89,6 +138,20 @@ export function loadProjectModules(projectRoot: string): ModuleRegistry {
 }
 
 export function moduleNameFromPath(path: string): string {
+  // ModuleNameFromPath.
+  //
+  // Parameters:
+  // - `path` — input value
+  //
+  // Returns:
+  // Text result.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = moduleNameFromPath(path);
+
   const base = path.split("/").pop()?.replace(/\.sd$/, "") ?? "main";
   return base.replace(/-/g, "_");
 }

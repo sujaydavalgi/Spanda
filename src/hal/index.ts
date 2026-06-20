@@ -1,3 +1,8 @@
+/**
+ * index module (hal/index.ts).
+ * @module
+ */
+
 export type HalBusKind = "i2c" | "spi" | "uart" | "usb" | "ethernet";
 
 export type HalMemberConfig =
@@ -35,6 +40,20 @@ export class SimHalBackend implements HalBackend {
   private uartBuffers = new Map<string, string>();
 
   configure(members: HalMemberConfig[]): void {
+    // Configure.
+    //
+    // Parameters:
+    // - `members` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = configure(members);
+
     this.members.clear();
     for (const m of members) {
       this.members.set(m.name, m);
@@ -47,14 +66,59 @@ export class SimHalBackend implements HalBackend {
   }
 
   readGpio(name: string): boolean {
+    // ReadGpio.
+    //
+    // Parameters:
+    // - `name` — input value
+    //
+    // Returns:
+    // true or false.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = readGpio(name);
+
     return this.gpioState.get(name) ?? false;
   }
 
   writeGpio(name: string, value: boolean): void {
+    // WriteGpio.
+    //
+    // Parameters:
+    // - `name` — input value
+    // - `value` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = writeGpio(name, value);
+
     this.gpioState.set(name, value);
   }
 
   readI2c(name: string, register: number, length: number): number[] {
+    // ReadI2c.
+    //
+    // Parameters:
+    // - `name` — input value
+    // - `register` — input value
+    // - `length` — input value
+    //
+    // Returns:
+    // number[].
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = readI2c(name, register, length);
+
     const regs = this.i2cRegisters.get(name) ?? new Map();
     const result: number[] = [];
     for (let i = 0; i < length; i++) {
@@ -64,6 +128,22 @@ export class SimHalBackend implements HalBackend {
   }
 
   writeI2c(name: string, register: number, data: number[]): void {
+    // WriteI2c.
+    //
+    // Parameters:
+    // - `name` — input value
+    // - `register` — input value
+    // - `data` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = writeI2c(name, register, data);
+
     let regs = this.i2cRegisters.get(name);
     if (!regs) {
       regs = new Map();
@@ -75,10 +155,39 @@ export class SimHalBackend implements HalBackend {
   }
 
   transferSpi(_name: string, data: number[]): number[] {
+    // TransferSpi.
+    //
+    // Parameters:
+    // - `_name` — input value
+    // - `data` — input value
+    //
+    // Returns:
+    // number[].
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = transferSpi(_name, data);
+
     return data.map((b) => (b ^ 0xff) & 0xff);
   }
 
   readUart(name: string): string {
+    // ReadUart.
+    //
+    // Parameters:
+    // - `name` — input value
+    //
+    // Returns:
+    // Text result.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = readUart(name);
+
     return this.uartBuffers.get(name) ?? "";
   }
 
@@ -113,10 +222,38 @@ export class SimHalBackend implements HalBackend {
 }
 
 export function createSimHal(): SimHalBackend {
+  // CreateSimHal.
+  //
+  // Parameters:
+  // None.
+  //
+  // Returns:
+  // `SimHalBackend`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = createSimHal();
+
   return new SimHalBackend();
 }
 
 export function halMemberFromDecl(decl: import("../ast/nodes.js").HalMemberDecl): HalMemberConfig {
+  // HalMemberFromDecl.
+  //
+  // Parameters:
+  // - `decl` — input value
+  //
+  // Returns:
+  // HalMemberConfig.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = halMemberFromDecl(decl);
+
   switch (decl.kind) {
     case "HalI2cDecl":
       return { kind: "i2c", name: decl.name, address: decl.address };

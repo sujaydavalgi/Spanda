@@ -1,3 +1,8 @@
+/**
+ * symbols module (lsp/symbols.ts).
+ * @module
+ */
+
 import type { Program, Span } from "../ast/nodes.js";
 import { tokenize } from "../lexer/index.js";
 import { parse } from "../parser/index.js";
@@ -34,6 +39,21 @@ export type SymbolIndex = {
 };
 
 function addSymbol(index: SymbolIndex, sym: SpandaSymbol): void {
+  // AddSymbol.
+  //
+  // Parameters:
+  // - `index` — input value
+  // - `sym` — input value
+  //
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = addSymbol(index, sym);
+
   index.symbols.push(sym);
   const existing = index.byName.get(sym.name) ?? [];
   existing.push(sym);
@@ -41,6 +61,20 @@ function addSymbol(index: SymbolIndex, sym: SpandaSymbol): void {
 }
 
 export function buildSymbolIndex(program: Program): SymbolIndex {
+  // BuildSymbolIndex.
+  //
+  // Parameters:
+  // - `program` — input value
+  //
+  // Returns:
+  // `SymbolIndex`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = buildSymbolIndex(program);
+
   const index: SymbolIndex = { symbols: [], byName: new Map() };
 
   for (const msg of program.messages) {
@@ -196,6 +230,20 @@ export function buildSymbolIndex(program: Program): SymbolIndex {
 }
 
 export function indexSource(source: string): SymbolIndex {
+  // IndexSource.
+  //
+  // Parameters:
+  // - `source` — input value
+  //
+  // Returns:
+  // `SymbolIndex`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = indexSource(source);
+
   return buildSymbolIndex(parse(tokenize(source)));
 }
 
@@ -204,6 +252,22 @@ export function symbolAtPosition(
   line: number,
   column: number,
 ): SpandaSymbol | null {
+  // SymbolAtPosition.
+  //
+  // Parameters:
+  // - `index` — input value
+  // - `line` — input value
+  // - `column` — input value
+  //
+  // Returns:
+  // `Some` / non-null value on success, otherwise `None` / null.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = symbolAtPosition(index, line, column);
+
   for (const sym of index.symbols) {
     const { start, end } = sym.span;
     if (
@@ -223,6 +287,22 @@ export function lookupDefinition(
   name: string,
   kind?: SymbolKind,
 ): SpandaSymbol | null {
+  // LookupDefinition.
+  //
+  // Parameters:
+  // - `index` — input value
+  // - `name` — input value
+  // - `kind?` — optional input
+  //
+  // Returns:
+  // `Some` / non-null value on success, otherwise `None` / null.
+  //
+  // Options:
+  // - `kind?` — optional parameter
+  //
+  // Example:
+  // const result = lookupDefinition(index, name, kind?);
+
   const candidates = index.byName.get(name);
   if (!candidates?.length) return null;
   if (kind) {
@@ -232,6 +312,22 @@ export function lookupDefinition(
 }
 
 export function wordAtPosition(source: string, line: number, column: number): string | null {
+  // WordAtPosition.
+  //
+  // Parameters:
+  // - `source` — input value
+  // - `line` — input value
+  // - `column` — input value
+  //
+  // Returns:
+  // `Some` / non-null value on success, otherwise `None` / null.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = wordAtPosition(source, line, column);
+
   const lines = source.split("\n");
   const text = lines[line - 1];
   if (!text) return null;
@@ -270,6 +366,22 @@ export function resolveDefinition(
   line: number,
   column: number,
 ): SpandaSymbol | null {
+  // ResolveDefinition.
+  //
+  // Parameters:
+  // - `source` — input value
+  // - `line` — input value
+  // - `column` — input value
+  //
+  // Returns:
+  // `Some` / non-null value on success, otherwise `None` / null.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = resolveDefinition(source, line, column);
+
   const index = indexSource(source);
   const word = wordAtPosition(source, line, column);
   if (word) {
@@ -286,6 +398,20 @@ export function resolveDefinition(
 }
 
 export function formatHover(sym: SpandaSymbol): string {
+  // FormatHover.
+  //
+  // Parameters:
+  // - `sym` — input value
+  //
+  // Returns:
+  // Text result.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = formatHover(sym);
+
   const header = `**${sym.kind}** \`${sym.name}\``;
   const parts = [header];
   if (sym.container) parts.push(`in robot \`${sym.container}\``);

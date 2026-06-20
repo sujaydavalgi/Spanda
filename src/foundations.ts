@@ -1,3 +1,8 @@
+/**
+ * foundations module (foundations.ts).
+ * @module
+ */
+
 import type { Expr, Span, SpandaType, Stmt } from "./ast/nodes.js";
 
 export type Visibility = "private" | "public" | "export";
@@ -308,8 +313,21 @@ export type SecureBlockDecl = {
   span: Span;
 };
 
-/** Known code-module import paths (Phase 1 module system). */
 export function resolveModuleImport(path: string): boolean {
+  // ResolveModuleImport.
+  //
+  // Parameters:
+  // - `path` — input value
+  //
+  // Returns:
+  // `true` or `false`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = resolveModuleImport(path);
+
   return [
     "sensors.lidar",
     "sensors.camera",
@@ -363,8 +381,21 @@ export function resolveModuleImport(path: string): boolean {
   ].includes(path);
 }
 
-/** Map user-facing type aliases to physical units / builtin types. */
 export function resolveTypeAlias(name: string): string | undefined {
+  // ResolveTypeAlias.
+  //
+  // Parameters:
+  // - `name` — input value
+  //
+  // Returns:
+  // `Some` / non-null value on success, otherwise `None` / null.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = resolveTypeAlias(name);
+
   switch (name) {
     case "Distance":
     case "meter":

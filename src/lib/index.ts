@@ -1,3 +1,8 @@
+/**
+ * index module (lib/index.ts).
+ * @module
+ */
+
 export {
   LIB_REGISTRY,
   resolveImport,

@@ -1,3 +1,8 @@
+/**
+ * interpreter module (runtime/interpreter.ts).
+ * @module
+ */
+
 import type {
   Expr,
   Program,
@@ -126,22 +131,94 @@ export class Environment {
   private bindings = new Map<string, RuntimeValue>();
 
   define(name: string, value: RuntimeValue): void {
+    // Define.
+    //
+    // Parameters:
+    // - `name` — input value
+    // - `value` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = define(name, value);
+
     this.bindings.set(name, value);
   }
 
   get(name: string): RuntimeValue | undefined {
+    // Get.
+    //
+    // Parameters:
+    // - `name` — input value
+    //
+    // Returns:
+    // Some value on success, otherwise none.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = get(name);
+
     return this.bindings.get(name);
   }
 
   set(name: string, value: RuntimeValue): void {
+    // Set.
+    //
+    // Parameters:
+    // - `name` — input value
+    // - `value` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = set(name, value);
+
     this.bindings.set(name, value);
   }
 
   remove(name: string): void {
+    // Remove.
+    //
+    // Parameters:
+    // - `name` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = remove(name);
+
     this.bindings.delete(name);
   }
 
   clone(): Environment {
+    // Clone.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Environment.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = clone();
+
     const env = new Environment();
     for (const [k, v] of this.bindings) env.define(k, v);
     return env;
@@ -194,6 +271,21 @@ export class Interpreter {
   constructor(private options: InterpreterOptions) {}
 
   run(program: Program, entryBehavior?: string): RobotState {
+    // Run the operation.
+    //
+    // Parameters:
+    // - `program` — input value
+    // - `entryBehavior?` — optional input
+    //
+    // Returns:
+    // RobotState.
+    //
+    // Options:
+    // - `entryBehavior?` — optional parameter
+    //
+    // Example:
+    // const result = run(program, entryBehavior?);
+
     this.currentProgram = program;
     this.loadProgramMetadata(program);
     for (const robot of program.robots) {
@@ -223,6 +315,20 @@ export class Interpreter {
   }
 
   runTests(program: Program): void {
+    // RunTests.
+    //
+    // Parameters:
+    // - `program` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = runTests(program);
+
     this.currentProgram = program;
     this.loadProgramMetadata(program);
     for (const test of program.tests) {
@@ -234,6 +340,20 @@ export class Interpreter {
   }
 
   private loadProgramMetadata(program: Program): void {
+    // LoadProgramMetadata.
+    //
+    // Parameters:
+    // - `program` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = loadProgramMetadata(program);
+
     this.enumVariants.clear();
     this.variantOwner.clear();
     this.structDefs.clear();
@@ -276,6 +396,20 @@ export class Interpreter {
   }
 
   private evalContract(expr: Expr): boolean {
+    // EvalContract.
+    //
+    // Parameters:
+    // - `expr` — input value
+    //
+    // Returns:
+    // true or false.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = evalContract(expr);
+
     const val = this.evalExpr(expr);
     if (val.kind === "bool") return val.value;
     throw new RuntimeError("Contract expression must be boolean", 0);
@@ -287,6 +421,23 @@ export class Interpreter {
     ensures: Expr | null,
     invariant: Expr | null,
   ): void {
+    // ExecuteWithContracts.
+    //
+    // Parameters:
+    // - `body` — input value
+    // - `requires` — input value
+    // - `ensures` — input value
+    // - `invariant` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = executeWithContracts(body, requires, ensures, invariant);
+
     if (requires && !this.evalContract(requires)) {
       throw new RuntimeError("requires contract failed", 0);
     }
@@ -301,6 +452,20 @@ export class Interpreter {
   }
 
   private runVerifyRules(): void {
+    // RunVerifyRules.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = runVerifyRules();
+
     if (this.verifyRules.length === 0) return;
     for (let i = 0; i < this.verifyRules.length; i++) {
       const val = this.evalExpr(this.verifyRules[i]!);
@@ -315,6 +480,20 @@ export class Interpreter {
   }
 
   private executeTaskLoop(task: TaskDecl): void {
+    // ExecuteTaskLoop.
+    //
+    // Parameters:
+    // - `task` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = executeTaskLoop(task);
+
     const { body, intervalMs, requires, ensures, invariant, name, priority, budget } = task;
     const maxIter = this.options.maxLoopIterations ?? 10;
     this.options.onLog?.(
@@ -331,6 +510,20 @@ export class Interpreter {
   }
 
   private priorityRank(priority: TaskPriority): number {
+    // PriorityRank.
+    //
+    // Parameters:
+    // - `priority` — input value
+    //
+    // Returns:
+    // Numeric result.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = priorityRank(priority);
+
     switch (priority) {
       case "critical":
         return 0;
@@ -348,6 +541,22 @@ export class Interpreter {
     durationMs: number,
     intervalMs: number,
   ): string | null {
+    // TaskBudgetViolation.
+    //
+    // Parameters:
+    // - `budget` — input value
+    // - `durationMs` — input value
+    // - `intervalMs` — input value
+    //
+    // Returns:
+    // Some value on success, otherwise none.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = taskBudgetViolation(budget, durationMs, intervalMs);
+
     const duty = (durationMs / Math.max(intervalMs, 1)) * 100;
     if (budget.cpuPctMax != null && duty > budget.cpuPctMax) return "cpu";
     if (budget.batteryPctMax != null && duty > budget.batteryPctMax) return "battery";
@@ -364,6 +573,27 @@ export class Interpreter {
     invariant: Expr | null,
     budget: ResourceBudgetDecl | null,
   ): boolean {
+    // RunScheduledTask.
+    //
+    // Parameters:
+    // - `name` — input value
+    // - `priority` — input value
+    // - `intervalMs` — input value
+    // - `body` — input value
+    // - `requires` — input value
+    // - `ensures` — input value
+    // - `invariant` — input value
+    // - `budget` — input value
+    //
+    // Returns:
+    // true or false.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = runScheduledTask(name, priority, intervalMs, body, requires, ensures, invariant, budget);
+
     const RUNTIME_TASK_COST_MS = 5;
     if (budget) {
       const prev = this.taskMaxDurationMs.get(name) ?? 0;
@@ -394,6 +624,24 @@ export class Interpreter {
     invariant: Expr | null,
     taskName?: string,
   ): boolean {
+    // ExecuteTaskIteration.
+    //
+    // Parameters:
+    // - `body` — input value
+    // - `requires` — input value
+    // - `ensures` — input value
+    // - `invariant` — input value
+    // - `taskName?` — optional input
+    //
+    // Returns:
+    // true or false.
+    //
+    // Options:
+    // - `taskName?` — optional parameter
+    //
+    // Example:
+    // const result = executeTaskIteration(body, requires, ensures, invariant, taskName?);
+
     if (requires && !this.evalContract(requires)) {
       const label = taskName ? `task '${taskName}'` : "task";
       this.options.onLog?.(`${label} requires contract failed — skipping iteration`);
@@ -410,6 +658,20 @@ export class Interpreter {
   }
 
   private executeMultiplexedTasks(tasks: TaskDecl[]): void {
+    // ExecuteMultiplexedTasks.
+    //
+    // Parameters:
+    // - `tasks` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = executeMultiplexedTasks(tasks);
+
     if (tasks.length === 0) return;
     const schedules = tasks.map((task) => ({
       name: task.name,
@@ -460,6 +722,20 @@ export class Interpreter {
   }
 
   private refreshTwinShadowFromBackend(): void {
+    // RefreshTwinShadowFromBackend.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = refreshTwinShadowFromBackend();
+
     if (!this.twinRuntime) return;
     const state = this.options.backend.getState();
     if (this.twinRuntime.mirrors.includes("pose")) {
@@ -481,6 +757,20 @@ export class Interpreter {
   }
 
   private updateTwinSnapshot(): void {
+    // UpdateTwinSnapshot.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = updateTwinSnapshot();
+
     if (!this.twinRuntime) return;
     this.refreshTwinShadowFromBackend();
     if (this.twinRuntime.replay && Object.keys(this.twinRuntime.shadow).length > 0) {
@@ -495,6 +785,20 @@ export class Interpreter {
   }
 
   private twinFieldFromExpr(expr: Expr): string {
+    // TwinFieldFromExpr.
+    //
+    // Parameters:
+    // - `expr` — input value
+    //
+    // Returns:
+    // Text result.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = twinFieldFromExpr(expr);
+
     if (expr.kind === "LiteralExpr" && typeof expr.value === "string") return expr.value;
     if (expr.kind === "IdentExpr") return expr.name;
     return getString(this.evalExpr(expr), "");
@@ -504,6 +808,21 @@ export class Interpreter {
     method: string,
     expr: import("../ast/nodes.js").CallExpr,
   ): RuntimeValue {
+    // EvalTwinMethod.
+    //
+    // Parameters:
+    // - `method` — input value
+    // - `expr` — input value
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = evalTwinMethod(method, expr);
+
     if (!this.twinRuntime) {
       throw new RuntimeError("No digital twin configured", expr.span.start.line);
     }
@@ -568,6 +887,23 @@ export class Interpreter {
     target: string | undefined,
     line: number,
   ): void {
+    // CheckAgentCapability.
+    //
+    // Parameters:
+    // - `agent` — input value
+    // - `action` — input value
+    // - `target` — input value
+    // - `line` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = checkAgentCapability(agent, action, target, line);
+
     const caps = this.agentCapabilities.get(agent) ?? [];
     if (caps.length === 0) {
       return;
@@ -582,6 +918,20 @@ export class Interpreter {
   }
 
   private dispatchEvent(eventName: string): void {
+    // DispatchEvent.
+    //
+    // Parameters:
+    // - `eventName` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = dispatchEvent(eventName);
+
     const body = this.eventHandlers.get(eventName);
     if (body) {
       this.options.onLog?.(`emit ${eventName}`);
@@ -592,6 +942,21 @@ export class Interpreter {
   }
 
   private executeEnter(stateName: string, line: number): void {
+    // ExecuteEnter.
+    //
+    // Parameters:
+    // - `stateName` — input value
+    // - `line` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = executeEnter(stateName, line);
+
     let transitioned = false;
     for (const [smName, sm] of this.stateMachines) {
       if (!sm.states.includes(stateName)) continue;
@@ -608,6 +973,20 @@ export class Interpreter {
   }
 
   private setupRobot(robot: RobotDecl): void {
+    // SetupRobot.
+    //
+    // Parameters:
+    // - `robot` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = setupRobot(robot);
+
     this.currentRobot = robot;
     this.env = new Environment();
     this.zones = [];
@@ -845,6 +1224,20 @@ export class Interpreter {
   }
 
   private evalSafetyZone(zone: SafetyZoneDecl): SafetyZoneRuntime {
+    // EvalSafetyZone.
+    //
+    // Parameters:
+    // - `zone` — input value
+    //
+    // Returns:
+    // SafetyZoneRuntime.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = evalSafetyZone(zone);
+
     const base: SafetyZoneRuntime = {
       name: zone.name,
       shape: zone.shape,
@@ -880,6 +1273,20 @@ export class Interpreter {
   }
 
   private executeBlock(stmts: Stmt[]): void {
+    // ExecuteBlock.
+    //
+    // Parameters:
+    // - `stmts` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = executeBlock(stmts);
+
     for (const stmt of stmts) {
       this.executeStmt(stmt);
       if (this.returning) break;
@@ -887,6 +1294,20 @@ export class Interpreter {
   }
 
   private executeBlockWithReturn(stmts: Stmt[]): RuntimeValue {
+    // ExecuteBlockWithReturn.
+    //
+    // Parameters:
+    // - `stmts` — input value
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = executeBlockWithReturn(stmts);
+
     this.returning = false;
     this.returnValue = { kind: "void" };
     for (const stmt of stmts) {
@@ -897,6 +1318,21 @@ export class Interpreter {
   }
 
   private callModuleFunction(func: ModuleFnDecl, args: Expr[]): RuntimeValue {
+    // CallModuleFunction.
+    //
+    // Parameters:
+    // - `func` — input value
+    // - `args` — input value
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = callModuleFunction(func, args);
+
     if (func.isAsync) {
       const argValues = args.map((arg) => this.evalExpr(arg));
       return { kind: "future", funcName: func.name, args: argValues, resolved: null };
@@ -915,6 +1351,20 @@ export class Interpreter {
   }
 
   private executeStmt(stmt: Stmt): void {
+    // ExecuteStmt.
+    //
+    // Parameters:
+    // - `stmt` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = executeStmt(stmt);
+
     switch (stmt.kind) {
       case "VarDecl":
         if (stmt.init) {
@@ -1136,6 +1586,20 @@ export class Interpreter {
   }
 
   private evalExpr(expr: Expr): RuntimeValue {
+    // EvalExpr.
+    //
+    // Parameters:
+    // - `expr` — input value
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = evalExpr(expr);
+
     switch (expr.kind) {
       case "LiteralExpr":
         if (typeof expr.value === "boolean") return { kind: "bool", value: expr.value };
@@ -1239,6 +1703,20 @@ export class Interpreter {
   }
 
   private evalStructLiteral(expr: import("../ast/nodes.js").StructLiteralExpr): RuntimeValue {
+    // EvalStructLiteral.
+    //
+    // Parameters:
+    // - `expr` — input value
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = evalStructLiteral(expr);
+
     const values: Record<string, RuntimeValue> = {};
     for (const field of expr.fields) {
       values[field.name] = this.evalExpr(field.value);
@@ -1258,6 +1736,20 @@ export class Interpreter {
   }
 
   private evalMember(expr: import("../ast/nodes.js").MemberExpr): RuntimeValue {
+    // EvalMember.
+    //
+    // Parameters:
+    // - `expr` — input value
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = evalMember(expr);
+
     if (expr.object.kind === "IdentExpr") {
       const variants = this.enumVariants.get(expr.object.name);
       if (variants?.includes(expr.property)) {
@@ -1344,6 +1836,20 @@ export class Interpreter {
   }
 
   private evalCall(expr: import("../ast/nodes.js").CallExpr): RuntimeValue {
+    // EvalCall.
+    //
+    // Parameters:
+    // - `expr` — input value
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = evalCall(expr);
+
     if (expr.callee.kind === "IdentExpr") {
       const calleeName = expr.callee.name;
       const moduleFn =
@@ -1522,6 +2028,20 @@ export class Interpreter {
   }
 
   private readSensorValue(target: Extract<RuntimeValue, { kind: "sensor" }>): RuntimeValue {
+    // ReadSensorValue.
+    //
+    // Parameters:
+    // - `target` — input value
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = readSensorValue(target);
+
     const state = this.options.backend.getState();
     if (target.library) {
       const driver = getSensorDriver(target.library, target.sensorType);
@@ -1538,6 +2058,20 @@ export class Interpreter {
   }
 
   private readFusedObservation(): RuntimeValue {
+    // ReadFusedObservation.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = readFusedObservation();
+
     const fields: Record<string, RuntimeValue> = {};
     for (const sensorName of this.fusionSensors) {
       const sensorVal = this.env.get(sensorName);
@@ -1553,6 +2087,21 @@ export class Interpreter {
   }
 
   private evalBuiltinFunction(name: string, expr: import("../ast/nodes.js").CallExpr): RuntimeValue {
+    // EvalBuiltinFunction.
+    //
+    // Parameters:
+    // - `name` — input value
+    // - `expr` — input value
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = evalBuiltinFunction(name, expr);
+
     switch (name) {
       case "pose":
         return runtimePose(
@@ -1686,7 +2235,23 @@ export class Interpreter {
     callee: Expr,
     args: Expr[],
     line: number,
-  ): { funcName: string; args: RuntimeValue[] } {
+  ): {
+    // EvalSpawnTarget.
+    //
+    // Parameters:
+    // - `callee` — input value
+    // - `args` — input value
+    // - `line` — input value
+    //
+    // Returns:
+    // .
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = evalSpawnTarget(callee, args, line);
+ funcName: string; args: RuntimeValue[] } {
     const argValues = args.map((arg) => this.evalExpr(arg));
     if (callee.kind !== "IdentExpr") {
       throw new RuntimeError("spawn requires function name", line);
@@ -1695,6 +2260,22 @@ export class Interpreter {
   }
 
   private executeSpawnJob(funcName: string, args: RuntimeValue[], line: number): RuntimeValue {
+    // ExecuteSpawnJob.
+    //
+    // Parameters:
+    // - `funcName` — input value
+    // - `args` — input value
+    // - `line` — input value
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = executeSpawnJob(funcName, args, line);
+
     const func =
       this.moduleFunctions.get(funcName) ?? this.importedFunctions.get(funcName);
     if (!func) {
@@ -1712,6 +2293,21 @@ export class Interpreter {
   }
 
   private resolveTaskHandle(id: number, line: number): RuntimeValue {
+    // ResolveTaskHandle.
+    //
+    // Parameters:
+    // - `id` — input value
+    // - `line` — input value
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = resolveTaskHandle(id, line);
+
     const handle = this.concurrency.getHandle(id);
     if (!handle) {
       throw new RuntimeError(`Unknown task handle ${id}`, line);
@@ -1723,6 +2319,21 @@ export class Interpreter {
   }
 
   private resolveFuture(future: RuntimeValue, line: number): RuntimeValue {
+    // ResolveFuture.
+    //
+    // Parameters:
+    // - `future` — input value
+    // - `line` — input value
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = resolveFuture(future, line);
+
     if (future.kind === "future") {
       if (future.resolved) return future.resolved;
       const result = this.executeSpawnJob(future.funcName, future.args, line);
@@ -1732,12 +2343,40 @@ export class Interpreter {
   }
 
   private processSpawnQueue(): void {
+    // ProcessSpawnQueue.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = processSpawnQueue();
+
     for (const id of this.concurrency.drainFireAndForgetQueue()) {
       this.resolveTaskHandle(id, 0);
     }
   }
 
   private goalTextFromValue(value: RuntimeValue): string | undefined {
+    // GoalTextFromValue.
+    //
+    // Parameters:
+    // - `value` — input value
+    //
+    // Returns:
+    // Some value on success, otherwise none.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = goalTextFromValue(value);
+
     if (value.kind === "goal") return value.text;
     if (value.kind === "string") return value.value;
     return undefined;
@@ -1757,6 +2396,20 @@ export class Interpreter {
   }
 
   private enrichReasonGoal(goalText: string | undefined): string | undefined {
+    // EnrichReasonGoal.
+    //
+    // Parameters:
+    // - `goalText` — input value
+    //
+    // Returns:
+    // Some value on success, otherwise none.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = enrichReasonGoal(goalText);
+
     if (!this.currentAgent) return goalText;
     const agent = this.agents.get(this.currentAgent);
     const memorySummary = agent?.memory?.summaryForPrompt();
@@ -1768,6 +2421,20 @@ export class Interpreter {
   }
 
   private evalSafetyValidate(expr: import("../ast/nodes.js").CallExpr): RuntimeValue {
+    // EvalSafetyValidate.
+    //
+    // Parameters:
+    // - `expr` — input value
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = evalSafetyValidate(expr);
+
     const arg = expr.args[0] ? this.evalExpr(expr.args[0]) : this.getNamedArgValue(expr, "proposal");
     const proposal = proposalFromValue(arg);
     if (!proposal) {
@@ -1788,6 +2455,21 @@ export class Interpreter {
   }
 
   private evalRobotMethod(method: string, expr: import("../ast/nodes.js").CallExpr): RuntimeValue {
+    // EvalRobotMethod.
+    //
+    // Parameters:
+    // - `method` — input value
+    // - `expr` — input value
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = evalRobotMethod(method, expr);
+
     const state = this.options.backend.getState();
     switch (method) {
       case "pose":
@@ -1810,6 +2492,23 @@ export class Interpreter {
     method: string,
     expr: import("../ast/nodes.js").CallExpr,
   ): RuntimeValue {
+    // ExecuteActuatorMethod.
+    //
+    // Parameters:
+    // - `name` — input value
+    // - `actuatorType` — input value
+    // - `method` — input value
+    // - `expr` — input value
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = executeActuatorMethod(name, actuatorType, method, expr);
+
     const motionMethods = ["drive", "move_to", "set_thrust", "grip", "release", "open", "hover", "follow"];
     if (motionMethods.includes(method) || method === "stop") {
       if (!this.checkSafetyBeforeMotion()) {
@@ -1913,6 +2612,22 @@ export class Interpreter {
   }
 
   private evalBinary(op: string, left: RuntimeValue, right: RuntimeValue): RuntimeValue {
+    // EvalBinary.
+    //
+    // Parameters:
+    // - `op` — input value
+    // - `left` — input value
+    // - `right` — input value
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = evalBinary(op, left, right);
+
     if (op === "and") {
       return { kind: "bool", value: (left.kind === "bool" && left.value) && (right.kind === "bool" && right.value) };
     }
@@ -1945,6 +2660,20 @@ export class Interpreter {
   }
 
   private checkSafetyBeforeMotion(): boolean {
+    // CheckSafetyBeforeMotion.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // true or false.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = checkSafetyBeforeMotion();
+
     const state = this.options.backend.getState();
     const result = this.safetyMonitor?.evaluateBeforeMotion(this.env, state.pose);
     if (!result?.allowed) {

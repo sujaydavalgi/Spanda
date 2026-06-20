@@ -1,8 +1,27 @@
+/**
+ * MockAIProvider module (ai/MockAIProvider.ts).
+ * @module
+ */
+
 import type { RuntimeValue } from "../runtime/interpreter.js";
 import { buildPrompt } from "./PromptRuntime.js";
 import type { AIProvider, CompletionRequest, DetectionRequest, EmbedRequest } from "./AIProvider.js";
 
 function scanDistance(input?: RuntimeValue): number {
+  // ScanDistance.
+  //
+  // Parameters:
+  // - `input?` — optional input
+  //
+  // Returns:
+  // Numeric result.
+  //
+  // Options:
+  // - `input?` — optional parameter
+  //
+  // Example:
+  // const result = scanDistance(input?);
+
   if (!input) return 5;
   if (input.kind === "scan") return input.nearestDistance;
   if (input.kind === "object" && input.typeName === "Detection") {
@@ -13,11 +32,42 @@ function scanDistance(input?: RuntimeValue): number {
 }
 
 function actionProposal(linear: number, angular: number, source: string, trace: string[]): RuntimeValue {
+  // ActionProposal.
+  //
+  // Parameters:
+  // - `linear` — input value
+  // - `angular` — input value
+  // - `source` — input value
+  // - `trace` — input value
+  //
+  // Returns:
+  // `RuntimeValue`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = actionProposal(linear, angular, source, trace);
+
   return { kind: "action_proposal", linear, angular, source, trace, trusted: false };
 }
 
 export class MockAIProvider implements AIProvider {
   complete(request: CompletionRequest): RuntimeValue {
+    // Complete.
+    //
+    // Parameters:
+    // - `request` — input value
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = complete(request);
+
     const prompt = buildPrompt(request.prompt, request.input);
     const dist = scanDistance(request.input);
 
@@ -50,6 +100,20 @@ export class MockAIProvider implements AIProvider {
   }
 
   detect(request: DetectionRequest): RuntimeValue {
+    // Detect.
+    //
+    // Parameters:
+    // - `request` — input value
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = detect(request);
+
     const dist = scanDistance(request.frame);
     const label = dist < 0.6 ? "obstacle" : dist < 1.2 ? "object" : "clear";
     const confidence = dist < 0.6 ? 0.94 : dist < 1.2 ? 0.82 : 0.71;
@@ -74,6 +138,22 @@ export class MockAIProvider implements AIProvider {
 }
 
 export function mockSummarize(input?: RuntimeValue, model = "mock"): RuntimeValue {
+  // MockSummarize.
+  //
+  // Parameters:
+  // - `input?` — optional input
+  // - `model` — optional input
+  //
+  // Returns:
+  // `RuntimeValue`.
+  //
+  // Options:
+  // - `input?` — optional parameter
+  // - `model` — optional parameter
+  //
+  // Example:
+  // const result = mockSummarize(input?, model);
+
   const summary =
     input?.kind === "scan"
       ? `Nearest obstacle at ${input.nearestDistance.toFixed(2)} m`
@@ -85,6 +165,22 @@ export function mockSummarize(input?: RuntimeValue, model = "mock"): RuntimeValu
 }
 
 export function mockAnalyzeFrame(frame?: RuntimeValue, model = "mock"): RuntimeValue {
+  // MockAnalyzeFrame.
+  //
+  // Parameters:
+  // - `frame?` — optional input
+  // - `model` — optional input
+  //
+  // Returns:
+  // `RuntimeValue`.
+  //
+  // Options:
+  // - `frame?` — optional parameter
+  // - `model` — optional parameter
+  //
+  // Example:
+  // const result = mockAnalyzeFrame(frame?, model);
+
   const dist = scanDistance(frame);
   return {
     kind: "object",
@@ -98,6 +194,20 @@ export function mockAnalyzeFrame(frame?: RuntimeValue, model = "mock"): RuntimeV
 }
 
 export function mockCameraFrame(): RuntimeValue {
+  // MockCameraFrame.
+  //
+  // Parameters:
+  // None.
+  //
+  // Returns:
+  // `RuntimeValue`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = mockCameraFrame();
+
   return {
     kind: "object",
     typeName: "CameraFrame",

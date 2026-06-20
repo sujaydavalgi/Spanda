@@ -1,3 +1,8 @@
+/**
+ * checker module (types/checker.ts).
+ * @module
+ */
+
 import type {
   BehaviorDecl,
   Expr,
@@ -77,14 +82,57 @@ type SymbolEntry = {
 };
 
 export function typeCheck(program: Program): void {
+  // TypeCheck.
+  //
+  // Parameters:
+  // - `program` — input value
+  //
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = typeCheck(program);
+
   check(program);
 }
 
 export function check(program: Program): void {
+  // Check input.
+  //
+  // Parameters:
+  // - `program` — input value
+  //
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = check(program);
+
   checkWithRegistry(program, undefined);
 }
 
 export function checkWithRegistry(program: Program, registry: ModuleRegistry | undefined): void {
+  // CheckWithRegistry.
+  //
+  // Parameters:
+  // - `program` — input value
+  // - `registry` — input value
+  //
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = checkWithRegistry(program, registry);
+
   const checker = new TypeChecker(registry);
   checker.checkProgram(program);
   if (checker.errors.length > 0) {
@@ -119,6 +167,20 @@ class TypeChecker {
   constructor(private moduleRegistry?: ModuleRegistry) {}
 
   checkProgram(program: Program): void {
+    // CheckProgram.
+    //
+    // Parameters:
+    // - `program` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = checkProgram(program);
+
     this.moduleFunctions.clear();
     this.externFunctions.clear();
     const imported = new Set<string>();
@@ -175,6 +237,20 @@ class TypeChecker {
   }
 
   private checkHardwareProgram(program: Program): void {
+    // CheckHardwareProgram.
+    //
+    // Parameters:
+    // - `program` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = checkHardwareProgram(program);
+
     const profileNames = new Set(program.hardwareProfiles.map((p) => p.name));
     const robotNames = new Set(program.robots.map((r) => r.name));
     const seenProfiles = new Set<string>();
@@ -237,10 +313,38 @@ class TypeChecker {
   }
 
   private resolveMessageType(name: string): SpandaType | null {
+    // ResolveMessageType.
+    //
+    // Parameters:
+    // - `name` — input value
+    //
+    // Returns:
+    // Some value on success, otherwise none.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = resolveMessageType(name);
+
     return this.messageRegistry.resolveType(name);
   }
 
   private checkStruct(decl: import("../foundations.js").StructDecl): void {
+    // CheckStruct.
+    //
+    // Parameters:
+    // - `decl` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = checkStruct(decl);
+
     const typeParams = decl.typeParams ?? [];
     if (typeParams.length > 0) {
       this.structTypeParams.set(decl.name, typeParams);
@@ -268,10 +372,39 @@ class TypeChecker {
   }
 
   private enumPayloadKey(enumName: string, variant: string): string {
+    // EnumPayloadKey.
+    //
+    // Parameters:
+    // - `enumName` — input value
+    // - `variant` — input value
+    //
+    // Returns:
+    // Text result.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = enumPayloadKey(enumName, variant);
+
     return `${enumName}\0${variant}`;
   }
 
   private checkEnum(decl: import("../foundations.js").EnumDecl): void {
+    // CheckEnum.
+    //
+    // Parameters:
+    // - `decl` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = checkEnum(decl);
+
     if (decl.variants.length === 0) {
       this.error(`Enum '${decl.name}' must declare at least one variant`, decl.span.start.line, decl.span.start.column);
     }
@@ -317,6 +450,20 @@ class TypeChecker {
   }
 
   private typeNameToSpanda(typeName: string): SpandaType {
+    // TypeNameToSpanda.
+    //
+    // Parameters:
+    // - `typeName` — input value
+    //
+    // Returns:
+    // SpandaType.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = typeNameToSpanda(typeName);
+
     try {
       return resolveTypeName(typeName);
     } catch {
@@ -338,6 +485,22 @@ class TypeChecker {
   }
 
   private validateTypeAnnotation(ty: SpandaType, line: number, column: number): void {
+    // ValidateTypeAnnotation.
+    //
+    // Parameters:
+    // - `ty` — input value
+    // - `line` — input value
+    // - `column` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = validateTypeAnnotation(ty, line, column);
+
     if (ty.kind === "named") {
       if (
         this.structDefs.has(ty.name) ||
@@ -367,6 +530,20 @@ class TypeChecker {
   }
 
   private resolveTypeAnn(ty: SpandaType): SpandaType {
+    // ResolveTypeAnn.
+    //
+    // Parameters:
+    // - `ty` — input value
+    //
+    // Returns:
+    // SpandaType.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = resolveTypeAnn(ty);
+
     if (ty.kind === "named" && this.typeParamScope.has(ty.name)) {
       return this.typeParamScope.get(ty.name)!;
     }
@@ -381,14 +558,56 @@ class TypeChecker {
   }
 
   private static futureType(inner: SpandaType): SpandaType {
+    // FutureType.
+    //
+    // Parameters:
+    // - `inner` — input value
+    //
+    // Returns:
+    // SpandaType.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = futureType(inner);
+
     return { kind: "generic", name: "Future", typeArgs: [inner] };
   }
 
   private static taskHandleType(inner: SpandaType): SpandaType {
+    // TaskHandleType.
+    //
+    // Parameters:
+    // - `inner` — input value
+    //
+    // Returns:
+    // SpandaType.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = taskHandleType(inner);
+
     return { kind: "generic", name: "TaskHandle", typeArgs: [inner] };
   }
 
   private checkModuleFunctions(functions: ModuleFnDecl[]): void {
+    // CheckModuleFunctions.
+    //
+    // Parameters:
+    // - `functions` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = checkModuleFunctions(functions);
+
     for (const func of functions) {
       const savedScope = new Map(this.typeParamScope);
       this.typeParamScope.clear();
@@ -419,6 +638,20 @@ class TypeChecker {
   }
 
   private checkExternFunctions(functions: ExternFnDecl[]): void {
+    // CheckExternFunctions.
+    //
+    // Parameters:
+    // - `functions` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = checkExternFunctions(functions);
+
     for (const func of functions) {
       for (const param of func.params) {
         this.validateTypeAnnotation(param.typeAnn, param.span.start.line, param.span.start.column);
@@ -429,6 +662,21 @@ class TypeChecker {
   }
 
   private checkRobot(robot: RobotDecl, imported: Set<string>): void {
+    // CheckRobot.
+    //
+    // Parameters:
+    // - `robot` — input value
+    // - `imported` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = checkRobot(robot, imported);
+
     this.currentRobot = robot;
     this.subscribedTopics.clear();
     this.agentNames.clear();
@@ -826,6 +1074,20 @@ class TypeChecker {
   }
 
   private checkTraitImpl(decl: TraitImplDecl): void {
+    // CheckTraitImpl.
+    //
+    // Parameters:
+    // - `decl` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = checkTraitImpl(decl);
+
     const traitMethods = this.traitDefs.get(decl.traitName);
     if (!traitMethods) {
       this.error(`Unknown trait '${decl.traitName}'`, decl.span.start.line, decl.span.start.column);
@@ -901,6 +1163,20 @@ class TypeChecker {
   }
 
   private checkTopic(topic: TopicDecl): void {
+    // CheckTopic.
+    //
+    // Parameters:
+    // - `topic` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = checkTopic(topic);
+
     if (!this.resolveMessageType(topic.messageType)) {
       this.error(
         `Unknown message type '${topic.messageType}'`,
@@ -937,6 +1213,20 @@ class TypeChecker {
   }
 
   private checkService(service: ServiceDecl): void {
+    // CheckService.
+    //
+    // Parameters:
+    // - `service` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = checkService(service);
+
     if (service.requestType && service.responseType) {
       if (!this.resolveMessageType(service.requestType)) {
         this.error(
@@ -977,6 +1267,20 @@ class TypeChecker {
   }
 
   private checkAction(action: ActionDecl): void {
+    // CheckAction.
+    //
+    // Parameters:
+    // - `action` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = checkAction(action);
+
     if (action.requestType && action.feedbackType && action.resultType) {
       for (const t of [action.requestType, action.feedbackType, action.resultType]) {
         if (!this.resolveMessageType(t)) {
@@ -1027,6 +1331,20 @@ class TypeChecker {
   }
 
   private checkSafetyRule(rule: SafetyRule): void {
+    // CheckSafetyRule.
+    //
+    // Parameters:
+    // - `rule` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = checkSafetyRule(rule);
+
     if (rule.kind === "MaxSpeedRule") {
       const t = this.checkExpr(rule.value);
       if (t.kind !== "number" || !unitsCompatible(t.unit, rule.unit)) {
@@ -1045,6 +1363,20 @@ class TypeChecker {
   }
 
   private checkSafetyZone(zone: SafetyZoneDecl): void {
+    // CheckSafetyZone.
+    //
+    // Parameters:
+    // - `zone` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = checkSafetyZone(zone);
+
     const x = this.checkExpr(zone.x);
     const y = this.checkExpr(zone.y);
     if (x.kind !== "number" || y.kind !== "number") {
@@ -1066,6 +1398,20 @@ class TypeChecker {
   }
 
   private checkAiModel(model: import("../ast/nodes.js").AiModelDecl): void {
+    // CheckAiModel.
+    //
+    // Parameters:
+    // - `model` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = checkAiModel(model);
+
     if (!AI_MODEL_TYPES[model.modelType]) {
       this.error(
         `Unknown AI model type '${model.modelType}'`,
@@ -1088,6 +1434,20 @@ class TypeChecker {
   }
 
   private checkAgent(agent: import("../ast/nodes.js").AgentDecl): void {
+    // CheckAgent.
+    //
+    // Parameters:
+    // - `agent` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = checkAgent(agent);
+
     if (this.symbols.has(agent.name)) {
       this.error(
         `Duplicate agent name '${agent.name}`,
@@ -1135,6 +1495,21 @@ class TypeChecker {
   }
 
   private checkCapability(agentName: string, cap: CapabilityDecl): void {
+    // CheckCapability.
+    //
+    // Parameters:
+    // - `agentName` — input value
+    // - `cap` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = checkCapability(agentName, cap);
+
     const allowed = [
       "read",
       "propose_motion",
@@ -1181,6 +1556,20 @@ class TypeChecker {
   }
 
   private checkBehaviorBody(body: Stmt[]): void {
+    // CheckBehaviorBody.
+    //
+    // Parameters:
+    // - `body` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = checkBehaviorBody(body);
+
     const parentScope = new Map(this.symbols);
     this.symbols = new Map(parentScope);
     this.symbols.set("robot", {
@@ -1195,6 +1584,20 @@ class TypeChecker {
   }
 
   private checkStmt(stmt: Stmt): void {
+    // CheckStmt.
+    //
+    // Parameters:
+    // - `stmt` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = checkStmt(stmt);
+
     switch (stmt.kind) {
       case "VarDecl": {
         if (stmt.typeAnnotation) {
@@ -1392,6 +1795,20 @@ class TypeChecker {
   }
 
   private checkExpr(expr: Expr): SpandaType {
+    // CheckExpr.
+    //
+    // Parameters:
+    // - `expr` — input value
+    //
+    // Returns:
+    // SpandaType.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = checkExpr(expr);
+
     switch (expr.kind) {
       case "LiteralExpr":
         if (typeof expr.value === "boolean") return { kind: "bool" };
@@ -1527,6 +1944,20 @@ class TypeChecker {
   }
 
   private checkStructLiteral(expr: import("../ast/nodes.js").StructLiteralExpr): SpandaType {
+    // CheckStructLiteral.
+    //
+    // Parameters:
+    // - `expr` — input value
+    //
+    // Returns:
+    // SpandaType.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = checkStructLiteral(expr);
+
     const [baseName, typeArgNames] = splitInstantiatedTypeName(expr.typeName);
     const def = this.structDefs.get(baseName);
     if (!def) {
@@ -1586,6 +2017,20 @@ class TypeChecker {
   }
 
   private checkMatch(expr: import("../ast/nodes.js").MatchExpr): SpandaType {
+    // CheckMatch.
+    //
+    // Parameters:
+    // - `expr` — input value
+    //
+    // Returns:
+    // SpandaType.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = checkMatch(expr);
+
     const scrutineeType = this.checkExpr(expr.scrutinee);
     if (expr.arms.length === 0) {
       this.error("match expression requires at least one arm", expr.span.start.line, expr.span.start.column);
@@ -1636,6 +2081,21 @@ class TypeChecker {
   }
 
   private checkMatchExhaustiveness(arms: MatchArm[], span: import("../ast/nodes.js").Span): void {
+    // CheckMatchExhaustiveness.
+    //
+    // Parameters:
+    // - `arms` — input value
+    // - `span` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = checkMatchExhaustiveness(arms, span);
+
     const armNames = new Set(arms.map((a) => a.variant));
     if (armNames.size === 0) return;
 
@@ -1681,6 +2141,20 @@ class TypeChecker {
   }
 
   private checkMember(expr: import("../ast/nodes.js").MemberExpr): SpandaType {
+    // CheckMember.
+    //
+    // Parameters:
+    // - `expr` — input value
+    //
+    // Returns:
+    // SpandaType.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = checkMember(expr);
+
     if (expr.object.kind === "IdentExpr") {
       const sym = this.symbols.get(expr.object.name);
       if (sym?.kind === "sensor" && sym.sensorType === "Lidar" && expr.property === "nearest_distance") {
@@ -1793,6 +2267,22 @@ class TypeChecker {
     args: Expr[],
     span: import("../ast/nodes.js").Span,
   ): SpandaType {
+    // CheckResultOptionCtor.
+    //
+    // Parameters:
+    // - `name` — input value
+    // - `args` — input value
+    // - `span` — input value
+    //
+    // Returns:
+    // SpandaType.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = checkResultOptionCtor(name, args, span);
+
     if (name === "Ok" || name === "Some") {
       const arg = args[0];
       if (!arg) {
@@ -1821,6 +2311,20 @@ class TypeChecker {
   }
 
   private checkCall(expr: import("../ast/nodes.js").CallExpr): SpandaType {
+    // CheckCall.
+    //
+    // Parameters:
+    // - `expr` — input value
+    //
+    // Returns:
+    // SpandaType.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = checkCall(expr);
+
     if (expr.callee.kind === "IdentExpr") {
       const name = expr.callee.name;
       const moduleFn = this.moduleFunctions.get(name);
@@ -2135,6 +2639,21 @@ class TypeChecker {
   }
 
   private typesCompatible(expected: SpandaType, actual: SpandaType): boolean {
+    // TypesCompatible.
+    //
+    // Parameters:
+    // - `expected` — input value
+    // - `actual` — input value
+    //
+    // Returns:
+    // true or false.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = typesCompatible(expected, actual);
+
     if (expected.kind === actual.kind) {
       if (expected.kind === "number" && actual.kind === "number") {
         return unitsCompatible(expected.unit, actual.unit);
@@ -2202,6 +2721,23 @@ class TypeChecker {
   }
 
   private assertNamedType(actual: SpandaType, typeName: string, line: number, column: number): void {
+    // AssertNamedType.
+    //
+    // Parameters:
+    // - `actual` — input value
+    // - `typeName` — input value
+    // - `line` — input value
+    // - `column` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = assertNamedType(actual, typeName, line, column);
+
     if (actual.kind === "named" && actual.name === typeName) return;
     this.error(`Expected ${typeName}, got ${actual.kind}`, line, column);
   }
@@ -2227,6 +2763,20 @@ class TypeChecker {
 }
 
 function splitInstantiatedTypeName(typeName: string): [string, string[]] {
+  // SplitInstantiatedTypeName.
+  //
+  // Parameters:
+  // - `typeName` — input value
+  //
+  // Returns:
+  // `[string, string[]]`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = splitInstantiatedTypeName(typeName);
+
   const lt = typeName.indexOf("<");
   if (lt >= 0 && typeName.endsWith(">")) {
     const base = typeName.slice(0, lt).trim();
@@ -2241,5 +2791,20 @@ function splitInstantiatedTypeName(typeName: string): [string, string[]] {
 }
 
 function instantiateTypeName(typeName: string, substitutions: Map<string, string>): string {
+  // InstantiateTypeName.
+  //
+  // Parameters:
+  // - `typeName` — input value
+  // - `substitutions` — input value
+  //
+  // Returns:
+  // Text result.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = instantiateTypeName(typeName, substitutions);
+
   return substitutions.get(typeName) ?? typeName;
 }

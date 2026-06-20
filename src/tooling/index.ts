@@ -1,3 +1,8 @@
+/**
+ * index module (tooling/index.ts).
+ * @module
+ */
+
 export {
   codegenViaCli,
   debugViaCli,

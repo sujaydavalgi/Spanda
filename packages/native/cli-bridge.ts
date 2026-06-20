@@ -1,3 +1,8 @@
+/**
+ * cli bridge module (cli-bridge.ts).
+ * @module
+ */
+
 import { spawnSync } from "node:child_process";
 import { existsSync, unlinkSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
@@ -7,6 +12,20 @@ import type { CheckResult, RunResult } from "./index.js";
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
 
 function cliPath(): string | null {
+  // CliPath.
+  //
+  // Parameters:
+  // None.
+  //
+  // Returns:
+  // Some value on success, otherwise none.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = cliPath();
+
   const release = join(repoRoot, "target/release/spanda");
   const debug = join(repoRoot, "target/debug/spanda");
   if (existsSync(release)) return release;
@@ -15,10 +34,38 @@ function cliPath(): string | null {
 }
 
 export function isCliAvailable(): boolean {
+  // IsCliAvailable.
+  //
+  // Parameters:
+  // None.
+  //
+  // Returns:
+  // true or false.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = isCliAvailable();
+
   return cliPath() !== null;
 }
 
 export function checkViaCli(source: string): CheckResult {
+  // CheckViaCli.
+  //
+  // Parameters:
+  // - `source` — input value
+  //
+  // Returns:
+  // CheckResult.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = checkViaCli(source);
+
   const bin = cliPath();
   if (!bin) {
     return { ok: false, diagnostics: [{ message: "Rust CLI not built (run: cargo build -p spanda-cli)", line: 1, column: 1 }] };
@@ -41,6 +88,20 @@ export function checkViaCli(source: string): CheckResult {
 }
 
 export function runViaCli(source: string): RunResult {
+  // RunViaCli.
+  //
+  // Parameters:
+  // - `source` — input value
+  //
+  // Returns:
+  // RunResult.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = runViaCli(source);
+
   const bin = cliPath();
   if (!bin) {
     throw new Error("Rust CLI not built (run: cargo build -p spanda-cli)");

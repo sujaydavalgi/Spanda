@@ -1,3 +1,8 @@
+/**
+ * index module (runtime/index.ts).
+ * @module
+ */
+
 export { Interpreter, Environment, RuntimeError } from "./interpreter.js";
 export type {
   RuntimeValue,

@@ -1,3 +1,8 @@
+/**
+ * extension module (extension.ts).
+ * @module
+ */
+
 import * as path from "node:path";
 import * as vscode from "vscode";
 import {
@@ -10,6 +15,20 @@ import {
 let client: LanguageClient | undefined;
 
 function resolveServerModule(context: vscode.ExtensionContext): string | null {
+  // ResolveServerModule.
+  //
+  // Parameters:
+  // - `context` — input value
+  //
+  // Returns:
+  // `Some` / non-null value on success, otherwise `None` / null.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = resolveServerModule(context);
+
   const cfg = vscode.workspace.getConfiguration("spanda");
   const configured = cfg.get<string>("languageServerPath");
   if (configured && configured.trim()) {
@@ -26,6 +45,20 @@ function resolveServerModule(context: vscode.ExtensionContext): string | null {
 }
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
+  // Activate.
+  //
+  // Parameters:
+  // - `context` — input value
+  //
+  // Returns:
+  // Success value on completion, or an error.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = activate(context);
+
   const serverModule = resolveServerModule(context);
   if (!serverModule) {
     vscode.window.showWarningMessage("Spanda: language server path could not be resolved.");
@@ -58,6 +91,20 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 }
 
 export async function deactivate(): Promise<void> {
+  // Deactivate.
+  //
+  // Parameters:
+  // None.
+  //
+  // Returns:
+  // Success value on completion, or an error.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = deactivate();
+
   if (client) {
     await client.stop();
   }

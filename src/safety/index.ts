@@ -1,3 +1,8 @@
+/**
+ * index module (safety/index.ts).
+ * @module
+ */
+
 import type { Environment, RobotState } from "../runtime/interpreter.js";
 
 export type SafetyZoneRuntime = {
@@ -28,6 +33,21 @@ export class SafetyMonitor {
   constructor(private config: SafetyConfig) {}
 
   evaluateBeforeMotion(env: Environment, pose: { x: number; y: number }): SafetyEvaluation {
+    // EvaluateBeforeMotion.
+    //
+    // Parameters:
+    // - `env` — input value
+    // - `pose` — input value
+    //
+    // Returns:
+    // SafetyEvaluation.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = evaluateBeforeMotion(env, pose);
+
     const peek = this.peekBeforeMotion(env, pose);
     if (!peek.allowed && peek.emergencyStop) {
       this.emergencyStop = true;
@@ -36,6 +56,21 @@ export class SafetyMonitor {
   }
 
   peekBeforeMotion(env: Environment, pose: { x: number; y: number }): SafetyEvaluation {
+    // PeekBeforeMotion.
+    //
+    // Parameters:
+    // - `env` — input value
+    // - `pose` — input value
+    //
+    // Returns:
+    // SafetyEvaluation.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = peekBeforeMotion(env, pose);
+
     if (this.emergencyStop) {
       return { allowed: false, reason: "Emergency stop active", emergencyStop: true };
     }
@@ -68,7 +103,24 @@ export class SafetyMonitor {
     angular: number,
     env: Environment,
     pose: { x: number; y: number },
-  ): { ok: true; linear: number; angular: number } | { ok: false; reason: string } {
+  ): {
+    // ValidateActionProposal.
+    //
+    // Parameters:
+    // - `linear` — input value
+    // - `angular` — input value
+    // - `env` — input value
+    // - `pose` — input value
+    //
+    // Returns:
+    // .
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = validateActionProposal(linear, angular, env, pose);
+ ok: true; linear: number; angular: number } | { ok: false; reason: string } {
     const peek = this.peekBeforeMotion(env, pose);
     if (!peek.allowed) {
       return { ok: false, reason: peek.reason ?? "Safety validation failed" };
@@ -77,24 +129,95 @@ export class SafetyMonitor {
   }
 
   isInZone(zoneName: string, pose: { x: number; y: number }): boolean {
+    // IsInZone.
+    //
+    // Parameters:
+    // - `zoneName` — input value
+    // - `pose` — input value
+    //
+    // Returns:
+    // true or false.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = isInZone(zoneName, pose);
+
     const zone = this.config.zones.find((z) => z.name === zoneName);
     if (!zone) return false;
     return this.isPointInZone(pose.x, pose.y, zone);
   }
 
   clampSpeed(requested: number): number {
+    // ClampSpeed.
+    //
+    // Parameters:
+    // - `requested` — input value
+    //
+    // Returns:
+    // Numeric result.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = clampSpeed(requested);
+
     return Math.min(Math.abs(requested), this.config.maxSpeed) * Math.sign(requested || 1);
   }
 
   isEmergencyStop(): boolean {
+    // IsEmergencyStop.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // true or false.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = isEmergencyStop();
+
     return this.emergencyStop;
   }
 
   setEmergencyStop(active: boolean): void {
+    // SetEmergencyStop.
+    //
+    // Parameters:
+    // - `active` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = setEmergencyStop(active);
+
     this.emergencyStop = active;
   }
 
   reset(): void {
+    // Reset the value.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = reset();
+
     this.emergencyStop = false;
   }
 
@@ -120,6 +243,20 @@ export function createSafetyConfigFromRobot(
 }
 
 export function applyEmergencyStop(state: RobotState): RobotState {
+  // ApplyEmergencyStop.
+  //
+  // Parameters:
+  // - `state` — input value
+  //
+  // Returns:
+  // `RobotState`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = applyEmergencyStop(state);
+
   return {
     ...state,
     emergencyStop: true,
@@ -131,7 +268,24 @@ export function interpolatePoses(
   from: { x: number; y: number; theta: number; z?: number },
   to: { x: number; y: number; theta: number; z?: number },
   steps: number,
-): Array<{ x: number; y: number; theta: number; z: number }> {
+): Array<{
+  // InterpolatePoses.
+  //
+  // Parameters:
+  // - `from` — optional input
+  // - `to` — optional input
+  // - `steps` — input value
+  //
+  // Returns:
+  // `Array<`.
+  //
+  // Options:
+  // - `from` — optional parameter
+  // - `to` — optional parameter
+  //
+  // Example:
+  // const result = interpolatePoses(from, to, steps);
+ x: number; y: number; theta: number; z: number }> {
   const count = Math.max(2, Math.floor(steps));
   const waypoints: Array<{ x: number; y: number; theta: number; z: number }> = [];
   for (let i = 0; i < count; i++) {

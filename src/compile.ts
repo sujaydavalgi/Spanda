@@ -1,3 +1,8 @@
+/**
+ * compile module (compile.ts).
+ * @module
+ */
+
 import { readFileSync } from "node:fs";
 import { tokenize } from "./lexer/index.js";
 import { parse } from "./parser/index.js";
@@ -24,14 +29,56 @@ export type Diagnostic = {
 let preferredBackend: CompileBackend = "typescript";
 
 export function setPreferredBackend(backend: CompileBackend): void {
+  // SetPreferredBackend.
+  //
+  // Parameters:
+  // - `backend` — input value
+  //
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = setPreferredBackend(backend);
+
   preferredBackend = backend;
 }
 
 export function getPreferredBackend(): CompileBackend {
+  // GetPreferredBackend.
+  //
+  // Parameters:
+  // None.
+  //
+  // Returns:
+  // `CompileBackend`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = getPreferredBackend();
+
   return preferredBackend;
 }
 
-async function tryRustCliCheck(source: string): Promise<{ ok: boolean; diagnostics: Diagnostic[] } | null> {
+async function tryRustCliCheck(source: string): Promise<{
+  // TryRustCliCheck.
+  //
+  // Parameters:
+  // - `source` — input value
+  //
+  // Returns:
+  // Success value on completion, or an error.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = tryRustCliCheck(source);
+ ok: boolean; diagnostics: Diagnostic[] } | null> {
   try {
     const { isCliAvailable, checkViaCli } = await import("./rust-bridge.js");
     if (!isCliAvailable()) return null;
@@ -46,6 +93,23 @@ export function compileWithRegistry(
   registry?: ModuleRegistry,
   backend?: CompileBackend,
 ): CompileResult {
+  // CompileWithRegistry.
+  //
+  // Parameters:
+  // - `source` — input value
+  // - `registry?` — optional input
+  // - `backend?` — optional input
+  //
+  // Returns:
+  // `CompileResult`.
+  //
+  // Options:
+  // - `registry?` — optional parameter
+  // - `backend?` — optional parameter
+  //
+  // Example:
+  // const result = compileWithRegistry(source, registry?, backend?);
+
   const useBackend = backend ?? preferredBackend;
   if (useBackend === "rust-native" || useBackend === "rust-cli") {
     throw new Error(
@@ -59,6 +123,21 @@ export function compileWithRegistry(
 }
 
 export function compile(source: string, backend?: CompileBackend): CompileResult {
+  // Compile.
+  //
+  // Parameters:
+  // - `source` — input value
+  // - `backend?` — optional input
+  //
+  // Returns:
+  // `CompileResult`.
+  //
+  // Options:
+  // - `backend?` — optional parameter
+  //
+  // Example:
+  // const result = compile(source, backend?);
+
   const useBackend = backend ?? preferredBackend;
 
   if (useBackend === "rust-native" || useBackend === "rust-cli") {
@@ -74,6 +153,21 @@ export function compile(source: string, backend?: CompileBackend): CompileResult
 }
 
 export async function compileAsync(source: string, backend?: CompileBackend): Promise<CompileResult> {
+  // CompileAsync.
+  //
+  // Parameters:
+  // - `source` — input value
+  // - `backend?` — optional input
+  //
+  // Returns:
+  // Success value on completion, or an error.
+  //
+  // Options:
+  // - `backend?` — optional parameter
+  //
+  // Example:
+  // const result = compileAsync(source, backend?);
+
   const useBackend = backend ?? preferredBackend;
 
   if (useBackend === "rust-cli" || useBackend === "rust-native") {
@@ -142,6 +236,21 @@ export type RunOptions = {
 };
 
 export function run(program: Program, options: RunOptions): RobotState {
+  // Run the operation.
+  //
+  // Parameters:
+  // - `program` — input value
+  // - `options` — input value
+  //
+  // Returns:
+  // `RobotState`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = run(program, options);
+
   const interpreter = new Interpreter({
     backend: options.backend,
     maxLoopIterations: options.maxLoopIterations,
@@ -153,6 +262,21 @@ export function run(program: Program, options: RunOptions): RobotState {
 }
 
 export async function runSource(source: string, options: RunOptions): Promise<RobotState> {
+  // RunSource.
+  //
+  // Parameters:
+  // - `source` — input value
+  // - `options` — input value
+  //
+  // Returns:
+  // Success value on completion, or an error.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = runSource(source, options);
+
   if (options.rustCli) {
     try {
       const { isCliAvailable, runViaCli } = await import("./rust-bridge.js");
@@ -182,6 +306,21 @@ export async function runSource(source: string, options: RunOptions): Promise<Ro
 }
 
 export function runFile(path: string, options: RunOptions): RobotState {
+  // RunFile.
+  //
+  // Parameters:
+  // - `path` — input value
+  // - `options` — input value
+  //
+  // Returns:
+  // `RobotState`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = runFile(path, options);
+
   const { program } = compileFile(path);
   return run(program, options);
 }
@@ -193,11 +332,26 @@ export type VerifyHardwareOptions = {
   rustCli?: boolean;
 };
 
-/** Hardware compatibility verification (requires native CLI or returns error). */
 export async function verifyHardware(
   source: string,
-  options: VerifyHardwareOptions = {},
+  options: VerifyHardwareOptions = {
+  },
 ): Promise<import("./rust-bridge.js").VerifyResult> {
+  // VerifyHardware.
+  //
+  // Parameters:
+  // - `source` — input value
+  // - `options` — optional input
+  //
+  // Returns:
+  // Success value on completion, or an error.
+  //
+  // Options:
+  // - `options` — optional parameter
+  //
+  // Example:
+  // const result = verifyHardware(source, options);
+
   const { verifyViaCli, isCliAvailable } = await import("./rust-bridge.js");
   if (!isCliAvailable()) {
     return {
@@ -230,6 +384,21 @@ export function runTestsWithRegistry(
   source: string,
   registry?: ModuleRegistry,
 ): TestRunResult {
+  // RunTestsWithRegistry.
+  //
+  // Parameters:
+  // - `source` — input value
+  // - `registry?` — optional input
+  //
+  // Returns:
+  // `TestRunResult`.
+  //
+  // Options:
+  // - `registry?` — optional parameter
+  //
+  // Example:
+  // const result = runTestsWithRegistry(source, registry?);
+
   const { program } = compileWithRegistry(source, registry);
   const logs: string[] = [];
   const backend = createDefaultSimulator();
@@ -249,6 +418,20 @@ export function runTestsWithRegistry(
 }
 
 export function runTests(source: string): TestRunResult {
+  // RunTests.
+  //
+  // Parameters:
+  // - `source` — input value
+  //
+  // Returns:
+  // `TestRunResult`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = runTests(source);
+
   return runTestsWithRegistry(source, undefined);
 }
 

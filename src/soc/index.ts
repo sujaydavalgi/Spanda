@@ -1,3 +1,8 @@
+/**
+ * index module (soc/index.ts).
+ * @module
+ */
+
 export type SocCapability = "gpio" | "i2c" | "spi" | "uart" | "pwm" | "adc" | "wifi" | "ble" | "gpu" | "cuda";
 
 export type SocProfile = {
@@ -151,6 +156,20 @@ export type SocValidationError = {
 };
 
 export function getSocProfile(name: string): SocProfile | undefined {
+  // GetSocProfile.
+  //
+  // Parameters:
+  // - `name` — input value
+  //
+  // Returns:
+  // `Some` / non-null value on success, otherwise `None` / null.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = getSocProfile(name);
+
   return SOC_PROFILES[name];
 }
 
@@ -158,6 +177,21 @@ export function validateHalAgainstSoc(
   profile: SocProfile,
   halMembers: import("../hal/index.js").HalMemberConfig[],
 ): SocValidationError[] {
+  // ValidateHalAgainstSoc.
+  //
+  // Parameters:
+  // - `profile` — input value
+  // - `halMembers` — input value
+  //
+  // Returns:
+  // SocValidationError[].
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = validateHalAgainstSoc(profile, halMembers);
+
   const errors: SocValidationError[] = [];
   let i2cCount = 0;
   let spiCount = 0;
@@ -215,5 +249,19 @@ export function validateHalAgainstSoc(
 }
 
 export function listSocProfiles(): SocProfile[] {
+  // ListSocProfiles.
+  //
+  // Parameters:
+  // None.
+  //
+  // Returns:
+  // `SocProfile[]`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = listSocProfiles();
+
   return Object.values(SOC_PROFILES);
 }

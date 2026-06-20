@@ -1,3 +1,8 @@
+/**
+ * nodes module (ast/nodes.ts).
+ * @module
+ */
+
 import type {
   AgentChannelDecl,
   BusDecl,

@@ -1,3 +1,8 @@
+/**
+ * AIProvider module (ai/AIProvider.ts).
+ * @module
+ */
+
 import type { RuntimeValue } from "../runtime/interpreter.js";
 
 export type CompletionRequest = {

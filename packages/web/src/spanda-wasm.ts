@@ -1,3 +1,8 @@
+/**
+ * spanda wasm module (spanda-wasm.ts).
+ * @module
+ */
+
 export type Diagnostic = { message: string; line: number; column: number };
 
 export type CheckResponse = { ok: boolean; diagnostics: Diagnostic[] };
@@ -24,10 +29,38 @@ type SpandaWasmBindings = {
 let wasmModule: SpandaWasmBindings | null = null;
 
 export function isWasmLoaded(): boolean {
+  // IsWasmLoaded.
+  //
+  // Parameters:
+  // None.
+  //
+  // Returns:
+  // `true` or `false`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = isWasmLoaded();
+
   return wasmModule !== null;
 }
 
 async function ensureWasm(): Promise<void> {
+  // EnsureWasm.
+  //
+  // Parameters:
+  // None.
+  //
+  // Returns:
+  // Success value on completion, or an error.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = ensureWasm();
+
   if (wasmModule) return;
   try {
     const init = await import("../wasm/spanda_wasm.js");
@@ -42,6 +75,20 @@ async function ensureWasm(): Promise<void> {
 }
 
 export async function checkSource(source: string): Promise<CheckResponse> {
+  // CheckSource.
+  //
+  // Parameters:
+  // - `source` — input value
+  //
+  // Returns:
+  // Success value on completion, or an error.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = checkSource(source);
+
   await ensureWasm();
   if (!wasmModule) {
     return { ok: false, diagnostics: [{ message: "WASM module not loaded", line: 1, column: 1 }] };
@@ -50,6 +97,21 @@ export async function checkSource(source: string): Promise<CheckResponse> {
 }
 
 export async function runSource(source: string, maxLoopIterations: number): Promise<RunResponse> {
+  // RunSource.
+  //
+  // Parameters:
+  // - `source` — input value
+  // - `maxLoopIterations` — input value
+  //
+  // Returns:
+  // Success value on completion, or an error.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = runSource(source, maxLoopIterations);
+
   await ensureWasm();
   if (!wasmModule) {
     return { ok: false, diagnostics: [{ message: "WASM module not loaded", line: 1, column: 1 }] };

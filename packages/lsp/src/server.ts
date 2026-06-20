@@ -1,4 +1,9 @@
 #!/usr/bin/env node
+/**
+ * Spanda Language Server Protocol (LSP) server for editor integration.
+ * @module
+ */
+
 import {
   createConnection,
   TextDocuments,
@@ -41,6 +46,20 @@ type SpandaSymbol = {
 };
 
 function cliPath(): string | null {
+  // CliPath.
+  //
+  // Parameters:
+  // None.
+  //
+  // Returns:
+  // `Some` / non-null value on success, otherwise `None` / null.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = cliPath();
+
   const release = join(repoRoot, "target/release/spanda");
   const debug = join(repoRoot, "target/debug/spanda");
   if (existsSync(release)) return release;
@@ -89,6 +108,20 @@ const symbolScript = join(repoRoot, "scripts/lsp-symbols.mts");
 const symbolCache = new Map<string, SpandaSymbol[]>();
 
 function runSymbols(args: string[]): unknown {
+  // RunSymbols.
+  //
+  // Parameters:
+  // - `args` — input value
+  //
+  // Returns:
+  // `unknown`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = runSymbols(args);
+
   const result = spawnSync(process.execPath, ["--import", "tsx", symbolScript, ...args], {
     encoding: "utf-8",
     cwd: repoRoot,
@@ -104,6 +137,21 @@ function runSymbols(args: string[]): unknown {
 }
 
 function refreshSymbolCache(uri: string, source: string): void {
+  // RefreshSymbolCache.
+  //
+  // Parameters:
+  // - `uri` — input value
+  // - `source` — input value
+  //
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = refreshSymbolCache(uri, source);
+
   const tmp = join(repoRoot, ".spanda-lsp-symbols.sd");
   writeFileSync(tmp, source);
   const parsed = runSymbols(["index", tmp]) as { symbols?: SpandaSymbol[] } | null;
@@ -116,6 +164,23 @@ function refreshSymbolCache(uri: string, source: string): void {
 }
 
 function lookupDefinition(uri: string, source: string, line: number, column: number): SpandaSymbol | null {
+  // LookupDefinition.
+  //
+  // Parameters:
+  // - `uri` — input value
+  // - `source` — input value
+  // - `line` — input value
+  // - `column` — input value
+  //
+  // Returns:
+  // `Some` / non-null value on success, otherwise `None` / null.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = lookupDefinition(uri, source, line, column);
+
   const tmp = join(repoRoot, ".spanda-lsp-define.sd");
   writeFileSync(tmp, source);
   const parsed = runSymbols(["define", tmp, String(line), String(column)]) as {
@@ -130,6 +195,22 @@ function lookupDefinition(uri: string, source: string, line: number, column: num
 }
 
 function lookupHover(source: string, line: number, column: number): string | null {
+  // LookupHover.
+  //
+  // Parameters:
+  // - `source` — input value
+  // - `line` — input value
+  // - `column` — input value
+  //
+  // Returns:
+  // `Some` / non-null value on success, otherwise `None` / null.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = lookupHover(source, line, column);
+
   const tmp = join(repoRoot, ".spanda-lsp-hover.sd");
   writeFileSync(tmp, source);
   const parsed = runSymbols(["hover", tmp, String(line), String(column)]) as {
@@ -144,6 +225,20 @@ function lookupHover(source: string, line: number, column: number): string | nul
 }
 
 function spanToRange(span: Span) {
+  // SpanToRange.
+  //
+  // Parameters:
+  // - `span` — input value
+  //
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = spanToRange(span);
+
   return {
     start: { line: Math.max(0, span.start.line - 1), character: Math.max(0, span.start.column - 1) },
     end: { line: Math.max(0, span.end.line - 1), character: Math.max(0, span.end.column) },
@@ -151,6 +246,21 @@ function spanToRange(span: Span) {
 }
 
 function runCliJson(args: string[], source: string): unknown {
+  // RunCliJson.
+  //
+  // Parameters:
+  // - `args` — input value
+  // - `source` — input value
+  //
+  // Returns:
+  // `unknown`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = runCliJson(args, source);
+
   const bin = cliPath();
   if (!bin) {
     return null;
@@ -176,6 +286,20 @@ function runCliJson(args: string[], source: string): unknown {
 }
 
 function checkSourceTs(source: string): CliDiagnostic[] {
+  // CheckSourceTs.
+  //
+  // Parameters:
+  // - `source` — input value
+  //
+  // Returns:
+  // `CliDiagnostic[]`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = checkSourceTs(source);
+
   const tmp = join(repoRoot, ".spanda-lsp-ts-check.sd");
   writeFileSync(tmp, source);
   const script = join(repoRoot, "scripts/lsp-ts-check.mts");
@@ -198,6 +322,20 @@ function checkSourceTs(source: string): CliDiagnostic[] {
 }
 
 function checkSource(source: string): CliDiagnostic[] {
+  // CheckSource.
+  //
+  // Parameters:
+  // - `source` — input value
+  //
+  // Returns:
+  // `CliDiagnostic[]`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = checkSource(source);
+
   const parsed = runCliJson(["check"], source) as {
     ok: boolean;
     diagnostics?: CliDiagnostic[];
@@ -211,6 +349,20 @@ function checkSource(source: string): CliDiagnostic[] {
 }
 
 function formatSource(source: string): string | null {
+  // FormatSource.
+  //
+  // Parameters:
+  // - `source` — input value
+  //
+  // Returns:
+  // `Some` / non-null value on success, otherwise `None` / null.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = formatSource(source);
+
   const parsed = runCliJson(["fmt"], source) as {
     ok: boolean;
     formatted?: string;
@@ -219,6 +371,20 @@ function formatSource(source: string): string | null {
 }
 
 function symbolKindFor(kind: string): SymbolKind {
+  // SymbolKindFor.
+  //
+  // Parameters:
+  // - `kind` — input value
+  //
+  // Returns:
+  // `SymbolKind`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = symbolKindFor(kind);
+
   switch (kind) {
     case "robot":
       return SymbolKind.Class;
@@ -236,6 +402,21 @@ function symbolKindFor(kind: string): SymbolKind {
 }
 
 function documentSymbols(uri: string, _source: string): DocumentSymbol[] {
+  // DocumentSymbols.
+  //
+  // Parameters:
+  // - `uri` — input value
+  // - `_source` — input value
+  //
+  // Returns:
+  // `DocumentSymbol[]`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = documentSymbols(uri, _source);
+
   const cached = symbolCache.get(uri) ?? [];
   return cached.map(
     (sym): DocumentSymbol => ({
@@ -249,6 +430,20 @@ function documentSymbols(uri: string, _source: string): DocumentSymbol[] {
 }
 
 function verifySource(source: string): CompatItem[] {
+  // VerifySource.
+  //
+  // Parameters:
+  // - `source` — input value
+  //
+  // Returns:
+  // `CompatItem[]`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = verifySource(source);
+
   const parsed = runCliJson(["verify"], source) as {
     ok: boolean;
     items?: CompatItem[];
@@ -290,6 +485,20 @@ connection.onInitialize((_params: InitializeParams) => ({
 }));
 
 function validate(textDocument: TextDocument): Diagnostic[] {
+  // Validate input.
+  //
+  // Parameters:
+  // - `textDocument` — input value
+  //
+  // Returns:
+  // `Diagnostic[]`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = validate(textDocument);
+
   const source = textDocument.getText();
   refreshSymbolCache(textDocument.uri, source);
   const typeErrors = checkSource(source);
@@ -326,6 +535,20 @@ function validate(textDocument: TextDocument): Diagnostic[] {
 }
 
 function commCompletions(): CompletionItem[] {
+  // CommCompletions.
+  //
+  // Parameters:
+  // None.
+  //
+  // Returns:
+  // `CompletionItem[]`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = commCompletions();
+
   const kwItems = COMM_KEYWORDS.map(
     (label): CompletionItem => ({
       label,

@@ -1,3 +1,8 @@
+/**
+ * concurrency module (concurrency.ts).
+ * @module
+ */
+
 import { RuntimeError } from "./runtime/interpreter.js";
 import type { RuntimeValue } from "./runtime/interpreter.js";
 
@@ -14,6 +19,20 @@ export type AgentRoute = {
 };
 
 function runtimeTypeTag(value: RuntimeValue): string {
+  // RuntimeTypeTag.
+  //
+  // Parameters:
+  // - `value` — input value
+  //
+  // Returns:
+  // Text result.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = runtimeTypeTag(value);
+
   switch (value.kind) {
     case "object":
       return `object:${value.typeName}`;
@@ -49,12 +68,42 @@ export class ConcurrencyRuntime {
   private agentRoutes: AgentRoute[] = [];
 
   createChannel(): RuntimeValue {
+    // CreateChannel.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = createChannel();
+
     const id = this.nextChannelId++;
     this.channels.set(id, []);
     return { kind: "channel", id };
   }
 
   bindChannelType(channel: RuntimeValue, value: RuntimeValue, line: number): void {
+    // BindChannelType.
+    //
+    // Parameters:
+    // - `channel` — input value
+    // - `value` — input value
+    // - `line` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = bindChannelType(channel, value, line);
+
     if (channel.kind !== "channel") {
       throw new RuntimeError("channel type binding requires channel", line);
     }
@@ -67,6 +116,22 @@ export class ConcurrencyRuntime {
   }
 
   send(channel: RuntimeValue, value: RuntimeValue, line: number): void {
+    // Send.
+    //
+    // Parameters:
+    // - `channel` — input value
+    // - `value` — input value
+    // - `line` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = send(channel, value, line);
+
     if (channel.kind !== "channel") {
       throw new RuntimeError("send requires a channel", line);
     }
@@ -85,6 +150,21 @@ export class ConcurrencyRuntime {
   }
 
   tryRecv(channel: RuntimeValue, line: number): RuntimeValue | null {
+    // TryRecv.
+    //
+    // Parameters:
+    // - `channel` — input value
+    // - `line` — input value
+    //
+    // Returns:
+    // Some value on success, otherwise none.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = tryRecv(channel, line);
+
     if (channel.kind !== "channel") {
       throw new RuntimeError("recv requires a channel", line);
     }
@@ -96,12 +176,42 @@ export class ConcurrencyRuntime {
   }
 
   createTaskHandle(funcName: string, args: RuntimeValue[]): RuntimeValue {
+    // CreateTaskHandle.
+    //
+    // Parameters:
+    // - `funcName` — input value
+    // - `args` — input value
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = createTaskHandle(funcName, args);
+
     const id = this.nextHandleId++;
     this.handles.set(id, { funcName, args, result: null });
     return { kind: "task_handle", id };
   }
 
   queueFireAndForget(funcName: string, args: RuntimeValue[]): void {
+    // QueueFireAndForget.
+    //
+    // Parameters:
+    // - `funcName` — input value
+    // - `args` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = queueFireAndForget(funcName, args);
+
     const handle = this.createTaskHandle(funcName, args);
     if (handle.kind === "task_handle") {
       this.fireAndForgetQueue.push(handle.id);
@@ -109,25 +219,101 @@ export class ConcurrencyRuntime {
   }
 
   getHandle(id: number): SpawnHandle | undefined {
+    // GetHandle.
+    //
+    // Parameters:
+    // - `id` — input value
+    //
+    // Returns:
+    // Some value on success, otherwise none.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = getHandle(id);
+
     return this.handles.get(id);
   }
 
   setHandleResult(id: number, result: RuntimeValue): void {
+    // SetHandleResult.
+    //
+    // Parameters:
+    // - `id` — input value
+    // - `result` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = setHandleResult(id, result);
+
     const handle = this.handles.get(id);
     if (handle) handle.result = result;
   }
 
   drainFireAndForgetQueue(): number[] {
+    // DrainFireAndForgetQueue.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // number[].
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = drainFireAndForgetQueue();
+
     const queue = [...this.fireAndForgetQueue];
     this.fireAndForgetQueue = [];
     return queue;
   }
 
   registerAgentRoute(from: string, to: string, messageType: string): void {
+    // RegisterAgentRoute.
+    //
+    // Parameters:
+    // - `from` — input value
+    // - `to` — input value
+    // - `messageType` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = registerAgentRoute(from, to, messageType);
+
     this.agentRoutes.push({ from, to, messageType });
   }
 
   sendAgent(from: string, to: string, value: RuntimeValue, line: number): void {
+    // SendAgent.
+    //
+    // Parameters:
+    // - `from` — input value
+    // - `to` — input value
+    // - `value` — input value
+    // - `line` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = sendAgent(from, to, value, line);
+
     const allowed = this.agentRoutes.some((route) => route.from === from && route.to === to);
     if (!allowed) {
       throw new RuntimeError(`No agent channel from '${from}' to '${to}'`, line);
@@ -149,6 +335,20 @@ export class ConcurrencyRuntime {
   }
 
   tryRecvAgent(agent: string): RuntimeValue | null {
+    // TryRecvAgent.
+    //
+    // Parameters:
+    // - `agent` — input value
+    //
+    // Returns:
+    // Some value on success, otherwise none.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = tryRecvAgent(agent);
+
     const inbox = this.agentInboxes.get(agent);
     return inbox?.shift() ?? null;
   }

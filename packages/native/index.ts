@@ -1,3 +1,8 @@
+/**
+ * index module (index.ts).
+ * @module
+ */
+
 export type Diagnostic = {
   message: string;
   line: number;
@@ -85,11 +90,39 @@ let native: SpandaNative | null = null;
 let loadAttempted = false;
 
 export function isNativeAvailable(): boolean {
+  // IsNativeAvailable.
+  //
+  // Parameters:
+  // None.
+  //
+  // Returns:
+  // true or false.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = isNativeAvailable();
+
   loadNative();
   return native !== null;
 }
 
 function loadNative(): void {
+  // LoadNative.
+  //
+  // Parameters:
+  // None.
+  //
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = loadNative();
+
   if (loadAttempted) return;
   loadAttempted = true;
   try {
@@ -102,18 +135,61 @@ function loadNative(): void {
 }
 
 export function checkSource(source: string): CheckResult | null {
+  // CheckSource.
+  //
+  // Parameters:
+  // - `source` — input value
+  //
+  // Returns:
+  // Some value on success, otherwise none.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = checkSource(source);
+
   loadNative();
   if (!native) return null;
   return native.checkSource(source);
 }
 
 export function runSource(source: string, options?: RunOptions): RunResult | null {
+  // RunSource.
+  //
+  // Parameters:
+  // - `source` — input value
+  // - `options?` — optional input
+  //
+  // Returns:
+  // Some value on success, otherwise none.
+  //
+  // Options:
+  // - `options?` — optional parameter
+  //
+  // Example:
+  // const result = runSource(source, options?);
+
   loadNative();
   if (!native) return null;
   return native.runSource(source, options);
 }
 
 export function coreVersion(): string | null {
+  // CoreVersion.
+  //
+  // Parameters:
+  // None.
+  //
+  // Returns:
+  // Some value on success, otherwise none.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = coreVersion();
+
   loadNative();
   return native?.coreVersion() ?? null;
 }

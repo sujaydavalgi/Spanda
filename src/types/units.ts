@@ -1,3 +1,8 @@
+/**
+ * units module (types/units.ts).
+ * @module
+ */
+
 import type { UnitKind, SpandaType } from "../ast/nodes.js";
 import { allLibrarySensorTypes } from "../lib/registry.js";
 
@@ -19,12 +24,41 @@ export class TypeCheckError extends Error {
 }
 
 function physicalTypesCompatible(left: SpandaType, right: SpandaType): boolean {
+  // PhysicalTypesCompatible.
+  //
+  // Parameters:
+  // - `left` — input value
+  // - `right` — input value
+  //
+  // Returns:
+  // `true` or `false`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = physicalTypesCompatible(left, right);
+
   const catL = physicalCategory(left);
   const catR = physicalCategory(right);
   return catL === catR && catL !== "scalar";
 }
 
 function namedTypeDefaultUnit(name: string): UnitKind | undefined {
+  // NamedTypeDefaultUnit.
+  //
+  // Parameters:
+  // - `name` — input value
+  //
+  // Returns:
+  // `Some` / non-null value on success, otherwise `None` / null.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = namedTypeDefaultUnit(name);
+
   const map: Record<string, PhysicalCategory> = {
     Distance: "distance",
     Duration: "duration",
@@ -62,6 +96,21 @@ function namedTypeDefaultUnit(name: string): UnitKind | undefined {
 }
 
 function resultNumberForPhysical(left: SpandaType, right: SpandaType): SpandaType | null {
+  // ResultNumberForPhysical.
+  //
+  // Parameters:
+  // - `left` — input value
+  // - `right` — input value
+  //
+  // Returns:
+  // `Some` / non-null value on success, otherwise `None` / null.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = resultNumberForPhysical(left, right);
+
   if (left.kind === "number") return { kind: "number", unit: left.unit };
   if (right.kind === "number") return { kind: "number", unit: right.unit };
   if (left.kind === "named") {
@@ -80,6 +129,22 @@ export function resultUnitForBinary(
   left: SpandaType,
   right: SpandaType,
 ): SpandaType | null {
+  // ResultUnitForBinary.
+  //
+  // Parameters:
+  // - `op` — input value
+  // - `left` — input value
+  // - `right` — input value
+  //
+  // Returns:
+  // `Some` / non-null value on success, otherwise `None` / null.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = resultUnitForBinary(op, left, right);
+
   if (op === "and" || op === "or") {
     if (left.kind === "bool" && right.kind === "bool") return { kind: "bool" };
     return null;
@@ -149,10 +214,38 @@ export const SENSOR_TYPES: Record<string, SpandaType> = {
 };
 
 export function getLibraryForSensorType(sensorType: string): string | undefined {
+  // GetLibraryForSensorType.
+  //
+  // Parameters:
+  // - `sensorType` — input value
+  //
+  // Returns:
+  // `Some` / non-null value on success, otherwise `None` / null.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = getLibraryForSensorType(sensorType);
+
   return allLibrarySensorTypes()[sensorType]?.library;
 }
 
 function inferReadReturn(typeName: string): SpandaType {
+  // InferReadReturn.
+  //
+  // Parameters:
+  // - `typeName` — input value
+  //
+  // Returns:
+  // `SpandaType`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = inferReadReturn(typeName);
+
   if (typeName.includes("Lidar") || typeName.includes("Velodyne") || typeName.includes("Hokuyo") || typeName.includes("Ydlidar") || typeName.includes("Ouster") || typeName.includes("RealSense")) {
     return { kind: "scan" };
   }
@@ -196,6 +289,20 @@ function inferReadReturn(typeName: string): SpandaType {
 }
 
 export function mergeLibraryMethods(): void {
+  // MergeLibraryMethods.
+  //
+  // Parameters:
+  // None.
+  //
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = mergeLibraryMethods();
+
   for (const [typeName, info] of Object.entries(allLibrarySensorTypes())) {
     if (!BUILTIN_METHODS[typeName]) {
       BUILTIN_METHODS[typeName] = {

@@ -26,5 +26,19 @@ export const STD_NAMESPACES = new Set([
 ]);
 
 export function resolveStdImport(path: string): boolean {
+  // ResolveStdImport.
+  //
+  // Parameters:
+  // - `path` — input value
+  //
+  // Returns:
+  // `true` or `false`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = resolveStdImport(path);
+
   return STD_NAMESPACES.has(path);
 }

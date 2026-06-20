@@ -1,3 +1,8 @@
+/**
+ * subprocess bridge module (ffi/subprocess-bridge.ts).
+ * @module
+ */
+
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -11,6 +16,20 @@ type BridgeResponse = {
 };
 
 function runtimeValueToJson(value: RuntimeValue): unknown {
+  // RuntimeValueToJson.
+  //
+  // Parameters:
+  // - `value` — input value
+  //
+  // Returns:
+  // `unknown`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = runtimeValueToJson(value);
+
   switch (value.kind) {
     case "number":
       return value.value;
@@ -26,6 +45,20 @@ function runtimeValueToJson(value: RuntimeValue): unknown {
 }
 
 function jsonToRuntimeValue(value: unknown): RuntimeValue {
+  // JsonToRuntimeValue.
+  //
+  // Parameters:
+  // - `value` — input value
+  //
+  // Returns:
+  // `RuntimeValue`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = jsonToRuntimeValue(value);
+
   if (typeof value === "number") {
     return { kind: "number", value, unit: "none" };
   }
@@ -39,10 +72,38 @@ function jsonToRuntimeValue(value: unknown): RuntimeValue {
 }
 
 function repoRoot(): string {
+  // RepoRoot.
+  //
+  // Parameters:
+  // None.
+  //
+  // Returns:
+  // Text result.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = repoRoot();
+
   return resolve(import.meta.dirname, "../..");
 }
 
 export function pythonBridgeScriptPath(): string | null {
+  // PythonBridgeScriptPath.
+  //
+  // Parameters:
+  // None.
+  //
+  // Returns:
+  // `Some` / non-null value on success, otherwise `None` / null.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = pythonBridgeScriptPath();
+
   const env = process.env.SPANDA_PYTHON_BRIDGE;
   if (env && existsSync(env)) return env;
   const candidates = [
@@ -53,6 +114,20 @@ export function pythonBridgeScriptPath(): string | null {
 }
 
 export function cppBridgeBinaryPath(): string | null {
+  // CppBridgeBinaryPath.
+  //
+  // Parameters:
+  // None.
+  //
+  // Returns:
+  // `Some` / non-null value on success, otherwise `None` / null.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = cppBridgeBinaryPath();
+
   const env = process.env.SPANDA_CPP_BRIDGE;
   if (env && existsSync(env)) return env;
   const candidates = [
@@ -64,6 +139,20 @@ export function cppBridgeBinaryPath(): string | null {
 }
 
 function cargoCppBridgePaths(): string[] {
+  // CargoCppBridgePaths.
+  //
+  // Parameters:
+  // None.
+  //
+  // Returns:
+  // `string[]`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = cargoCppBridgePaths();
+
   const roots = [
     join(repoRoot(), "target/debug/build"),
     join(repoRoot(), "target/release/build"),
@@ -81,6 +170,20 @@ function cargoCppBridgePaths(): string[] {
 }
 
 function pythonCommand(): string | null {
+  // PythonCommand.
+  //
+  // Parameters:
+  // None.
+  //
+  // Returns:
+  // `Some` / non-null value on success, otherwise `None` / null.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = pythonCommand();
+
   for (const cmd of ["python3", "python"]) {
     const result = spawnSync(cmd, ["-c", "import sys"], { stdio: "ignore" });
     if (result.status === 0) return cmd;
@@ -96,6 +199,25 @@ function callSubprocessBridge(
   args: RuntimeValue[],
   line: number,
 ): RuntimeValue {
+  // CallSubprocessBridge.
+  //
+  // Parameters:
+  // - `label` — input value
+  // - `executable` — input value
+  // - `extraArgs` — input value
+  // - `decl` — input value
+  // - `args` — input value
+  // - `line` — input value
+  //
+  // Returns:
+  // `RuntimeValue`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = callSubprocessBridge(label, executable, extraArgs, decl, args, line);
+
   const request = JSON.stringify({
     fn: decl.name,
     args: args.map(runtimeValueToJson),
@@ -130,6 +252,21 @@ export function callExternBridge(
   decl: ExternFnDecl,
   args: RuntimeValue[],
 ): RuntimeValue {
+  // CallExternBridge.
+  //
+  // Parameters:
+  // - `decl` — input value
+  // - `args` — input value
+  //
+  // Returns:
+  // `RuntimeValue`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = callExternBridge(decl, args);
+
   const line = decl.span.start.line;
   if (decl.bridge === "python") {
     const script = pythonBridgeScriptPath();

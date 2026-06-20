@@ -1,3 +1,8 @@
+/**
+ * registry module (lib/registry.ts).
+ * @module
+ */
+
 import type { HalBackend } from "../hal/index.js";
 import type { RuntimeValue } from "../runtime/interpreter.js";
 
@@ -30,12 +35,41 @@ export type LibModule = {
 };
 
 function scanReading(ctx: DriverContext, range = 10): RuntimeValue {
+  // ScanReading.
+  //
+  // Parameters:
+  // - `ctx` — input value
+  // - `range` — optional input
+  //
+  // Returns:
+  // `RuntimeValue`.
+  //
+  // Options:
+  // - `range` — optional parameter
+  //
+  // Example:
+  // const result = scanReading(ctx, range);
+
   const x = ctx.simState?.pose.x ?? 0;
   const nearest = Math.max(0.05, range - Math.abs(x) * 0.3);
   return { kind: "scan", nearestDistance: nearest };
 }
 
 function imuReading(yaw = 0): RuntimeValue {
+  // ImuReading.
+  //
+  // Parameters:
+  // - `yaw` — optional input
+  //
+  // Returns:
+  // `RuntimeValue`.
+  //
+  // Options:
+  // - `yaw` — optional parameter
+  //
+  // Example:
+  // const result = imuReading(yaw);
+
   return {
     kind: "object",
     typeName: "IMUReading",
@@ -347,20 +381,78 @@ export const LIB_REGISTRY: Record<string, LibModule> = {
 };
 
 export function resolveImport(path: string): LibModule | undefined {
+  // ResolveImport.
+  //
+  // Parameters:
+  // - `path` — input value
+  //
+  // Returns:
+  // `Some` / non-null value on success, otherwise `None` / null.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = resolveImport(path);
+
   return LIB_REGISTRY[path];
 }
 
 export function getSensorDriver(libraryId: string, sensorType: string): SensorDriverDef | undefined {
+  // GetSensorDriver.
+  //
+  // Parameters:
+  // - `libraryId` — input value
+  // - `sensorType` — input value
+  //
+  // Returns:
+  // `Some` / non-null value on success, otherwise `None` / null.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = getSensorDriver(libraryId, sensorType);
+
   const lib = LIB_REGISTRY[libraryId];
   if (!lib) return undefined;
   return lib.sensors[sensorType];
 }
 
 export function getSensorTypeFromLib(libraryId: string, sensorType: string): boolean {
+  // GetSensorTypeFromLib.
+  //
+  // Parameters:
+  // - `libraryId` — input value
+  // - `sensorType` — input value
+  //
+  // Returns:
+  // `true` or `false`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = getSensorTypeFromLib(libraryId, sensorType);
+
   return getSensorDriver(libraryId, sensorType) !== undefined;
 }
 
-export function allLibrarySensorTypes(): Record<string, { roboType: { kind: "named"; name: string }; library: string }> {
+export function allLibrarySensorTypes(): Record<string, {
+  // AllLibrarySensorTypes.
+  //
+  // Parameters:
+  // None.
+  //
+  // Returns:
+  // `Record<string,`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = allLibrarySensorTypes();
+ roboType: { kind: "named"; name: string }; library: string }> {
   const result: Record<string, { roboType: { kind: "named"; name: string }; library: string }> = {};
   for (const [libId, mod] of Object.entries(LIB_REGISTRY)) {
     for (const [typeName, driver] of Object.entries(mod.sensors)) {
@@ -371,10 +463,38 @@ export function allLibrarySensorTypes(): Record<string, { roboType: { kind: "nam
 }
 
 export function listLibraries(): LibModule[] {
+  // ListLibraries.
+  //
+  // Parameters:
+  // None.
+  //
+  // Returns:
+  // `LibModule[]`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = listLibraries();
+
   return Object.values(LIB_REGISTRY);
 }
 
 export function listLibrariesByVendor(vendor: string): LibModule[] {
+  // ListLibrariesByVendor.
+  //
+  // Parameters:
+  // - `vendor` — input value
+  //
+  // Returns:
+  // `LibModule[]`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = listLibrariesByVendor(vendor);
+
   return listLibraries().filter((l) => l.vendor.toLowerCase() === vendor.toLowerCase());
 }
 
@@ -382,5 +502,20 @@ export function readWithDriver(
   driver: SensorDriverDef,
   ctx: DriverContext,
 ): RuntimeValue {
+  // ReadWithDriver.
+  //
+  // Parameters:
+  // - `driver` — input value
+  // - `ctx` — input value
+  //
+  // Returns:
+  // `RuntimeValue`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = readWithDriver(driver, ctx);
+
   return driver.read(ctx);
 }

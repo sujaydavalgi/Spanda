@@ -1,4 +1,9 @@
 #!/usr/bin/env node
+/**
+ * Spanda CLI entry point: check, run, verify, format, lint, doc, codegen, deploy, debug, and package commands.
+ * @module
+ */
+
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { compileFile, run } from "../compile.js";
@@ -63,6 +68,20 @@ type ParsedArgs = {
 };
 
 function parseArgs(argv: string[]): ParsedArgs {
+  // ParseArgs.
+  //
+  // Parameters:
+  // - `argv` — input value
+  //
+  // Returns:
+  // `ParsedArgs`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = parseArgs(argv);
+
   const positional: string[] = [];
   const flags = new Map<string, string | boolean>();
   let json = false;
@@ -95,6 +114,20 @@ function parseArgs(argv: string[]): ParsedArgs {
 }
 
 function requireNative(message: string): void {
+  // RequireNative.
+  //
+  // Parameters:
+  // - `message` — input value
+  //
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = requireNative(message);
+
   if (!isCliAvailable()) {
     console.error(`Error: ${message}`);
     console.error("Build the native CLI: npm run build:rust");
@@ -103,15 +136,59 @@ function requireNative(message: string): void {
 }
 
 function flagStr(flags: Map<string, string | boolean>, key: string): string | undefined {
+  // FlagStr.
+  //
+  // Parameters:
+  // - `flags` — input value
+  // - `key` — input value
+  //
+  // Returns:
+  // `Some` / non-null value on success, otherwise `None` / null.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = flagStr(flags, key);
+
   const v = flags.get(key);
   return typeof v === "string" ? v : undefined;
 }
 
 function flagBool(flags: Map<string, string | boolean>, key: string): boolean {
+  // FlagBool.
+  //
+  // Parameters:
+  // - `flags` — input value
+  // - `key` — input value
+  //
+  // Returns:
+  // `true` or `false`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = flagBool(flags, key);
+
   return flags.get(key) === true;
 }
 
 function main(): void {
+  // Main.
+  //
+  // Parameters:
+  // None.
+  //
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = main();
+
   const parsed = parseArgs(process.argv.slice(2));
   const { command, positional, json, verbose, flags } = parsed;
 
@@ -188,6 +265,20 @@ function main(): void {
 }
 
 function absPath(filePath: string | undefined): string {
+  // AbsPath.
+  //
+  // Parameters:
+  // - `filePath` — input value
+  //
+  // Returns:
+  // Text result.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = absPath(filePath);
+
   if (!filePath) {
     console.error("Error: missing file path");
     console.log(USAGE);
@@ -197,6 +288,21 @@ function absPath(filePath: string | undefined): string {
 }
 
 function handleCheck(filePath: string | undefined, json: boolean): void {
+  // HandleCheck.
+  //
+  // Parameters:
+  // - `filePath` — input value
+  // - `json` — input value
+  //
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = handleCheck(filePath, json);
+
   const abs = absPath(filePath);
   if (isCliAvailable()) {
     const result = runNativeCli(json ? ["check", "--json", abs] : ["check", abs]);
@@ -217,6 +323,22 @@ function handleCheck(filePath: string | undefined, json: boolean): void {
 }
 
 function handleVerify(filePath: string | undefined, json: boolean, flags: Map<string, string | boolean>): void {
+  // HandleVerify.
+  //
+  // Parameters:
+  // - `filePath` — input value
+  // - `json` — input value
+  // - `flags` — input value
+  //
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = handleVerify(filePath, json, flags);
+
   requireNative("Hardware verification requires the native Rust CLI.");
   const abs = absPath(filePath);
   const extra: string[] = [];
@@ -236,6 +358,21 @@ function handleVerify(filePath: string | undefined, json: boolean, flags: Map<st
 }
 
 function printVerifyHuman(result: VerifyResult, filePath: string): void {
+  // PrintVerifyHuman.
+  //
+  // Parameters:
+  // - `result` — input value
+  // - `filePath` — input value
+  //
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = printVerifyHuman(result, filePath);
+
   const compatible = result.compatible ?? result.ok;
   console.log(`\nHardware compatibility: ${filePath}`);
   if (result.target) console.log(`  Target: ${result.target}`);
@@ -254,6 +391,23 @@ function printVerifyHuman(result: VerifyResult, filePath: string): void {
 }
 
 function handleRun(filePath: string | undefined, verbose: boolean, json: boolean, extraVerbose: boolean): void {
+  // HandleRun.
+  //
+  // Parameters:
+  // - `filePath` — input value
+  // - `verbose` — input value
+  // - `json` — input value
+  // - `extraVerbose` — input value
+  //
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = handleRun(filePath, verbose, json, extraVerbose);
+
   const abs = absPath(filePath);
   const showVerbose = verbose || extraVerbose;
 
@@ -269,6 +423,22 @@ function handleRun(filePath: string | undefined, verbose: boolean, json: boolean
 }
 
 function runSimulation(absPath: string, displayPath: string, verbose: boolean): void {
+  // RunSimulation.
+  //
+  // Parameters:
+  // - `absPath` — input value
+  // - `displayPath` — input value
+  // - `verbose` — input value
+  //
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = runSimulation(absPath, displayPath, verbose);
+
   const { program } = compileFile(absPath);
   const robot = program.robots[0];
   if (!robot) {
@@ -313,6 +483,21 @@ function runSimulation(absPath: string, displayPath: string, verbose: boolean): 
 }
 
 function handleFmt(filePath: string | undefined, json: boolean): void {
+  // HandleFmt.
+  //
+  // Parameters:
+  // - `filePath` — input value
+  // - `json` — input value
+  //
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = handleFmt(filePath, json);
+
   requireNative("Formatting requires the native Rust CLI.");
   const abs = absPath(filePath);
   const source = readFileSync(abs, "utf-8");
@@ -329,6 +514,21 @@ function handleFmt(filePath: string | undefined, json: boolean): void {
 }
 
 function handleLint(filePath: string | undefined, json: boolean): void {
+  // HandleLint.
+  //
+  // Parameters:
+  // - `filePath` — input value
+  // - `json` — input value
+  //
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = handleLint(filePath, json);
+
   requireNative("Linting requires the native Rust CLI.");
   const abs = absPath(filePath);
   const source = readFileSync(abs, "utf-8");
@@ -349,6 +549,22 @@ function handleLint(filePath: string | undefined, json: boolean): void {
 }
 
 function handleDoc(filePath: string | undefined, json: boolean, outPath: string | undefined): void {
+  // HandleDoc.
+  //
+  // Parameters:
+  // - `filePath` — input value
+  // - `json` — input value
+  // - `outPath` — input value
+  //
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = handleDoc(filePath, json, outPath);
+
   requireNative("Documentation generation requires the native Rust CLI.");
   const abs = absPath(filePath);
   const source = readFileSync(abs, "utf-8");
@@ -365,6 +581,22 @@ function handleDoc(filePath: string | undefined, json: boolean, outPath: string 
 }
 
 function handleCodegen(filePath: string | undefined, target: string | undefined, outPath: string | undefined): void {
+  // HandleCodegen.
+  //
+  // Parameters:
+  // - `filePath` — input value
+  // - `target` — input value
+  // - `outPath` — input value
+  //
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = handleCodegen(filePath, target, outPath);
+
   requireNative("Codegen requires the native Rust CLI.");
   const abs = absPath(filePath);
   const source = readFileSync(abs, "utf-8");
@@ -379,6 +611,21 @@ function handleCodegen(filePath: string | undefined, target: string | undefined,
 }
 
 function handleDeploy(filePath: string | undefined, outPath: string | undefined): void {
+  // HandleDeploy.
+  //
+  // Parameters:
+  // - `filePath` — input value
+  // - `outPath` — input value
+  //
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = handleDeploy(filePath, outPath);
+
   requireNative("Deploy requires the native Rust CLI.");
   const abs = absPath(filePath);
   const source = readFileSync(abs, "utf-8");
@@ -392,6 +639,21 @@ function handleDeploy(filePath: string | undefined, outPath: string | undefined)
 }
 
 function handleIr(filePath: string | undefined, json: boolean): void {
+  // HandleIr.
+  //
+  // Parameters:
+  // - `filePath` — input value
+  // - `json` — input value
+  //
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = handleIr(filePath, json);
+
   requireNative("Spanda IR lowering requires the native Rust CLI.");
   const abs = absPath(filePath);
   const args = ["ir", abs];
@@ -411,6 +673,22 @@ function handleNativeCodegen(
   filePath: string | undefined,
   flags: Map<string, string | boolean>,
 ): void {
+  // HandleNativeCodegen.
+  //
+  // Parameters:
+  // - `command` — input value
+  // - `filePath` — input value
+  // - `flags` — input value
+  //
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = handleNativeCodegen(command, filePath, flags);
+
   requireNative(`${command} requires the native Rust CLI.`);
   const abs = absPath(filePath);
   const args: string[] = [command];
@@ -426,6 +704,21 @@ function handleNativeCodegen(
 }
 
 function handleDebug(filePath: string | undefined, flags: Map<string, string | boolean>): void {
+  // HandleDebug.
+  //
+  // Parameters:
+  // - `filePath` — input value
+  // - `flags` — input value
+  //
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = handleDebug(filePath, flags);
+
   requireNative("Debug requires the native Rust CLI.");
   const abs = absPath(filePath);
   const source = readFileSync(abs, "utf-8");
@@ -450,6 +743,23 @@ function handlePackage(
   flags: Map<string, string | boolean>,
   json: boolean,
 ): void {
+  // HandlePackage.
+  //
+  // Parameters:
+  // - `command` — input value
+  // - `positional` — input value
+  // - `flags` — input value
+  // - `json` — input value
+  //
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = handlePackage(command, positional, flags, json);
+
   requireNative("Package commands require the native Rust CLI.");
   const args = [command];
   if (json) args.push("--json");
@@ -472,6 +782,21 @@ function handlePackage(
 }
 
 function handleRegistry(positional: string[], json: boolean): void {
+  // HandleRegistry.
+  //
+  // Parameters:
+  // - `positional` — input value
+  // - `json` — input value
+  //
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = handleRegistry(positional, json);
+
   requireNative("Registry commands require the native Rust CLI.");
   const sub = positional[0];
   if (sub === "search") {
@@ -502,6 +827,20 @@ function handleRegistry(positional: string[], json: boolean): void {
 }
 
 function printError(err: unknown): void {
+  // PrintError.
+  //
+  // Parameters:
+  // - `err` — input value
+  //
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = printError(err);
+
   if (err instanceof LexerError) {
     console.error(`Lexer error [${err.line}:${err.column}]: ${err.message}`);
   } else if (err instanceof ParseError) {

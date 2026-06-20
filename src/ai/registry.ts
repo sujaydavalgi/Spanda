@@ -1,3 +1,8 @@
+/**
+ * registry module (ai/registry.ts).
+ * @module
+ */
+
 export type AiLibModule = {
   id: string;
   vendor: string;
@@ -43,9 +48,37 @@ export const AI_LIB_REGISTRY: Record<string, AiLibModule> = {
 };
 
 export function resolveAiImport(path: string): AiLibModule | undefined {
+  // ResolveAiImport.
+  //
+  // Parameters:
+  // - `path` — input value
+  //
+  // Returns:
+  // `Some` / non-null value on success, otherwise `None` / null.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = resolveAiImport(path);
+
   return AI_LIB_REGISTRY[path];
 }
 
 export function listAiLibraries(): AiLibModule[] {
+  // ListAiLibraries.
+  //
+  // Parameters:
+  // None.
+  //
+  // Returns:
+  // `AiLibModule[]`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = listAiLibraries();
+
   return Object.values(AI_LIB_REGISTRY);
 }

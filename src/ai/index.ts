@@ -1,3 +1,8 @@
+/**
+ * index module (ai/index.ts).
+ * @module
+ */
+
 export type { AIProvider, CompletionRequest, DetectionRequest, EmbedRequest } from "./AIProvider.js";
 export { AIModel, createAIModel, type AiModelConfig } from "./AIModel.js";
 export type { AgentRuntime, PlanExecutor } from "./Agent.js";
@@ -15,6 +20,21 @@ export { resolveAiImport, listAiLibraries, AI_LIB_REGISTRY } from "./registry.js
 import type { RuntimeValue } from "../runtime/interpreter.js";
 
 export function runtimeSafeAction(linear: number, angular: number): RuntimeValue {
+  // RuntimeSafeAction.
+  //
+  // Parameters:
+  // - `linear` — input value
+  // - `angular` — input value
+  //
+  // Returns:
+  // `RuntimeValue`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = runtimeSafeAction(linear, angular);
+
   return { kind: "safe_action", linear, angular, trusted: true };
 }
 
@@ -23,20 +43,78 @@ export function runtimeActionProposal(
   angular: number,
   source: string,
 ): RuntimeValue {
+  // RuntimeActionProposal.
+  //
+  // Parameters:
+  // - `linear` — input value
+  // - `angular` — input value
+  // - `source` — input value
+  //
+  // Returns:
+  // `RuntimeValue`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = runtimeActionProposal(linear, angular, source);
+
   return { kind: "action_proposal", linear, angular, source, trace: [], trusted: false };
 }
 
 export function isActionProposal(value: RuntimeValue): boolean {
+  // IsActionProposal.
+  //
+  // Parameters:
+  // - `value` — input value
+  //
+  // Returns:
+  // `true` or `false`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = isActionProposal(value);
+
   return value.kind === "action_proposal";
 }
 
 export function isSafeAction(
   value: RuntimeValue,
-): value is Extract<RuntimeValue, { kind: "safe_action" }> {
+): value is Extract<RuntimeValue, {
+  // IsSafeAction.
+  //
+  // Parameters:
+  // - `value` — input value
+  //
+  // Returns:
+  // `value is Extract<RuntimeValue,`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = isSafeAction(value);
+ kind: "safe_action" }> {
   return value.kind === "safe_action";
 }
 
-export function proposalFromValue(value: RuntimeValue): { linear: number; angular: number; source: string } | null {
+export function proposalFromValue(value: RuntimeValue): {
+  // ProposalFromValue.
+  //
+  // Parameters:
+  // - `value` — input value
+  //
+  // Returns:
+  // ``.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = proposalFromValue(value);
+ linear: number; angular: number; source: string } | null {
   if (value.kind === "action_proposal") {
     return { linear: value.linear, angular: value.angular, source: value.source };
   }
@@ -55,10 +133,40 @@ export function safeActionFromProposal(
   linear: number,
   angular: number,
 ): RuntimeValue {
+  // SafeActionFromProposal.
+  //
+  // Parameters:
+  // - `linear` — input value
+  // - `angular` — input value
+  //
+  // Returns:
+  // `RuntimeValue`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = safeActionFromProposal(linear, angular);
+
   return runtimeSafeAction(linear, angular);
 }
 
 export function wrapCompletion(text: string, model: string): RuntimeValue {
+  // WrapCompletion.
+  //
+  // Parameters:
+  // - `text` — input value
+  // - `model` — input value
+  //
+  // Returns:
+  // `RuntimeValue`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = wrapCompletion(text, model);
+
   return { kind: "completion", text, model };
 }
 
@@ -67,6 +175,22 @@ export function wrapDetection(
   confidence: number,
   nearestDistance: number,
 ): RuntimeValue {
+  // WrapDetection.
+  //
+  // Parameters:
+  // - `label` — input value
+  // - `confidence` — input value
+  // - `nearestDistance` — input value
+  //
+  // Returns:
+  // `RuntimeValue`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = wrapDetection(label, confidence, nearestDistance);
+
   return {
     kind: "object",
     typeName: "Detection",

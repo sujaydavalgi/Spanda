@@ -1,3 +1,8 @@
+/**
+ * examples module (examples.ts).
+ * @module
+ */
+
 export const DEFAULT_SOURCE = `robot Rover {
   sensor lidar: Lidar on "/scan";
   actuator wheels: DifferentialDrive;

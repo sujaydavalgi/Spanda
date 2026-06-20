@@ -1,3 +1,8 @@
+/**
+ * index module (parser/index.ts).
+ * @module
+ */
+
 import type { Token } from "../lexer/index.js";
 import { unitFromLexeme } from "../lexer/index.js";
 import { resolveGenericType, resolveTypeName } from "../type-system.js";
@@ -99,6 +104,20 @@ export class ParseError extends Error {
 }
 
 export function parse(tokens: Token[]): Program {
+  // Parse input.
+  //
+  // Parameters:
+  // - `tokens` — input value
+  //
+  // Returns:
+  // `Program`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = parse(tokens);
+
   const parser = new Parser(tokens);
   return parser.parseProgram();
 }
@@ -110,23 +129,93 @@ class Parser {
   constructor(private tokens: Token[]) {}
 
   private peek(): Token {
+    // Peek.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Token.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = peek();
+
     return this.tokens[this.pos];
   }
 
   private previous(): Token {
+    // Previous.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Token.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = previous();
+
     return this.tokens[this.pos - 1];
   }
 
   private advance(): Token {
+    // Advance.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Token.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = advance();
+
     if (this.peek().type !== "EOF") this.pos++;
     return this.previous();
   }
 
   private check(type: Token["type"]): boolean {
+    // Check input.
+    //
+    // Parameters:
+    // - `type` — input value
+    //
+    // Returns:
+    // true or false.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = check(type);
+
     return this.peek().type === type;
   }
 
   private match(...types: Token["type"][]): boolean {
+    // Match.
+    //
+    // Parameters:
+    // - `...types` — rest arguments
+    //
+    // Returns:
+    // true or false.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = match(...types);
+
     for (const t of types) {
       if (this.check(t)) {
         this.advance();
@@ -137,12 +226,42 @@ class Parser {
   }
 
   private expect(type: Token["type"], message: string): Token {
+    // Expect.
+    //
+    // Parameters:
+    // - `type` — input value
+    // - `message` — input value
+    //
+    // Returns:
+    // Token.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = expect(type, message);
+
     if (this.check(type)) return this.advance();
     const t = this.peek();
     throw new ParseError(message, t.line, t.column);
   }
 
   private spanFrom(start: Token, end: Token): Span {
+    // SpanFrom.
+    //
+    // Parameters:
+    // - `start` — input value
+    // - `end` — input value
+    //
+    // Returns:
+    // Span.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = spanFrom(start, end);
+
     return {
       start: { line: start.line, column: start.column, offset: start.offset },
       end: { line: end.line, column: end.column, offset: end.offset },
@@ -150,6 +269,20 @@ class Parser {
   }
 
   private parseLabel(message: string): string {
+    // ParseLabel.
+    //
+    // Parameters:
+    // - `message` — input value
+    //
+    // Returns:
+    // Text result.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseLabel(message);
+
     const labelTypes: Token["type"][] = [
       "IDENT",
       "PLAN",
@@ -199,6 +332,20 @@ class Parser {
   }
 
   private parseBindingIdent(message: string): string {
+    // ParseBindingIdent.
+    //
+    // Parameters:
+    // - `message` — input value
+    //
+    // Returns:
+    // Text result.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseBindingIdent(message);
+
     const bindingTypes: Token["type"][] = [
       "IDENT",
       "PLAN",
@@ -246,6 +393,20 @@ class Parser {
   }
 
   parseProgram(): Program {
+    // ParseProgram.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Program.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseProgram();
+
     const start = this.peek();
     let moduleName: string | null = null;
 
@@ -334,6 +495,20 @@ class Parser {
   }
 
   private parseDottedName(message: string): string {
+    // ParseDottedName.
+    //
+    // Parameters:
+    // - `message` — input value
+    //
+    // Returns:
+    // Text result.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseDottedName(message);
+
     const parts = [this.parseImportSegment(message)];
     while (this.match("DOT")) {
       parts.push(this.parseImportSegment("Expected name after '.'"));
@@ -342,6 +517,20 @@ class Parser {
   }
 
   private isModuleFnStart(): boolean {
+    // IsModuleFnStart.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // true or false.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = isModuleFnStart();
+
     return (
       this.check("EXPORT") ||
       this.check("PUBLIC") ||
@@ -352,6 +541,20 @@ class Parser {
   }
 
   private parseTypeParams(): string[] {
+    // ParseTypeParams.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // string[].
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseTypeParams();
+
     if (!this.match("LT")) return [];
     const params: string[] = [];
     if (!this.check("GT")) {
@@ -364,6 +567,20 @@ class Parser {
   }
 
   private parseModuleFn(): ModuleFnDecl {
+    // ParseModuleFn.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // ModuleFnDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseModuleFn();
+
     const start = this.peek();
     let visibility: Visibility = "private";
     if (this.match("EXPORT")) visibility = "export";
@@ -411,6 +628,20 @@ class Parser {
   }
 
   private parseExternFn(): ExternFnDecl {
+    // ParseExternFn.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // ExternFnDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseExternFn();
+
     const start = this.previous();
     let library: string | null = null;
     let bridge: BridgeKind = "native";
@@ -461,6 +692,20 @@ class Parser {
   }
 
   private parseTest(): TestDecl {
+    // ParseTest.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // TestDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseTest();
+
     const start = this.advance();
     const nameTok = this.expect("STRING", "Expected test name string");
     const name = nameTok.value as string;
@@ -476,6 +721,20 @@ class Parser {
   }
 
   private parseImport(): ImportDecl {
+    // ParseImport.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // ImportDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseImport();
+
     const start = this.advance();
     const vendor = this.parseImportSegment("Expected library vendor name");
     this.expect("DOT", "Expected '.' in import path");
@@ -490,6 +749,20 @@ class Parser {
   }
 
   private parseImportSegment(message: string): string {
+    // ParseImportSegment.
+    //
+    // Parameters:
+    // - `message` — input value
+    //
+    // Returns:
+    // Text result.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseImportSegment(message);
+
     if (this.check("IDENT")) {
       return this.advance().lexeme;
     }
@@ -501,6 +774,20 @@ class Parser {
   }
 
   private parseTypeNamePart(message: string): string {
+    // ParseTypeNamePart.
+    //
+    // Parameters:
+    // - `message` — input value
+    //
+    // Returns:
+    // Text result.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseTypeNamePart(message);
+
     if (this.check("IDENT")) {
       return this.advance().lexeme;
     }
@@ -508,6 +795,20 @@ class Parser {
   }
 
   private finishGenericTypeName(base: string): string {
+    // FinishGenericTypeName.
+    //
+    // Parameters:
+    // - `base` — input value
+    //
+    // Returns:
+    // Text result.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = finishGenericTypeName(base);
+
     this.expect("LT", "Expected '<' to open generic type");
     const args: string[] = [];
     if (!this.check("GT")) {
@@ -520,6 +821,20 @@ class Parser {
   }
 
   private parseTypeName(): string {
+    // ParseTypeName.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Text result.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseTypeName();
+
     let name = this.parseTypeNamePart("Expected type name");
     if (this.check("LT")) {
       name = this.finishGenericTypeName(name);
@@ -528,6 +843,20 @@ class Parser {
   }
 
   private parseTypeAnnotation(): SpandaType {
+    // ParseTypeAnnotation.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // SpandaType.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseTypeAnnotation();
+
     if (this.match("DYN")) {
       const traitName = this.parseTypeNamePart("Expected trait name after dyn");
       return { kind: "trait_object", traitName };
@@ -565,6 +894,20 @@ class Parser {
   }
 
   private parseStruct(): StructDecl {
+    // ParseStruct.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // StructDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseStruct();
+
     const start = this.advance();
     const name = this.expect("IDENT", "Expected struct name");
     const typeParams = this.parseTypeParams();
@@ -593,6 +936,20 @@ class Parser {
   }
 
   private parseEnum(): EnumDecl {
+    // ParseEnum.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // EnumDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseEnum();
+
     const start = this.advance();
     const name = this.expect("IDENT", "Expected enum name");
     this.expect("LBRACE", "Expected '{' after enum name");
@@ -625,6 +982,20 @@ class Parser {
   }
 
   private parseTrait(): TraitDecl {
+    // ParseTrait.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // TraitDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseTrait();
+
     const start = this.advance();
     const name = this.expect("IDENT", "Expected trait name");
     this.expect("LBRACE", "Expected '{' after trait name");
@@ -642,6 +1013,20 @@ class Parser {
   }
 
   private parseTraitMethod(): TraitMethodDecl {
+    // ParseTraitMethod.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // TraitMethodDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseTraitMethod();
+
     const start = this.advance(); // fn
     const name = this.parseLabel("Expected method name after fn");
     this.expect("LPAREN", "Expected '(' after method name");
@@ -672,6 +1057,20 @@ class Parser {
   }
 
   private parseRobot(): RobotDecl {
+    // ParseRobot.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // RobotDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseRobot();
+
     const start = this.expect("ROBOT", "Expected 'robot'");
     const nameTok = this.expect("IDENT", "Expected robot name");
     this.expect("LBRACE", "Expected '{' after robot name");
@@ -827,10 +1226,38 @@ class Parser {
   }
 
   private isRobotMemberKeyword(kw: string): boolean {
+    // IsRobotMemberKeyword.
+    //
+    // Parameters:
+    // - `kw` — input value
+    //
+    // Returns:
+    // true or false.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = isRobotMemberKeyword(kw);
+
     return this.check("IDENT") && this.peek().lexeme === kw;
   }
 
   private isAgentShorthand(): boolean {
+    // IsAgentShorthand.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // true or false.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = isAgentShorthand();
+
     let idx = this.pos + 1;
     if (idx >= this.tokens.length) return false;
     if (this.tokens[idx]?.type !== "IDENT") return false;
@@ -839,6 +1266,20 @@ class Parser {
   }
 
   private isAgentChannel(): boolean {
+    // IsAgentChannel.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // true or false.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = isAgentChannel();
+
     const idx = this.pos;
     return (
       idx + 2 < this.tokens.length &&
@@ -849,6 +1290,20 @@ class Parser {
   }
 
   private parseAgentShorthand(agents: AgentDecl[]): void {
+    // ParseAgentShorthand.
+    //
+    // Parameters:
+    // - `agents` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseAgentShorthand(agents);
+
     const start = this.advance();
     const name = this.expect("IDENT", "Expected agent name");
     this.expect("SEMICOLON", "Expected ';' after agent reference");
@@ -867,6 +1322,20 @@ class Parser {
   }
 
   private parseBus(): BusDecl {
+    // ParseBus.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // BusDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseBus();
+
     const start = this.advance();
     const transportName = this.expect("IDENT", "Expected bus transport name");
     this.expect("SEMICOLON", "Expected ';' after bus declaration");
@@ -880,6 +1349,20 @@ class Parser {
   }
 
   private parsePeerRobot(): PeerRobotDecl {
+    // ParsePeerRobot.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // PeerRobotDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parsePeerRobot();
+
     const start = this.advance();
     const name = this.expect("IDENT", "Expected peer robot name");
     this.expect("SEMICOLON", "Expected ';' after peer robot");
@@ -891,6 +1374,20 @@ class Parser {
   }
 
   private parseDevice(): DeviceDecl {
+    // ParseDevice.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // DeviceDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseDevice();
+
     const start = this.advance();
     const name = this.expect("IDENT", "Expected device name");
     this.expect("COLON", "Expected ':' after device name");
@@ -905,6 +1402,20 @@ class Parser {
   }
 
   private parseAgentChannel(): AgentChannelDecl {
+    // ParseAgentChannel.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // AgentChannelDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseAgentChannel();
+
     const start = this.peek();
     const fromAgent = this.expect("IDENT", "Expected source agent").lexeme;
     this.expect("ARROW", "Expected '->' in agent channel");
@@ -920,6 +1431,20 @@ class Parser {
   }
 
   private parseMessage(): MessageDecl {
+    // ParseMessage.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // MessageDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseMessage();
+
     const start = this.advance();
     const name = this.expect("IDENT", "Expected message name");
     this.expect("LBRACE", "Expected '{' after message name");
@@ -955,11 +1480,39 @@ class Parser {
   }
 
   private parseNumberValue(): number {
+    // ParseNumberValue.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Numeric result.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseNumberValue();
+
     const tok = this.expect("NUMBER", "Expected number");
     return tok.value as number;
   }
 
   private parseStorageAmount(): number {
+    // ParseStorageAmount.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Numeric result.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseStorageAmount();
+
     const value = this.parseNumberValue();
     if (this.check("IDENT")) {
       const unit = this.peek().lexeme;
@@ -976,6 +1529,20 @@ class Parser {
   }
 
   private parseNetworkAmount(): number {
+    // ParseNetworkAmount.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Numeric result.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseNetworkAmount();
+
     const value = this.parseNumberValue();
     if (this.check("IDENT")) {
       const unit = this.peek().lexeme;
@@ -992,6 +1559,20 @@ class Parser {
   }
 
   private parseEnergyWhValue(): number {
+    // ParseEnergyWhValue.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Numeric result.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseEnergyWhValue();
+
     const tok = this.peek();
     if (tok.type === "UNIT_LITERAL" && tok.unit === "Wh") {
       this.advance();
@@ -1005,6 +1586,20 @@ class Parser {
   }
 
   private parsePowerWValue(): number {
+    // ParsePowerWValue.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Numeric result.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parsePowerWValue();
+
     const tok = this.peek();
     if (tok.type === "UNIT_LITERAL" && tok.unit === "W") {
       this.advance();
@@ -1018,6 +1613,20 @@ class Parser {
   }
 
   private parseHardwareTypeList(kind: string): string[] {
+    // ParseHardwareTypeList.
+    //
+    // Parameters:
+    // - `kind` — input value
+    //
+    // Returns:
+    // string[].
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseHardwareTypeList(kind);
+
     this.expect("LBRACKET", `Expected '[' after ${kind}`);
     const items: string[] = [];
     if (!this.check("RBRACKET")) {
@@ -1031,6 +1640,20 @@ class Parser {
   }
 
   private parseHardware(): HardwareDecl {
+    // ParseHardware.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // HardwareDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseHardware();
+
     const start = this.advance();
     const name = this.parseLabel("Expected hardware profile name");
     this.expect("LBRACE", "Expected '{' after hardware name");
@@ -1141,6 +1764,20 @@ class Parser {
   }
 
   private parseDeploy(): DeployDecl {
+    // ParseDeploy.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // DeployDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseDeploy();
+
     const start = this.advance();
     const robotName = this.parseLabel("Expected robot name after deploy");
     this.expect("TO", "Expected 'to' after deploy robot name");
@@ -1161,6 +1798,20 @@ class Parser {
   }
 
   private parseRequiresHardware(): RequiresHardwareDecl {
+    // ParseRequiresHardware.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // RequiresHardwareDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseRequiresHardware();
+
     const start = this.advance();
     this.expect("LBRACE", "Expected '{' after requires_hardware");
     let memoryMbMin: number | null = null;
@@ -1221,6 +1872,20 @@ class Parser {
   }
 
   private parseRequiresNetwork(): RequiresNetworkDecl {
+    // ParseRequiresNetwork.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // RequiresNetworkDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseRequiresNetwork();
+
     const start = this.advance();
     this.expect("LBRACE", "Expected '{' after requires_network");
     let bandwidthMbpsMin: number | null = null;
@@ -1251,6 +1916,20 @@ class Parser {
   }
 
   private parseSimulateCompatibility(): SimulateCompatibilityDecl {
+    // ParseSimulateCompatibility.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // SimulateCompatibilityDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseSimulateCompatibility();
+
     const start = this.advance();
     this.expect("LBRACE", "Expected '{' after simulate_compatibility");
     const faults: { faultType: string; span: Span }[] = [];
@@ -1268,6 +1947,20 @@ class Parser {
   }
 
   private parseObserve(): ObserveDecl {
+    // ParseObserve.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // ObserveDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseObserve();
+
     const start = this.expect("OBSERVE", "Expected 'observe'");
     this.expect("LBRACE", "Expected '{' after observe");
     const sensors: string[] = [];
@@ -1281,6 +1974,20 @@ class Parser {
   }
 
   private parseIdentity(): IdentityDecl {
+    // ParseIdentity.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // IdentityDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseIdentity();
+
     const start = this.advance();
     const typeName = this.expect("IDENT", "Expected identity type name").lexeme;
     this.expect("LBRACE", "Expected '{' after identity type");
@@ -1302,6 +2009,20 @@ class Parser {
   }
 
   private parseAudit(): AuditDecl {
+    // ParseAudit.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // AuditDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseAudit();
+
     const start = this.advance();
     const name = this.expect("IDENT", "Expected audit name").lexeme;
     this.expect("LBRACE", "Expected '{' after audit name");
@@ -1320,6 +2041,20 @@ class Parser {
   }
 
   private parseProvenance(): ProvenanceDecl {
+    // ParseProvenance.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // ProvenanceDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseProvenance();
+
     const start = this.advance();
     const name = this.expect("IDENT", "Expected provenance name").lexeme;
     this.expect("LBRACE", "Expected '{' after provenance name");
@@ -1343,6 +2078,20 @@ class Parser {
   }
 
   private parseSignedRecord(): SignedRecordDecl {
+    // ParseSignedRecord.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // SignedRecordDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseSignedRecord();
+
     const start = this.advance();
     const eventName = this.expect("IDENT", "Expected signed record event name").lexeme;
     this.expect("SIGNED_BY", "Expected 'signed_by' after record event");
@@ -1352,6 +2101,20 @@ class Parser {
   }
 
   private parseSecret(): SecretDecl {
+    // ParseSecret.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // SecretDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseSecret();
+
     const start = this.advance();
     const name = this.expect("IDENT", "Expected secret name").lexeme;
     this.expect("FROM", "Expected 'from' after secret name");
@@ -1372,6 +2135,20 @@ class Parser {
   }
 
   private parseTrust(): TrustDecl {
+    // ParseTrust.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // TrustDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseTrust();
+
     const start = this.advance();
     const level = this.parseLabel("Expected trust level");
     this.expect("SEMICOLON", "Expected ';' after trust declaration");
@@ -1379,6 +2156,20 @@ class Parser {
   }
 
   private parseDottedCapability(): string {
+    // ParseDottedCapability.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Text result.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseDottedCapability();
+
     const first = this.parseLabel("Expected capability name");
     if (this.match("DOT")) {
       const second = this.parseLabel("Expected capability suffix");
@@ -1388,6 +2179,20 @@ class Parser {
   }
 
   private parsePermissions(): PermissionsDecl {
+    // ParsePermissions.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // PermissionsDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parsePermissions();
+
     const start = this.advance();
     this.expect("LBRACKET", "Expected '[' after permissions");
     const capabilities: string[] = [];
@@ -1402,6 +2207,20 @@ class Parser {
   }
 
   private parseSecureBlock(): SecureBlockDecl {
+    // ParseSecureBlock.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // SecureBlockDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseSecureBlock();
+
     const start = this.advance();
     this.expect("LBRACE", "Expected '{' after secure");
     let signed = false;
@@ -1434,6 +2253,20 @@ class Parser {
   }
 
   private parseConfigValueString(): string {
+    // ParseConfigValueString.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Text result.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseConfigValueString();
+
     const tok = this.advance();
     if (tok.type === "STRING") return tok.value as string;
     if (tok.type === "IDENT") return tok.lexeme;
@@ -1441,6 +2274,20 @@ class Parser {
   }
 
   private static exprPathString(expr: Expr): string {
+    // ExprPathString.
+    //
+    // Parameters:
+    // - `expr` — input value
+    //
+    // Returns:
+    // Text result.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = exprPathString(expr);
+
     if (expr.kind === "IdentExpr") return expr.name;
     if (expr.kind === "MemberExpr") {
       return `${Parser.exprPathString(expr.object)}.${expr.property}`;
@@ -1449,6 +2296,20 @@ class Parser {
   }
 
   private parseVerify(): VerifyDecl {
+    // ParseVerify.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // VerifyDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseVerify();
+
     const start = this.expect("VERIFY", "Expected 'verify'");
     this.expect("LBRACE", "Expected '{' after verify");
     const rules = [];
@@ -1461,6 +2322,20 @@ class Parser {
   }
 
   private parseTraitImpl(): TraitImplDecl {
+    // ParseTraitImpl.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // TraitImplDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseTraitImpl();
+
     const start = this.expect("IMPL", "Expected 'impl'");
     const traitName = this.parseLabel("Expected trait name after 'impl'");
     this.expect("FOR", "Expected 'for' after trait name");
@@ -1481,6 +2356,20 @@ class Parser {
   }
 
   private parseTraitImplMethod(): import("../foundations.js").TraitImplMethodDecl {
+    // ParseTraitImplMethod.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // import("../foundations.js").TraitImplMethodDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseTraitImplMethod();
+
     const start = this.advance(); // fn
     const name = this.parseLabel("Expected method name");
     this.expect("LPAREN", "Expected '(' after method name");
@@ -1514,6 +2403,20 @@ class Parser {
   }
 
   private parseSoc(): SocDecl {
+    // ParseSoc.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // SocDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseSoc();
+
     const start = this.advance();
     const profile = this.expect("IDENT", "Expected SoC profile name");
     this.expect("SEMICOLON", "Expected ';' after soc declaration");
@@ -1522,6 +2425,20 @@ class Parser {
   }
 
   private parseHal(): HalBlock {
+    // ParseHal.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // HalBlock.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseHal();
+
     const start = this.advance();
     this.expect("LBRACE", "Expected '{' after hal");
     const members: HalMemberDecl[] = [];
@@ -1533,6 +2450,20 @@ class Parser {
   }
 
   private parseHalMember(): HalMemberDecl {
+    // ParseHalMember.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // HalMemberDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseHalMember();
+
     const start = this.peek();
 
     if (this.match("I2C")) {
@@ -1636,6 +2567,20 @@ class Parser {
   }
 
   private parseFrequencyHz(): number {
+    // ParseFrequencyHz.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Numeric result.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseFrequencyHz();
+
     const tok = this.peek();
     if (tok.type === "UNIT_LITERAL" && tok.unit === "Hz") {
       this.advance();
@@ -1652,6 +2597,20 @@ class Parser {
   }
 
   private parseNode(): NodeDecl {
+    // ParseNode.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // NodeDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseNode();
+
     const start = this.advance();
     const name = this.expect("IDENT", "Expected node name");
     let namespace: string | null = null;
@@ -1665,6 +2624,20 @@ class Parser {
   }
 
   private parseTopic(): TopicDecl {
+    // ParseTopic.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // TopicDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseTopic();
+
     const start = this.advance();
     const name = this.parseLabel("Expected topic name");
     this.expect("COLON", "Expected ':' after topic name");
@@ -1727,6 +2700,20 @@ class Parser {
   }
 
   private parseQosBlock(): QosDecl {
+    // ParseQosBlock.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // QosDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseQosBlock();
+
     const start = this.peek();
     this.expect("LBRACE", "Expected '{' for topic QoS block");
     let reliability: QosDecl["reliability"] = null;
@@ -1766,6 +2753,20 @@ class Parser {
   }
 
   private parseService(): ServiceDecl {
+    // ParseService.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // ServiceDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseService();
+
     const start = this.advance();
     const name = this.expect("IDENT", "Expected service name");
 
@@ -1815,6 +2816,20 @@ class Parser {
   }
 
   private parseAction(): ActionDecl {
+    // ParseAction.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // ActionDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseAction();
+
     const start = this.advance();
     const name = this.expect("IDENT", "Expected action name");
 
@@ -1870,6 +2885,20 @@ class Parser {
   }
 
   private parseSensor(): SensorDecl {
+    // ParseSensor.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // SensorDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseSensor();
+
     const start = this.advance();
     const name = this.expect("IDENT", "Expected sensor name");
     this.expect("COLON", "Expected ':' after sensor name");
@@ -1907,6 +2936,20 @@ class Parser {
   }
 
   private parseActuator(): ActuatorDecl {
+    // ParseActuator.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // ActuatorDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseActuator();
+
     const start = this.advance();
     const name = this.expect("IDENT", "Expected actuator name");
     this.expect("COLON", "Expected ':' after actuator name");
@@ -1922,6 +2965,20 @@ class Parser {
   }
 
   private parseSafety(): SafetyBlock {
+    // ParseSafety.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // SafetyBlock.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseSafety();
+
     const start = this.advance();
     this.expect("LBRACE", "Expected '{' after safety");
     const rules: SafetyRule[] = [];
@@ -1945,6 +3002,20 @@ class Parser {
   }
 
   private parseAiModelDecl(): AiModelDecl {
+    // ParseAiModelDecl.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // AiModelDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseAiModelDecl();
+
     const start = this.advance();
     const name = this.expect("IDENT", "Expected ai model name");
     this.expect("COLON", "Expected ':' after ai model name");
@@ -1962,6 +3033,20 @@ class Parser {
   }
 
   private parseAiConfigEntries(): AiConfigEntry[] {
+    // ParseAiConfigEntries.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // AiConfigEntry[].
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseAiConfigEntries();
+
     const entries: AiConfigEntry[] = [];
     while (!this.check("RBRACE") && !this.check("EOF")) {
       const entryStart = this.peek();
@@ -1979,6 +3064,20 @@ class Parser {
   }
 
   private parseConfigKeyToken(): string {
+    // ParseConfigKeyToken.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Text result.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseConfigKeyToken();
+
     if (this.check("IDENT") || this.check("PROVIDER") || this.check("MEMORY")) {
       return this.advance().lexeme;
     }
@@ -1987,6 +3086,20 @@ class Parser {
   }
 
   private parseConfigValue(): string | number | boolean {
+    // ParseConfigValue.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // string | number | boolean.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseConfigValue();
+
     if (this.match("STRING")) {
       return this.previous().value as string;
     }
@@ -2014,6 +3127,20 @@ class Parser {
   }
 
   private parseAgent(): AgentDecl {
+    // ParseAgent.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // AgentDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseAgent();
+
     const start = this.advance();
     const name = this.expect("IDENT", "Expected agent name");
     this.expect("LBRACE", "Expected '{' after agent name");
@@ -2090,6 +3217,20 @@ class Parser {
   }
 
   private parseSafetyZone(): SafetyZoneDecl {
+    // ParseSafetyZone.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // SafetyZoneDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseSafetyZone();
+
     const start = this.advance();
     const name = this.expect("IDENT", "Expected zone name");
     let shape: "circle" | "rect" = "circle";
@@ -2136,6 +3277,20 @@ class Parser {
   }
 
   private parseMaxSpeedRule(): SafetyRule {
+    // ParseMaxSpeedRule.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // SafetyRule.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseMaxSpeedRule();
+
     const start = this.peek();
     const name = this.advance();
     this.expect("ASSIGN", "Expected '=' in safety rule");
@@ -2158,6 +3313,20 @@ class Parser {
   }
 
   private parseStopIfRule(): SafetyRule {
+    // ParseStopIfRule.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // SafetyRule.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseStopIfRule();
+
     const start = this.advance();
     const condition = this.parseExpr();
     this.expect("SEMICOLON", "Expected ';' after stop_if rule");
@@ -2166,6 +3335,20 @@ class Parser {
   }
 
   private parseContractClauses(): {
+    // ParseContractClauses.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // .
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseContractClauses();
+
     requires: Expr | null;
     ensures: Expr | null;
     invariant: Expr | null;
@@ -2188,6 +3371,20 @@ class Parser {
   }
 
   private parseBehavior(): BehaviorDecl {
+    // ParseBehavior.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // BehaviorDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseBehavior();
+
     const start = this.advance();
     const name = this.expect("IDENT", "Expected behavior name");
     this.expect("LPAREN", "Expected '(' after behavior name");
@@ -2208,6 +3405,20 @@ class Parser {
   }
 
   private parseTask(): TaskDecl {
+    // ParseTask.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // TaskDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseTask();
+
     const start = this.advance();
     const name = this.expect("IDENT", "Expected task name");
     let priority: TaskPriority = "normal";
@@ -2242,6 +3453,20 @@ class Parser {
   }
 
   private parseBudget(): ResourceBudgetDecl {
+    // ParseBudget.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // ResourceBudgetDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseBudget();
+
     const start = this.advance();
     this.expect("LBRACE", "Expected '{' after budget");
     let batteryPctMax: number | null = null;
@@ -2290,6 +3515,20 @@ class Parser {
   }
 
   private parsePercentValue(): number {
+    // ParsePercentValue.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Numeric result.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parsePercentValue();
+
     const value = this.parseNumberValue();
     if (this.check("IDENT") && this.peek().lexeme === "%") {
       this.advance();
@@ -2300,6 +3539,20 @@ class Parser {
   }
 
   private parseMission(): MissionDecl {
+    // ParseMission.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // MissionDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseMission();
+
     const start = this.advance();
     this.expect("LBRACE", "Expected '{' after mission");
     let durationHours: number | null = null;
@@ -2324,6 +3577,20 @@ class Parser {
   }
 
   private parseDurationHours(): number {
+    // ParseDurationHours.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Numeric result.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseDurationHours();
+
     const tok = this.peek();
     if (tok.type === "UNIT_LITERAL" && tok.unit === "h") {
       this.advance();
@@ -2362,6 +3629,20 @@ class Parser {
   }
 
   private parseStateMachine(): StateMachineDecl {
+    // ParseStateMachine.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // StateMachineDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseStateMachine();
+
     const start = this.advance();
     const name = this.expect("IDENT", "Expected state machine name");
     this.expect("LBRACE", "Expected '{' after state machine name");
@@ -2397,6 +3678,20 @@ class Parser {
   }
 
   private parseEvent(): EventDecl {
+    // ParseEvent.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // EventDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseEvent();
+
     const start = this.advance();
     const name = this.expect("IDENT", "Expected event name");
     const fields: FieldDecl[] = [];
@@ -2426,6 +3721,20 @@ class Parser {
   }
 
   private parseEventHandler(): EventHandlerDecl {
+    // ParseEventHandler.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // EventHandlerDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseEventHandler();
+
     const start = this.advance(); // on
     const eventName = this.expect("IDENT", "Expected event name after on");
     this.expect("LBRACE", "Expected '{' after event handler");
@@ -2440,6 +3749,20 @@ class Parser {
   }
 
   private parseTwin(): TwinDecl {
+    // ParseTwin.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // TwinDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseTwin();
+
     const start = this.advance();
     const name = this.expect("IDENT", "Expected twin name");
     this.expect("LBRACE", "Expected '{' after twin name");
@@ -2471,6 +3794,20 @@ class Parser {
   }
 
   private parseCapability(): CapabilityDecl {
+    // ParseCapability.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // CapabilityDecl.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseCapability();
+
     const start = this.peek();
     let action: string;
     if (this.match("PLAN")) {
@@ -2501,6 +3838,20 @@ class Parser {
   }
 
   private parseLocalName(message: string): Token {
+    // ParseLocalName.
+    //
+    // Parameters:
+    // - `message` — input value
+    //
+    // Returns:
+    // Token.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseLocalName(message);
+
     const lexeme = this.parseBindingIdent(message);
     return {
       type: "IDENT",
@@ -2513,6 +3864,20 @@ class Parser {
   }
 
   private parseBlock(): Stmt[] {
+    // ParseBlock.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Stmt[].
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseBlock();
+
     const stmts: Stmt[] = [];
     while (!this.check("RBRACE") && !this.check("EOF")) {
       stmts.push(this.parseStmt());
@@ -2521,6 +3886,20 @@ class Parser {
   }
 
   private parseStmt(): Stmt {
+    // ParseStmt.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Stmt.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseStmt();
+
     const start = this.peek();
 
     if (this.match("LET")) {
@@ -2786,6 +4165,20 @@ class Parser {
   }
 
   private parseSubscribeTarget(): string {
+    // ParseSubscribeTarget.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Text result.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseSubscribeTarget();
+
     const first = this.parseLabel("Expected subscribe target");
     if (this.match("DOT")) {
       const second = this.parseLabel("Expected member after '.'");
@@ -2795,6 +4188,20 @@ class Parser {
   }
 
   private parseDiscoverTarget(): DiscoverTarget {
+    // ParseDiscoverTarget.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // DiscoverTarget.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseDiscoverTarget();
+
     const name = this.expect("IDENT", "Expected discover target").lexeme;
     if (name === "robots") return "robots";
     if (name === "agents") return "agents";
@@ -2808,6 +4215,20 @@ class Parser {
   }
 
   private parseDiscoverFilter(): DiscoverFilter | null {
+    // ParseDiscoverFilter.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Some value on success, otherwise none.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseDiscoverFilter();
+
     if (!this.match("WHERE")) return null;
     this.expect("IDENT", "Expected 'capability' in discover filter");
     this.expect("INCLUDES", "Expected 'includes' in discover filter");
@@ -2816,6 +4237,20 @@ class Parser {
   }
 
   private parseDuration(): number {
+    // ParseDuration.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Numeric result.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseDuration();
+
     const tok = this.peek();
     if (tok.type === "UNIT_LITERAL" && tok.unit === "ms") {
       this.advance();
@@ -2836,6 +4271,20 @@ class Parser {
   }
 
   private parseUnitSuffix(): UnitKind {
+    // ParseUnitSuffix.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // UnitKind.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseUnitSuffix();
+
     const unit = this.tryParseUnitSuffix();
     if (!unit) {
       const t = this.peek();
@@ -2845,6 +4294,20 @@ class Parser {
   }
 
   private tryParseUnitSuffix(): UnitKind | null {
+    // TryParseUnitSuffix.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Some value on success, otherwise none.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = tryParseUnitSuffix();
+
     if (this.check("UNIT_LITERAL")) {
       const t = this.advance();
       return unitFromLexeme(t.unit!);
@@ -2876,10 +4339,38 @@ class Parser {
   }
 
   private parseExpr(): Expr {
+    // ParseExpr.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Expr.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseExpr();
+
     return this.parseOr();
   }
 
   private parseOr(): Expr {
+    // ParseOr.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Expr.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseOr();
+
     let left = this.parseAnd();
     while (this.match("OR")) {
       const opStart = this.previous();
@@ -2899,6 +4390,20 @@ class Parser {
   }
 
   private parseAnd(): Expr {
+    // ParseAnd.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Expr.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseAnd();
+
     let left = this.parseComparison();
     while (this.match("AND")) {
       const opStart = this.previous();
@@ -2915,6 +4420,20 @@ class Parser {
   }
 
   private parseComparison(): Expr {
+    // ParseComparison.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Expr.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseComparison();
+
     let left = this.parseAdditive();
     while (
       this.match("LT", "LTE", "GT", "GTE", "EQ", "NEQ")
@@ -2934,6 +4453,20 @@ class Parser {
   }
 
   private parseAdditive(): Expr {
+    // ParseAdditive.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Expr.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseAdditive();
+
     let left = this.parseMultiplicative();
     while (this.match("PLUS", "MINUS")) {
       const opTok = this.previous();
@@ -2951,6 +4484,20 @@ class Parser {
   }
 
   private parseMultiplicative(): Expr {
+    // ParseMultiplicative.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Expr.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseMultiplicative();
+
     let left = this.parseUnary();
     while (this.match("STAR", "SLASH")) {
       const opTok = this.previous();
@@ -2968,6 +4515,20 @@ class Parser {
   }
 
   private parseUnary(): Expr {
+    // ParseUnary.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Expr.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseUnary();
+
     if (this.match("SPAWN")) {
       const start = this.previous();
       const calleeName = this.parseLabel("Expected function name after spawn");
@@ -3011,6 +4572,20 @@ class Parser {
   }
 
   private parsePostfix(): Expr {
+    // ParsePostfix.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Expr.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parsePostfix();
+
     let expr = this.parsePrimary();
 
     while (true) {
@@ -3110,6 +4685,20 @@ class Parser {
   }
 
   private parsePrimary(): Expr {
+    // ParsePrimary.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Expr.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parsePrimary();
+
     const start = this.peek();
 
     if (this.match("MATCH")) {
@@ -3329,5 +4918,19 @@ class Parser {
 export { parse as parseTokens };
 
 function isUnitIdent(lexeme: string): boolean {
+  // IsUnitIdent.
+  //
+  // Parameters:
+  // - `lexeme` — input value
+  //
+  // Returns:
+  // `true` or `false`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = isUnitIdent(lexeme);
+
   return ["m", "s", "ms", "rad", "deg", "Hz"].includes(lexeme);
 }

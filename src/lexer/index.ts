@@ -1,3 +1,8 @@
+/**
+ * index module (lexer/index.ts).
+ * @module
+ */
+
 export type TokenType =
   | "IMPORT"
   | "MODULE"
@@ -433,6 +438,20 @@ const UNIT_SUFFIXES: UnitLexeme[] = [
 ];
 
 export function tokenize(source: string): Token[] {
+  // Tokenize.
+  //
+  // Parameters:
+  // - `source` — input value
+  //
+  // Returns:
+  // `Token[]`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = tokenize(source);
+
   const tokens: Token[] = [];
   let line = 1;
   let column = 1;
@@ -719,22 +738,92 @@ export function tokenize(source: string): Token[] {
 }
 
 function isHexDigit(ch: string): boolean {
+  // IsHexDigit.
+  //
+  // Parameters:
+  // - `ch` — input value
+  //
+  // Returns:
+  // `true` or `false`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = isHexDigit(ch);
+
   return isDigit(ch) || (ch >= "a" && ch <= "f") || (ch >= "A" && ch <= "F");
 }
 
 function isDigit(ch: string): boolean {
+  // IsDigit.
+  //
+  // Parameters:
+  // - `ch` — input value
+  //
+  // Returns:
+  // `true` or `false`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = isDigit(ch);
+
   return ch >= "0" && ch <= "9";
 }
 
 function isIdentStart(ch: string): boolean {
+  // IsIdentStart.
+  //
+  // Parameters:
+  // - `ch` — input value
+  //
+  // Returns:
+  // `true` or `false`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = isIdentStart(ch);
+
   return (ch >= "a" && ch <= "z") || (ch >= "A" && ch <= "Z") || ch === "_";
 }
 
 function isIdentChar(ch: string): boolean {
+  // IsIdentChar.
+  //
+  // Parameters:
+  // - `ch` — input value
+  //
+  // Returns:
+  // `true` or `false`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = isIdentChar(ch);
+
   return isIdentStart(ch) || isDigit(ch);
 }
 
 export function unitFromLexeme(lexeme: UnitLexeme): import("../ast/nodes.js").UnitKind {
+  // UnitFromLexeme.
+  //
+  // Parameters:
+  // - `lexeme` — input value
+  //
+  // Returns:
+  // `import("../ast/nodes.js").UnitKind`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = unitFromLexeme(lexeme);
+
   if (lexeme === "m/s2" || lexeme === "m/s²") return "m/s²";
   if (lexeme === "cd/m2") return "cd/m²";
   if (lexeme === "µg/m³") return "ug/m3";

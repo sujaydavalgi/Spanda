@@ -1,3 +1,8 @@
+/**
+ * index module (units/index.ts).
+ * @module
+ */
+
 import type { UnitKind } from "../ast/nodes.js";
 
 export type PhysicalCategory =
@@ -37,6 +42,20 @@ export type PhysicalCategory =
 const DEG_TO_RAD = Math.PI / 180;
 
 export function canonicalUnit(category: PhysicalCategory): UnitKind {
+  // CanonicalUnit.
+  //
+  // Parameters:
+  // - `category` — input value
+  //
+  // Returns:
+  // `UnitKind`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = canonicalUnit(category);
+
   switch (category) {
     case "scalar": return "none";
     case "distance": return "m";
@@ -74,6 +93,20 @@ export function canonicalUnit(category: PhysicalCategory): UnitKind {
 }
 
 export function unitCategory(unit: UnitKind): PhysicalCategory {
+  // UnitCategory.
+  //
+  // Parameters:
+  // - `unit` — input value
+  //
+  // Returns:
+  // `PhysicalCategory`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = unitCategory(unit);
+
   switch (unit) {
     case "none":
       return "scalar";
@@ -190,12 +223,42 @@ export function unitCategory(unit: UnitKind): PhysicalCategory {
 }
 
 export function unitsCompatible(a: UnitKind, b: UnitKind): boolean {
+  // UnitsCompatible.
+  //
+  // Parameters:
+  // - `a` — input value
+  // - `b` — input value
+  //
+  // Returns:
+  // `true` or `false`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = unitsCompatible(a, b);
+
   if (a === b) return true;
   if (a === "none" || b === "none") return true;
   return unitCategory(a) === unitCategory(b);
 }
 
 export function unitMatchesNamedType(typeName: string, unit: UnitKind): boolean {
+  // UnitMatchesNamedType.
+  //
+  // Parameters:
+  // - `typeName` — input value
+  // - `unit` — input value
+  //
+  // Returns:
+  // `true` or `false`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = unitMatchesNamedType(typeName, unit);
+
   switch (typeName) {
     case "Distance":
       return unitCategory(unit) === "distance";
@@ -263,6 +326,21 @@ export function unitMatchesNamedType(typeName: string, unit: UnitKind): boolean 
 }
 
 function toCanonicalLinear(value: number, unit: UnitKind): number {
+  // ToCanonicalLinear.
+  //
+  // Parameters:
+  // - `value` — input value
+  // - `unit` — input value
+  //
+  // Returns:
+  // Numeric result.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = toCanonicalLinear(value, unit);
+
   switch (unit) {
     case "m": return value;
     case "mm": return value / 1000;
@@ -346,6 +424,22 @@ function toCanonicalLinear(value: number, unit: UnitKind): number {
 }
 
 function fromCanonical(value: number, category: PhysicalCategory, to: UnitKind): number {
+  // FromCanonical.
+  //
+  // Parameters:
+  // - `value` — input value
+  // - `category` — input value
+  // - `to` — input value
+  //
+  // Returns:
+  // Numeric result.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = fromCanonical(value, category, to);
+
   switch (category) {
     case "distance":
       switch (to) {
@@ -553,6 +647,22 @@ function fromCanonical(value: number, category: PhysicalCategory, to: UnitKind):
 }
 
 export function convertValue(value: number, from: UnitKind, to: UnitKind): number | undefined {
+  // ConvertValue.
+  //
+  // Parameters:
+  // - `value` — input value
+  // - `from` — input value
+  // - `to` — input value
+  //
+  // Returns:
+  // `Some` / non-null value on success, otherwise `None` / null.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = convertValue(value, from, to);
+
   if (from === to) return value;
   if (!unitsCompatible(from, to)) return undefined;
   const canonical = toCanonicalLinear(value, from);
@@ -565,6 +675,23 @@ export function alignForBinary(
   right: number,
   rightUnit: UnitKind,
 ): [number, number, UnitKind] | undefined {
+  // AlignForBinary.
+  //
+  // Parameters:
+  // - `left` — input value
+  // - `leftUnit` — input value
+  // - `right` — input value
+  // - `rightUnit` — input value
+  //
+  // Returns:
+  // `Some` / non-null value on success, otherwise `None` / null.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = alignForBinary(left, leftUnit, right, rightUnit);
+
   if (!unitsCompatible(leftUnit, rightUnit)) return undefined;
   if (leftUnit === rightUnit) return [left, right, leftUnit];
   const rightInLeft = convertValue(right, rightUnit, leftUnit);

@@ -1,3 +1,8 @@
+/**
+ * AIModel module (ai/AIModel.ts).
+ * @module
+ */
+
 import type { AiModelDecl } from "../ast/nodes.js";
 import type { RuntimeValue } from "../runtime/interpreter.js";
 import { MockAIProvider, mockSummarize } from "./MockAIProvider.js";
@@ -25,6 +30,23 @@ export class AIModel {
   }
 
   reason(prompt: string, input?: RuntimeValue, goal?: string): RuntimeValue {
+    // Reason.
+    //
+    // Parameters:
+    // - `prompt` — input value
+    // - `input?` — optional input
+    // - `goal?` — optional input
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // - `input?` — optional parameter
+    // - `goal?` — optional parameter
+    //
+    // Example:
+    // const result = reason(prompt, input?, goal?);
+
     if (this.modelType !== "LLM") {
       throw new Error(`Model '${this.name}' is ${this.modelType}, not LLM`);
     }
@@ -39,6 +61,20 @@ export class AIModel {
   }
 
   summarize(input?: RuntimeValue): RuntimeValue {
+    // Summarize.
+    //
+    // Parameters:
+    // - `input?` — optional input
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // - `input?` — optional parameter
+    //
+    // Example:
+    // const result = summarize(input?);
+
     if (this.modelType !== "LLM") {
       throw new Error(`Model '${this.name}' is ${this.modelType}, not LLM`);
     }
@@ -70,6 +106,20 @@ export class AIModel {
 }
 
 function parseConfig(decl: AiModelDecl): AiModelConfig {
+  // ParseConfig.
+  //
+  // Parameters:
+  // - `decl` — input value
+  //
+  // Returns:
+  // `AiModelConfig`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = parseConfig(decl);
+
   const map = new Map(decl.config.map((e) => [e.key, e.value]));
   return {
     provider: String(map.get("provider") ?? "mock"),
@@ -80,5 +130,19 @@ function parseConfig(decl: AiModelDecl): AiModelConfig {
 }
 
 export function createAIModel(decl: AiModelDecl): AIModel {
+  // CreateAIModel.
+  //
+  // Parameters:
+  // - `decl` — input value
+  //
+  // Returns:
+  // `AIModel`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = createAIModel(decl);
+
   return new AIModel(decl);
 }

@@ -1,3 +1,8 @@
+/**
+ * type system module (type-system.ts).
+ * @module
+ */
+
 import type { SpandaType, UnitKind } from "./ast/nodes.js";
 import { unitCategory, type PhysicalCategory } from "./units/index.js";
 
@@ -25,6 +30,20 @@ const KNOWN_DOMAIN_TYPES = new Set([
 ]);
 
 function genericArity(name: string): number | undefined {
+  // GenericArity.
+  //
+  // Parameters:
+  // - `name` — input value
+  //
+  // Returns:
+  // `Some` / non-null value on success, otherwise `None` / null.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = genericArity(name);
+
   switch (name) {
     case "Array":
     case "Set":
@@ -49,6 +68,20 @@ function genericArity(name: string): number | undefined {
 }
 
 export function resolveTypeName(name: string): SpandaType {
+  // ResolveTypeName.
+  //
+  // Parameters:
+  // - `name` — input value
+  //
+  // Returns:
+  // `SpandaType`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = resolveTypeName(name);
+
   const short = name.replace(/^std\./, "").split(".").pop() ?? name;
   switch (short) {
     case "Int":
@@ -220,6 +253,21 @@ export function resolveTypeName(name: string): SpandaType {
 }
 
 export function resolveGenericType(name: string, args: SpandaType[]): SpandaType {
+  // ResolveGenericType.
+  //
+  // Parameters:
+  // - `name` — input value
+  // - `args` — input value
+  //
+  // Returns:
+  // `SpandaType`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = resolveGenericType(name, args);
+
   const base = name.split(".").pop() ?? name;
   const expected = genericArity(base);
   if (expected === undefined) {
@@ -232,6 +280,20 @@ export function resolveGenericType(name: string, args: SpandaType[]): SpandaType
 }
 
 export function physicalCategory(ty: SpandaType): PhysicalCategory {
+  // PhysicalCategory.
+  //
+  // Parameters:
+  // - `ty` — input value
+  //
+  // Returns:
+  // `PhysicalCategory`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = physicalCategory(ty);
+
   switch (ty.kind) {
     case "int":
     case "float":
@@ -342,6 +404,22 @@ const OP_MAP: Record<string, BinaryOp> = {
 };
 
 export function binaryPhysicalOpAllowed(opLexeme: string, left: SpandaType, right: SpandaType): boolean {
+  // BinaryPhysicalOpAllowed.
+  //
+  // Parameters:
+  // - `opLexeme` — input value
+  // - `left` — input value
+  // - `right` — input value
+  //
+  // Returns:
+  // `true` or `false`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = binaryPhysicalOpAllowed(opLexeme, left, right);
+
   const op = OP_MAP[opLexeme];
   if (!op) return true;
   const catL = physicalCategory(left);
@@ -370,14 +448,56 @@ export function binaryPhysicalOpAllowed(opLexeme: string, left: SpandaType, righ
 }
 
 export function isActionProposalType(ty: SpandaType): boolean {
+  // IsActionProposalType.
+  //
+  // Parameters:
+  // - `ty` — input value
+  //
+  // Returns:
+  // `true` or `false`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = isActionProposalType(ty);
+
   return ty.kind === "named" && ty.name === "ActionProposal";
 }
 
 export function isSafeActionType(ty: SpandaType): boolean {
+  // IsSafeActionType.
+  //
+  // Parameters:
+  // - `ty` — input value
+  //
+  // Returns:
+  // `true` or `false`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = isSafeActionType(ty);
+
   return ty.kind === "named" && ty.name === "SafeAction";
 }
 
 export function typeKindName(ty: SpandaType): string {
+  // TypeKindName.
+  //
+  // Parameters:
+  // - `ty` — input value
+  //
+  // Returns:
+  // Text result.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = typeKindName(ty);
+
   switch (ty.kind) {
     case "generic":
       return "generic";

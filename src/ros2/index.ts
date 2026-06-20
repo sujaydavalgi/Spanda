@@ -1,3 +1,8 @@
+/**
+ * index module (ros2/index.ts).
+ * @module
+ */
+
 import type { MotionCommand, RobotBackend, RobotState, RuntimeValue } from "../runtime/interpreter.js";
 
 export interface Ros2Adapter extends RobotBackend {
@@ -25,27 +30,98 @@ export class Ros2AdapterStub implements Ros2Adapter {
   private published: Array<{ topic: string; messageType: string; value: RuntimeValue }> = [];
 
   async connect(options: Ros2ConnectOptions): Promise<void> {
+    // Connect.
+    //
+    // Parameters:
+    // - `options` — input value
+    //
+    // Returns:
+    // Success value on completion, or an error.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = connect(options);
+
     this.connected = true;
     console.log(`[ROS2] Connected as node '${options.nodeName ?? "spanda_node"}'`);
   }
 
   async disconnect(): Promise<void> {
+    // Disconnect.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Success value on completion, or an error.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = disconnect();
+
     this.connected = false;
     console.log("[ROS2] Disconnected");
   }
 
   readSensor(_sensorName: string, sensorType: string): RuntimeValue {
+    // ReadSensor.
+    //
+    // Parameters:
+    // - `_sensorName` — input value
+    // - `sensorType` — input value
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = readSensor(_sensorName, sensorType);
+
     if (!this.connected) throw new Error("ROS2 adapter not connected");
     if (sensorType === "Lidar") return { kind: "scan", nearestDistance: Infinity };
     return { kind: "void" };
   }
 
   executeMotion(cmd: MotionCommand): void {
+    // ExecuteMotion.
+    //
+    // Parameters:
+    // - `cmd` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = executeMotion(cmd);
+
     if (!this.connected) return;
     console.log(`[ROS2] Motion: ${JSON.stringify(cmd)}`);
   }
 
   tick(dtMs: number): void {
+    // Tick.
+    //
+    // Parameters:
+    // - `dtMs` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = tick(dtMs);
+
     const dt = dtMs / 1000;
     this.state.pose.x += this.state.velocity.linear * Math.cos(this.state.pose.theta) * dt;
     this.state.pose.y += this.state.velocity.linear * Math.sin(this.state.pose.theta) * dt;
@@ -53,10 +129,38 @@ export class Ros2AdapterStub implements Ros2Adapter {
   }
 
   getState(): RobotState {
+    // GetState.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // RobotState.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = getState();
+
     return { ...this.state, pose: { ...this.state.pose }, velocity: { ...this.state.velocity } };
   }
 
   setEmergencyStop(active: boolean): void {
+    // SetEmergencyStop.
+    //
+    // Parameters:
+    // - `active` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = setEmergencyStop(active);
+
     this.state.emergencyStop = active;
     if (active) this.state.velocity = { linear: 0, angular: 0 };
   }
@@ -86,5 +190,19 @@ export class Ros2AdapterStub implements Ros2Adapter {
 }
 
 export function createRos2Adapter(): Ros2Adapter {
+  // CreateRos2Adapter.
+  //
+  // Parameters:
+  // None.
+  //
+  // Returns:
+  // `Ros2Adapter`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = createRos2Adapter();
+
   return new Ros2AdapterStub();
 }

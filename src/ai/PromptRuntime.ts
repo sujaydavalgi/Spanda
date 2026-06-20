@@ -1,6 +1,28 @@
+/**
+ * PromptRuntime module (ai/PromptRuntime.ts).
+ * @module
+ */
+
 import type { RuntimeValue } from "../runtime/interpreter.js";
 
 export function buildPrompt(base: string, input?: RuntimeValue, goal?: string): string {
+  // BuildPrompt.
+  //
+  // Parameters:
+  // - `base` — input value
+  // - `input?` — optional input
+  // - `goal?` — optional input
+  //
+  // Returns:
+  // Text result.
+  //
+  // Options:
+  // - `input?` — optional parameter
+  // - `goal?` — optional parameter
+  //
+  // Example:
+  // const result = buildPrompt(base, input?, goal?);
+
   const parts: string[] = [];
   if (goal?.trim()) {
     parts.push(`Goal: ${goal.trim()}`);
@@ -14,6 +36,20 @@ export function buildPrompt(base: string, input?: RuntimeValue, goal?: string): 
 }
 
 function summarizeInput(input?: RuntimeValue): string {
+  // SummarizeInput.
+  //
+  // Parameters:
+  // - `input?` — optional input
+  //
+  // Returns:
+  // Text result.
+  //
+  // Options:
+  // - `input?` — optional parameter
+  //
+  // Example:
+  // const result = summarizeInput(input?);
+
   if (!input || input.kind === "void") return "(no input)";
 
   switch (input.kind) {

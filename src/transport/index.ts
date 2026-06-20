@@ -1,3 +1,8 @@
+/**
+ * index module (transport/index.ts).
+ * @module
+ */
+
 import type { RuntimeValue } from "../runtime/interpreter.js";
 import {
   InMemoryCommBus,
@@ -46,6 +51,20 @@ type StubState = {
 };
 
 function createStubAdapter(kind: TransportKind): TransportAdapter {
+  // CreateStubAdapter.
+  //
+  // Parameters:
+  // - `kind` — input value
+  //
+  // Returns:
+  // `TransportAdapter`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const result = createStubAdapter(kind);
+
   const state: StubState = {
     connected: false,
     config: {},
@@ -56,29 +75,116 @@ function createStubAdapter(kind: TransportKind): TransportAdapter {
   return {
     kind: () => kind,
     connect(config) {
+      // Connect.
+      //
+      // Parameters:
+      // - `config` — input value
+      //
+      // Returns:
+      // Nothing.
+      //
+      // Options:
+      // None.
+      //
+      // Example:
+      // const result = connect(config);
+
       state.connected = true;
       state.config = config;
     },
     disconnect() {
+      // Disconnect.
+      //
+      // Parameters:
+      // None.
+      //
+      // Returns:
+      // Nothing.
+      //
+      // Options:
+      // None.
+      //
+      // Example:
+      // const result = disconnect();
+
       state.connected = false;
     },
     isConnected: () => state.connected,
     publish(topic, messageType, value) {
+      // Publish.
+      //
+      // Parameters:
+      // - `topic` — input value
+      // - `messageType` — input value
+      // - `value` — input value
+      //
+      // Returns:
+      // Nothing.
+      //
+      // Options:
+      // None.
+      //
+      // Example:
+      // const result = publish(topic, messageType, value);
+
       if (!state.connected) return;
       state.published.push({ topic, messageType, value });
       const buf = state.subscriptions.get(topic);
       if (buf) buf.push(value);
     },
     subscribe(topic) {
+      // Subscribe.
+      //
+      // Parameters:
+      // - `topic` — input value
+      //
+      // Returns:
+      // Nothing.
+      //
+      // Options:
+      // None.
+      //
+      // Example:
+      // const result = subscribe(topic);
+
       if (!state.connected) return;
       if (!state.subscriptions.has(topic)) state.subscriptions.set(topic, []);
     },
     receive(topic) {
+      // Receive.
+      //
+      // Parameters:
+      // - `topic` — input value
+      //
+      // Returns:
+      // Nothing.
+      //
+      // Options:
+      // None.
+      //
+      // Example:
+      // const result = receive(topic);
+
       if (!state.connected) return null;
       const buf = state.subscriptions.get(topic);
       return buf?.shift() ?? null;
     },
     callService(_service, serviceType) {
+      // CallService.
+      //
+      // Parameters:
+      // - `_service` — input value
+      // - `serviceType` — input value
+      //
+      // Returns:
+      // Nothing.
+      //
+      // Options:
+      // None.
+      //
+      // Example:
+      // const result = callService(_service, serviceType);
+
       return {
         kind: "object",
         typeName: serviceType,
@@ -86,6 +192,21 @@ function createStubAdapter(kind: TransportKind): TransportAdapter {
       };
     },
     sendAction(_action, actionType) {
+      // SendAction.
+      //
+      // Parameters:
+      // - `_action` — input value
+      // - `actionType` — input value
+      //
+      // Returns:
+      // Nothing.
+      //
+      // Options:
+      // None.
+      //
+      // Example:
+      // const result = sendAction(_action, actionType);
+
       return {
         kind: "object",
         typeName: actionType,
@@ -104,6 +225,20 @@ export class RoutingCommBus {
   private websocket = createStubAdapter("websocket");
 
   configure(config: TransportConfig): void {
+    // Configure.
+    //
+    // Parameters:
+    // - `config` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = configure(config);
+
     this.ros2.connect({ nodeName: config.nodeName, namespace: config.namespace, ...config });
     this.mqtt.connect({
       brokerUrl: config.brokerUrl ?? "mqtt://localhost:1883",
@@ -118,6 +253,20 @@ export class RoutingCommBus {
   }
 
   private adapter(transport: TransportKind): TransportAdapter | null {
+    // Adapter.
+    //
+    // Parameters:
+    // - `transport` — input value
+    //
+    // Returns:
+    // Some value on success, otherwise none.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = adapter(transport);
+
     switch (transport) {
       case "ros2":
         return this.ros2;
@@ -133,14 +282,56 @@ export class RoutingCommBus {
   }
 
   registerRobot(name: string): void {
+    // RegisterRobot.
+    //
+    // Parameters:
+    // - `name` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = registerRobot(name);
+
     this.memory.registerRobot(name);
   }
 
   registerAgent(name: string): void {
+    // RegisterAgent.
+    //
+    // Parameters:
+    // - `name` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = registerAgent(name);
+
     this.memory.registerAgent(name);
   }
 
   registerDevice(name: string): void {
+    // RegisterDevice.
+    //
+    // Parameters:
+    // - `name` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = registerDevice(name);
+
     this.memory.registerDevice(name);
   }
 
@@ -150,23 +341,97 @@ export class RoutingCommBus {
     value: RuntimeValue,
     transport: TransportKind,
   ): void {
+    // Publish.
+    //
+    // Parameters:
+    // - `topicPath` — input value
+    // - `messageType` — input value
+    // - `value` — input value
+    // - `transport` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = publish(topicPath, messageType, value, transport);
+
     this.memory.publish(topicPath, messageType, value, transport);
     this.adapter(transport)?.publish(topicPath, messageType, value);
   }
 
   subscribe(topicPath: string, handler: string): void {
+    // Subscribe.
+    //
+    // Parameters:
+    // - `topicPath` — input value
+    // - `handler` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = subscribe(topicPath, handler);
+
     this.memory.subscribe(topicPath, handler);
   }
 
   receive(topicPath: string): RuntimeValue | null {
+    // Receive.
+    //
+    // Parameters:
+    // - `topicPath` — input value
+    //
+    // Returns:
+    // Some value on success, otherwise none.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = receive(topicPath);
+
     return this.memory.receive(topicPath);
   }
 
   callService(serviceType: string): RuntimeValue {
+    // CallService.
+    //
+    // Parameters:
+    // - `serviceType` — input value
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = callService(serviceType);
+
     return this.memory.callService(serviceType);
   }
 
   sendAction(actionType: string): RuntimeValue {
+    // SendAction.
+    //
+    // Parameters:
+    // - `actionType` — input value
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = sendAction(actionType);
+
     return this.memory.sendAction(actionType);
   }
 
@@ -176,22 +441,96 @@ export class RoutingCommBus {
     value: RuntimeValue,
     transport: TransportKind,
   ): void {
+    // PublishPeer.
+    //
+    // Parameters:
+    // - `peer` — input value
+    // - `topic` — input value
+    // - `value` — input value
+    // - `transport` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = publishPeer(peer, topic, value, transport);
+
     this.memory.publishPeer(peer, topic, value, transport);
   }
 
   discover(target: DiscoverTarget, filter: DiscoverFilter): string[] {
+    // Discover.
+    //
+    // Parameters:
+    // - `target` — input value
+    // - `filter` — input value
+    //
+    // Returns:
+    // string[].
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = discover(target, filter);
+
     return this.memory.discover(target, filter);
   }
 
   publishedMessages(): PublishedCommMessage[] {
+    // PublishedMessages.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // PublishedCommMessage[].
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = publishedMessages();
+
     return this.memory.publishedMessages();
   }
 
   injectFault(fault: string): void {
+    // InjectFault.
+    //
+    // Parameters:
+    // - `fault` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = injectFault(fault);
+
     this.memory.injectFault(fault);
   }
 
   adapterPublished(transport: TransportKind): AdapterMessage[] {
+    // AdapterPublished.
+    //
+    // Parameters:
+    // - `transport` — input value
+    //
+    // Returns:
+    // AdapterMessage[].
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = adapterPublished(transport);
+
     return this.adapter(transport)?.published() ?? [];
   }
 }

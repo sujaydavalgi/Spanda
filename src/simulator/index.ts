@@ -1,3 +1,8 @@
+/**
+ * index module (simulator/index.ts).
+ * @module
+ */
+
 import type {
   MotionCommand,
   PoseValue,
@@ -49,6 +54,22 @@ export class Simulator implements RobotBackend {
   }
 
   readSensor(_sensorName: string, sensorType: string, _topic?: string | null): RuntimeValue {
+    // ReadSensor.
+    //
+    // Parameters:
+    // - `_sensorName` — input value
+    // - `sensorType` — input value
+    // - `_topic?` — optional input
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // - `_topic?` — optional parameter
+    //
+    // Example:
+    // const result = readSensor(_sensorName, sensorType, _topic?);
+
     switch (sensorType) {
       case "Lidar":
         return { kind: "scan", nearestDistance: this.simulateLidar() };
@@ -96,6 +117,22 @@ export class Simulator implements RobotBackend {
   }
 
   publishTopic(topicPath: string, messageType: string, value: RuntimeValue): void {
+    // PublishTopic.
+    //
+    // Parameters:
+    // - `topicPath` — input value
+    // - `messageType` — input value
+    // - `value` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = publishTopic(topicPath, messageType, value);
+
     this.published.push({ topic: topicPath, messageType, value });
     if (value.kind === "velocity") {
       this.velocity = { linear: value.linear, angular: value.angular };
@@ -104,12 +141,43 @@ export class Simulator implements RobotBackend {
   }
 
   callService(serviceName: string, serviceType: string): RuntimeValue {
+    // CallService.
+    //
+    // Parameters:
+    // - `serviceName` — input value
+    // - `serviceType` — input value
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = callService(serviceName, serviceType);
+
     this.serviceLog.push(`${serviceName}:${serviceType}`);
     this.eventLog.push(`service(${serviceName})`);
     return { kind: "bool", value: true };
   }
 
   sendAction(actionName: string, actionType: string, goal: RuntimeValue): RuntimeValue {
+    // SendAction.
+    //
+    // Parameters:
+    // - `actionName` — input value
+    // - `actionType` — input value
+    // - `goal` — input value
+    //
+    // Returns:
+    // RuntimeValue.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = sendAction(actionName, actionType, goal);
+
     this.actionLog.push(`${actionName}:${actionType}`);
     this.eventLog.push(`action(${actionName})`);
     if (goal.kind === "pose") {
@@ -122,10 +190,38 @@ export class Simulator implements RobotBackend {
   }
 
   getPublishedTopics(): PublishedMessage[] {
+    // GetPublishedTopics.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // PublishedMessage[].
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = getPublishedTopics();
+
     return [...this.published];
   }
 
   executeMotion(cmd: MotionCommand): void {
+    // ExecuteMotion.
+    //
+    // Parameters:
+    // - `cmd` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = executeMotion(cmd);
+
     if (this.emergencyStop && cmd.kind !== "stop") {
       this.velocity = { linear: 0, angular: 0 };
       return;
@@ -174,6 +270,20 @@ export class Simulator implements RobotBackend {
   }
 
   tick(dtMs: number): void {
+    // Tick.
+    //
+    // Parameters:
+    // - `dtMs` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = tick(dtMs);
+
     if (this.emergencyStop) {
       this.velocity = { linear: 0, angular: 0 };
       return;
@@ -212,6 +322,20 @@ export class Simulator implements RobotBackend {
   }
 
   getState(): RobotState {
+    // GetState.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // RobotState.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = getState();
+
     return {
       pose: { ...this.pose },
       velocity: { ...this.velocity },
@@ -220,6 +344,20 @@ export class Simulator implements RobotBackend {
   }
 
   setEmergencyStop(value: boolean): void {
+    // SetEmergencyStop.
+    //
+    // Parameters:
+    // - `value` — input value
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = setEmergencyStop(value);
+
     this.emergencyStop = value;
     if (value) {
       this.velocity = { linear: 0, angular: 0 };
@@ -228,14 +366,56 @@ export class Simulator implements RobotBackend {
   }
 
   getHal(): HalBackend {
+    // GetHal.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // HalBackend.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = getHal();
+
     return this.hal;
   }
 
   getEventLog(): string[] {
+    // GetEventLog.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // string[].
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = getEventLog();
+
     return [...this.eventLog];
   }
 
-  getArmPosition(): { x: number; y: number; z: number } {
+  getArmPosition(): {
+    // GetArmPosition.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // .
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = getArmPosition();
+ x: number; y: number; z: number } {
     return { ...this.armPosition };
   }
 
@@ -267,5 +447,19 @@ export class Simulator implements RobotBackend {
 }
 
 export function createDefaultSimulator(config?: SimulatorConfig): Simulator {
+  // CreateDefaultSimulator.
+  //
+  // Parameters:
+  // - `config?` — optional input
+  //
+  // Returns:
+  // `Simulator`.
+  //
+  // Options:
+  // - `config?` — optional parameter
+  //
+  // Example:
+  // const result = createDefaultSimulator(config?);
+
   return new Simulator(config);
 }
