@@ -1,8 +1,14 @@
 /** Standard library namespace paths for `import std.*;` */
 export const STD_NAMESPACES = new Set([
+  "std.core",
   "std.time",
   "std.units",
   "std.spatial",
+  "std.math",
+  "std.collections",
+  "std.result",
+  "std.io",
+  "std.log",
   "std.ai",
   "std.robotics",
   "std.sensors",
@@ -13,6 +19,9 @@ export const STD_NAMESPACES = new Set([
   "std.sim",
   "std.twin",
   "std.hri",
+  "std.security",
+  "std.audit",
+  "std.crypto",
   "std.network",
 ]);
 

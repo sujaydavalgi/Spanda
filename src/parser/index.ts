@@ -772,20 +772,20 @@ class Parser {
     const start = this.peek();
 
     if (this.match("I2C")) {
-      const name = this.expect("IDENT", "Expected I2C bus name");
+      const name = this.parseBindingIdent("Expected I2C bus name");
       this.expect("AT", "Expected 'at' after I2C bus name");
       const addrTok = this.expect("NUMBER", "Expected I2C address");
       this.expect("SEMICOLON", "Expected ';' after I2C declaration");
       return {
         kind: "HalI2cDecl",
-        name: name.lexeme,
+        name,
         address: addrTok.value as number,
         span: this.spanFrom(start, this.previous()),
       };
     }
 
     if (this.match("SPI")) {
-      const name = this.expect("IDENT", "Expected SPI bus name");
+      const name = this.parseBindingIdent("Expected SPI bus name");
       this.expect("AT", "Expected 'at' after SPI bus name");
       const busTok = this.expect("NUMBER", "Expected SPI bus number");
       let csPin: number | null = null;
@@ -796,7 +796,7 @@ class Parser {
       this.expect("SEMICOLON", "Expected ';' after SPI declaration");
       return {
         kind: "HalSpiDecl",
-        name: name.lexeme,
+        name,
         bus: busTok.value as number,
         csPin,
         span: this.spanFrom(start, this.previous()),
@@ -804,7 +804,7 @@ class Parser {
     }
 
     if (this.match("GPIO")) {
-      const name = this.expect("IDENT", "Expected GPIO name");
+      const name = this.parseBindingIdent("Expected GPIO name");
       let direction: "in" | "out" = "out";
       if (this.match("OUT")) direction = "out";
       else if (this.match("IN")) direction = "in";
@@ -813,7 +813,7 @@ class Parser {
       this.expect("SEMICOLON", "Expected ';' after GPIO declaration");
       return {
         kind: "HalGpioDecl",
-        name: name.lexeme,
+        name,
         direction,
         pin: pinTok.value as number,
         span: this.spanFrom(start, this.previous()),
@@ -821,7 +821,7 @@ class Parser {
     }
 
     if (this.match("PWM")) {
-      const name = this.expect("IDENT", "Expected PWM name");
+      const name = this.parseBindingIdent("Expected PWM name");
       this.expect("ON", "Expected 'on' after PWM name");
       this.expect("PIN", "Expected 'pin' after on");
       const pinTok = this.expect("NUMBER", "Expected PWM pin");
@@ -830,7 +830,7 @@ class Parser {
       this.expect("SEMICOLON", "Expected ';' after PWM declaration");
       return {
         kind: "HalPwmDecl",
-        name: name.lexeme,
+        name,
         pin: pinTok.value as number,
         frequencyHz: freq,
         span: this.spanFrom(start, this.previous()),
@@ -838,7 +838,7 @@ class Parser {
     }
 
     if (this.match("UART")) {
-      const name = this.expect("IDENT", "Expected UART name");
+      const name = this.parseBindingIdent("Expected UART name");
       this.expect("ON", "Expected 'on' after UART name");
       const device = this.expect("STRING", "Expected UART device path");
       this.expect("BAUD", "Expected 'baud' after UART device");
@@ -846,7 +846,7 @@ class Parser {
       this.expect("SEMICOLON", "Expected ';' after UART declaration");
       return {
         kind: "HalUartDecl",
-        name: name.lexeme,
+        name,
         device: device.value as string,
         baud: baudTok.value as number,
         span: this.spanFrom(start, this.previous()),
@@ -854,14 +854,14 @@ class Parser {
     }
 
     if (this.match("ADC")) {
-      const name = this.expect("IDENT", "Expected ADC name");
+      const name = this.parseBindingIdent("Expected ADC name");
       this.expect("ON", "Expected 'on' after ADC name");
       this.expect("IDENT", "Expected 'channel' keyword"); // channel as ident
       const chTok = this.expect("NUMBER", "Expected ADC channel number");
       this.expect("SEMICOLON", "Expected ';' after ADC declaration");
       return {
         kind: "HalAdcDecl",
-        name: name.lexeme,
+        name,
         channel: chTok.value as number,
         span: this.spanFrom(start, this.previous()),
       };
@@ -1114,8 +1114,8 @@ class Parser {
         const topicTok = this.advance();
         binding = { kind: "topic", path: topicTok.value as string };
       } else {
-        const busName = this.expect("IDENT", "Expected HAL bus name or topic string after 'on'");
-        binding = { kind: "hal", busName: busName.lexeme };
+        const busName = this.parseBindingIdent("Expected HAL bus name or topic string after 'on'");
+        binding = { kind: "hal", busName };
       }
     }
 
