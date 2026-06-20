@@ -19,6 +19,24 @@ pub fn emit_module_ir(sir: &SirProgram) -> String {
     if !sir.behavior_names.is_empty() {
         out.push_str(&format!("; behaviors: {}\n", sir.behavior_names.join(", ")));
     }
+    for robot in &sir.robots {
+        for behavior in &robot.behaviors {
+            out.push_str(&format!(
+                "; robot {} behavior {} ({} stmts)\n",
+                robot.name, behavior.name, behavior.stmt_count
+            ));
+            out.push_str(&format!(
+                "define void @spanda_robot_{}_{}() {{\n  ret void\n}}\n\n",
+                robot.name, behavior.name
+            ));
+        }
+        for task in &robot.task_names {
+            out.push_str(&format!(
+                "define void @spanda_robot_{}_task_{}() {{\n  ret void\n}}\n\n",
+                robot.name, task
+            ));
+        }
+    }
     out.push('\n');
 
     for ext in &sir.externs {
@@ -122,6 +140,7 @@ robot R {
         assert!(ir.contains("define i32 @main("));
         assert!(ir.contains("declare i32 @py_add("));
         assert!(ir.contains("@spanda_robot_R_init"));
+        assert!(ir.contains("@spanda_robot_R_run"));
         assert!(ir.contains("@spanda_main"));
     }
 }

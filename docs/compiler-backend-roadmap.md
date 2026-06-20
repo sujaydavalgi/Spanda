@@ -38,14 +38,14 @@ Spanda source (.sd)
 
 ### Milestone 1 — Spanda IR (SIR) ✓ (extended)
 
-- Lower typed AST to SIR preserving module functions, extern bridge kinds, imports, behavior names, and robot names.
+- Lower typed AST to SIR preserving module functions, extern bridge kinds, imports, behavior metadata (requires/ensures/invariant flags, task names), and robot names.
 - **`spanda ir [--json] file.sd`** emits SIR for codegen planning and CI inspection.
 - SIR is the contract between frontend and backends; the interpreter still executes AST directly.
 
 ### Milestone 2 — LLVM backend ✓ (foundation)
 
-- **`spanda llvm-ir file.sd`** emits LLVM IR from SIR (signatures + stub function bodies).
-- `crates/spanda-llvm` is the SIR → LLVM emitter; behavior bodies and `libspanda_rt` linking remain planned.
+- **`spanda llvm-ir file.sd`** emits LLVM IR from SIR (signatures + stub bodies for behaviors and tasks).
+- `crates/spanda-llvm` is the SIR → LLVM emitter; behavior **body** lowering and `libspanda_rt` linking remain planned.
 - Robot scheduler, safety monitor, and comm routing remain in a **runtime library** (`libspanda_rt`) linked with generated code.
 - `-O2` builds for deployment; `-O0` + debug info for DAP debugging.
 

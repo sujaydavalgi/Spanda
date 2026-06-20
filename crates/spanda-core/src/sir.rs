@@ -15,6 +15,23 @@ pub struct SirProgram {
     pub externs: Vec<SirExtern>,
     pub robot_names: Vec<String>,
     pub behavior_names: Vec<String>,
+    pub robots: Vec<SirRobot>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SirRobot {
+    pub name: String,
+    pub behaviors: Vec<SirBehavior>,
+    pub task_names: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SirBehavior {
+    pub name: String,
+    pub stmt_count: usize,
+    pub has_requires: bool,
+    pub has_ensures: bool,
+    pub has_invariant: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -61,12 +78,44 @@ pub fn lower_program(program: &Program) -> SirProgram {
     } = program;
 
     let mut behavior_names = Vec::new();
+    let mut sir_robots = Vec::new();
     for robot in robots {
-        let RobotDecl::RobotDecl { behaviors, .. } = robot;
+        let RobotDecl::RobotDecl {
+            name,
+            behaviors,
+            tasks,
+            ..
+        } = robot;
+        let mut sir_behaviors = Vec::new();
         for behavior in behaviors {
-            let BehaviorDecl::BehaviorDecl { name, .. } = behavior;
-            behavior_names.push(name.clone());
+            let BehaviorDecl::BehaviorDecl {
+                name: behavior_name,
+                requires,
+                ensures,
+                invariant,
+                body,
+                ..
+            } = behavior;
+            behavior_names.push(behavior_name.clone());
+            sir_behaviors.push(SirBehavior {
+                name: behavior_name.clone(),
+                stmt_count: body.len(),
+                has_requires: requires.is_some(),
+                has_ensures: ensures.is_some(),
+                has_invariant: invariant.is_some(),
+            });
         }
+        let task_names: Vec<String> = tasks
+            .iter()
+            .map(|t| match t {
+                crate::foundations::TaskDecl::TaskDecl { name, .. } => name.clone(),
+            })
+            .collect();
+        sir_robots.push(SirRobot {
+            name: name.clone(),
+            behaviors: sir_behaviors,
+            task_names,
+        });
     }
 
     SirProgram {
@@ -86,6 +135,7 @@ pub fn lower_program(program: &Program) -> SirProgram {
             })
             .collect(),
         behavior_names,
+        robots: sir_robots,
     }
 }
 
@@ -199,5 +249,9 @@ robot R {
         assert_eq!(sir.externs[1].bridge, BridgeKind::Python);
         assert_eq!(sir.robot_names, vec!["R"]);
         assert_eq!(sir.behavior_names, vec!["run"]);
+        assert_eq!(sir.robots.len(), 1);
+        assert_eq!(sir.robots[0].name, "R");
+        assert_eq!(sir.robots[0].behaviors[0].name, "run");
+        assert!(sir.robots[0].behaviors[0].stmt_count >= 1);
     }
 }
