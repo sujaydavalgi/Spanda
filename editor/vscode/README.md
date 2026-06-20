@@ -5,6 +5,7 @@ This extension provides:
 - `.sd` language registration
 - baseline syntax highlighting
 - LSP client wiring to `spanda-lsp`
+- VSIX packaging for local install
 
 ## Build
 
@@ -12,6 +13,20 @@ This extension provides:
 cd editor/vscode
 npm install
 npm run build
+```
+
+## Package a VSIX
+
+```bash
+cd editor/vscode
+npm install
+npm run package
+```
+
+Install with:
+
+```bash
+code --install-extension spanda-vscode-0.1.0.vsix
 ```
 
 ## Run in Extension Development Host

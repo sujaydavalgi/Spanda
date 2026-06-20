@@ -1,12 +1,17 @@
 module spanda_openai;
 
-import ai.openai;
 import std.ai;
+extern python fn openai_complete(prompt: String) -> String;
 
-// OpenAI provider — exposes LLM completion for agent reasoning.
+// OpenAI provider package demo.
+// Uses the bridge-backed ai.openai.complete(prompt) helper.
 
 robot OpenAIAgent {
-    behavior reason {
-        // Call OpenAI API for task planning
-    }
+  actuator wheels: DifferentialDrive;
+
+  behavior reason() {
+    let plan = openai_complete("Plan a safe path around obstacles");
+    let _ = plan;
+    wheels.stop();
+  }
 }

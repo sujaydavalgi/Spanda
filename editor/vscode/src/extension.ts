@@ -53,7 +53,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   };
 
   client = new LanguageClient("spanda-lsp", "Spanda Language Server", { run, debug }, clientOptions);
-  context.subscriptions.push(client.start());
+  context.subscriptions.push(client);
+  await client.start();
 }
 
 export async function deactivate(): Promise<void> {

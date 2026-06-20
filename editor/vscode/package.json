@@ -5,6 +5,18 @@
   "version": "0.1.0",
   "publisher": "spanda-lang",
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sujaydavalgi/Spanda.git"
+  },
+  "files": [
+    "dist/**",
+    "syntaxes/**",
+    "language-configuration.json",
+    "LICENSE",
+    "README.md",
+    "package.json"
+  ],
   "engines": {
     "vscode": "^1.90.0"
   },
@@ -48,12 +60,15 @@
     ]
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc -p tsconfig.json",
+    "package": "npx @vscode/vsce package --allow-star-activation",
+    "package:ci": "npm run build && npm run package"
   },
   "dependencies": {
     "vscode-languageclient": "^9.0.1"
   },
   "devDependencies": {
+    "@vscode/vsce": "^3.6.1",
     "@types/node": "^22.10.0",
     "@types/vscode": "^1.90.0",
     "typescript": "^5.7.0"

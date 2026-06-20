@@ -9,8 +9,7 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "types": [
-      "node",
-      "vscode"
+      "node"
     ]
   },
   "include": [

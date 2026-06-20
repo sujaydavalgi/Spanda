@@ -258,6 +258,15 @@ npm run build
 
 Then run it in VS Code Extension Development Host. The extension setting `spanda.languageServerPath` can point to your built `packages/lsp/dist/server.js`.
 
+To package and install a local VSIX:
+
+```bash
+cd editor/vscode
+npm install
+npm run package
+code --install-extension spanda-vscode-0.1.0.vsix
+```
+
 ---
 
 ## Next steps
