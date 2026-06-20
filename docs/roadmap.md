@@ -11,6 +11,9 @@
 - Phase 7: Physical units — unit algebra
 - Phase 8: `requires` / `ensures` / `invariant` on behaviors and tasks (runtime enforcement)
 - Phase 9: `event` / `on` handlers
+- **Unified triggers**: `every`, `when`, `while`, message/safety/state/AI/verification/twin handlers, `TriggerRegistry`, storm limits, metrics
+- **Cooperative concurrency**: `spawn`, `join`, `parallel`, channels, `select`, per-task `budget { }`, runtime telemetry
+- **Fleet CLI**: `spanda fleet run` for in-process multi-robot simulation
 - Phase 10: `twin` declarations with mirror/replay runtime
 - Phase 11: ROS2-style `topic` / `service` / `action`
 - **Hardware compatibility verification**: `hardware`, `deploy`, `requires_hardware`, `requires_network`, task `budget`, `mission`, `simulate_compatibility`, `spanda verify`, compatibility matrix, fault injection
@@ -28,6 +31,7 @@
 - Advanced power models (dynamic load from behavior analysis)
 - Self-hosted compiler subset
 - Real Python/C++/ROS2 bridge linking (see `docs/ffi-and-ecosystem.md`)
+- Inline documentation coverage across remaining community packages
 
 ## Planned
 

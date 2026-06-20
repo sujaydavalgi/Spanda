@@ -21,7 +21,10 @@ Honest snapshot of Spanda capabilities as of **v0.1.0-alpha**. Use this document
 | **Simulation** | `spanda run` / `spanda sim`, physics-lite 2D backend, lidar/arm/drone models |
 | **Communication** | `message`, `topic`, `service`, `action`, `publish`/`call`/`send_goal`, in-memory transport |
 | **Safety validation** | Safety zones, `max_speed`, `stop_if`, emergency stop, compile-time `SafeAction` gate |
-| **Tooling** | Native CLI (`check`, `verify`, `run`, `sim`, `fmt`, `lint`, `doc`), package manager (`init`, `build`, `test`, `install`) |
+| **Trigger-driven execution** | Unified `on` / `every` / `when` / `while`; event, message, timer, condition, state, safety, hardware, AI, verification, twin |
+| **Cooperative concurrency** | `spawn`, `join`, `parallel`, channels, `select`, per-task `budget { }`; TypeScript mirror parity |
+| **Fleet simulation** | `spanda fleet run` — in-process multi-robot with deploy/peer wiring |
+| **Tooling** | Native CLI (`check`, `verify`, `run`, `sim`, `fleet`, `fmt`, `lint`, `doc`), package manager (`init`, `build`, `test`, `install`) |
 | **Security / audit** | Capabilities, secrets, signed messages, audit records |
 | **Digital twins** | `twin`, mirror fields, replay buffer, `twin sync` telemetry |
 
@@ -32,7 +35,7 @@ Honest snapshot of Spanda capabilities as of **v0.1.0-alpha**. Use this document
 | **Digital twins (live sync)** | Twin mirror + replay | External telemetry sync is simulated; no production twin cloud |
 | **Replay** | `replay true`, frame buffer | In-process only |
 | **Advanced verification** | Fault injection, compatibility matrix | Matrix may report stub targets |
-| **Multi-agent systems** | Agent-to-agent comm examples | No distributed runtime |
+| **Multi-agent systems** | Agent-to-agent comm, fleet peer messaging | In-process only; no distributed runtime |
 | **ROS2 adapter** | Native `rclrs` cdylib, rclpy daemon, CLI bridge | Requires ROS Humble; not default transport |
 | **LLVM / native codegen** | `spanda ir`, `llvm-ir`, `compile-native` | Early stage; not primary execution path |
 | **FFI** | `extern python`/`extern cpp` subprocess bridges | No in-process PyO3/cxx by default |
@@ -75,7 +78,8 @@ Honest snapshot of Spanda capabilities as of **v0.1.0-alpha**. Use this document
 | trait objects (`dyn Trait`) | **Stable** | Rust + TS mirror |
 | match / Result / Option | **Stable** | |
 | async / await | **Stable** | Cooperative single-threaded |
-| spawn / select / channels | **Experimental** | Cooperative concurrency |
+| spawn / select / channels | **Stable** | Cooperative concurrency with TS mirror |
+| triggers (`on` / `every` / `when`) | **Stable** | Unified `TriggerRegistry`; see `docs/triggers.md` |
 | test blocks | **Stable** | Rust runtime + TS `runTests()` |
 | `extern fn` / FFI | **Experimental** | Subprocess bridges; optional in-process |
 | Spanda IR (SIR) | **Stable** | JSON export via `spanda ir` |
@@ -100,7 +104,7 @@ Honest snapshot of Spanda capabilities as of **v0.1.0-alpha**. Use this document
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Native CLI (full) | **Stable** | check, verify, run, fmt, lint, doc, package |
+| Native CLI (full) | **Stable** | check, verify, run, sim, fleet, fmt, lint, doc, package |
 | TypeScript CLI | **Stable** | Delegates to Rust when built |
 | Formatter / linter / docgen | **Stable** | Rust |
 | LSP | **Experimental** | VS Code extension scaffold exists; marketplace publish pending |
@@ -113,7 +117,7 @@ Honest snapshot of Spanda capabilities as of **v0.1.0-alpha**. Use this document
 | Feature | Status | Notes |
 |---------|--------|-------|
 | python.* / cpp.* imports | **Experimental** | Subprocess bridges |
-| ROS2 adapter | **Experimental** | Native rclrs cdylib; requires ROS Humble |
+| ROS2 adapter | **Experimental** | Native rclrs cdylib; CI job on Ubuntu 22.04 + Humble |
 | Transport adapters | **Experimental** | In-memory + optional rclrs/rclpy |
 | Package manager | **Stable** | Local registry; publish stub |
 | LLVM / native codegen | **Experimental** | `compile-native` early stage |
@@ -141,7 +145,7 @@ Honest snapshot of Spanda capabilities as of **v0.1.0-alpha**. Use this document
 | Full native binary deploy | Stubbed | `spanda codegen` emits skeleton output |
 | Blockchain / ledger cloud | Stubbed | Audit records local; see `future-blockchain-support.md` |
 
-Nothing in the **Supported** list above is known broken in CI (`cargo test --workspace`, `npm test`).
+Nothing in the **Supported** list above is known broken in CI (`cargo test --workspace`, `npm test`, `cargo fmt`, `cargo clippy`, ROS2 rclrs native on Ubuntu 22.04).
 
 ---
 
@@ -175,6 +179,9 @@ See [architecture.md](./architecture.md) for diagrams.
 
 - [README.md](../README.md) — project overview
 - [getting-started.md](./getting-started.md) — first robot in 10 minutes
+- [triggers.md](./triggers.md) — trigger-driven execution
+- [concurrency.md](./concurrency.md) — tasks, spawn, channels, fleet CLI
 - [vision.md](./vision.md) — long-term positioning
+- [product-strategy.md](./product-strategy.md) — v0.5 beta priorities
 - [ffi-and-ecosystem.md](./ffi-and-ecosystem.md) — Python/C++/ROS2 interop
 - [compiler-backend-roadmap.md](./compiler-backend-roadmap.md) — LLVM evolution

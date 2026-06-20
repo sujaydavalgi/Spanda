@@ -63,6 +63,8 @@ Spanda exists to be that coordination layer: one typed language where perception
 | **Physical units** | `1.0 m/s`, `0.5 rad`, `100 ms` — unit algebra enforced at compile time |
 | **Robot-native syntax** | Sensors, actuators, topics, services, actions, safety zones, and tasks are language keywords |
 | **Deterministic scheduling** | `task every 50ms` with optional resource `budget { }` |
+| **Trigger-driven execution** | Unified `on` / `every` / `when` / `while` handlers for events, topics, safety, state, and AI |
+| **Cooperative concurrency** | `spawn`, `join`, `parallel`, channels, and `select` with scheduler telemetry |
 | **Simulation built in** | `spanda run` / `spanda sim` — test without hardware |
 | **Digital twins** | `twin { mirror pose; replay true; }` for shadow state and replay |
 
@@ -151,6 +153,9 @@ Curated demos in [`examples/showcase/`](examples/showcase/):
 | `hardware_compatibility.sd` | Deploy target, verification report |
 | `communication_demo.sd` | Message, topic, service, action |
 | `digital_twin_demo.sd` | Twin, telemetry, replay |
+| `triggers_demo.sd` | Event, timer, condition, safety, and state triggers |
+
+Additional runnable examples: `examples/concurrency.sd`, `examples/communication/multi_robot_fleet.sd`
 
 ---
 
@@ -192,6 +197,7 @@ npm run web:dev       # http://localhost:5173
 | `spanda verify <file.sd>` | Hardware compatibility verification |
 | `spanda run <file.sd>` | Run with simulated backend |
 | `spanda sim <file.sd>` | Run simulation with detailed output |
+| `spanda fleet run <file.sd>` | Run multi-robot fleet simulation (in-process) |
 | `spanda test` | Run project tests |
 | `spanda fmt <file.sd>` | Format source |
 | `spanda lint <file.sd>` | Lint source |
@@ -200,6 +206,8 @@ npm run web:dev       # http://localhost:5173
 | `spanda install` | Install dependencies |
 
 Verify flags: `--target <Profile>`, `--all-targets`, `--simulate`, `--json`
+
+Run/sim/fleet trace flags: `--trace-scheduler`, `--trace-tasks`, `--trace-triggers`, `--trace-events`, `--replay` (sim)
 
 Quick start guide: [docs/getting-started.md](docs/getting-started.md)
 
@@ -263,9 +271,9 @@ Package guide: [docs/packages.md](docs/packages.md)
 
 ## Roadmap
 
-**v0.1.0-alpha (current):** Stable interpreter, safety gate, hardware verify, simulation, mock AI, package manager, showcase examples.
+**v0.1.0-alpha (current):** Stable interpreter, safety gate, hardware verify, simulation, mock AI, package manager, unified triggers, cooperative concurrency, showcase examples.
 
-**Next:** LLVM production backend, VS Code marketplace publishing, live AI providers, in-process FFI, distributed multi-robot runtime.
+**Next (v0.5 beta):** LLVM production backend, VS Code marketplace publishing, live AI providers, in-process FFI, distributed multi-robot runtime. See [docs/product-strategy.md](docs/product-strategy.md).
 
 Full roadmap: [docs/roadmap.md](docs/roadmap.md)  
 Feature status: [docs/feature-status.md](docs/feature-status.md)  
@@ -286,7 +294,10 @@ cargo fmt --all
 cargo clippy --workspace -- -D warnings
 cargo test --workspace
 npm test
+python3 scripts/normalize_inline_docs.py   # after bulk inline doc edits
 ```
+
+Rust and TypeScript sources use **inline API documentation** (inside function bodies) and plain-English block comments before logic. See [CONTRIBUTING.md](CONTRIBUTING.md#inline-documentation).
 
 ---
 
@@ -295,8 +306,11 @@ npm test
 | Document | Description |
 |----------|-------------|
 | [docs/getting-started.md](docs/getting-started.md) | First robot in 10 minutes |
+| [docs/triggers.md](docs/triggers.md) | Trigger-driven execution model |
+| [docs/concurrency.md](docs/concurrency.md) | Tasks, spawn, channels, fleet CLI |
 | [docs/architecture.md](docs/architecture.md) | Compiler pipeline and diagrams |
 | [docs/feature-status.md](docs/feature-status.md) | Stable vs experimental vs planned |
+| [docs/product-strategy.md](docs/product-strategy.md) | v0.5 beta priorities and positioning |
 | [docs/spanda-language.md](docs/spanda-language.md) | Language reference |
 | [docs/README.md](docs/README.md) | Full documentation index |
 

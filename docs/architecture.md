@@ -159,6 +159,8 @@ flowchart TB
   RT --> HAL["HAL Simulator"]
   RT --> SIM["Physics Simulator"]
   RT --> SCHED["Task Scheduler"]
+  RT --> TRIG["Trigger Registry"]
+  RT --> CONC["Concurrency (spawn/parallel/channels)"]
   RT --> SM["State Machines"]
   RT --> TWIN["Twin Runtime"]
   RT --> COMM["Communication"]
@@ -169,10 +171,13 @@ flowchart TB
 
 1. Parse and type-check program
 2. Initialize robot state (pose, sensors, actuators)
-3. Register tasks on deterministic scheduler (`task every Nms`)
-4. On each tick: evaluate safety rules → execute behavior/task body
-5. AI agents propose actions; safety monitor validates before motion
-6. Simulator updates pose, lidar scans, and actuator feedback
+3. Register tasks on deterministic scheduler (`task every Nms`) and handlers in `TriggerRegistry`
+4. On each tick: dispatch due triggers → evaluate safety rules → execute behavior/task body
+5. Cooperative concurrency (`spawn`, `parallel`, channels) runs within the same deterministic loop
+6. AI agents propose actions; safety monitor validates before motion
+7. Simulator updates pose, lidar scans, and actuator feedback
+
+See [triggers.md](./triggers.md) and [concurrency.md](./concurrency.md) for handler categories, fleet CLI, and telemetry flags.
 
 ---
 
@@ -294,6 +299,8 @@ The TypeScript mirror delegates to the Rust CLI when `target/release/spanda` is 
 ## Related documentation
 
 - [spanda-language.md](./spanda-language.md) — language reference
+- [triggers.md](./triggers.md) — trigger-driven execution
+- [concurrency.md](./concurrency.md) — tasks, spawn, channels, fleet CLI
 - [feature-status.md](./feature-status.md) — stable vs experimental
 - [ffi-and-ecosystem.md](./ffi-and-ecosystem.md) — Python/C++/ROS2 interop
 - [api-contract.json](./api-contract.json) — JSON output schemas

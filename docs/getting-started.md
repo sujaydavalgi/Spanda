@@ -126,6 +126,18 @@ spanda fmt src/main.sd
 spanda lint src/main.sd
 ```
 
+### Trace runtime behavior
+
+Debug scheduler, task, and trigger execution with trace flags:
+
+```bash
+spanda run src/main.sd --trace-scheduler --trace-tasks
+spanda run src/main.sd --trace-triggers --trace-events
+spanda sim src/main.sd --replay --trace-scheduler
+```
+
+Trace output appears in the runtime log stream with prefixes like `trace-scheduler:`, `trace-task:`, and `trace-trigger:`.
+
 ---
 
 ## Try the showcase examples
@@ -146,6 +158,17 @@ spanda check examples/showcase/ai_safety_violation.sd   # expect compile error
 | `hardware_compatibility.sd` | `spanda verify examples/showcase/hardware_compatibility.sd` |
 | `communication_demo.sd` | `spanda run examples/showcase/communication_demo.sd` |
 | `digital_twin_demo.sd` | `spanda run examples/showcase/digital_twin_demo.sd` |
+| `triggers_demo.sd` | `spanda run examples/triggers_demo.sd --trace-triggers` |
+
+### Triggers and concurrency
+
+Reactive programs use unified triggers — see [triggers.md](./triggers.md):
+
+```bash
+spanda run examples/triggers_demo.sd --trace-triggers
+spanda run examples/concurrency.sd --trace-scheduler --trace-tasks
+spanda fleet run examples/communication/multi_robot_fleet.sd
+```
 
 ---
 
@@ -272,6 +295,8 @@ code --install-extension spanda-vscode-0.1.0.vsix
 ## Next steps
 
 - [spanda-language.md](./spanda-language.md) — full language reference
+- [triggers.md](./triggers.md) — trigger-driven execution
+- [concurrency.md](./concurrency.md) — tasks, spawn, channels, fleet CLI
 - [hardware-compatibility.md](./hardware-compatibility.md) — deploy profiles
 - [architecture.md](./architecture.md) — how the compiler works
 - [feature-status.md](./feature-status.md) — what is stable vs experimental

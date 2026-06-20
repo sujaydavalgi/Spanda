@@ -53,7 +53,7 @@ First public alpha release. Spanda is ready for community evaluation.
 **Community**
 - `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`
 - GitHub issue templates: bug report, feature request, language proposal, package proposal
-- CI: Rust tests, TypeScript tests, `cargo fmt`, `cargo clippy`, LSP, WASM, ROS2 native
+- CI: Rust tests, TypeScript tests, `cargo fmt`, `cargo clippy`, LSP, WASM, ROS2 rclrs native (Ubuntu 22.04 + Humble)
 
 ### Known limitations
 
@@ -77,3 +77,44 @@ First public alpha release. Spanda is ready for community evaluation.
 - Distributed multi-robot orchestration
 
 [0.1.0-alpha]: https://github.com/sujaydavalgi/Spanda/releases/tag/v0.1.0-alpha
+
+## [Unreleased]
+
+Post-alpha improvements on `main` (2026-06-20).
+
+### Added
+
+**Triggers & concurrency**
+- Unified trigger execution model: events, messages, timers, conditions (`when`/`while`), state, safety, hardware, AI, verification, and twin triggers
+- `TriggerRegistry` with priority ordering, per-tick storm limits, and `TriggerMetrics` telemetry
+- CLI trace flags: `--trace-triggers`, `--trace-events` on `run`, `sim`, and `fleet run`
+- Cooperative concurrency runtime: `spawn`, `join`, `parallel`, channels, `select`, per-task `budget { }`
+- `spanda fleet run` for in-process multi-robot fleet simulation with deploy/peer wiring output
+- Runtime telemetry: `TaskMetrics`, `SchedulerMetrics`, `ExecutionMetrics` in `RunResult.metrics`
+- TypeScript interpreter parity for concurrency and fleet peer messaging
+- `examples/triggers_demo.sd`, `examples/concurrency.sd`, `examples/communication/multi_robot_fleet.sd`
+- [docs/triggers.md](docs/triggers.md), [docs/concurrency.md](docs/concurrency.md), [docs/product-strategy.md](docs/product-strategy.md)
+
+**ROS 2**
+- Native `spanda-ros2-rclrs-native` cdylib for in-process ROS 2 I/O
+- Persistent rclpy ROS2 daemon transport (`SPANDA_ROS2_RCLRS`)
+- CI job `ros2-rclrs-native` on Ubuntu 22.04 with ROS Humble
+
+**Developer experience**
+- Inline API documentation across all Rust crates and TypeScript sources
+- Contextual logic-block comments replacing generic placeholders
+- Doc tooling: `scripts/add_inline_docs.py`, `scripts/add_logic_block_docs.py`, `scripts/normalize_inline_docs.py`
+- VS Code extension scaffold operationalized (`editor/vscode`) with packaging workflow
+- Remote registry tarball caching for offline `spanda install`
+
+### Fixed
+
+- Rust brace indentation after bulk inline doc insertion (`cargo fmt` compliance)
+- CI: pin `ros-tooling/setup-ros@v0.7` (invalid `@v2` reference)
+- Removed dead empty `if` block in type checker (clippy `needless_ifs`)
+
+### Changed
+
+- [CONTRIBUTING.md](CONTRIBUTING.md) documents inline documentation standards and doc scripts
+- [docs/README.md](docs/README.md) indexes triggers, concurrency, and developer doc tooling
+- [docs/roadmap.md](docs/roadmap.md) marks triggers and cooperative concurrency as completed

@@ -170,6 +170,10 @@ robot R {
 - `send(ch, value)` / `recv(ch)` — non-blocking send and receive builtins
 - `select { recv(ch) => ... }` — run the first arm whose channel has a message
 - `spawn callee(args);` — queue a module function call on the spawn queue (processed after behaviors and tests)
+- `join(handle)` — resolve a `Future<T>` or `TaskHandle<T>`
+- `parallel { ... }` — cooperative concurrent orchestration with `_parallel` results
+
+Full reference: [concurrency.md](./concurrency.md)
 
 ## Serialization
 
@@ -431,7 +435,9 @@ behavior move() requires lidar.nearest_distance > 0.5 m ensures true {
 }
 ```
 
-## Events
+## Events and triggers
+
+Events are the simplest trigger form. The unified trigger model also supports timers, conditions, topics, state transitions, safety, hardware faults, AI outcomes, and twin divergence — see [triggers.md](./triggers.md).
 
 ```spanda
 event ObstacleDetected;
@@ -439,6 +445,20 @@ event ObstacleDetected;
 on ObstacleDetected {
   wheels.stop();
 }
+
+every 100ms {
+  publish_pose();
+}
+
+when lidar.nearest_distance < 1.0 m {
+  slow_down();
+}
+```
+
+Trace trigger execution at runtime:
+
+```bash
+spanda run robot.sd --trace-triggers --trace-events
 ```
 
 ## Digital twins
@@ -469,8 +489,9 @@ let past_pose = RobotTwin.replay(index: 0, field: pose);
 
 See `examples/` including:
 
-- `hello_world.sd`, `humanoid_assistant.sd`
+- `hello_world.sd`, `humanoid_assistant.sd`, `triggers_demo.sd`, `concurrency.sd`
 - `hardware/rover_deploy.sd`, `hardware/full_compat.sd`
+- `communication/multi_robot_fleet.sd`
 - `types/goals.sd`, `types/memory.sd`, `types/verify.sd`, `types/fusion.sd`, `types/multitask.sd`
 - `examples/modules/` — cross-file exports and imports
 - `crates/spanda-core/tests/p1_features.rs` — async, serialize, tests, concurrency
