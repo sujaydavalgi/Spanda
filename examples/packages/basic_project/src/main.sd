@@ -1,0 +1,14 @@
+module warehouse_robot;
+
+import std.robotics;
+import std.sensors;
+import navigation.path_planning;
+
+robot WarehouseBot {
+    sensor front_lidar: LidarScan;
+    actuator drive: MotionCommand;
+
+    behavior navigate {
+        // Basic warehouse navigation loop
+    }
+}

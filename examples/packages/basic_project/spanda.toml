@@ -1,0 +1,17 @@
+[package]
+name = "warehouse_robot"
+version = "0.1.0"
+description = "Basic warehouse robot controller"
+license = "Apache-2.0"
+
+[dependencies]
+spanda-navigation = "0.1.0"
+
+[hardware]
+targets = ["RoverV1"]
+
+[capabilities]
+required = ["lidar.read", "motion.propose"]
+
+[safety]
+level = "experimental"

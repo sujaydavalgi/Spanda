@@ -1,0 +1,12 @@
+module spanda_openai;
+
+import ai.openai;
+import std.ai;
+
+// OpenAI provider — exposes LLM completion for agent reasoning.
+
+robot OpenAIAgent {
+    behavior reason {
+        // Call OpenAI API for task planning
+    }
+}

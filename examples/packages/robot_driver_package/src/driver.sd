@@ -1,0 +1,14 @@
+module spanda_lidar_rplidar;
+
+import sensors.lidar;
+import std.sensors;
+
+// Community RPLidar driver — exposes LidarAdapter for consumers.
+
+robot RplidarNode {
+    sensor scan: LidarScan;
+
+    behavior publish_scans {
+        // Read from serial port and publish LidarScan messages
+    }
+}

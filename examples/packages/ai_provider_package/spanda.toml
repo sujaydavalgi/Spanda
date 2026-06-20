@@ -1,0 +1,17 @@
+[package]
+name = "spanda-openai"
+version = "0.1.0"
+description = "OpenAI LLM provider adapter"
+license = "Apache-2.0"
+
+categories = ["ai"]
+
+[dependencies]
+spanda-vision = "0.1.0"
+
+[capabilities]
+uses = ["network.outbound", "ai.inference"]
+
+[safety]
+level = "simulation_only"
+can_control_actuators = false

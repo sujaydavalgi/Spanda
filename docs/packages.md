@@ -1,0 +1,155 @@
+# Spanda Packages
+
+Spanda projects are organized as **packages** — self-contained units with a manifest (`spanda.toml`), source files, dependencies, and declared capabilities.
+
+## Quick start
+
+```bash
+spanda init my_robot
+cd my_robot
+spanda install    # resolve dependencies → spanda.lock
+spanda check      # type-check all sources
+spanda build      # compile the project
+spanda test       # run tests/
+```
+
+## Project layout
+
+```
+my_robot/
+├── spanda.toml       # package manifest
+├── spanda.lock       # resolved dependency lockfile
+├── src/
+│   └── main.sd       # primary robot program
+├── tests/
+│   └── smoke.sd      # optional test sources
+└── README.md
+```
+
+## Creating a package
+
+Run `spanda init` in an empty directory (or pass a name):
+
+```bash
+spanda init warehouse_robot --description "Warehouse robot controller"
+```
+
+Edit `spanda.toml` to declare dependencies, hardware targets, and capabilities. See [spanda-toml.md](./spanda-toml.md) for the full schema.
+
+## Importing packages
+
+Spanda supports dotted import paths:
+
+```spanda
+import navigation.path_planning;
+import sensors.lidar;
+import ai.openai;
+import robotics.ros2;
+import std.robotics;
+import std.sensors;
+```
+
+Package dependencies expose import paths via the registry (see [registry.md](./registry.md)). Standard library namespaces use the `std.*` prefix:
+
+| Namespace | Domain |
+|-----------|--------|
+| `std.ai` | LLM, vision models, planning |
+| `std.robotics` | Motion, agents, goals |
+| `std.sensors` | Camera, lidar, IMU types |
+| `std.actuators` | Motors, grippers, joints |
+| `std.safety` | Hazards, constraints, e-stop |
+| `std.communication` | Topics, services, QoS |
+| `std.hardware` | Profiles, peripherals |
+| `std.sim` | Simulation world/scene |
+| `std.twin` | Digital twin sync |
+| `std.hri` | Speech, gestures |
+| `std.units` | Physical units |
+| `std.spatial` | Pose, path, trajectory |
+
+## Declaring capabilities
+
+Packages declare what permissions they need in `[capabilities]`:
+
+```toml
+[capabilities]
+uses = ["network.outbound", "camera.read", "lidar.read"]
+required = ["motion.propose", "actuator.execute.safe"]
+```
+
+The compiler and runtime **warn** when a dependency's capabilities exceed the application's granted permissions. Grant capabilities in your robot program with `can [...]` blocks.
+
+## Hardware compatibility
+
+Declare hardware requirements in `[requires_hardware]`:
+
+```toml
+[requires_hardware]
+memory = ">=2GB"
+gpu = ">=1 TOPS"
+sensors = ["Camera", "Lidar"]
+```
+
+These integrate with `spanda verify` and the built-in hardware profile registry (`RoverV1`, `JetsonOrin`, etc.). Set deployment targets in `[hardware]`:
+
+```toml
+[hardware]
+targets = ["RoverV1", "JetsonOrin"]
+```
+
+## Package safety levels
+
+Every package has a trust level in `[safety]`:
+
+| Level | Description |
+|-------|-------------|
+| `experimental` | Unreviewed; default for new packages |
+| `simulation_only` | May not control physical actuators |
+| `hardware_safe` | Reviewed for real-hardware deployment |
+| `certified` | Formally verified / certified for production |
+
+```toml
+[safety]
+level = "hardware_safe"
+requires_review = false
+can_control_actuators = true
+```
+
+Applications can restrict which safety levels are permitted. Packages at `simulation_only` cannot set `can_control_actuators = true`.
+
+## Dependency types
+
+| Source | Example |
+|--------|---------|
+| Registry | `spanda-ros2 = "0.1.0"` |
+| Local path | `my-lib = { path = "../my-lib" }` |
+| Git | `spanda-nav = { git = "https://github.com/spanda/spanda-nav", branch = "main" }` |
+
+Run `spanda install` to resolve all dependencies and write `spanda.lock`.
+
+## CLI reference
+
+| Command | Description |
+|---------|-------------|
+| `spanda init` | Create a new package |
+| `spanda install` | Resolve deps, write lockfile |
+| `spanda build` | Compile all `.sd` sources |
+| `spanda check` | Type-check project (or single file) |
+| `spanda test` | Type-check `tests/` |
+| `spanda add <pkg>` | Add a dependency |
+| `spanda remove <pkg>` | Remove a dependency |
+| `spanda publish` | Validate package for publishing |
+| `spanda registry search <q>` | Search local registry stub |
+
+## Examples
+
+See [examples/packages/](../examples/packages/) for:
+
+- `basic_project/` — minimal warehouse robot
+- `local_dependency/` — path-based dependency
+- `robot_driver_package/` — lidar driver adapter
+- `ai_provider_package/` — OpenAI provider
+- `ros2_adapter_package/` — ROS 2 integration
+
+## Community packages
+
+See [community-packages.md](./community-packages.md) for package categories, driver/adapters, and planned framework packages.

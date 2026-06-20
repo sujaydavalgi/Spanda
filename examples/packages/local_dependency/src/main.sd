@@ -1,0 +1,13 @@
+module fleet_app;
+
+import std.robotics;
+import std.sensors;
+
+robot FleetBot {
+    sensor lidar: LidarScan;
+    actuator drive: MotionCommand;
+
+    behavior patrol {
+        // Uses shared_utils types via dependency
+    }
+}

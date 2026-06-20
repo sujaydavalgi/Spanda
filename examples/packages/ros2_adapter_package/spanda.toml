@@ -1,0 +1,21 @@
+[package]
+name = "warehouse_ros2"
+version = "0.1.0"
+description = "Warehouse robot with ROS 2 integration"
+license = "Apache-2.0"
+
+categories = ["robotics", "ros2"]
+
+[dependencies]
+spanda-ros2 = "0.1.0"
+spanda-navigation = "0.1.0"
+
+[hardware]
+targets = ["JetsonOrin"]
+
+[capabilities]
+required = ["ros2.publish", "ros2.subscribe", "lidar.read", "motion.propose"]
+
+[safety]
+level = "hardware_safe"
+can_control_actuators = true

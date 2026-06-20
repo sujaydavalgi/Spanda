@@ -1,0 +1,11 @@
+[package]
+name = "shared_utils"
+version = "0.2.0"
+description = "Shared utilities library"
+license = "MIT"
+
+[capabilities]
+uses = ["storage.read"]
+
+[safety]
+level = "simulation_only"

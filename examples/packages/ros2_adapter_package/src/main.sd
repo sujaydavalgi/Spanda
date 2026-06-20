@@ -1,0 +1,15 @@
+module warehouse_ros2;
+
+import robotics.ros2;
+import navigation.path_planning;
+import std.robotics;
+import std.sensors;
+
+robot Ros2WarehouseBot {
+    sensor front_lidar: LidarScan;
+    actuator drive: MotionCommand;
+
+    behavior ros2_navigate {
+        // Bridge Spanda motion to ROS 2 /cmd_vel
+    }
+}

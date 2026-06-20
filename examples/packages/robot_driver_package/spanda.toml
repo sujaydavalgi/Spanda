@@ -1,0 +1,22 @@
+[package]
+name = "spanda-lidar-rplidar"
+version = "0.1.0"
+description = "RPLidar community driver adapter"
+license = "MIT"
+
+categories = ["sensors", "hardware"]
+
+[adapter]
+provides = ["LidarAdapter", "Topic<LidarScan>"]
+requires = ["serial.port", "lidar.read"]
+
+[capabilities]
+uses = ["serial.port", "lidar.read"]
+
+[requires_hardware]
+sensors = ["Lidar"]
+
+[safety]
+level = "hardware_safe"
+requires_review = false
+can_control_actuators = false
