@@ -42,10 +42,60 @@ pub struct RobotStateJs {
 }
 
 #[napi(object)]
+pub struct TaskMetricsJs {
+    pub name: String,
+    pub priority: String,
+    pub interval_ms: f64,
+    #[napi(ts_type = "number")]
+    pub ticks: f64,
+    #[napi(ts_type = "number")]
+    pub skipped: f64,
+    #[napi(ts_type = "number")]
+    pub missed_deadlines: f64,
+    #[napi(ts_type = "number")]
+    pub budget_violations: f64,
+    pub last_duration_ms: f64,
+    pub max_duration_ms: f64,
+}
+
+#[napi(object)]
+pub struct SchedulerMetricsJs {
+    #[napi(ts_type = "number")]
+    pub multiplexed_tasks: f64,
+    #[napi(ts_type = "number")]
+    pub scheduler_ticks: f64,
+    pub base_tick_ms: f64,
+    #[napi(ts_type = "number")]
+    pub emergency_stops: f64,
+}
+
+#[napi(object)]
+pub struct ExecutionMetricsJs {
+    #[napi(ts_type = "number")]
+    pub spawns: f64,
+    #[napi(ts_type = "number")]
+    pub joins: f64,
+    #[napi(ts_type = "number")]
+    pub parallel_blocks: f64,
+    #[napi(ts_type = "number")]
+    pub fire_and_forget_spawns: f64,
+}
+
+#[napi(object)]
+pub struct RuntimeTelemetryJs {
+    pub tasks: Vec<TaskMetricsJs>,
+    pub scheduler: SchedulerMetricsJs,
+    pub execution: ExecutionMetricsJs,
+    #[napi(ts_type = "number")]
+    pub replay_frames: f64,
+}
+
+#[napi(object)]
 pub struct RunResultJs {
     pub state: RobotStateJs,
     pub events: Vec<String>,
     pub logs: Vec<String>,
+    pub metrics: RuntimeTelemetryJs,
 }
 
 #[napi(object)]
@@ -53,6 +103,9 @@ pub struct RunOptionsJs {
     pub entry_behavior: Option<String>,
     #[napi(ts_type = "number")]
     pub max_loop_iterations: Option<u32>,
+    pub trace_scheduler: Option<bool>,
+    pub trace_tasks: Option<bool>,
+    pub replay_trace: Option<bool>,
 }
 
 fn map_diagnostics(err: &SpandaError) -> Vec<DiagnosticJs> {
@@ -85,12 +138,18 @@ pub fn run_source(source: String, options: Option<RunOptionsJs>) -> Result<RunRe
     let opts = options.unwrap_or(RunOptionsJs {
         entry_behavior: None,
         max_loop_iterations: None,
+        trace_scheduler: None,
+        trace_tasks: None,
+        replay_trace: None,
     });
     let result = run(
         &source,
         RunOptions {
             entry_behavior: opts.entry_behavior,
             max_loop_iterations: opts.max_loop_iterations.unwrap_or(10) as usize,
+            trace_scheduler: opts.trace_scheduler.unwrap_or(false),
+            trace_tasks: opts.trace_tasks.unwrap_or(false),
+            replay_trace: opts.replay_trace.unwrap_or(false),
             ..Default::default()
         },
     )
@@ -112,6 +171,37 @@ pub fn run_source(source: String, options: Option<RunOptionsJs>) -> Result<RunRe
         },
         events: result.events,
         logs: result.logs,
+        metrics: RuntimeTelemetryJs {
+            tasks: result
+                .metrics
+                .tasks
+                .into_values()
+                .map(|t| TaskMetricsJs {
+                    name: t.name,
+                    priority: t.priority,
+                    interval_ms: t.interval_ms,
+                    ticks: t.ticks as f64,
+                    skipped: t.skipped as f64,
+                    missed_deadlines: t.missed_deadlines as f64,
+                    budget_violations: t.budget_violations as f64,
+                    last_duration_ms: t.last_duration_ms,
+                    max_duration_ms: t.max_duration_ms,
+                })
+                .collect(),
+            scheduler: SchedulerMetricsJs {
+                multiplexed_tasks: result.metrics.scheduler.multiplexed_tasks as f64,
+                scheduler_ticks: result.metrics.scheduler.scheduler_ticks as f64,
+                base_tick_ms: result.metrics.scheduler.base_tick_ms,
+                emergency_stops: result.metrics.scheduler.emergency_stops as f64,
+            },
+            execution: ExecutionMetricsJs {
+                spawns: result.metrics.execution.spawns as f64,
+                joins: result.metrics.execution.joins as f64,
+                parallel_blocks: result.metrics.execution.parallel_blocks as f64,
+                fire_and_forget_spawns: result.metrics.execution.fire_and_forget_spawns as f64,
+            },
+            replay_frames: result.metrics.replay_frames as f64,
+        },
     })
 }
 

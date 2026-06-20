@@ -27,15 +27,52 @@ export type RobotState = {
   emergency_stop: boolean;
 };
 
+export type TaskMetrics = {
+  name: string;
+  priority: string;
+  interval_ms: number;
+  ticks: number;
+  skipped: number;
+  missed_deadlines: number;
+  budget_violations: number;
+  last_duration_ms: number;
+  max_duration_ms: number;
+};
+
+export type SchedulerMetrics = {
+  multiplexed_tasks: number;
+  scheduler_ticks: number;
+  base_tick_ms: number;
+  emergency_stops: number;
+};
+
+export type ExecutionMetrics = {
+  spawns: number;
+  joins: number;
+  parallel_blocks: number;
+  fire_and_forget_spawns: number;
+};
+
+export type RuntimeTelemetry = {
+  tasks: TaskMetrics[];
+  scheduler: SchedulerMetrics;
+  execution: ExecutionMetrics;
+  replay_frames: number;
+};
+
 export type RunResult = {
   state: RobotState;
   events: string[];
   logs: string[];
+  metrics: RuntimeTelemetry;
 };
 
 export type RunOptions = {
   entryBehavior?: string;
   maxLoopIterations?: number;
+  traceScheduler?: boolean;
+  traceTasks?: boolean;
+  replayTrace?: boolean;
 };
 
 export interface SpandaNative {

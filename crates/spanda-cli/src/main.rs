@@ -71,8 +71,9 @@ fn usage() {
            spanda check [--json] [<file.sd> | --project]\n\
            spanda verify [--json] [--target <HardwareProfile>] [--all-targets] [--simulate] <file.sd>\n\
            spanda compatibility [--json] [--target <HardwareProfile>] [--all-targets] [--simulate] <file.sd>\n\
-           spanda run [--json] [--verbose] <file.sd>\n\
-           spanda sim [--json] <file.sd>\n\
+           spanda run [--json] [--verbose] [--trace-scheduler] [--trace-tasks] <file.sd>\n\
+           spanda sim [--json] [--replay] [--trace-scheduler] [--trace-tasks] <file.sd>\n\
+           spanda fleet run [--json] [--trace-scheduler] [--trace-tasks] <file.sd>\n\
            spanda fmt [--json] <file.sd>\n\
            spanda lint [--json] <file.sd>\n\
            spanda doc [--json] [--out <file.md>] <file.sd>\n\
@@ -147,12 +148,14 @@ fn human_check(source: &str, file: &str) {
     }
 }
 
-fn human_run(source: &str, file: &str, verbose: bool) {
+fn human_run(source: &str, file: &str, verbose: bool, trace_scheduler: bool, trace_tasks: bool) {
     let max_loop_iterations = if verbose { 20 } else { 10 };
     match run(
         source,
         RunOptions {
             max_loop_iterations,
+            trace_scheduler,
+            trace_tasks,
             ..Default::default()
         },
     ) {
@@ -175,7 +178,7 @@ fn human_run(source: &str, file: &str, verbose: bool) {
                 "  E-stop:   {}",
                 if s.emergency_stop { "ACTIVE" } else { "off" }
             );
-            if verbose {
+            if verbose || trace_scheduler || trace_tasks {
                 println!("\n── Simulation Log ──");
                 for event in &result.events {
                     println!("  {event}");
@@ -185,6 +188,44 @@ fn human_run(source: &str, file: &str, verbose: bool) {
                     for log in &result.logs {
                         println!("  {log}");
                     }
+                }
+            }
+            if trace_scheduler || trace_tasks {
+                println!("\n── Runtime Metrics ──");
+                if trace_scheduler {
+                    println!(
+                        "  Scheduler: {} tick(s), base {}ms, {} multiplexed task(s)",
+                        result.metrics.scheduler.scheduler_ticks,
+                        result.metrics.scheduler.base_tick_ms,
+                        result.metrics.scheduler.multiplexed_tasks
+                    );
+                }
+                if trace_tasks && !result.metrics.tasks.is_empty() {
+                    println!("  Tasks:");
+                    for task in result.metrics.tasks.values() {
+                        println!(
+                            "    {} [{}]: ticks={}, skipped={}, missed_deadlines={}",
+                            task.name,
+                            task.priority,
+                            task.ticks,
+                            task.skipped,
+                            task.missed_deadlines
+                        );
+                    }
+                }
+                if result.metrics.execution.spawns > 0
+                    || result.metrics.execution.joins > 0
+                    || result.metrics.execution.parallel_blocks > 0
+                {
+                    println!(
+                        "  Execution: spawns={}, joins={}, parallel_blocks={}",
+                        result.metrics.execution.spawns,
+                        result.metrics.execution.joins,
+                        result.metrics.execution.parallel_blocks
+                    );
+                }
+                if result.metrics.replay_frames > 0 {
+                    println!("  Replay frames: {}", result.metrics.replay_frames);
                 }
             }
             println!("\n✓ Simulation complete\n");
@@ -276,6 +317,139 @@ fn is_package_command(cmd: &str) -> bool {
     )
 }
 
+fn fleet_dispatch(args: &[String]) {
+    if args.first().map(String::as_str) != Some("run") {
+        eprintln!("Usage: spanda fleet run [--json] [--trace-scheduler] [--trace-tasks] <file.sd>");
+        process::exit(1);
+    }
+    let mut json = false;
+    let mut trace_scheduler = false;
+    let mut trace_tasks = false;
+    let mut file: Option<String> = None;
+    for arg in args.iter().skip(1) {
+        match arg.as_str() {
+            "--json" => json = true,
+            "--trace-scheduler" => trace_scheduler = true,
+            "--trace-tasks" => trace_tasks = true,
+            other if !other.starts_with('-') && file.is_none() => file = Some(other.to_string()),
+            other => {
+                eprintln!("Unknown argument: {other}");
+                process::exit(1);
+            }
+        }
+    }
+    let file = file.unwrap_or_else(|| {
+        eprintln!("Missing file path");
+        process::exit(1);
+    });
+    let source = read_source(&file);
+    if json {
+        print_fleet_json(&source, &file, trace_scheduler, trace_tasks);
+    } else {
+        human_fleet_run(&source, &file, trace_scheduler, trace_tasks);
+    }
+}
+
+fn human_fleet_run(source: &str, file: &str, trace_scheduler: bool, trace_tasks: bool) {
+    use spanda_core::ast::{Program, RobotDecl};
+    use spanda_core::foundations::DeployDecl;
+
+    println!("\n🛰️  Fleet run from {file}\n");
+    if let Ok(tokens) = spanda_core::lexer::tokenize(source) {
+        if let Ok(program) = spanda_core::parser::parse(tokens) {
+            let Program::Program {
+                deployments,
+                robots,
+                ..
+            } = program;
+            let has_peers = robots.iter().any(|r| {
+                matches!(r, RobotDecl::RobotDecl { peer_robots, .. } if !peer_robots.is_empty())
+            });
+            for deploy in &deployments {
+                let DeployDecl::DeployDecl {
+                    robot_name,
+                    targets,
+                    ..
+                } = deploy;
+                for target in targets {
+                    println!("  deploy {robot_name} -> {target}");
+                }
+            }
+            for robot in &robots {
+                let RobotDecl::RobotDecl {
+                    name,
+                    peer_robots,
+                    ..
+                } = robot;
+                for peer in peer_robots {
+                    let spanda_core::comm::PeerRobotDecl::PeerRobotDecl {
+                        name: peer_name,
+                        ..
+                    } = peer;
+                    println!("  peer robot {name} knows {peer_name}");
+                }
+            }
+            if !deployments.is_empty() || has_peers {
+                println!();
+            }
+        }
+    }
+    let opts = RunOptions {
+        max_loop_iterations: 20,
+        trace_scheduler,
+        trace_tasks,
+        replay_trace: true,
+        ..Default::default()
+    };
+    match run(source, opts) {
+        Ok(result) => {
+            let s = &result.state;
+            println!("── Final State ──");
+            println!(
+                "  Pose:     x={:.3} m, y={:.3} m, θ={:.3} rad",
+                s.pose.x, s.pose.y, s.pose.theta
+            );
+            if let Some(z) = s.pose.z {
+                println!("  Altitude: z={z:.3} m");
+            }
+            println!(
+                "  Velocity: linear={:.3} m/s, angular={:.3} rad/s",
+                s.velocity.linear, s.velocity.angular
+            );
+            println!(
+                "  E-stop:   {}",
+                if s.emergency_stop { "ACTIVE" } else { "off" }
+            );
+            if trace_scheduler || trace_tasks {
+                if !result.logs.is_empty() {
+                    println!("\n── Runtime Log ──");
+                    for log in &result.logs {
+                        println!("  {log}");
+                    }
+                }
+            }
+            println!("\n✓ Fleet simulation complete\n");
+        }
+        Err(err) => {
+            for d in err.diagnostics() {
+                eprintln!("  [{}:{}] {}", d.line, d.column, d.message);
+            }
+            process::exit(1);
+        }
+    }
+}
+
+fn print_fleet_json(source: &str, _file: &str, trace_scheduler: bool, trace_tasks: bool) {
+    let opts = RunOptions {
+        max_loop_iterations: 20,
+        trace_scheduler,
+        trace_tasks,
+        replay_trace: true,
+        ..Default::default()
+    };
+    print_run_json(run(source, opts));
+}
+
 fn dispatch_package(command: &str, rest: &[String]) {
     match command {
         "init" => package::cmd_init(rest),
@@ -309,6 +483,11 @@ fn main() {
     }
 
     let command = args[1].as_str();
+    if command == "fleet" {
+        fleet_dispatch(&args[2..]);
+        let _ = io::stdout().flush();
+        return;
+    }
     if is_package_command(command) {
         dispatch_package(command, &args[2..]);
         let _ = io::stdout().flush();
@@ -327,12 +506,18 @@ fn main() {
     let mut codegen_target = CodegenTarget::Native;
     let mut breakpoints: Vec<u32> = Vec::new();
     let mut file: Option<String> = None;
+    let mut trace_scheduler = false;
+    let mut trace_tasks = false;
+    let mut replay_trace = false;
 
     let mut i = 2;
     while i < args.len() {
         match args[i].as_str() {
             "--json" => json = true,
             "--verbose" | "-v" => verbose = true,
+            "--trace-scheduler" => trace_scheduler = true,
+            "--trace-tasks" => trace_tasks = true,
+            "--replay" => replay_trace = true,
             "--project" => project_mode = true,
             "--target" => {
                 i += 1;
@@ -451,12 +636,21 @@ fn main() {
             let max_loop_iterations = if command == "sim" || verbose { 20 } else { 10 };
             let opts = RunOptions {
                 max_loop_iterations,
+                trace_scheduler,
+                trace_tasks,
+                replay_trace: command == "sim" && replay_trace,
                 ..Default::default()
             };
             if json {
                 print_run_json(run(&source, opts));
             } else {
-                human_run(&source, &file, command == "sim" || verbose);
+                human_run(
+                    &source,
+                    &file,
+                    command == "sim" || verbose,
+                    trace_scheduler,
+                    trace_tasks,
+                );
             }
         }
         "fmt" => {
