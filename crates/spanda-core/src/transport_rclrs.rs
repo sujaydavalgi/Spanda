@@ -1,8 +1,11 @@
-//! In-process ROS2 via persistent rclpy daemon when `SPANDA_ROS2_RCLRS=1`.
+//! In-process ROS2 via dynamically loaded native rclrs, rclpy daemon, or Python bridge.
 //!
-//! Falls back to per-call Python bridge when the daemon cannot start.
-//! Native `rclrs` crate linking remains optional behind `ros2-rclrs`.
+//! Priority when `SPANDA_ROS2_RCLRS=1`:
+//! 1. Native `rclrs` shared library (`libspanda_ros2_rclrs_native`, built with sourced ROS 2)
+//! 2. Persistent rclpy daemon subprocess
+//! 3. Per-call Python bridge fallback
 
+use crate::transport_rclrs_native as native;
 use crate::runtime::RuntimeValue;
 use crate::transport_live::{
     try_ros2_bridge_publish, try_ros2_bridge_service_call, try_ros2_bridge_subscribe,
@@ -17,9 +20,21 @@ pub fn rclrs_available() -> bool {
     rclrs_enabled()
 }
 
+fn payload_string(value: &RuntimeValue) -> String {
+    match value {
+        RuntimeValue::String { value } => value.clone(),
+        RuntimeValue::Number { value, .. } => value.to_string(),
+        RuntimeValue::Bool { value } => value.to_string(),
+        other => format!("{other:?}"),
+    }
+}
+
 pub fn try_rclrs_publish(topic: &str, value: &RuntimeValue) -> bool {
     if !rclrs_enabled() {
         return false;
+    }
+    if native::publish(topic, &payload_string(value)) {
+        return true;
     }
     if daemon_publish(topic, value) {
         return true;
@@ -31,6 +46,9 @@ pub fn try_rclrs_subscribe(topic: &str) -> bool {
     if !rclrs_enabled() {
         return false;
     }
+    if native::subscribe(topic) {
+        return true;
+    }
     if daemon_subscribe(topic) {
         return true;
     }
@@ -41,25 +59,29 @@ pub fn try_rclrs_service_call(service: &str, service_type: &str, request: &str) 
     if !rclrs_enabled() {
         return false;
     }
+    if native::service_call(service, service_type, request) {
+        return true;
+    }
     if daemon_service_call(service, service_type, request) {
         return true;
     }
     try_ros2_bridge_service_call(service, service_type, request)
 }
 
-#[cfg(feature = "ros2-rclrs")]
 pub fn init_node(name: &str) -> Result<(), String> {
+    if native::sdk_available() {
+        return native::init_node(name);
+    }
     if daemon_subscribe("/spanda/rclrs/init") {
         let _ = name;
         Ok(())
     } else {
-        Err("native rclrs feature enabled but daemon unavailable".into())
+        Err("ROS2 rclrs SDK unavailable — build libspanda_ros2_rclrs_native and source ROS 2".into())
     }
 }
 
-#[cfg(not(feature = "ros2-rclrs"))]
-pub fn init_node(_name: &str) -> Result<(), String> {
-    Err("enable ros2-rclrs feature for native node init".into())
+pub fn native_sdk_available() -> bool {
+    native::sdk_available()
 }
 
 #[cfg(test)]

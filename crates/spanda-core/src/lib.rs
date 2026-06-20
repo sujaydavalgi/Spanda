@@ -34,6 +34,7 @@ pub mod stdlib;
 pub mod transport;
 pub mod transport_live;
 mod transport_rclrs_daemon;
+mod transport_rclrs_native;
 pub mod transport_rclrs;
 pub mod twin;
 pub mod type_system;

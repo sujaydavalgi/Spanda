@@ -12,13 +12,13 @@ serde_yaml = "0.9"
 thiserror = "2"
 spanda-audit = { path = "../spanda-audit" }
 spanda-security = { path = "../spanda-security" }
+libloading = "0.8"
 pyo3 = { version = "0.23", optional = true, features = ["auto-initialize", "abi3-py310"] }
 
 [features]
 default = []
 python-native = ["dep:pyo3"]
 cpp-native = []
-ros2-rclrs = []
 
 [dev-dependencies]
 glob = "0.3"

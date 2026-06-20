@@ -823,6 +823,7 @@ name = "spanda-core"
 version = "0.1.0"
 dependencies = [
  "glob",
+ "libloading",
  "pyo3",
  "serde",
  "serde_json",
