@@ -17,8 +17,8 @@ Honest snapshot of Spanda capabilities. **Stubbed** = syntax or API exists witho
 | spawn / select / channels | Partially implemented | Cooperative concurrency |
 | test blocks | Implemented | Rust runtime + TS `runTests()` |
 | `extern fn` / FFI | Partially implemented | `extern python`/`extern cpp` subprocess bridges; optional PyO3 in-process |
-| Spanda IR (SIR) | Partially implemented | Enum payloads, `if flag == true/false`, `not`, `&&`, `\|\|` on bool vars |
-| Codegen / LLVM | Partially implemented | HAL profiles (`embedded-arm`, `esp32`) affect triple, subscribe, loop timing |
+| Spanda IR (SIR) | Partially implemented | Enum payloads, bool `if`, float compares, `scan.nearest_distance`, const-folded conditions |
+| Codegen / LLVM | Partially implemented | HAL profiles; LLVM emits float `if`, scan distance via `spanda_rt_scan_nearest` |
 
 ## Autonomous systems
 
@@ -43,7 +43,7 @@ Honest snapshot of Spanda capabilities. **Stubbed** = syntax or API exists witho
 | TypeScript CLI | Implemented | Delegates to Rust when built; includes `llvm-ir` / `compile-native` |
 | Formatter / linter / docgen | Implemented | Rust |
 | LSP | Partially implemented | Symbols include struct/enum; hardware/deploy |
-| DAP debugger | Partially implemented | Resumable sessions, scopes/variables, setVariable, step-in/out |
+| DAP debugger | Partially implemented | Resumable sessions, setVariable, step-in/out with frame-depth step-out |
 | N-API | Partially implemented | check, run, verify, sir, fmt |
 | WASM | Partially implemented | check, run, verify, sir, fmt |
 
@@ -52,9 +52,9 @@ Honest snapshot of Spanda capabilities. **Stubbed** = syntax or API exists witho
 | Feature | Status | Notes |
 |---------|--------|-------|
 | python.* / cpp.* imports | Partially implemented | Subprocess bridges; optional `python-native` / `cpp-native` in-process |
-| ROS2 adapter | Partially implemented | Native via `ros2` CLI (`SPANDA_ROS2_NATIVE`); Python bridge (`SPANDA_ROS2_LIVE`) |
-| Transport adapters | Partially implemented | In-memory + log stubs; optional live ROS2/MQTT via native CLI or Python bridge |
-| Package manager | Partially implemented | `spanda publish` bundle + upload + remote `index.json` merge |
+| ROS2 adapter | Partially implemented | Native `ros2` CLI publish/subscribe/service (`SPANDA_ROS2_NATIVE`); rclrs stub feature |
+| Transport adapters | Partially implemented | In-memory + live ROS2/MQTT via CLI or Python bridge |
+| Package manager | Partially implemented | `spanda publish` upload; `spanda install` fetches remote tarballs when `SPANDA_REGISTRY_URL` set |
 | LLVM / native codegen | Partially implemented | `compile-native` + `--target-triple` + `--hal-profile` conditional codegen |
 
 See also [README.md](../README.md), [ffi-and-ecosystem.md](./ffi-and-ecosystem.md), [compiler-backend-roadmap.md](./compiler-backend-roadmap.md).
