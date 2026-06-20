@@ -11,6 +11,17 @@ use crate::comm::{
 use crate::runtime::RuntimeValue;
 use std::collections::{HashMap, VecDeque};
 
+fn payload_string_for_service(value: &RuntimeValue) -> String {
+    match value {
+        RuntimeValue::String { value } => {
+            format!("{{data: \"{}\"}}", value.replace('\\', "\\\\").replace('"', "\\\""))
+        }
+        RuntimeValue::Number { value, .. } => format!("{{value: {value}}}"),
+        RuntimeValue::Bool { value } => format!("{{ok: {value}}}"),
+        other => format!("{{raw: \"{other:?}\"}}"),
+    }
+}
+
 // ── Transport adapter trait ───────────────────────────────────────────────────
 
 #[derive(Debug, Clone, Default)]
@@ -201,6 +212,7 @@ impl TransportAdapter for Ros2TransportAdapter {
         if self.state.connected {
             self.state.subscribe(topic);
         }
+        let _ = live::try_ros2_subscribe(topic);
     }
 
     fn receive(&mut self, topic: &str) -> Option<RuntimeValue> {
@@ -213,10 +225,15 @@ impl TransportAdapter for Ros2TransportAdapter {
 
     fn call_service(
         &mut self,
-        _service: &str,
+        service: &str,
         service_type: &str,
-        _request: Option<RuntimeValue>,
+        request: Option<RuntimeValue>,
     ) -> RuntimeValue {
+        let request_text = request
+            .as_ref()
+            .map(payload_string_for_service)
+            .unwrap_or_else(|| "{}".into());
+        let _ = live::try_ros2_service_call(service, service_type, &request_text);
         StubTransportState::service_result(service_type)
     }
 

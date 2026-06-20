@@ -33,6 +33,7 @@ pub mod state_machine;
 pub mod stdlib;
 pub mod transport;
 pub mod transport_live;
+pub mod transport_rclrs;
 pub mod twin;
 pub mod type_system;
 pub mod types;
