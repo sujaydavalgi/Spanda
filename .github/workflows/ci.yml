@@ -45,9 +45,9 @@ jobs:
       - name: Test native rclrs crate
         run: |
           . /opt/ros/humble/setup.sh
-          cargo build --manifest-path crates/spanda-ros2-rclrs-native/Cargo.toml --release
+          cargo build --manifest-path crates/spanda-ros2-rclrs-native/Cargo.toml --release --target-dir target
           export SPANDA_ROS2_RCLRS_LIB="$PWD/target/release/libspanda_ros2_rclrs_native.so"
-          cargo test --manifest-path crates/spanda-ros2-rclrs-native/Cargo.toml
+          cargo test --manifest-path crates/spanda-ros2-rclrs-native/Cargo.toml --target-dir target
           cargo test -p spanda-core --lib transport_rclrs
 
   lsp:

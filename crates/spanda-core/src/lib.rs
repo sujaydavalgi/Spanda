@@ -39,6 +39,10 @@ pub mod transport;
 pub mod transport_live;
 pub mod transport_rclrs;
 mod transport_rclrs_daemon;
+#[cfg(not(target_arch = "wasm32"))]
+mod transport_rclrs_native;
+#[cfg(target_arch = "wasm32")]
+#[path = "transport_rclrs_native_stub.rs"]
 mod transport_rclrs_native;
 pub mod triggers;
 pub mod twin;
