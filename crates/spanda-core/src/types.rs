@@ -2293,7 +2293,8 @@ impl TypeChecker {
         fields: &[crate::ast::StructFieldInit],
         span: &Span,
     ) -> SpandaType {
-        let Some(def) = self.struct_defs.get(type_name).cloned() else {
+        let (base_name, type_arg_names) = split_instantiated_type_name(type_name);
+        let Some(def) = self.struct_defs.get(&base_name).cloned() else {
             self.error(
                 format!("Unknown struct type '{type_name}'"),
                 span.start.line,
@@ -2301,6 +2302,27 @@ impl TypeChecker {
             );
             return SpandaType::Void;
         };
+        let type_params = self
+            .struct_type_params
+            .get(&base_name)
+            .cloned()
+            .unwrap_or_default();
+        if type_params.len() != type_arg_names.len() {
+            self.error(
+                format!(
+                    "Struct '{base_name}' expects {} type argument(s), got {}",
+                    type_params.len(),
+                    type_arg_names.len()
+                ),
+                span.start.line,
+                span.start.column,
+            );
+            return SpandaType::Void;
+        }
+        let substitutions: HashMap<String, String> = type_params
+            .into_iter()
+            .zip(type_arg_names.iter().cloned())
+            .collect();
         let mut provided = std::collections::HashSet::new();
         for field in fields {
             if provided.contains(&field.name) {
@@ -2314,15 +2336,16 @@ impl TypeChecker {
             let expected = def
                 .iter()
                 .find(|(name, _)| name == &field.name)
-                .map(|(_, t)| self.type_name_to_spanda(t));
+                .map(|(_, t)| instantiate_type_name(t, &substitutions));
             let Some(expected) = expected else {
                 self.error(
-                    format!("Struct '{type_name}' has no field '{}'", field.name),
+                    format!("Struct '{base_name}' has no field '{}'", field.name),
                     field.span.start.line,
                     field.span.start.column,
                 );
                 continue;
             };
+            let expected = self.type_name_to_spanda(&expected);
             let actual = self.check_expr(&field.value);
             self.assert_compatible(
                 &expected,
@@ -2340,8 +2363,16 @@ impl TypeChecker {
                 );
             }
         }
-        SpandaType::Named {
-            name: type_name.to_string(),
+        if type_arg_names.is_empty() {
+            SpandaType::Named { name: base_name }
+        } else {
+            SpandaType::Generic {
+                name: base_name,
+                type_args: type_arg_names
+                    .iter()
+                    .map(|arg| self.type_name_to_spanda(arg))
+                    .collect(),
+            }
         }
     }
 
@@ -2574,6 +2605,30 @@ impl TypeChecker {
                 if let Some(methods) = builtin_methods(name) {
                     if let Some(method) = methods.get(property) {
                         return method.returns.clone();
+                    }
+                }
+                self.error(
+                    format!("Unknown member '{property}'"),
+                    span.start.line,
+                    span.start.column,
+                );
+                SpandaType::Void
+            }
+            SpandaType::Generic { name, type_args } => {
+                if let Some(fields) = self.struct_defs.get(name) {
+                    if let Some((_, type_name)) = fields.iter().find(|(field, _)| field == property)
+                    {
+                        let type_params = self
+                            .struct_type_params
+                            .get(name)
+                            .cloned()
+                            .unwrap_or_default();
+                        let substitutions: HashMap<String, String> = type_params
+                            .into_iter()
+                            .zip(type_args.iter().map(type_name_from_spanda))
+                            .collect();
+                        return self
+                            .type_name_to_spanda(&instantiate_type_name(type_name, &substitutions));
                     }
                 }
                 self.error(
@@ -3070,6 +3125,47 @@ impl TypeChecker {
 trait SpandaTypeExt {
     fn unit(&self) -> UnitKind;
     fn kind_name(&self) -> &'static str;
+}
+
+fn split_instantiated_type_name(type_name: &str) -> (String, Vec<String>) {
+    if let Some(lt) = type_name.find('<') {
+        if type_name.ends_with('>') {
+            let base = type_name[..lt].trim().to_string();
+            let args = type_name[lt + 1..type_name.len() - 1]
+                .split(',')
+                .map(|part| part.trim().to_string())
+                .filter(|part| !part.is_empty())
+                .collect();
+            return (base, args);
+        }
+    }
+    (type_name.to_string(), Vec::new())
+}
+
+fn instantiate_type_name(type_name: &str, substitutions: &HashMap<String, String>) -> String {
+    substitutions
+        .get(type_name)
+        .cloned()
+        .unwrap_or_else(|| type_name.to_string())
+}
+
+fn type_name_from_spanda(ty: &SpandaType) -> String {
+    match ty {
+        SpandaType::Int => "Int".into(),
+        SpandaType::Float => "Float".into(),
+        SpandaType::Bool => "Bool".into(),
+        SpandaType::String => "String".into(),
+        SpandaType::Named { name } => name.clone(),
+        SpandaType::Generic { name, type_args } => {
+            let args = type_args
+                .iter()
+                .map(type_name_from_spanda)
+                .collect::<Vec<_>>()
+                .join(", ");
+            format!("{name}<{args}>")
+        }
+        other => format!("{:?}", other),
+    }
 }
 
 fn display_type(ty: &SpandaType) -> String {

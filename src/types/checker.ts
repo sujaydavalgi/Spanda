@@ -1443,11 +1443,26 @@ class TypeChecker {
   }
 
   private checkStructLiteral(expr: import("../ast/nodes.js").StructLiteralExpr): SpandaType {
-    const def = this.structDefs.get(expr.typeName);
+    const [baseName, typeArgNames] = splitInstantiatedTypeName(expr.typeName);
+    const def = this.structDefs.get(baseName);
     if (!def) {
       this.error(`Unknown struct type '${expr.typeName}'`, expr.span.start.line, expr.span.start.column);
       return { kind: "void" };
     }
+    const typeParams = this.structTypeParams.get(baseName) ?? [];
+    if (typeParams.length !== typeArgNames.length) {
+      this.error(
+        `Struct '${baseName}' expects ${typeParams.length} type argument(s), got ${typeArgNames.length}`,
+        expr.span.start.line,
+        expr.span.start.column,
+      );
+      return { kind: "void" };
+    }
+    const substitutions = new Map<string, string>();
+    typeParams.forEach((param, index) => {
+      const arg = typeArgNames[index];
+      if (arg) substitutions.set(param, arg);
+    });
     const provided = new Set<string>();
     for (const field of expr.fields) {
       if (provided.has(field.name)) {
@@ -1457,13 +1472,13 @@ class TypeChecker {
       const fieldDef = def.find((f) => f.name === field.name);
       if (!fieldDef) {
         this.error(
-          `Struct '${expr.typeName}' has no field '${field.name}'`,
+          `Struct '${baseName}' has no field '${field.name}'`,
           field.span.start.line,
           field.span.start.column,
         );
         continue;
       }
-      const expected = this.typeNameToSpanda(fieldDef.typeName);
+      const expected = this.typeNameToSpanda(instantiateTypeName(fieldDef.typeName, substitutions));
       const actual = this.checkExpr(field.value);
       this.assertCompatible(expected, actual, field.span.start.line, field.span.start.column);
     }
@@ -1476,7 +1491,14 @@ class TypeChecker {
         );
       }
     }
-    return { kind: "named", name: expr.typeName };
+    if (typeArgNames.length === 0) {
+      return { kind: "named", name: baseName };
+    }
+    return {
+      kind: "generic",
+      name: baseName,
+      typeArgs: typeArgNames.map((arg) => this.typeNameToSpanda(arg)),
+    };
   }
 
   private checkMatch(expr: import("../ast/nodes.js").MatchExpr): SpandaType {
@@ -1609,6 +1631,24 @@ class TypeChecker {
         return { kind: "void" };
       }
       return prop;
+    }
+
+    if (objType.kind === "generic") {
+      const structFields = this.structDefs.get(objType.name);
+      const typeParams = this.structTypeParams.get(objType.name) ?? [];
+      const structField = structFields?.find((f) => f.name === expr.property);
+      if (structField) {
+        const substitutions = new Map<string, string>();
+        typeParams.forEach((param, index) => {
+          const arg = objType.typeArgs[index];
+          if (arg?.kind === "named") substitutions.set(param, arg.name);
+          else if (arg?.kind === "int") substitutions.set(param, "Int");
+          else if (arg?.kind === "float") substitutions.set(param, "Float");
+          else if (arg?.kind === "bool") substitutions.set(param, "Bool");
+          else if (arg?.kind === "string") substitutions.set(param, "String");
+        });
+        return this.typeNameToSpanda(instantiateTypeName(structField.typeName, substitutions));
+      }
     }
 
     if (objType.kind === "named") {
@@ -1982,4 +2022,22 @@ class TypeChecker {
   private error(message: string, line: number, column: number): void {
     this.errors.push({ message, line, column });
   }
+}
+
+function splitInstantiatedTypeName(typeName: string): [string, string[]] {
+  const lt = typeName.indexOf("<");
+  if (lt >= 0 && typeName.endsWith(">")) {
+    const base = typeName.slice(0, lt).trim();
+    const args = typeName
+      .slice(lt + 1, -1)
+      .split(",")
+      .map((part) => part.trim())
+      .filter(Boolean);
+    return [base, args];
+  }
+  return [typeName, []];
+}
+
+function instantiateTypeName(typeName: string, substitutions: Map<string, string>): string {
+  return substitutions.get(typeName) ?? typeName;
 }

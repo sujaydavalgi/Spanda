@@ -506,17 +506,22 @@ class Parser {
     return this.parseLabel(message);
   }
 
+  private finishGenericTypeName(base: string): string {
+    this.expect("LT", "Expected '<' to open generic type");
+    const args: string[] = [];
+    if (!this.check("GT")) {
+      do {
+        args.push(this.parseTypeName());
+      } while (this.match("COMMA"));
+    }
+    this.expect("GT", "Expected '>' to close generic type");
+    return `${base}<${args.join(", ")}>`;
+  }
+
   private parseTypeName(): string {
     let name = this.parseTypeNamePart("Expected type name");
-    if (this.match("LT")) {
-      const args: string[] = [];
-      if (!this.check("GT")) {
-        do {
-          args.push(this.parseTypeName());
-        } while (this.match("COMMA"));
-      }
-      this.expect("GT", "Expected '>' to close generic type");
-      name = `${name}<${args.join(", ")}>`;
+    if (this.check("LT")) {
+      name = this.finishGenericTypeName(name);
     }
     return name;
   }
@@ -3012,6 +3017,20 @@ class Parser {
             end,
           ),
         };
+      } else if (this.check("LT")) {
+        if (expr.kind === "IdentExpr" && /^[A-Z]/.test(expr.name)) {
+          const full = this.finishGenericTypeName(expr.name);
+          expr = {
+            kind: "IdentExpr",
+            name: full,
+            span: this.spanFrom(
+              { line: expr.span.start.line, column: expr.span.start.column, offset: 0, type: "IDENT", lexeme: full, value: null },
+              this.previous(),
+            ),
+          };
+          continue;
+        }
+        break;
       } else if (this.check("LBRACE")) {
         if (expr.kind === "IdentExpr" && /^[A-Z]/.test(expr.name)) {
           this.advance();

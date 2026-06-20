@@ -209,20 +209,25 @@ impl Parser {
 
     fn parse_type_name(&mut self) -> Result<String, SpandaError> {
         let mut name = self.parse_type_name_part("Expected type name")?;
-        if self.match_types(&[TokenType::Lt]) {
-            let mut args = Vec::new();
-            if !self.check(TokenType::Gt) {
-                loop {
-                    args.push(self.parse_type_name()?);
-                    if !self.match_types(&[TokenType::Comma]) {
-                        break;
-                    }
-                }
-            }
-            self.expect(TokenType::Gt, "Expected '>' to close generic type")?;
-            name = format!("{name}<{args}>", args = args.join(", "));
+        if self.check(TokenType::Lt) {
+            name = self.finish_generic_type_name(name)?;
         }
         Ok(name)
+    }
+
+    fn finish_generic_type_name(&mut self, base: String) -> Result<String, SpandaError> {
+        self.expect(TokenType::Lt, "Expected '<' to open generic type")?;
+        let mut args = Vec::new();
+        if !self.check(TokenType::Gt) {
+            loop {
+                args.push(self.parse_type_name()?);
+                if !self.match_types(&[TokenType::Comma]) {
+                    break;
+                }
+            }
+        }
+        self.expect(TokenType::Gt, "Expected '>' to close generic type")?;
+        Ok(format!("{base}<{args}>", args = args.join(", ")))
     }
 
     fn parse_type_annotation(&mut self) -> Result<SpandaType, SpandaError> {
@@ -3487,6 +3492,22 @@ impl Parser {
                         end: loc(&end),
                     },
                 };
+            } else if self.check(TokenType::Lt) {
+                if let Expr::IdentExpr { name, span, .. } = &expr {
+                    if name.chars().next().is_some_and(|c| c.is_uppercase()) {
+                        let start = span.start;
+                        let full = self.finish_generic_type_name(name.clone())?;
+                        expr = Expr::IdentExpr {
+                            name: full,
+                            span: Span {
+                                start,
+                                end: loc(self.previous()),
+                            },
+                        };
+                        continue;
+                    }
+                }
+                break;
             } else if self.check(TokenType::Lbrace) {
                 if let Expr::IdentExpr { name, .. } = &expr {
                     if name.chars().next().is_some_and(|c| c.is_uppercase()) {
