@@ -29,6 +29,7 @@ packages/native/index.d.ts
 .DS_Store
 
 # local editor / git tooling — personal env only, not enforced repo-wide
+# Optional .cursor/ agent rules and .githooks/ may live here locally; not tracked.
 .cursor/
 .githooks/
 
