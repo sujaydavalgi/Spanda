@@ -71,10 +71,11 @@ impl PackageManifest {
         // Example:
         // let result = spanda_package::manifest::parse_str(content);
 
+        // Create mutable manifest for accumulating results.
         let mut manifest: Self = toml::from_str(content)?;
         manifest.safety.normalize();
         Ok(manifest)
-    }
+}
 
     pub fn load(path: &Path) -> PackageResult<Self> {
         // Load the value.
@@ -91,9 +92,10 @@ impl PackageManifest {
         // Example:
         // let result = spanda_package::manifest::load(path);
 
+        // Compute content for the following logic.
         let content = std::fs::read_to_string(path).map_err(PackageError::from)?;
         Self::parse_str(&content)
-    }
+}
 
     pub fn load_from_dir(dir: &Path) -> PackageResult<Self> {
         // Load from dir.
@@ -110,8 +112,9 @@ impl PackageManifest {
         // Example:
         // let result = spanda_package::manifest::load_from_dir(dir);
 
+        // Build the result via join.
         Self::load(&dir.join(MANIFEST_FILENAME))
-    }
+}
 
     pub fn save(&self, path: &Path) -> PackageResult<()> {
         // Save the value.
@@ -129,10 +132,11 @@ impl PackageManifest {
         // Example:
         // let result = instance.save(path);
 
+        // Compute content for the following logic.
         let content = toml::to_string_pretty(self)?;
         std::fs::write(path, content).map_err(PackageError::from)?;
         Ok(())
-    }
+}
 
     pub fn version(&self) -> PackageResult<Version> {
         // Version.
@@ -149,8 +153,9 @@ impl PackageManifest {
         // Example:
         // let result = instance.version();
 
+        // Produce version) as the result.
         crate::dependency::parse_version(&self.package.version)
-    }
+}
 
     pub fn all_dependencies(&self) -> impl Iterator<Item = (&str, &DependencySpec)> {
         // All dependencies.
@@ -167,11 +172,12 @@ impl PackageManifest {
         // Example:
         // let result = instance.all_dependencies();
 
+        // Call dependencies on the current instance.
         self.dependencies
             .iter()
             .chain(self.dev_dependencies.iter())
             .map(|(k, v)| (k.as_str(), v))
-    }
+}
 }
 
 /// Find the project root by walking up from `start` looking for spanda.toml.
@@ -190,15 +196,22 @@ pub fn find_project_root(start: &Path) -> Option<PathBuf> {
     // Example:
     // let result = spanda_package::manifest::find_project_root(start);
 
+    // Create mutable dir for accumulating results.
     let mut dir = if start.is_file() {
         start.parent()?.to_path_buf()
     } else {
         start.to_path_buf()
     };
+
+    // Run the loop body until it exits.
     loop {
+
+        // Continue only when the path is a regular file.
         if dir.join(MANIFEST_FILENAME).is_file() {
             return Some(dir);
         }
+
+        // Take the branch when pop is false.
         if !dir.pop() {
             return None;
         }

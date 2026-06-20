@@ -27,6 +27,7 @@ fn payload_string_for_service(value: &RuntimeValue) -> String {
     // Example:
     // let result = spanda_core::transport::payload_string_for_service(value);
 
+    // Match on value and handle each case.
     match value {
         RuntimeValue::String { value } => {
             format!(
@@ -105,15 +106,18 @@ impl StubTransportState {
         // Example:
         // let result = instance.publish(topic, message_type, value);
 
+        // Append into self.
         self.published.push(AdapterMessage {
             topic: topic.to_string(),
             message_type: message_type.to_string(),
             value: value.clone(),
         });
+
+        // Emit output when get mut provides a buf.
         if let Some(buf) = self.subscriptions.get_mut(topic) {
             buf.push_back(value);
         }
-    }
+}
 
     fn subscribe(&mut self, topic: &str) {
         // Subscribe.
@@ -131,8 +135,9 @@ impl StubTransportState {
         // Example:
         // let result = instance.subscribe(topic);
 
+        // Call entry on the current instance.
         self.subscriptions.entry(topic.to_string()).or_default();
-    }
+}
 
     fn receive(&mut self, topic: &str) -> Option<RuntimeValue> {
         // Receive.
@@ -150,10 +155,11 @@ impl StubTransportState {
         // Example:
         // let result = instance.receive(topic);
 
+        // Call subscriptions on the current instance.
         self.subscriptions
             .get_mut(topic)
             .and_then(|q| q.pop_front())
-    }
+}
 
     fn service_result(service_type: &str) -> RuntimeValue {
         // Service result.
@@ -170,11 +176,12 @@ impl StubTransportState {
         // Example:
         // let result = spanda_core::transport::service_result(service_type);
 
+        // Build a Object runtime value.
         RuntimeValue::Object {
             type_name: service_type.to_string(),
             fields: HashMap::from([("ok".into(), RuntimeValue::Bool { value: true })]),
         }
-    }
+}
 
     fn action_result(action_type: &str) -> RuntimeValue {
         // Action result.
@@ -191,11 +198,12 @@ impl StubTransportState {
         // Example:
         // let result = spanda_core::transport::action_result(action_type);
 
+        // Build a Object runtime value.
         RuntimeValue::Object {
             type_name: action_type.to_string(),
             fields: HashMap::from([("success".into(), RuntimeValue::Bool { value: true })]),
         }
-    }
+}
 }
 
 macro_rules! stub_adapter {
@@ -221,8 +229,9 @@ macro_rules! stub_adapter {
                 // Example:
                 // let result = instance.kind();
 
+                // Produce $kind as the result.
                 $kind
-            }
+}
 
             fn connect(&mut self, config: &TransportConfig) -> Result<(), String> {
                 // Connect.
@@ -240,10 +249,11 @@ macro_rules! stub_adapter {
                 // Example:
                 // let result = instance.connect(config);
 
+                // Call connected = true; on the current instance.
                 self.state.connected = true;
                 self.state.config = config.clone();
                 Ok(())
-            }
+}
 
             fn disconnect(&mut self) {
                 // Disconnect.
@@ -260,11 +270,11 @@ macro_rules! stub_adapter {
                 // Example:
                 // let result = instance.disconnect();
 
+                // Call connected = false; on the current instance.
                 self.state.connected = false;
-            }
+}
 
             fn is_connected(&self) -> bool {
-                // Return whether connected.
                 //
                 // Parameters:
                 // - `self` — method receiver
@@ -278,8 +288,9 @@ macro_rules! stub_adapter {
                 // Example:
                 // let result = instance.is_connected();
 
+                // Call connected on the current instance.
                 self.state.connected
-            }
+}
 
             fn publish(&mut self, topic: &str, message_type: &str, value: RuntimeValue) {
                 // Publish.
@@ -299,10 +310,11 @@ macro_rules! stub_adapter {
                 // Example:
                 // let result = instance.publish(topic, message_type, value);
 
+                // take this path when self.state.connected.
                 if self.state.connected {
                     self.state.publish(topic, message_type, value);
                 }
-            }
+}
 
             fn subscribe(&mut self, topic: &str) {
                 // Subscribe.
@@ -320,10 +332,11 @@ macro_rules! stub_adapter {
                 // Example:
                 // let result = instance.subscribe(topic);
 
+                // take this path when self.state.connected.
                 if self.state.connected {
                     self.state.subscribe(topic);
                 }
-            }
+}
 
             fn receive(&mut self, topic: &str) -> Option<RuntimeValue> {
                 // Receive.
@@ -341,12 +354,13 @@ macro_rules! stub_adapter {
                 // Example:
                 // let result = instance.receive(topic);
 
+                // take this path when self.state.connected.
                 if self.state.connected {
                     self.state.receive(topic)
                 } else {
                     None
                 }
-            }
+}
 
             fn call_service(
                 &mut self,
@@ -371,8 +385,9 @@ macro_rules! stub_adapter {
                 // Example:
                 // let result = instance.call_service(_service, service_type, _request);
 
+                // Produce service result as the result.
                 StubTransportState::service_result(service_type)
-            }
+}
 
             fn send_action(
                 &mut self,
@@ -397,8 +412,9 @@ macro_rules! stub_adapter {
                 // Example:
                 // let result = instance.send_action(_action, action_type, _goal);
 
+                // Produce action result as the result.
                 StubTransportState::action_result(action_type)
-            }
+}
 
             fn published(&self) -> Vec<AdapterMessage> {
                 // Published.
@@ -415,8 +431,9 @@ macro_rules! stub_adapter {
                 // Example:
                 // let result = instance.published();
 
+                // Call clone on the current instance.
                 self.state.published.clone()
-            }
+}
         }
     };
 }
@@ -443,8 +460,9 @@ impl TransportAdapter for Ros2TransportAdapter {
         // Example:
         // let result = instance.kind();
 
+        // Produce Ros2 as the result.
         TransportKind::Ros2
-    }
+}
 
     fn connect(&mut self, config: &TransportConfig) -> Result<(), String> {
         // Connect.
@@ -462,10 +480,11 @@ impl TransportAdapter for Ros2TransportAdapter {
         // Example:
         // let result = instance.connect(config);
 
+        // Call connected = true; on the current instance.
         self.state.connected = true;
         self.state.config = config.clone();
         Ok(())
-    }
+}
 
     fn disconnect(&mut self) {
         // Disconnect.
@@ -482,11 +501,11 @@ impl TransportAdapter for Ros2TransportAdapter {
         // Example:
         // let result = instance.disconnect();
 
+        // Call connected = false; on the current instance.
         self.state.connected = false;
-    }
+}
 
     fn is_connected(&self) -> bool {
-        // Return whether connected.
         //
         // Parameters:
         // - `self` — method receiver
@@ -500,8 +519,9 @@ impl TransportAdapter for Ros2TransportAdapter {
         // Example:
         // let result = instance.is_connected();
 
+        // Call connected on the current instance.
         self.state.connected
-    }
+}
 
     fn publish(&mut self, topic: &str, message_type: &str, value: RuntimeValue) {
         // Publish.
@@ -521,14 +541,17 @@ impl TransportAdapter for Ros2TransportAdapter {
         // Example:
         // let result = instance.publish(topic, message_type, value);
 
+        // take this path when self.state.connected.
         if self.state.connected {
             self.state.publish(topic, message_type, value.clone());
         }
+
+        // Take this path when rclrs::try rclrs publish(topic, &value).
         if rclrs::try_rclrs_publish(topic, &value) {
             return;
         }
         let _ = live::try_ros2_publish(topic, &value);
-    }
+}
 
     fn subscribe(&mut self, topic: &str) {
         // Subscribe.
@@ -546,14 +569,17 @@ impl TransportAdapter for Ros2TransportAdapter {
         // Example:
         // let result = instance.subscribe(topic);
 
+        // take this path when self.state.connected.
         if self.state.connected {
             self.state.subscribe(topic);
         }
+
+        // Take this path when rclrs::try rclrs subscribe(topic).
         if rclrs::try_rclrs_subscribe(topic) {
             return;
         }
         let _ = live::try_ros2_subscribe(topic);
-    }
+}
 
     fn receive(&mut self, topic: &str) -> Option<RuntimeValue> {
         // Receive.
@@ -571,12 +597,13 @@ impl TransportAdapter for Ros2TransportAdapter {
         // Example:
         // let result = instance.receive(topic);
 
+        // take this path when self.state.connected.
         if self.state.connected {
             self.state.receive(topic)
         } else {
             None
         }
-    }
+}
 
     fn call_service(
         &mut self,
@@ -601,16 +628,19 @@ impl TransportAdapter for Ros2TransportAdapter {
         // Example:
         // let result = instance.call_service(service, service_type, request);
 
+        // Compute request text for the following logic.
         let request_text = request
             .as_ref()
             .map(payload_string_for_service)
             .unwrap_or_else(|| "{}".into());
+
+        // Take this path when rclrs::try rclrs service call(service, service type, &request text).
         if rclrs::try_rclrs_service_call(service, service_type, &request_text) {
             return StubTransportState::service_result(service_type);
         }
         let _ = live::try_ros2_service_call(service, service_type, &request_text);
         StubTransportState::service_result(service_type)
-    }
+}
 
     fn send_action(
         &mut self,
@@ -635,8 +665,9 @@ impl TransportAdapter for Ros2TransportAdapter {
         // Example:
         // let result = instance.send_action(_action, action_type, _goal);
 
+        // Produce action result as the result.
         StubTransportState::action_result(action_type)
-    }
+}
 
     fn published(&self) -> Vec<AdapterMessage> {
         // Published.
@@ -653,14 +684,14 @@ impl TransportAdapter for Ros2TransportAdapter {
         // Example:
         // let result = instance.published();
 
+        // Call clone on the current instance.
         self.state.published.clone()
-    }
+}
 }
 
 stub_adapter!(MqttTransportAdapter, TransportKind::Mqtt);
 stub_adapter!(DdsTransportAdapter, TransportKind::Dds);
 stub_adapter!(WebsocketTransportAdapter, TransportKind::Websocket);
-
 // ── Routing comm bus ──────────────────────────────────────────────────────────
 /// Routes publish/subscribe/service/action calls to transport-specific adapters
 /// while preserving in-memory semantics for simulation and discovery.
@@ -676,7 +707,6 @@ pub struct RoutingCommBus {
 
 impl Default for RoutingCommBus {
     fn default() -> Self {
-        // Return the default value.
         //
         // Parameters:
         // None.
@@ -690,8 +720,9 @@ impl Default for RoutingCommBus {
         // Example:
         // let value = spanda_core::transport::default();
 
+        // Build the result via new.
         Self::new()
-    }
+}
 }
 
 impl RoutingCommBus {
@@ -710,6 +741,7 @@ impl RoutingCommBus {
         // Example:
         // let value = spanda_core::transport::new();
 
+        // Assemble the struct fields and return it.
         Self {
             memory: InMemoryCommBus::new(),
             ros2: Ros2TransportAdapter::default(),
@@ -718,7 +750,7 @@ impl RoutingCommBus {
             websocket: WebsocketTransportAdapter::default(),
             config: TransportConfig::default(),
         }
-    }
+}
 
     pub fn configure(&mut self, config: TransportConfig) {
         // Configure.
@@ -736,6 +768,7 @@ impl RoutingCommBus {
         // Example:
         // let result = instance.configure(config);
 
+        // Call clone on the current instance.
         self.config = config.clone();
         let _ = self.ros2.connect(&config);
         let _ = self.mqtt.connect(&TransportConfig {
@@ -757,7 +790,7 @@ impl RoutingCommBus {
                 .or(Some("ws://localhost:9090".into())),
             ..config
         });
-    }
+}
 
     pub fn adapter(&self, kind: TransportKind) -> Option<&dyn TransportAdapter> {
         // Adapter.
@@ -775,6 +808,7 @@ impl RoutingCommBus {
         // Example:
         // let result = instance.adapter(kind);
 
+        // Match on kind and handle each case.
         match kind {
             TransportKind::Ros2 => Some(&self.ros2),
             TransportKind::Mqtt => Some(&self.mqtt),
@@ -782,7 +816,7 @@ impl RoutingCommBus {
             TransportKind::Websocket => Some(&self.websocket),
             TransportKind::Local | TransportKind::Sim => None,
         }
-    }
+}
 
     pub fn adapter_mut(&mut self, kind: TransportKind) -> Option<&mut dyn TransportAdapter> {
         // Adapter mut.
@@ -800,6 +834,7 @@ impl RoutingCommBus {
         // Example:
         // let result = instance.adapter_mut(kind);
 
+        // Match on kind and handle each case.
         match kind {
             TransportKind::Ros2 => Some(&mut self.ros2),
             TransportKind::Mqtt => Some(&mut self.mqtt),
@@ -807,7 +842,7 @@ impl RoutingCommBus {
             TransportKind::Websocket => Some(&mut self.websocket),
             TransportKind::Local | TransportKind::Sim => None,
         }
-    }
+}
 
     pub fn memory(&self) -> &InMemoryCommBus {
         // Memory.
@@ -824,8 +859,9 @@ impl RoutingCommBus {
         // Example:
         // let result = instance.memory();
 
+        // Return memory from this handle.
         &self.memory
-    }
+}
 
     pub fn memory_mut(&mut self) -> &mut InMemoryCommBus {
         // Memory mut.
@@ -842,8 +878,9 @@ impl RoutingCommBus {
         // Example:
         // let result = instance.memory_mut();
 
+        // Produce memory as the result.
         &mut self.memory
-    }
+}
 
     pub fn register_robot(&mut self, name: impl Into<String>) {
         // Register robot.
@@ -861,8 +898,9 @@ impl RoutingCommBus {
         // Example:
         // let result = instance.register_robot(name);
 
+        // Call register robot on the current instance.
         self.memory.register_robot(name);
-    }
+}
 
     pub fn register_agent(&mut self, name: impl Into<String>) {
         // Register agent.
@@ -880,8 +918,9 @@ impl RoutingCommBus {
         // Example:
         // let result = instance.register_agent(name);
 
+        // Call register agent on the current instance.
         self.memory.register_agent(name);
-    }
+}
 
     pub fn register_device(&mut self, name: impl Into<String>) {
         // Register device.
@@ -899,8 +938,9 @@ impl RoutingCommBus {
         // Example:
         // let result = instance.register_device(name);
 
+        // Call register device on the current instance.
         self.memory.register_device(name);
-    }
+}
 
     pub fn publish_peer(
         &mut self,
@@ -927,8 +967,9 @@ impl RoutingCommBus {
         // Example:
         // let result = instance.publish_peer(peer, topic, value, transport);
 
+        // Call publish peer on the current instance.
         self.memory.publish_peer(peer, topic, value, transport);
-    }
+}
 
     /// Poll external transport adapters for inbound messages on subscribed topics.
     pub fn poll_inbound(&mut self, transport: TransportKind) -> Vec<(String, RuntimeValue)> {
@@ -947,6 +988,7 @@ impl RoutingCommBus {
         // Example:
         // let result = instance.poll_inbound(transport);
 
+        // Compute paths for the following logic.
         let paths = self.memory.subscription_paths();
         let mut inbound = Vec::new();
         let kinds = [
@@ -956,10 +998,20 @@ impl RoutingCommBus {
             TransportKind::Dds,
             TransportKind::Websocket,
         ];
+
+        // Process each filesystem path.
         for path in paths {
+
+            // Process each kind.
             for kind in kinds {
+
+                // Emit output when adapter mut provides a adapter.
                 if let Some(adapter) = self.adapter_mut(kind) {
+
+                    // Take this path when adapter.is connected().
                     if adapter.is_connected() {
+
+                        // Emit output when receive provides a value.
                         if let Some(value) = adapter.receive(&path) {
                             self.memory.push_inbound(&path, value.clone());
                             inbound.push((path.clone(), value));
@@ -969,7 +1021,7 @@ impl RoutingCommBus {
             }
         }
         inbound
-    }
+}
 }
 
 impl CommBus for RoutingCommBus {
@@ -998,12 +1050,15 @@ impl CommBus for RoutingCommBus {
         // Example:
         // let result = instance.publish(topic_path, message_type, value, transport);
 
+        // Call memory on the current instance.
         self.memory
             .publish(topic_path, message_type, value.clone(), transport);
+
+        // Emit output when adapter mut provides a adapter.
         if let Some(adapter) = self.adapter_mut(transport) {
             adapter.publish(topic_path, message_type, value);
         }
-    }
+}
 
     fn subscribe(&mut self, topic_path: &str, handler: &str) {
         // Subscribe.
@@ -1022,8 +1077,9 @@ impl CommBus for RoutingCommBus {
         // Example:
         // let result = instance.subscribe(topic_path, handler);
 
+        // Call subscribe on the current instance.
         self.memory.subscribe(topic_path, handler);
-    }
+}
 
     fn receive(&mut self, topic_path: &str) -> Option<RuntimeValue> {
         // Receive.
@@ -1041,8 +1097,9 @@ impl CommBus for RoutingCommBus {
         // Example:
         // let result = instance.receive(topic_path);
 
+        // Call receive on the current instance.
         self.memory.receive(topic_path)
-    }
+}
 
     fn call_service(
         &mut self,
@@ -1067,9 +1124,10 @@ impl CommBus for RoutingCommBus {
         // Example:
         // let result = instance.call_service(service_name, service_type, request);
 
+        // Call memory on the current instance.
         self.memory
             .call_service(service_name, service_type, request.clone())
-    }
+}
 
     fn send_action(
         &mut self,
@@ -1094,8 +1152,9 @@ impl CommBus for RoutingCommBus {
         // Example:
         // let result = instance.send_action(action_name, action_type, goal);
 
+        // Call send action on the current instance.
         self.memory.send_action(action_name, action_type, goal)
-    }
+}
 
     fn discover(&self, target: DiscoverTarget, filter: &DiscoverFilter) -> Vec<String> {
         // Discover.
@@ -1114,8 +1173,9 @@ impl CommBus for RoutingCommBus {
         // Example:
         // let result = instance.discover(target, filter);
 
+        // Call discover on the current instance.
         self.memory.discover(target, filter)
-    }
+}
 
     fn published_messages(&self) -> Vec<PublishedCommMessage> {
         // Published messages.
@@ -1132,8 +1192,9 @@ impl CommBus for RoutingCommBus {
         // Example:
         // let result = instance.published_messages();
 
+        // Call published messages on the current instance.
         self.memory.published_messages()
-    }
+}
 
     fn inject_fault(&mut self, fault: &str) {
         // Inject fault.
@@ -1151,8 +1212,9 @@ impl CommBus for RoutingCommBus {
         // Example:
         // let result = instance.inject_fault(fault);
 
+        // Call inject fault on the current instance.
         self.memory.inject_fault(fault);
-    }
+}
 
     fn set_network_config(&mut self, config: SimNetworkConfig) {
         // Set network config.
@@ -1170,8 +1232,9 @@ impl CommBus for RoutingCommBus {
         // Example:
         // let result = instance.set_network_config(config);
 
+        // Call set network config on the current instance.
         self.memory.set_network_config(config);
-    }
+}
 
     fn active_faults(&self) -> Vec<String> {
         // Active faults.
@@ -1188,8 +1251,9 @@ impl CommBus for RoutingCommBus {
         // Example:
         // let result = instance.active_faults();
 
+        // Call active faults on the current instance.
         self.memory.active_faults()
-    }
+}
 
     fn subscription_paths(&self) -> Vec<String> {
         // Subscription paths.
@@ -1206,8 +1270,9 @@ impl CommBus for RoutingCommBus {
         // Example:
         // let result = instance.subscription_paths();
 
+        // Call subscription paths on the current instance.
         self.memory.subscription_paths()
-    }
+}
 
     fn push_inbound(&mut self, topic_path: &str, value: RuntimeValue) {
         // Push inbound.
@@ -1226,8 +1291,9 @@ impl CommBus for RoutingCommBus {
         // Example:
         // let result = instance.push_inbound(topic_path, value);
 
+        // Call push inbound on the current instance.
         self.memory.push_inbound(topic_path, value);
-    }
+}
 }
 
 #[cfg(test)]

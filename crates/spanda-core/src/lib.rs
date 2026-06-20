@@ -89,6 +89,7 @@ pub fn compile(source: &str) -> Result<CompileResult, SpandaError> {
     // Example:
     // let result = spanda_core::compile(source);
 
+    // Tokenize the source before parsing.
     let tokens = lexer::tokenize(source)?;
     let program = parser::parse(tokens)?;
     types::type_check(&program)?;
@@ -113,6 +114,7 @@ pub fn check(source: &str) -> Result<(), SpandaError> {
     // Example:
     // let result = spanda_core::check(source);
 
+    // Tokenize the source before parsing.
     let tokens = lexer::tokenize(source)?;
     let program = parser::parse(tokens)?;
     types::check(&program)
@@ -134,6 +136,7 @@ pub fn check_with_registry(source: &str, registry: &ModuleRegistry) -> Result<()
     // Example:
     // let result = spanda_core::check_with_registry(source, registry);
 
+    // Tokenize the source before parsing.
     let tokens = lexer::tokenize(source)?;
     let program = parser::parse(tokens)?;
     types::check_with_registry(&program, registry)
@@ -158,6 +161,7 @@ pub fn compile_with_registry(
     // Example:
     // let result = spanda_core::compile_with_registry(source, registry);
 
+    // Tokenize the source before parsing.
     let tokens = lexer::tokenize(source)?;
     let program = parser::parse(tokens)?;
     types::check_with_registry(&program, registry)?;
@@ -186,6 +190,7 @@ pub fn verify_compatibility(
     // Example:
     // let result = spanda_core::verify_compatibility(source, options);
 
+    // Tokenize the source before parsing.
     let tokens = lexer::tokenize(source)?;
     let program = parser::parse(tokens)?;
     types::check(&program)?;
@@ -211,6 +216,7 @@ pub fn verify_compatibility_target(
     // Example:
     // let result = spanda_core::verify_compatibility_target(source, target);
 
+    // Produce verify compatibility as the result.
     verify_compatibility(
         source,
         &hardware::VerifyOptions {
@@ -236,6 +242,7 @@ pub fn lower_to_sir(source: &str) -> Result<SirProgram, SpandaError> {
     // Example:
     // let result = spanda_core::lower_to_sir(source);
 
+    // Tokenize the source before parsing.
     let tokens = lexer::tokenize(source)?;
     let program = parser::parse(tokens)?;
     types::check(&program)?;
@@ -258,6 +265,7 @@ pub fn run(source: &str, options: RunOptions) -> Result<RunResult, SpandaError> 
     // Example:
     // let result = spanda_core::run(source, options);
 
+    // Parse and type-check the source program.
     let program = if let Some(registry) = &options.module_registry {
         compile_with_registry(source, registry)?.program
     } else {
@@ -288,6 +296,7 @@ pub fn run_tests(source: &str) -> Result<TestRunResult, SpandaError> {
     // Example:
     // let result = spanda_core::run_tests(source);
 
+    // Produce new as the result.
     run_tests_with_registry(source, &ModuleRegistry::new())
 }
 
@@ -310,10 +319,10 @@ pub fn run_tests_with_registry(
     // Example:
     // let result = spanda_core::run_tests_with_registry(source, registry);
 
+    // Tokenize the source before parsing.
     let tokens = lexer::tokenize(source)?;
     let program = parser::parse(tokens)?;
     types::check_with_registry(&program, registry)?;
-
     let sim = create_default_simulator(SimulatorConfig::default());
     let logs: Rc<RefCell<Vec<String>>> = Rc::new(RefCell::new(Vec::new()));
     let logs_cb = logs.clone();
@@ -327,9 +336,10 @@ pub fn run_tests_with_registry(
             ..Default::default()
         },
     );
-
     let Program::Program { tests, .. } = &program;
     let total = tests.len();
+
+    // Match on run tests and handle each case.
     match interp.run_tests(&program) {
         Ok(()) => Ok(TestRunResult {
             passed: total,
@@ -364,6 +374,7 @@ pub fn run_program(program: &Program, options: RunOptions) -> Result<RunResult, 
     // Example:
     // let result = spanda_core::run_program(program, options);
 
+    // Compute obstacles for the following logic.
     let obstacles: Vec<Obstacle> = options
         .obstacles
         .iter()
@@ -373,14 +384,12 @@ pub fn run_program(program: &Program, options: RunOptions) -> Result<RunResult, 
             radius: o.radius,
         })
         .collect();
-
     let initial_pose = options.initial_pose.clone().unwrap_or(PoseState {
         x: 0.0,
         y: 0.0,
         theta: 0.0,
         z: Some(0.0),
     });
-
     let sim_config = SimulatorConfig {
         obstacles: if obstacles.is_empty() {
             SimulatorConfig::default().obstacles
@@ -390,11 +399,9 @@ pub fn run_program(program: &Program, options: RunOptions) -> Result<RunResult, 
         initial_pose,
         lidar_range: options.lidar_range,
     };
-
     let sim = create_default_simulator(sim_config);
     let logs: Rc<RefCell<Vec<String>>> = Rc::new(RefCell::new(Vec::new()));
     let logs_cb = logs.clone();
-
     let mut interp = Interpreter::new(
         sim,
         InterpreterOptions {
@@ -410,13 +417,10 @@ pub fn run_program(program: &Program, options: RunOptions) -> Result<RunResult, 
             ..Default::default()
         },
     );
-
     let state = interp.run(program, options.entry_behavior.as_deref())?;
     let events = interp.robot_backend().event_log();
     let metrics = interp.take_telemetry();
-
     let run_logs = logs.borrow().clone();
-
     Ok(RunResult {
         state,
         events,
@@ -441,6 +445,7 @@ pub fn run_debug(source: &str, options: DebugOptions) -> Result<DebugSession, Sp
     // Example:
     // let result = spanda_core::run_debug(source, options);
 
+    // Compute step for the following logic.
     let step = if options.step {
         DebugStepKind::StepOver
     } else {

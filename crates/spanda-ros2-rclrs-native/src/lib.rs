@@ -28,6 +28,7 @@ fn string_message_type() -> Option<MessageTypeName> {
     // Example:
     // let result = spanda_ros2_rclrs_native::string_message_type();
 
+    // Produce ok as the result.
     MessageTypeName::try_from(STRING_MSG).ok()
 }
 
@@ -47,6 +48,7 @@ fn set_string_payload(message: &mut DynamicMessage, payload: &str) -> bool {
     // Example:
     // let result = spanda_ros2_rclrs_native::set_string_payload(message, payload);
 
+    // Compute Some for the following logic.
     let Some(ValueMut::Simple(SimpleValueMut::BoundedString(field))) = message.get_mut("data") else {
         return false;
     };
@@ -68,6 +70,7 @@ pub fn sdk_available() -> bool {
     // Example:
     // let result = spanda_ros2_rclrs_native::sdk_available();
 
+    // Produce is ok as the result.
     Context::default_from_env().is_ok()
 }
 
@@ -86,6 +89,7 @@ pub fn init_node(name: &str) -> Result<(), String> {
     // Example:
     // let result = spanda_ros2_rclrs_native::init_node(name);
 
+    // Compute context for the following logic.
     let context = Context::default_from_env().map_err(|e: RclrsError| e.to_string())?;
     let mut executor = context.create_basic_executor();
     executor
@@ -110,6 +114,7 @@ pub fn publish(topic: &str, payload: &str) -> bool {
     // Example:
     // let result = spanda_ros2_rclrs_native::publish(topic, payload);
 
+    // Compute Some for the following logic.
     let Some(type_name) = string_message_type() else {
         return false;
     };
@@ -126,6 +131,8 @@ pub fn publish(topic: &str, payload: &str) -> bool {
     let Ok(mut message) = DynamicMessage::new(type_name) else {
         return false;
     };
+
+    // Take the branch when set string payload is false.
     if !set_string_payload(&mut message, payload) {
         return false;
     }
@@ -147,6 +154,7 @@ pub fn subscribe(topic: &str) -> bool {
     // Example:
     // let result = spanda_ros2_rclrs_native::subscribe(topic);
 
+    // Compute Some for the following logic.
     let Some(type_name) = string_message_type() else {
         return false;
     };
@@ -186,6 +194,7 @@ pub fn service_call(service: &str, service_type: &str, request: &str) -> bool {
     // Example:
     // let result = spanda_ros2_rclrs_native::service_call(service, service_type, request);
 
+    // Produce new as the result.
     Command::new("ros2")
         .args(["service", "call", service, service_type, request])
         .stdout(std::process::Stdio::null())

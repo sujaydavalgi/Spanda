@@ -125,6 +125,7 @@ fn map_diagnostics(err: &SpandaError) -> Vec<DiagnosticJs> {
     // Example:
     // let result = spanda_node::map_diagnostics(err);
 
+    // Produce diagnostics as the result.
     err.diagnostics()
         .into_iter()
         .map(|d| DiagnosticJs {
@@ -151,6 +152,7 @@ pub fn check_source(source: String) -> CheckResultJs {
     // Example:
     // let result = spanda_node::check_source(source);
 
+    // Match on check and handle each case.
     match check(&source) {
         Ok(()) => CheckResultJs {
             ok: true,
@@ -180,6 +182,7 @@ pub fn run_source(source: String, options: Option<RunOptionsJs>) -> Result<RunRe
     // Example:
     // let result = spanda_node::run_source(source, options);
 
+    // Compute opts for the following logic.
     let opts = options.unwrap_or(RunOptionsJs {
         entry_behavior: None,
         max_loop_iterations: None,
@@ -199,7 +202,6 @@ pub fn run_source(source: String, options: Option<RunOptionsJs>) -> Result<RunRe
         },
     )
     .map_err(|e| Error::from_reason(e.to_string()))?;
-
     Ok(RunResultJs {
         state: RobotStateJs {
             pose: PoseStateJs {
@@ -266,6 +268,7 @@ pub fn core_version() -> String {
     // Example:
     // let result = spanda_node::core_version();
 
+    // Produce to string as the result.
     env!("CARGO_PKG_VERSION").to_string()
 }
 
@@ -301,6 +304,7 @@ pub fn verify_source(source: String) -> VerifyResultJs {
     // Example:
     // let result = spanda_node::verify_source(source);
 
+    // Match on default and handle each case.
     match verify_compatibility(&source, &VerifyOptions::default()) {
         Ok(report) => VerifyResultJs {
             ok: report.compatible,
@@ -350,6 +354,7 @@ pub fn sir_source(source: String) -> Result<String> {
     // Example:
     // let result = spanda_node::sir_source(source);
 
+    // Produce lower to sir as the result.
     lower_to_sir(&source)
         .map(|sir| serde_json::to_string_pretty(&sir).unwrap_or_default())
         .map_err(|e| Error::from_reason(e.to_string()))
@@ -371,5 +376,6 @@ pub fn fmt_source(source: String) -> String {
     // Example:
     // let result = spanda_node::fmt_source(source);
 
+    // Produce format source as the result.
     format_source(&source)
 }

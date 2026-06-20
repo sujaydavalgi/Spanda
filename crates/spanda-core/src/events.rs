@@ -6,7 +6,6 @@
 
 use crate::ast::Stmt;
 use std::collections::HashMap;
-
 /// Event bus mapping declared events to handler bodies.
 ///
 /// Stores a name-to-statements table populated from `on event` declarations in
@@ -59,11 +58,12 @@ impl EventBus {
         //
         // use spanda_core::events::EventBus;
         // let bus = EventBus::new();
+
         // assert!(bus.handler_body("any").is_none());
         Self {
             handlers: HashMap::new(),
         }
-    }
+}
 
     pub fn register(&mut self, event: String, body: Vec<Stmt>) {
         // Registers or replaces the handler body for an event name.
@@ -85,9 +85,10 @@ impl EventBus {
         //
         // use spanda_core::events::EventBus;
         // let mut bus = EventBus::new();
+
         // bus.register("tick".into(), vec![]);
         self.handlers.insert(event, body);
-    }
+}
 
     pub fn handler_body(&self, event: &str) -> Option<&[Stmt]> {
         // Returns the handler statement slice for an event, if registered.
@@ -108,14 +109,14 @@ impl EventBus {
         //
         // use spanda_core::events::EventBus;
         // let bus = EventBus::new();
+
         // assert!(bus.handler_body("missing").is_none());
         self.handlers.get(event).map(|v| v.as_slice())
-    }
+}
 }
 
 impl Default for EventBus {
     fn default() -> Self {
-        // Return the default value.
         //
         // Parameters:
         // None.
@@ -129,6 +130,7 @@ impl Default for EventBus {
         // Example:
         // let value = spanda_core::events::default();
 
+        // Build the result via new.
         Self::new()
-    }
+}
 }

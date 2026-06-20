@@ -27,6 +27,7 @@ pub fn rclrs_enabled() -> bool {
     // Example:
     // let result = spanda_core::transport_rclrs::rclrs_enabled();
 
+    // Produce is ok as the result.
     std::env::var("SPANDA_ROS2_RCLRS").is_ok()
 }
 
@@ -45,6 +46,7 @@ pub fn rclrs_available() -> bool {
     // Example:
     // let result = spanda_core::transport_rclrs::rclrs_available();
 
+    // Produce rclrs enabled as the result.
     rclrs_enabled()
 }
 
@@ -63,6 +65,7 @@ fn payload_string(value: &RuntimeValue) -> String {
     // Example:
     // let result = spanda_core::transport_rclrs::payload_string(value);
 
+    // Match on value and handle each case.
     match value {
         RuntimeValue::String { value } => value.clone(),
         RuntimeValue::Number { value, .. } => value.to_string(),
@@ -87,12 +90,17 @@ pub fn try_rclrs_publish(topic: &str, value: &RuntimeValue) -> bool {
     // Example:
     // let result = spanda_core::transport_rclrs::try_rclrs_publish(topic, value);
 
+    // take the branch when rclrs enabled is false.
     if !rclrs_enabled() {
         return false;
     }
+
+    // Take this path when native::publish(topic, &payload string(value)).
     if native::publish(topic, &payload_string(value)) {
         return true;
     }
+
+    // Take this path when daemon publish(topic, value).
     if daemon_publish(topic, value) {
         return true;
     }
@@ -114,12 +122,17 @@ pub fn try_rclrs_subscribe(topic: &str) -> bool {
     // Example:
     // let result = spanda_core::transport_rclrs::try_rclrs_subscribe(topic);
 
+    // take the branch when rclrs enabled is false.
     if !rclrs_enabled() {
         return false;
     }
+
+    // Take this path when native::subscribe(topic).
     if native::subscribe(topic) {
         return true;
     }
+
+    // Take this path when daemon subscribe(topic).
     if daemon_subscribe(topic) {
         return true;
     }
@@ -143,12 +156,17 @@ pub fn try_rclrs_service_call(service: &str, service_type: &str, request: &str) 
     // Example:
     // let result = spanda_core::transport_rclrs::try_rclrs_service_call(service, service_type, request);
 
+    // take the branch when rclrs enabled is false.
     if !rclrs_enabled() {
         return false;
     }
+
+    // Take this path when native::service call(service, service type, request).
     if native::service_call(service, service_type, request) {
         return true;
     }
+
+    // Take this path when daemon service call(service, service type, request).
     if daemon_service_call(service, service_type, request) {
         return true;
     }
@@ -170,9 +188,12 @@ pub fn init_node(name: &str) -> Result<(), String> {
     // Example:
     // let result = spanda_core::transport_rclrs::init_node(name);
 
+    // take this path when native::sdk available().
     if native::sdk_available() {
         return native::init_node(name);
     }
+
+    // Take this path when daemon subscribe("/spanda/rclrs/init").
     if daemon_subscribe("/spanda/rclrs/init") {
         let _ = name;
         Ok(())
@@ -199,6 +220,7 @@ pub fn native_sdk_available() -> bool {
     // Example:
     // let result = spanda_core::transport_rclrs::native_sdk_available();
 
+    // Produce sdk available as the result.
     native::sdk_available()
 }
 

@@ -20,6 +20,7 @@ pub fn known_capabilities() -> &'static [&'static str] {
     // Example:
     // let result = spanda_security::capability::known_capabilities();
 
+    // Return the static list of known values.
     &[
         "network.outbound",
         "network.inbound",
@@ -45,7 +46,6 @@ pub fn known_capabilities() -> &'static [&'static str] {
 }
 
 pub fn is_known_capability(cap: &str) -> bool {
-    // Return whether known capability.
     //
     // Parameters:
     // - `cap` — input value
@@ -59,6 +59,7 @@ pub fn is_known_capability(cap: &str) -> bool {
     // Example:
     // let result = spanda_security::capability::is_known_capability(cap);
 
+    // Produce contains as the result.
     known_capabilities().contains(&cap)
 }
 
@@ -84,10 +85,11 @@ impl Permission {
         // Example:
         // let value = spanda_security::capability::new(capability);
 
+        // Assemble the struct fields and return it.
         Self {
             capability: capability.into(),
         }
-    }
+}
 }
 
 /// Set of granted capabilities with runtime enforcement.
@@ -113,8 +115,9 @@ impl CapabilitySet {
         // Example:
         // let value = spanda_security::capability::new();
 
+        // Build the result via default.
         Self::default()
-    }
+}
 
     pub fn permissive() -> Self {
         // Permissive.
@@ -131,6 +134,7 @@ impl CapabilitySet {
         // Example:
         // let result = spanda_security::capability::permissive();
 
+        // Assemble the struct fields and return it.
         Self {
             granted: known_capabilities()
                 .iter()
@@ -138,7 +142,7 @@ impl CapabilitySet {
                 .collect(),
             permissive: true,
         }
-    }
+}
 
     pub fn grant(&mut self, capability: impl Into<String>) {
         // Grant.
@@ -156,8 +160,9 @@ impl CapabilitySet {
         // Example:
         // let result = instance.grant(capability);
 
+        // Append into self.
         self.granted.insert(capability.into());
-    }
+}
 
     pub fn grant_all(&mut self, caps: impl IntoIterator<Item = impl Into<String>>) {
         // Grant all.
@@ -175,10 +180,11 @@ impl CapabilitySet {
         // Example:
         // let result = instance.grant_all(caps);
 
+        // Validate each requested capability.
         for cap in caps {
             self.grant(cap);
         }
-    }
+}
 
     pub fn has(&self, capability: &str) -> bool {
         // Has.
@@ -196,8 +202,9 @@ impl CapabilitySet {
         // Example:
         // let result = instance.has(capability);
 
+        // Call contains on the current instance.
         self.permissive || self.granted.contains(capability)
-    }
+}
 
     pub fn require(&self, capability: &str) -> SecurityResult<()> {
         // Require.
@@ -215,12 +222,13 @@ impl CapabilitySet {
         // Example:
         // let result = instance.require(capability);
 
+        // take this path when self.has(capability).
         if self.has(capability) {
             Ok(())
         } else {
             Err(SecurityError::CapabilityDenied(capability.to_string()))
         }
-    }
+}
 
     pub fn granted(&self) -> impl Iterator<Item = &str> {
         // Granted.
@@ -237,8 +245,9 @@ impl CapabilitySet {
         // Example:
         // let result = instance.granted();
 
+        // Iterate over granted.
         self.granted.iter().map(String::as_str)
-    }
+}
 }
 
 /// Maps high-level runtime operations to required package capabilities.
@@ -257,6 +266,7 @@ pub fn capability_for_operation(operation: &str) -> Option<&'static str> {
     // Example:
     // let result = spanda_security::capability::capability_for_operation(operation);
 
+    // Match on operation and handle each case.
     match operation {
         "audit.record" | "audit.append" => Some("audit.write"),
         "audit.export" | "audit.read" => Some("audit.read"),

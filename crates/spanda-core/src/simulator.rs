@@ -20,7 +20,6 @@ pub struct SimulatorConfig {
 
 impl Default for SimulatorConfig {
     fn default() -> Self {
-        // Return the default value.
         //
         // Parameters:
         // None.
@@ -34,6 +33,7 @@ impl Default for SimulatorConfig {
         // Example:
         // let value = spanda_core::simulator::default();
 
+        // Assemble the struct fields and return it.
         Self {
             obstacles: vec![
                 Obstacle {
@@ -55,7 +55,7 @@ impl Default for SimulatorConfig {
             },
             lidar_range: 10.0,
         }
-    }
+}
 }
 
 #[derive(Debug, Clone)]
@@ -98,6 +98,7 @@ impl Simulator {
         // Example:
         // let value = spanda_core::simulator::new(config);
 
+        // Assemble the struct fields and return it.
         Self {
             pose: config.initial_pose,
             velocity: VelocityState {
@@ -117,10 +118,9 @@ impl Simulator {
             action_log: Vec::new(),
             hal: create_sim_hal(),
         }
-    }
+}
 
     pub fn get_event_log(&self) -> Vec<String> {
-        // Return event log.
         //
         // Parameters:
         // - `self` — method receiver
@@ -134,11 +134,11 @@ impl Simulator {
         // Example:
         // let result = instance.get_event_log();
 
+        // Call clone on the current instance.
         self.event_log.clone()
-    }
+}
 
     pub fn get_arm_position(&self) -> (f64, f64, f64) {
-        // Return arm position.
         //
         // Parameters:
         // - `self` — method receiver
@@ -152,11 +152,11 @@ impl Simulator {
         // Example:
         // let result = instance.get_arm_position();
 
+        // Call arm position on the current instance.
         self.arm_position
-    }
+}
 
     pub fn get_service_log(&self) -> Vec<String> {
-        // Return service log.
         //
         // Parameters:
         // - `self` — method receiver
@@ -170,11 +170,11 @@ impl Simulator {
         // Example:
         // let result = instance.get_service_log();
 
+        // Call clone on the current instance.
         self.service_log.clone()
-    }
+}
 
     pub fn get_action_log(&self) -> Vec<String> {
-        // Return action log.
         //
         // Parameters:
         // - `self` — method receiver
@@ -188,11 +188,11 @@ impl Simulator {
         // Example:
         // let result = instance.get_action_log();
 
+        // Call clone on the current instance.
         self.action_log.clone()
-    }
+}
 
     pub fn get_published_topics(&self) -> Vec<PublishedMessage> {
-        // Return published topics.
         //
         // Parameters:
         // - `self` — method receiver
@@ -206,8 +206,9 @@ impl Simulator {
         // Example:
         // let result = instance.get_published_topics();
 
+        // Call clone on the current instance.
         self.published.clone()
-    }
+}
 
     fn simulate_lidar(&self) -> f64 {
         // Simulate lidar.
@@ -224,24 +225,28 @@ impl Simulator {
         // Example:
         // let result = instance.simulate_lidar();
 
+        // Create mutable nearest for accumulating results.
         let mut nearest = self.lidar_range;
 
+        // Process each obstacle.
         for obs in &self.obstacles {
             let dx = obs.x - self.pose.x;
             let dy = obs.y - self.pose.y;
             let dist = (dx * dx + dy * dy).sqrt() - obs.radius;
+
+            // Take this path when dist > 0.0 && dist < nearest.
             if dist > 0.0 && dist < nearest {
                 nearest = dist;
             }
         }
-
         let wall_dist = 5.0 - self.pose.x.abs();
+
+        // Take this path when wall dist > 0.0 && wall dist < nearest.
         if wall_dist > 0.0 && wall_dist < nearest {
             nearest = wall_dist;
         }
-
         nearest.max(0.01)
-    }
+}
 }
 
 impl RobotBackend for Simulator {
@@ -268,9 +273,11 @@ impl RobotBackend for Simulator {
         // Example:
         // let result = instance.read_sensor(_sensor_name, sensor_type, _topic);
 
+        // Import the items needed by the logic below.
         use crate::ast::UnitKind;
         use std::collections::HashMap;
 
+        // Match on sensor type and handle each case.
         match sensor_type {
             "Lidar" => RuntimeValue::Scan {
                 nearest_distance: self.simulate_lidar(),
@@ -355,7 +362,7 @@ impl RobotBackend for Simulator {
             },
             _ => RuntimeValue::Void,
         }
-    }
+}
 
     fn publish_topic(&mut self, topic_path: &str, message_type: &str, value: RuntimeValue) {
         // Publish topic.
@@ -375,6 +382,7 @@ impl RobotBackend for Simulator {
         // Example:
         // let result = instance.publish_topic(topic_path, message_type, value);
 
+        // take this path when let RuntimeValue::Velocity { linear, angular } = &value.
         if let RuntimeValue::Velocity { linear, angular } = &value {
             self.velocity = VelocityState {
                 linear: *linear,
@@ -388,7 +396,7 @@ impl RobotBackend for Simulator {
         });
         self.event_log
             .push(format!("publish({topic_path}, {message_type})"));
-    }
+}
 
     fn call_service(&mut self, service_name: &str, service_type: &str) -> RuntimeValue {
         // Call service.
@@ -407,11 +415,12 @@ impl RobotBackend for Simulator {
         // Example:
         // let result = instance.call_service(service_name, service_type);
 
+        // Call service log on the current instance.
         self.service_log
             .push(format!("{service_name}:{service_type}"));
         self.event_log.push(format!("service({service_name})"));
         RuntimeValue::Bool { value: true }
-    }
+}
 
     fn send_action(
         &mut self,
@@ -436,8 +445,11 @@ impl RobotBackend for Simulator {
         // Example:
         // let result = instance.send_action(action_name, action_type, goal);
 
+        // Append into self.
         self.action_log.push(format!("{action_name}:{action_type}"));
         self.event_log.push(format!("action({action_name})"));
+
+        // Match on goal and handle each case.
         match goal {
             RuntimeValue::Pose { x, y, theta, z } => {
                 self.pose = PoseState {
@@ -453,7 +465,7 @@ impl RobotBackend for Simulator {
             _ => {}
         }
         RuntimeValue::Bool { value: true }
-    }
+}
 
     fn execute_motion(&mut self, cmd: MotionCommand) {
         // Execute motion.
@@ -471,6 +483,7 @@ impl RobotBackend for Simulator {
         // Example:
         // let result = instance.execute_motion(cmd);
 
+        // keep entries that match the expected pattern.
         if self.emergency_stop && !matches!(cmd, MotionCommand::Stop { .. }) {
             self.velocity = VelocityState {
                 linear: 0.0,
@@ -479,6 +492,7 @@ impl RobotBackend for Simulator {
             return;
         }
 
+        // Match on cmd and handle each case.
         match cmd {
             MotionCommand::Drive {
                 linear, angular, ..
@@ -529,7 +543,7 @@ impl RobotBackend for Simulator {
                 self.event_log.push("hover()".into());
             }
         }
-    }
+}
 
     fn tick(&mut self, dt_ms: f64) {
         // Tick.
@@ -547,6 +561,7 @@ impl RobotBackend for Simulator {
         // Example:
         // let result = instance.tick(dt_ms);
 
+        // take this path when self.emergency stop.
         if self.emergency_stop {
             self.velocity = VelocityState {
                 linear: 0.0,
@@ -554,13 +569,15 @@ impl RobotBackend for Simulator {
             };
             return;
         }
-
         let dt = dt_ms / 1000.0;
 
+        // Emit output when cloned provides a target.
         if let Some(target) = self.follow_queue.first().cloned() {
             let dx = target.x - self.pose.x;
             let dy = target.y - self.pose.y;
             let dist = (dx * dx + dy * dy).sqrt();
+
+            // Take this path when dist < 0.05.
             if dist < 0.05 {
                 self.follow_queue.remove(0);
                 self.pose.x = target.x;
@@ -579,22 +596,21 @@ impl RobotBackend for Simulator {
             return;
         }
 
+        // Take this path when self.thrust > 0.0.
         if self.thrust > 0.0 {
             let climb_rate = (self.thrust - 0.5) * 2.0;
             let z = self.pose.z.unwrap_or(0.0);
             self.pose.z = Some((z + climb_rate * dt).max(0.0));
         }
-
         let new_theta = self.pose.theta + self.velocity.angular * dt;
         let new_x = self.pose.x + self.velocity.linear * self.pose.theta.cos() * dt;
         let new_y = self.pose.y + self.velocity.linear * self.pose.theta.sin() * dt;
         self.pose.x = new_x;
         self.pose.y = new_y;
         self.pose.theta = new_theta;
-    }
+}
 
     fn get_state(&self) -> RobotState {
-        // Return state.
         //
         // Parameters:
         // - `self` — method receiver
@@ -608,12 +624,13 @@ impl RobotBackend for Simulator {
         // Example:
         // let result = instance.get_state();
 
+        // Produce RobotState as the result.
         RobotState {
             pose: self.pose.clone(),
             velocity: self.velocity.clone(),
             emergency_stop: self.emergency_stop,
         }
-    }
+}
 
     fn set_emergency_stop(&mut self, value: bool) {
         // Set emergency stop.
@@ -631,7 +648,10 @@ impl RobotBackend for Simulator {
         // Example:
         // let result = instance.set_emergency_stop(value);
 
+        // Call emergency stop = value; on the current instance.
         self.emergency_stop = value;
+
+        // Take this path when value.
         if value {
             self.velocity = VelocityState {
                 linear: 0.0,
@@ -639,10 +659,9 @@ impl RobotBackend for Simulator {
             };
             self.follow_queue.clear();
         }
-    }
+}
 
     fn get_hal(&mut self) -> Option<&mut dyn HalBackend> {
-        // Return hal.
         //
         // Parameters:
         // - `self` — method receiver
@@ -656,8 +675,9 @@ impl RobotBackend for Simulator {
         // Example:
         // let result = instance.get_hal();
 
+        // Produce hal) as the result.
         Some(&mut self.hal)
-    }
+}
 
     fn event_log(&self) -> Vec<String> {
         // Event log.
@@ -674,8 +694,9 @@ impl RobotBackend for Simulator {
         // Example:
         // let result = instance.event_log();
 
+        // Call get event log on the current instance.
         self.get_event_log()
-    }
+}
 }
 
 pub fn create_default_simulator(config: SimulatorConfig) -> Simulator {
@@ -693,6 +714,7 @@ pub fn create_default_simulator(config: SimulatorConfig) -> Simulator {
     // Example:
     // let result = spanda_core::simulator::create_default_simulator(config);
 
+    // Produce new as the result.
     Simulator::new(config)
 }
 

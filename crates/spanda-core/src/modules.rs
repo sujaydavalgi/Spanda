@@ -34,8 +34,9 @@ impl ModuleRegistry {
         // Example:
         // let value = spanda_core::modules::new();
 
+        // Build the result via default.
         Self::default()
-    }
+}
 
     pub fn register(&mut self, module_name: &str, program: &Program) {
         // Register the value.
@@ -54,18 +55,23 @@ impl ModuleRegistry {
         // Example:
         // let result = instance.register(module_name, program);
 
+        // Destructure the program into its top-level sections.
         let Program::Program { functions, .. } = program;
         let mut exports = ModuleExports::default();
+
+        // Generate code for each module function.
         for func in functions {
             let ModuleFnDecl {
                 name, visibility, ..
             } = func;
+
+            // Keep entries that match the expected pattern.
             if matches!(visibility, Visibility::Export | Visibility::Public) {
                 exports.functions.insert(name.clone(), func.clone());
             }
         }
         self.modules.insert(module_name.to_string(), exports);
-    }
+}
 
     pub fn exports_for(&self, import_path: &str) -> Option<&ModuleExports> {
         // Exports for.
@@ -83,8 +89,9 @@ impl ModuleRegistry {
         // Example:
         // let result = instance.exports_for(import_path);
 
+        // Call get on the current instance.
         self.modules.get(import_path)
-    }
+}
 
     pub fn function(&self, import_path: &str, name: &str) -> Option<&ModuleFnDecl> {
         // Function.
@@ -103,21 +110,23 @@ impl ModuleRegistry {
         // Example:
         // let result = instance.function(import_path, name);
 
+        // Call exports for on the current instance.
         self.exports_for(import_path)
             .and_then(|e| e.functions.get(name))
-    }
+}
 
     /// Build a registry from parsed programs. Each entry is `(module_name, program)`.
-    pub fn from_programs(entries: &[(String, Program)]) -> Self {
+    pub fn from_programs(entries: &[(String, Program)]) -> Self {        // Create mutable registry for accumulating results.
         let mut registry = Self::new();
+
+        // Iterate over entries with destructured elements.
         for (name, program) in entries {
             registry.register(name, program);
         }
         registry
-    }
+}
 
     pub fn module_count(&self) -> usize {
-        // Return the number of module.
         //
         // Parameters:
         // - `self` — method receiver
@@ -131,8 +140,9 @@ impl ModuleRegistry {
         // Example:
         // let result = instance.module_count();
 
+        // Call len on the current instance.
         self.modules.len()
-    }
+}
 }
 
 /// Parse all `.sd` files under `src/` and `tests/`, building a module registry.
@@ -151,15 +161,24 @@ pub fn load_project_modules(project_root: &Path) -> Result<ModuleRegistry, Spand
     // Example:
     // let result = spanda_core::modules::load_project_modules(project_root);
 
+    // Create mutable entries for accumulating results.
     let mut entries = Vec::new();
+
+    // Iterate over ["src", "tests"].
     for sub in ["src", "tests"] {
         let dir = project_root.join(sub);
+
+        // Treat the path as a directory and scan its contents.
         if dir.is_dir() {
             collect_modules(&dir, &mut entries)?;
         }
     }
     let vendor_root = project_root.join(".spanda/packages");
+
+    // Treat the path as a directory and scan its contents.
     if vendor_root.is_dir() {
+
+        // Process each registry entry.
         for entry in std::fs::read_dir(&vendor_root).map_err(|e| SpandaError::Runtime {
             message: e.to_string(),
             line: 0,
@@ -169,14 +188,20 @@ pub fn load_project_modules(project_root: &Path) -> Result<ModuleRegistry, Spand
                 line: 0,
             })?;
             let path = entry.path();
+
+            // Treat the path as a directory and scan its contents.
             if path.is_dir() {
                 let src = path.join("src");
+
+                // Treat the path as a directory and scan its contents.
                 if src.is_dir() {
                     collect_modules(&src, &mut entries)?;
                 }
             }
         }
     }
+
+    // Skip further work when entries is empty.
     if entries.is_empty() {
         return Ok(ModuleRegistry::new());
     }
@@ -199,6 +224,7 @@ fn collect_modules(dir: &Path, out: &mut Vec<(String, Program)>) -> Result<(), S
     // Example:
     // let result = spanda_core::modules::collect_modules(dir, out);
 
+    // Process each registry entry.
     for entry in std::fs::read_dir(dir).map_err(|e| SpandaError::Runtime {
         message: e.to_string(),
         line: 0,
@@ -208,6 +234,8 @@ fn collect_modules(dir: &Path, out: &mut Vec<(String, Program)>) -> Result<(), S
             line: 0,
         })?;
         let path = entry.path();
+
+        // Treat the path as a directory and scan its contents.
         if path.is_dir() {
             collect_modules(&path, out)?;
         } else if path.extension().is_some_and(|e| e == "sd") {
@@ -250,6 +278,7 @@ pub fn module_name_from_path(path: &Path) -> String {
     // Example:
     // let result = spanda_core::modules::module_name_from_path(path);
 
+    // Produce file stem as the result.
     path.file_stem()
         .and_then(|s| s.to_str())
         .unwrap_or("main")
@@ -277,6 +306,7 @@ mod tests {
         // Example:
         // let result = spanda_core::modules::empty_span();
 
+        // Produce Span as the result.
         Span {
             start: crate::ast::SourceLocation {
                 line: 1,
@@ -289,7 +319,7 @@ mod tests {
                 offset: 0,
             },
         }
-    }
+}
 
     fn sample_program(functions: Vec<ModuleFnDecl>) -> Program {
         // Sample program.
@@ -306,6 +336,7 @@ mod tests {
         // Example:
         // let result = spanda_core::modules::sample_program(functions);
 
+        // Produce Program as the result.
         Program::Program {
             module_name: Some("navigation.path_planning".into()),
             imports: vec![],
@@ -324,7 +355,7 @@ mod tests {
             robots: vec![],
             span: empty_span(),
         }
-    }
+}
 
     #[test]
     fn registry_exports_public_functions_only() {

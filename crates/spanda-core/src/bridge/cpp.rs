@@ -26,8 +26,11 @@ pub fn bridge_binary_path() -> Option<PathBuf> {
     // Example:
     // let result = spanda_core::cpp::bridge_binary_path();
 
+    // handle the success value from var.
     if let Ok(path) = std::env::var("SPANDA_CPP_BRIDGE") {
         let p = PathBuf::from(path);
+
+        // Continue only when the path is a regular file.
         if p.is_file() {
             return Some(p);
         }
@@ -52,12 +55,17 @@ fn candidate_binary_paths() -> Vec<PathBuf> {
     // Example:
     // let result = spanda_core::cpp::candidate_binary_paths();
 
+    // Create mutable paths for accumulating results.
     let mut paths = Vec::new();
+
+    // Emit output when option env! provides a path.
     if let Some(path) = option_env!("SPANDA_CPP_BRIDGE_BIN") {
         paths.push(PathBuf::from(path));
     }
     paths.push(PathBuf::from("scripts/spanda_cpp_bridge"));
     paths.push(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../scripts/spanda_cpp_bridge"));
+
+    // Handle the success value from current dir.
     if let Ok(cwd) = std::env::current_dir() {
         paths.push(cwd.join("scripts/spanda_cpp_bridge"));
     }
@@ -79,6 +87,7 @@ pub fn bridge_available() -> bool {
     // Example:
     // let result = spanda_core::cpp::bridge_available();
 
+    // Produce is some as the result.
     bridge_binary_path().is_some()
 }
 
@@ -101,13 +110,17 @@ pub fn call_extern(
     // Example:
     // let result = spanda_core::cpp::call_extern(decl, args);
 
+    // Produce #[cfg as the result.
     #[cfg(feature = "cpp-native")]
+
+    // Take this path when std::env::var("SPANDA CPP SUBPROCESS").is err().
     if std::env::var("SPANDA_CPP_SUBPROCESS").is_err() {
+
+        // Take this path when super::cpp native::native available().
         if super::cpp_native::native_available() {
             return super::cpp_native::call_extern(decl, args);
         }
     }
-
     let line = decl.span.start.line;
     let binary = bridge_binary_path().ok_or_else(|| SpandaError::Runtime {
         message:
@@ -139,6 +152,7 @@ mod tests {
         // Example:
         // let result = spanda_core::cpp::test_decl(name);
 
+        // Produce ExternFnDecl as the result.
         ExternFnDecl {
             name: name.into(),
             library: Some("cpp".into()),
@@ -158,7 +172,7 @@ mod tests {
                 },
             },
         }
-    }
+}
 
     #[test]
     fn subprocess_cpp_add_when_binary_available() {

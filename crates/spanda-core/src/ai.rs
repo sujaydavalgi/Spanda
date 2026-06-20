@@ -14,7 +14,6 @@ pub enum AiRuntimeKind {
 
 impl AiRuntimeKind {
     pub fn as_str(self) -> &'static str {
-        // Return as str.
         //
         // Parameters:
         // - `self` — method receiver
@@ -28,13 +27,14 @@ impl AiRuntimeKind {
         // Example:
         // let result = instance.as_str();
 
+        // Dispatch based on the enum variant or current state.
         match self {
             AiRuntimeKind::Onnx => "onnx",
             AiRuntimeKind::Tflite => "tflite",
             AiRuntimeKind::Tensorrt => "tensorrt",
             AiRuntimeKind::OpenVino => "openvino",
         }
-    }
+}
 }
 
 #[derive(Debug, Clone)]
@@ -62,6 +62,7 @@ fn build_ai_registry() -> HashMap<String, AiLibModule> {
     // Example:
     // let result = spanda_core::ai::build_ai_registry();
 
+    // Produce from as the result.
     HashMap::from([
         (
             "onnx.runtime".to_string(),
@@ -127,6 +128,7 @@ pub fn ai_lib_registry() -> &'static HashMap<String, AiLibModule> {
     // Example:
     // let result = spanda_core::ai::ai_lib_registry();
 
+    // Produce get or init as the result.
     AI_REGISTRY.get_or_init(build_ai_registry)
 }
 
@@ -145,6 +147,7 @@ pub fn resolve_ai_import(path: &str) -> Option<&'static AiLibModule> {
     // Example:
     // let result = spanda_core::ai::resolve_ai_import(path);
 
+    // Produce get as the result.
     ai_lib_registry().get(path)
 }
 
@@ -163,6 +166,7 @@ pub fn ai_lib_registry_export() -> &'static HashMap<String, AiLibModule> {
     // Example:
     // let result = spanda_core::ai::ai_lib_registry_export();
 
+    // Produce ai lib registry as the result.
     ai_lib_registry()
 }
 
@@ -181,6 +185,7 @@ pub fn list_ai_libraries() -> Vec<&'static AiLibModule> {
     // Example:
     // let result = spanda_core::ai::list_ai_libraries();
 
+    // Collect filtered entries into a new list.
     ai_lib_registry().values().collect()
 }
 
@@ -229,9 +234,12 @@ fn scan_distance(input: Option<&RuntimeValue>) -> f64 {
     // Example:
     // let result = spanda_core::ai::scan_distance(input);
 
+    // Match on input and handle each case.
     match input {
         Some(RuntimeValue::Scan { nearest_distance }) => *nearest_distance,
         Some(RuntimeValue::Object { type_name, fields }) if type_name == "Detection" => {
+
+            // Take this path when let Some(RuntimeValue::Number { value, .. }) = fields.get("nearest dis.
             if let Some(RuntimeValue::Number { value, .. }) = fields.get("nearest_distance") {
                 *value
             } else {
@@ -265,6 +273,7 @@ fn action_proposal(
     // Example:
     // let result = spanda_core::ai::action_proposal(linear, angular, source, trace);
 
+    // Build a ActionProposal runtime value.
     RuntimeValue::ActionProposal {
         linear,
         angular,
@@ -292,9 +301,11 @@ impl AiProvider for MockAiProvider {
         // Example:
         // let result = instance.complete(request);
 
+        // Compute prompt for the following logic.
         let prompt = request.prompt.clone();
         let dist = scan_distance(request.input.as_ref());
 
+        // Take this path when regex stop halt wait(&request.prompt).
         if regex_stop_halt_wait(&request.prompt) {
             return action_proposal(
                 0.0,
@@ -308,6 +319,7 @@ impl AiProvider for MockAiProvider {
             );
         }
 
+        // Take this path when regex turn avoid obstacle(&request.prompt) || dist < 0.8.
         if regex_turn_avoid_obstacle(&request.prompt) || dist < 0.8 {
             let angular = if dist < 0.4 { 0.6 } else { 0.25 };
             let linear = if dist < 0.4 {
@@ -327,7 +339,6 @@ impl AiProvider for MockAiProvider {
                 ],
             );
         }
-
         let linear = (0.8_f64).min(dist * 0.45);
         action_proposal(
             linear,
@@ -340,7 +351,7 @@ impl AiProvider for MockAiProvider {
                 "decision=forward".into(),
             ],
         )
-    }
+}
 
     fn detect(&self, request: &DetectionRequest) -> RuntimeValue {
         // Detect.
@@ -358,6 +369,7 @@ impl AiProvider for MockAiProvider {
         // Example:
         // let result = instance.detect(request);
 
+        // Compute dist for the following logic.
         let dist = scan_distance(Some(&request.frame));
         let (label, confidence) = if dist < 0.6 {
             ("obstacle", 0.94)
@@ -366,7 +378,6 @@ impl AiProvider for MockAiProvider {
         } else {
             ("clear", 0.71)
         };
-
         let mut fields = HashMap::new();
         fields.insert("label".to_string(), RuntimeValue::string(label));
         fields.insert(
@@ -378,7 +389,7 @@ impl AiProvider for MockAiProvider {
             RuntimeValue::number(dist, UnitKind::M),
         );
         RuntimeValue::object("Detection", fields)
-    }
+}
 
     fn embed(&self, request: &EmbedRequest) -> RuntimeValue {
         // Embed.
@@ -396,6 +407,7 @@ impl AiProvider for MockAiProvider {
         // Example:
         // let result = instance.embed(request);
 
+        // Compute vector for the following logic.
         let vector: Vec<f64> = (0..8)
             .map(|i| (request.text.len() as f64 * 0.13 + i as f64).sin() * 0.5 + 0.5)
             .collect();
@@ -403,7 +415,7 @@ impl AiProvider for MockAiProvider {
             dimensions: vector.len(),
             vector,
         }
-    }
+}
 }
 
 fn regex_stop_halt_wait(prompt: &str) -> bool {
@@ -421,6 +433,7 @@ fn regex_stop_halt_wait(prompt: &str) -> bool {
     // Example:
     // let result = spanda_core::ai::regex_stop_halt_wait(prompt);
 
+    // Compute lower for the following logic.
     let lower = prompt.to_lowercase();
     lower.contains("stop") || lower.contains("halt") || lower.contains("wait")
 }
@@ -440,6 +453,7 @@ fn regex_turn_avoid_obstacle(prompt: &str) -> bool {
     // Example:
     // let result = spanda_core::ai::regex_turn_avoid_obstacle(prompt);
 
+    // Compute lower for the following logic.
     let lower = prompt.to_lowercase();
     lower.contains("turn") || lower.contains("avoid") || lower.contains("obstacle")
 }
@@ -460,6 +474,7 @@ pub fn mock_summarize(input: Option<&RuntimeValue>, model: &str) -> RuntimeValue
     // Example:
     // let result = spanda_core::ai::mock_summarize(input, model);
 
+    // Compute summary for the following logic.
     let summary = match input {
         Some(RuntimeValue::Scan { nearest_distance }) => {
             format!("Nearest obstacle at {nearest_distance:.2} m")
@@ -495,6 +510,7 @@ pub fn mock_analyze_frame(frame: Option<&RuntimeValue>, _model: &str) -> Runtime
     // Example:
     // let result = spanda_core::ai::mock_analyze_frame(frame, _model);
 
+    // Compute dist for the following logic.
     let dist = scan_distance(frame);
     let mut fields = HashMap::new();
     fields.insert(
@@ -531,6 +547,7 @@ pub fn mock_camera_frame() -> RuntimeValue {
     // Example:
     // let result = spanda_core::ai::mock_camera_frame();
 
+    // Create mutable fields for accumulating results.
     let mut fields = HashMap::new();
     fields.insert(
         "width".to_string(),
@@ -564,18 +581,27 @@ pub fn build_prompt(base: &str, input: Option<&RuntimeValue>, goal: Option<&str>
     // Example:
     // let result = spanda_core::ai::build_prompt(base, input, goal);
 
+    // Create mutable header for accumulating results.
     let mut header = String::new();
+
+    // Emit output when is empty provides a g.
     if let Some(g) = goal.filter(|s| !s.is_empty()) {
         header.push_str(&format!("Goal: {g}"));
     }
     let base = base.trim();
+
+    // Skip further work when !base is empty.
     if !base.is_empty() {
+
+        // Skip further work when !header is empty.
         if !header.is_empty() {
             header.push_str("\n\n");
         }
         header.push_str(base);
     }
     let input_summary = summarize_input(input);
+
+    // Skip further work when header is empty.
     if header.is_empty() {
         format!("Context:\n{input_summary}")
     } else {
@@ -598,6 +624,7 @@ fn summarize_input(input: Option<&RuntimeValue>) -> String {
     // Example:
     // let result = spanda_core::ai::summarize_input(input);
 
+    // Match on input and handle each case.
     match input {
         None | Some(RuntimeValue::Void) => "(no input)".to_string(),
         Some(RuntimeValue::Scan { nearest_distance }) => {
@@ -644,6 +671,7 @@ fn runtime_value_kind(value: &RuntimeValue) -> &'static str {
     // Example:
     // let result = spanda_core::ai::runtime_value_kind(value);
 
+    // Match on value and handle each case.
     match value {
         RuntimeValue::Number { .. } => "number",
         RuntimeValue::Bool { .. } => "bool",
@@ -719,6 +747,7 @@ impl AiModel {
         // Example:
         // let value = spanda_core::ai::new(decl, provider);
 
+        // Assemble the struct fields and return it.
         Self {
             name: match decl {
                 AiModelDecl::AiModelDecl { name, .. } => name.clone(),
@@ -729,7 +758,7 @@ impl AiModel {
             config: parse_config(decl),
             provider: provider.unwrap_or_else(|| Box::new(MockAiProvider)),
         }
-    }
+}
 
     pub fn reason(
         &self,
@@ -754,6 +783,7 @@ impl AiModel {
         // Example:
         // let result = instance.reason(prompt, input, goal);
 
+        // take the branch when model type differs from "LLM".
         if self.model_type != "LLM" {
             return Err(format!(
                 "Model '{}' is {}, not LLM",
@@ -768,7 +798,7 @@ impl AiModel {
             temperature: self.config.temperature,
             max_tokens: self.config.max_tokens,
         }))
-    }
+}
 
     pub fn summarize(&self, input: Option<RuntimeValue>) -> Result<RuntimeValue, String> {
         // Summarize.
@@ -786,6 +816,7 @@ impl AiModel {
         // Example:
         // let result = instance.summarize(input);
 
+        // take the branch when model type differs from "LLM".
         if self.model_type != "LLM" {
             return Err(format!(
                 "Model '{}' is {}, not LLM",
@@ -793,7 +824,7 @@ impl AiModel {
             ));
         }
         Ok(mock_summarize(input.as_ref(), &self.config.model))
-    }
+}
 
     pub fn detect(&self, frame: RuntimeValue) -> Result<RuntimeValue, String> {
         // Detect.
@@ -811,6 +842,7 @@ impl AiModel {
         // Example:
         // let result = instance.detect(frame);
 
+        // take the branch when model type differs from "VisionModel".
         if self.model_type != "VisionModel" {
             return Err(format!(
                 "Model '{}' is {}, not VisionModel",
@@ -822,7 +854,7 @@ impl AiModel {
             provider: self.config.provider.clone(),
             frame,
         }))
-    }
+}
 
     pub fn to_runtime_value(&self) -> RuntimeValue {
         // Convert to runtime value.
@@ -839,12 +871,13 @@ impl AiModel {
         // Example:
         // let result = instance.to_runtime_value();
 
+        // Build a AiModel runtime value.
         RuntimeValue::AiModel {
             name: self.name.clone(),
             model_type: self.model_type.clone(),
             provider: self.config.provider.clone(),
         }
-    }
+}
 }
 
 fn parse_config(decl: &AiModelDecl) -> AiModelConfig {
@@ -862,12 +895,12 @@ fn parse_config(decl: &AiModelDecl) -> AiModelConfig {
     // Example:
     // let result = spanda_core::ai::parse_config(decl);
 
+    // Compute AiModelDecl for the following logic.
     let AiModelDecl::AiModelDecl { config, name, .. } = decl;
     let map: HashMap<String, ConfigValue> = config
         .iter()
         .map(|e| (e.key.clone(), e.value.clone()))
         .collect();
-
     AiModelConfig {
         provider: config_string(&map, "provider", "mock"),
         model: config_string(&map, "model", name),
@@ -893,6 +926,7 @@ fn config_string(map: &HashMap<String, ConfigValue>, key: &str, default: &str) -
     // Example:
     // let result = spanda_core::ai::config_string(map, key, default);
 
+    // Match on get and handle each case.
     match map.get(key) {
         Some(ConfigValue::String(s)) => s.clone(),
         Some(ConfigValue::Number(n)) => n.to_string(),
@@ -918,6 +952,7 @@ fn config_number(map: &HashMap<String, ConfigValue>, key: &str, default: f64) ->
     // Example:
     // let result = spanda_core::ai::config_number(map, key, default);
 
+    // Match on get and handle each case.
     match map.get(key) {
         Some(ConfigValue::Number(n)) => *n,
         Some(ConfigValue::String(s)) => s.parse().unwrap_or(default),
@@ -940,6 +975,7 @@ pub fn create_ai_model(decl: &AiModelDecl) -> AiModel {
     // Example:
     // let result = spanda_core::ai::create_ai_model(decl);
 
+    // Produce new as the result.
     AiModel::new(decl, None)
 }
 
@@ -965,6 +1001,7 @@ pub fn create_agent_runtime(decl: AgentDecl, memory: Option<MemoryStore>) -> Age
     // Example:
     // let result = spanda_core::ai::create_agent_runtime(decl, memory);
 
+    // Produce AgentRuntime { decl, memory } as the result.
     AgentRuntime { decl, memory }
 }
 
@@ -983,6 +1020,7 @@ pub fn agent_tool_names(decl: &AgentDecl) -> Vec<String> {
     // Example:
     // let result = spanda_core::ai::agent_tool_names(decl);
 
+    // Match on decl and handle each case.
     match decl {
         AgentDecl::AgentDecl { tools, .. } => tools.clone(),
     }
@@ -1003,6 +1041,7 @@ pub fn agent_uses_models(decl: &AgentDecl) -> Vec<String> {
     // Example:
     // let result = spanda_core::ai::agent_uses_models(decl);
 
+    // Match on decl and handle each case.
     match decl {
         AgentDecl::AgentDecl { uses_ai, .. } => uses_ai.clone(),
     }
@@ -1031,6 +1070,7 @@ pub fn execute_agent_plan(
     // Example:
     // let result = spanda_core::ai::execute_agent_plan(agent, executor);
 
+    // Compute plan body for the following logic.
     let plan_body = match &agent.decl {
         AgentDecl::AgentDecl { plan_body, .. } => plan_body,
     };
@@ -1059,11 +1099,12 @@ impl From<MemoryKind> for AiMemoryKind {
         // Example:
         // let result = spanda_core::ai::from(kind);
 
+        // Match on kind and handle each case.
         match kind {
             MemoryKind::ShortTerm => AiMemoryKind::ShortTerm,
             MemoryKind::LongTerm => AiMemoryKind::LongTerm,
         }
-    }
+}
 }
 
 #[derive(Clone)]
@@ -1098,6 +1139,7 @@ impl MemoryStore {
         // Example:
         // let value = spanda_core::ai::new(kind, limit);
 
+        // Compute default limit for the following logic.
         let default_limit = match kind {
             AiMemoryKind::ShortTerm => 32,
             AiMemoryKind::LongTerm => 256,
@@ -1107,7 +1149,7 @@ impl MemoryStore {
             entries: Vec::new(),
             limit: limit.unwrap_or(default_limit),
         }
-    }
+}
 
     pub fn remember(&mut self, key: impl Into<String>, value: RuntimeValue) {
         // Remember.
@@ -1126,6 +1168,7 @@ impl MemoryStore {
         // Example:
         // let result = instance.remember(key, value);
 
+        // Append into self.
         self.entries.push(MemoryEntry {
             key: key.into(),
             value,
@@ -1134,10 +1177,12 @@ impl MemoryStore {
                 .map(|d| d.as_millis())
                 .unwrap_or(0),
         });
+
+        // Take this path when self.entries.len() > self.limit.
         if self.entries.len() > self.limit {
             self.entries.remove(0);
         }
-    }
+}
 
     pub fn recall(&self, key: &str) -> Option<&RuntimeValue> {
         // Recall.
@@ -1155,12 +1200,13 @@ impl MemoryStore {
         // Example:
         // let result = instance.recall(key);
 
+        // Call entries on the current instance.
         self.entries
             .iter()
             .rev()
             .find(|e| e.key == key)
             .map(|e| &e.value)
-    }
+}
 
     pub fn recent(&self, count: usize) -> Vec<&RuntimeValue> {
         // Recent.
@@ -1178,6 +1224,7 @@ impl MemoryStore {
         // Example:
         // let result = instance.recent(count);
 
+        // Call entries on the current instance.
         self.entries
             .iter()
             .rev()
@@ -1187,7 +1234,7 @@ impl MemoryStore {
             .into_iter()
             .rev()
             .collect()
-    }
+}
 
     pub fn clear(&mut self) {
         // Clear the value.
@@ -1204,8 +1251,9 @@ impl MemoryStore {
         // Example:
         // let result = instance.clear();
 
+        // Call clear on the current instance.
         self.entries.clear();
-    }
+}
 
     pub fn summary_for_prompt(&self) -> Option<String> {
         // Summary for prompt.
@@ -1222,6 +1270,7 @@ impl MemoryStore {
         // Example:
         // let result = instance.summary_for_prompt();
 
+        // skip further work when entries is empty.
         if self.entries.is_empty() {
             return None;
         }
@@ -1237,7 +1286,7 @@ impl MemoryStore {
             .map(|e| e.key.as_str())
             .collect();
         Some(format!("Agent memory ({kind}): {}", keys.join(", ")))
-    }
+}
 }
 
 pub fn runtime_safe_action(linear: f64, angular: f64) -> RuntimeValue {
@@ -1256,6 +1305,7 @@ pub fn runtime_safe_action(linear: f64, angular: f64) -> RuntimeValue {
     // Example:
     // let result = spanda_core::ai::runtime_safe_action(linear, angular);
 
+    // Build a SafeAction runtime value.
     RuntimeValue::SafeAction { linear, angular }
 }
 
@@ -1280,6 +1330,7 @@ pub fn runtime_action_proposal(
     // Example:
     // let result = spanda_core::ai::runtime_action_proposal(linear, angular, source);
 
+    // Build a ActionProposal runtime value.
     RuntimeValue::ActionProposal {
         linear,
         angular,
@@ -1289,7 +1340,6 @@ pub fn runtime_action_proposal(
 }
 
 pub fn is_action_proposal(value: &RuntimeValue) -> bool {
-    // Return whether action proposal.
     //
     // Parameters:
     // - `value` — input value
@@ -1303,6 +1353,7 @@ pub fn is_action_proposal(value: &RuntimeValue) -> bool {
     // Example:
     // let result = spanda_core::ai::is_action_proposal(value);
 
+    // Produce }) as the result.
     matches!(value, RuntimeValue::ActionProposal { .. })
 }
 
@@ -1322,14 +1373,23 @@ pub fn proposal_confidence(value: &RuntimeValue) -> f64 {
     // Example:
     // let result = spanda_core::ai::proposal_confidence(value);
 
+    // Match on value and handle each case.
     match value {
         RuntimeValue::ActionProposal { trace, .. } => {
+
+            // Handle each input line.
             for line in trace {
+
+                // Emit output when strip prefix provides a dist str.
                 if let Some(dist_str) = line.strip_prefix("nearest_distance=") {
+
+                    // Handle the success value from <f64>.
                     if let Ok(dist) = dist_str.parse::<f64>() {
                         return (dist / 5.0).clamp(0.05, 1.0);
                     }
                 }
+
+                // Check membership before continuing.
                 if line.contains("decision=stop") {
                     return 0.95;
                 }
@@ -1337,6 +1397,8 @@ pub fn proposal_confidence(value: &RuntimeValue) -> f64 {
             0.75
         }
         RuntimeValue::Object { fields, .. } => {
+
+            // Take this path when let Some(RuntimeValue::Number { value, .. }) = fields.get("confidence".
             if let Some(RuntimeValue::Number { value, .. }) = fields.get("confidence") {
                 return value.clamp(0.0, 1.0);
             }
@@ -1349,7 +1411,6 @@ pub fn proposal_confidence(value: &RuntimeValue) -> f64 {
 pub const AI_CONFIDENCE_LOW_THRESHOLD: f64 = 0.5;
 
 pub fn is_safe_action(value: &RuntimeValue) -> bool {
-    // Return whether safe action.
     //
     // Parameters:
     // - `value` — input value
@@ -1363,6 +1424,7 @@ pub fn is_safe_action(value: &RuntimeValue) -> bool {
     // Example:
     // let result = spanda_core::ai::is_safe_action(value);
 
+    // Produce }) as the result.
     matches!(value, RuntimeValue::SafeAction { .. })
 }
 
@@ -1388,6 +1450,7 @@ pub fn proposal_from_value(value: &RuntimeValue) -> Option<ActionProposalFields>
     // Example:
     // let result = spanda_core::ai::proposal_from_value(value);
 
+    // Match on value and handle each case.
     match value {
         RuntimeValue::ActionProposal {
             linear,
@@ -1439,6 +1502,7 @@ pub fn safe_action_from_proposal(linear: f64, angular: f64) -> RuntimeValue {
     // Example:
     // let result = spanda_core::ai::safe_action_from_proposal(linear, angular);
 
+    // Produce runtime safe action as the result.
     runtime_safe_action(linear, angular)
 }
 
@@ -1458,6 +1522,7 @@ pub fn wrap_completion(text: impl Into<String>, model: impl Into<String>) -> Run
     // Example:
     // let result = spanda_core::ai::wrap_completion(text, model);
 
+    // Build a Completion runtime value.
     RuntimeValue::Completion {
         text: text.into(),
         model: Some(model.into()),
@@ -1481,6 +1546,7 @@ pub fn wrap_detection(label: &str, confidence: f64, nearest_distance: f64) -> Ru
     // Example:
     // let result = spanda_core::ai::wrap_detection(label, confidence, nearest_distance);
 
+    // Create mutable fields for accumulating results.
     let mut fields = HashMap::new();
     fields.insert("label".to_string(), RuntimeValue::string(label));
     fields.insert(

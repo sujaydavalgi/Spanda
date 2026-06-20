@@ -35,13 +35,14 @@ impl SecretHandle {
         // Example:
         // let result = instance.resolve();
 
+        // Match on source and handle each case.
         match &self.source {
             SecretSource::Env { var } => std::env::var(var).map_err(|_| {
                 SecurityError::SecretNotFound(format!("environment variable '{var}'"))
             }),
             SecretSource::Literal { value } => Ok(value.clone()),
         }
-    }
+}
 
     /// Redacted representation safe for audit logs.
     pub fn redacted_label(&self) -> String {
@@ -59,8 +60,9 @@ impl SecretHandle {
         // Example:
         // let result = instance.redacted_label();
 
+        // Produce name) as the result.
         format!("secret:{}", self.name)
-    }
+}
 }
 
 /// In-memory secret store keyed by declaration name.
@@ -85,8 +87,9 @@ impl SecretStore {
         // Example:
         // let value = spanda_security::secrets::new();
 
+        // Build the result via default.
         Self::default()
-    }
+}
 
     pub fn register(&mut self, handle: SecretHandle) {
         // Register the value.
@@ -104,8 +107,9 @@ impl SecretStore {
         // Example:
         // let result = instance.register(handle);
 
+        // Append into self.
         self.secrets.insert(handle.name.clone(), handle);
-    }
+}
 
     pub fn get(&self, name: &str) -> SecurityResult<&SecretHandle> {
         // Get.
@@ -123,10 +127,11 @@ impl SecretStore {
         // Example:
         // let result = instance.get(name);
 
+        // Call secrets on the current instance.
         self.secrets
             .get(name)
             .ok_or_else(|| SecurityError::SecretNotFound(name.to_string()))
-    }
+}
 
     pub fn resolve(&self, name: &str) -> SecurityResult<String> {
         // Resolve.
@@ -144,8 +149,9 @@ impl SecretStore {
         // Example:
         // let result = instance.resolve(name);
 
+        // Call get on the current instance.
         self.get(name)?.resolve()
-    }
+}
 
     pub fn names(&self) -> impl Iterator<Item = &str> {
         // Names.
@@ -162,8 +168,9 @@ impl SecretStore {
         // Example:
         // let result = instance.names();
 
+        // Transform self and continue the chain.
         self.secrets.keys().map(String::as_str)
-    }
+}
 }
 
 #[cfg(test)]

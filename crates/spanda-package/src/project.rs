@@ -15,7 +15,8 @@ robot WarehouseBot {
     actuator drive: MotionCommand;
 
     behavior navigate {
-        // TODO: implement navigation
+
+    // TODO: implement navigation
     }
 }
 "#;
@@ -54,15 +55,14 @@ pub fn init_package(
     // Example:
     // let result = spanda_package::project::init_package(dir, name, description);
 
+    // Compute pkg name for the following logic.
     let pkg_name = name
         .map(str::to_string)
         .or_else(|| dir.file_name().and_then(|n| n.to_str()).map(str::to_string))
         .unwrap_or_else(|| "my_robot".into());
-
     fs::create_dir_all(dir).map_err(PackageError::from)?;
     fs::create_dir_all(dir.join("src")).map_err(PackageError::from)?;
     fs::create_dir_all(dir.join("tests")).map_err(PackageError::from)?;
-
     let manifest = PackageManifest {
         package: crate::manifest::PackageSection {
             name: pkg_name.clone(),
@@ -81,11 +81,9 @@ pub fn init_package(
         categories: vec![],
         license_compat: vec![],
     };
-
     manifest.save(&dir.join(MANIFEST_FILENAME))?;
     fs::write(dir.join("src/main.sd"), DEFAULT_MAIN).map_err(PackageError::from)?;
     fs::write(dir.join("README.md"), DEFAULT_README).map_err(PackageError::from)?;
-
     Ok(dir.to_path_buf())
 }
 
@@ -105,17 +103,30 @@ pub fn collect_source_files(project_root: &Path) -> PackageResult<Vec<PathBuf>> 
     // Example:
     // let result = spanda_package::project::collect_source_files(project_root);
 
+    // Create mutable files for accumulating results.
     let mut files = Vec::new();
+
+    // Iterate over ["src", "tests"].
     for sub in ["src", "tests"] {
         let dir = project_root.join(sub);
+
+        // Treat the path as a directory and scan its contents.
         if dir.is_dir() {
             collect_sd_files(&dir, &mut files)?;
         }
     }
+
+    // Skip further work when files is empty.
     if files.is_empty() {
+
+        // Handle the success value from read dir.
         if let Ok(entries) = fs::read_dir(project_root) {
+
+            // Process each registry entry.
             for entry in entries.flatten() {
                 let path = entry.path();
+
+                // Take the branch when is some and equals "sd").
                 if path.extension().is_some_and(|e| e == "sd") {
                     files.push(path);
                 }
@@ -141,9 +152,12 @@ fn collect_sd_files(dir: &Path, out: &mut Vec<PathBuf>) -> PackageResult<()> {
     // Example:
     // let result = spanda_package::project::collect_sd_files(dir, out);
 
+    // Process each registry entry.
     for entry in fs::read_dir(dir).map_err(PackageError::from)? {
         let entry = entry.map_err(PackageError::from)?;
         let path = entry.path();
+
+        // Treat the path as a directory and scan its contents.
         if path.is_dir() {
             collect_sd_files(&path, out)?;
         } else if path.extension().is_some_and(|e| e == "sd") {
@@ -175,6 +189,7 @@ pub fn add_dependency(
     // Example:
     // let result = spanda_package::project::add_dependency(project_root, name, spec);
 
+    // Compute manifest path for the following logic.
     let manifest_path = project_root.join(MANIFEST_FILENAME);
     let mut manifest = PackageManifest::load(&manifest_path)?;
     manifest.dependencies.insert(name.to_string(), spec);
@@ -198,9 +213,12 @@ pub fn remove_dependency(project_root: &Path, name: &str) -> PackageResult<bool>
     // Example:
     // let result = spanda_package::project::remove_dependency(project_root, name);
 
+    // Compute manifest path for the following logic.
     let manifest_path = project_root.join(MANIFEST_FILENAME);
     let mut manifest = PackageManifest::load(&manifest_path)?;
     let removed = manifest.dependencies.remove(name).is_some();
+
+    // Take this path when removed.
     if removed {
         manifest.save(&manifest_path)?;
     }

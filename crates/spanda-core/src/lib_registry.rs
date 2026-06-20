@@ -18,7 +18,6 @@ pub enum SensorInterface {
 
 impl SensorInterface {
     pub fn as_str(self) -> &'static str {
-        // Return as str.
         //
         // Parameters:
         // - `self` — method receiver
@@ -32,6 +31,7 @@ impl SensorInterface {
         // Example:
         // let result = instance.as_str();
 
+        // Dispatch based on the enum variant or current state.
         match self {
             SensorInterface::I2c => "i2c",
             SensorInterface::Spi => "spi",
@@ -40,7 +40,7 @@ impl SensorInterface {
             SensorInterface::Ethernet => "ethernet",
             SensorInterface::Gpio => "gpio",
         }
-    }
+}
 }
 
 #[derive(Debug, Clone)]
@@ -101,6 +101,7 @@ fn scan_reading(ctx: &DriverContext, range: f64) -> RuntimeValue {
     // Example:
     // let result = spanda_core::lib_registry::scan_reading(ctx, range);
 
+    // Compute x for the following logic.
     let x = ctx.sim_state.as_ref().map(|s| s.pose.x).unwrap_or(0.0);
     let nearest = (range - x.abs() * 0.3).max(0.05);
     RuntimeValue::Scan {
@@ -123,6 +124,7 @@ fn imu_reading(yaw: f64) -> RuntimeValue {
     // Example:
     // let result = spanda_core::lib_registry::imu_reading(yaw);
 
+    // Import the items needed by the logic below.
     use crate::ast::UnitKind;
     RuntimeValue::Object {
         type_name: "IMUReading".into(),
@@ -167,6 +169,7 @@ fn read_velodyne_vlp16(ctx: &DriverContext) -> RuntimeValue {
     // Example:
     // let result = spanda_core::lib_registry::read_velodyne_vlp16(ctx);
 
+    // Produce 0) as the result.
     scan_reading(ctx, 100.0)
 }
 
@@ -185,6 +188,7 @@ fn read_velodyne_vlp32(ctx: &DriverContext) -> RuntimeValue {
     // Example:
     // let result = spanda_core::lib_registry::read_velodyne_vlp32(ctx);
 
+    // Produce 0) as the result.
     scan_reading(ctx, 200.0)
 }
 
@@ -203,6 +207,7 @@ fn read_hokuyo_ust10(ctx: &DriverContext) -> RuntimeValue {
     // Example:
     // let result = spanda_core::lib_registry::read_hokuyo_ust10(ctx);
 
+    // Produce 0) as the result.
     scan_reading(ctx, 10.0)
 }
 
@@ -221,6 +226,7 @@ fn read_hokuyo_utm30(ctx: &DriverContext) -> RuntimeValue {
     // Example:
     // let result = spanda_core::lib_registry::read_hokuyo_utm30(ctx);
 
+    // Produce 0) as the result.
     scan_reading(ctx, 30.0)
 }
 
@@ -239,7 +245,10 @@ fn read_bosch_bno055(ctx: &DriverContext) -> RuntimeValue {
     // Example:
     // let result = spanda_core::lib_registry::read_bosch_bno055(ctx);
 
+    // Compute yaw for the following logic.
     let yaw = ctx.sim_state.as_ref().map(|s| s.pose.theta).unwrap_or(0.0);
+
+    // Take this path when let (Some(hal), Some(binding)) = (ctx.hal, ctx.hal binding).
     if let (Some(hal), Some(binding)) = (ctx.hal, ctx.hal_binding) {
         let data = hal.read_i2c(binding, 0x1a, 2);
         let raw = data.first().copied().unwrap_or(0) as u16
@@ -264,6 +273,7 @@ fn read_bosch_bmp388(ctx: &DriverContext) -> RuntimeValue {
     // Example:
     // let result = spanda_core::lib_registry::read_bosch_bmp388(ctx);
 
+    // Import the items needed by the logic below.
     use crate::ast::UnitKind;
     let alt = ctx.sim_state.as_ref().and_then(|s| s.pose.z).unwrap_or(0.0);
     RuntimeValue::Number {
@@ -287,6 +297,7 @@ fn read_bosch_bme280_humidity(ctx: &DriverContext) -> RuntimeValue {
     // Example:
     // let result = spanda_core::lib_registry::read_bosch_bme280_humidity(ctx);
 
+    // Import the items needed by the logic below.
     use crate::ast::UnitKind;
     let x = ctx.sim_state.as_ref().map(|s| s.pose.x).unwrap_or(0.0);
     let humidity = (55.0 - x * 2.0).clamp(30.0, 90.0);
@@ -311,6 +322,7 @@ fn read_adafruit_bh1750(ctx: &DriverContext) -> RuntimeValue {
     // Example:
     // let result = spanda_core::lib_registry::read_adafruit_bh1750(ctx);
 
+    // Import the items needed by the logic below.
     use crate::ast::UnitKind;
     let x = ctx.sim_state.as_ref().map(|s| s.pose.x).unwrap_or(0.0);
     let lux = (400.0 - x * 20.0).clamp(0.0, 100_000.0);
@@ -335,6 +347,7 @@ fn read_adafruit_veml6075(ctx: &DriverContext) -> RuntimeValue {
     // Example:
     // let result = spanda_core::lib_registry::read_adafruit_veml6075(ctx);
 
+    // Import the items needed by the logic below.
     use crate::ast::UnitKind;
     let x = ctx.sim_state.as_ref().map(|s| s.pose.x).unwrap_or(0.0);
     let uvi = (6.0 - x * 0.3).clamp(0.0, 11.0);
@@ -359,6 +372,7 @@ fn read_atlas_ph(ctx: &DriverContext) -> RuntimeValue {
     // Example:
     // let result = spanda_core::lib_registry::read_atlas_ph(ctx);
 
+    // Import the items needed by the logic below.
     use crate::ast::UnitKind;
     let x = ctx.sim_state.as_ref().map(|s| s.pose.x).unwrap_or(0.0);
     let ph = (7.0 + x * 0.05).clamp(0.0, 14.0);
@@ -383,6 +397,7 @@ fn read_sparkfun_ec(ctx: &DriverContext) -> RuntimeValue {
     // Example:
     // let result = spanda_core::lib_registry::read_sparkfun_ec(ctx);
 
+    // Import the items needed by the logic below.
     use crate::ast::UnitKind;
     let x = ctx.sim_state.as_ref().map(|s| s.pose.x).unwrap_or(0.0);
     let ec = (500.0 + x * 50.0).clamp(0.0, 20_000.0);
@@ -407,6 +422,7 @@ fn read_plantower_pms5003(ctx: &DriverContext) -> RuntimeValue {
     // Example:
     // let result = spanda_core::lib_registry::read_plantower_pms5003(ctx);
 
+    // Import the items needed by the logic below.
     use crate::ast::UnitKind;
     let x = ctx.sim_state.as_ref().map(|s| s.pose.x).unwrap_or(0.0);
     let pm = (12.0 + x * 3.0).clamp(0.0, 500.0);
@@ -431,6 +447,7 @@ fn read_dfrobot_turbidity(ctx: &DriverContext) -> RuntimeValue {
     // Example:
     // let result = spanda_core::lib_registry::read_dfrobot_turbidity(ctx);
 
+    // Import the items needed by the logic below.
     use crate::ast::UnitKind;
     let x = ctx.sim_state.as_ref().map(|s| s.pose.x).unwrap_or(0.0);
     let ntu = (2.0 + x * 0.5).clamp(0.0, 1000.0);
@@ -455,6 +472,7 @@ fn read_atlas_salinity(ctx: &DriverContext) -> RuntimeValue {
     // Example:
     // let result = spanda_core::lib_registry::read_atlas_salinity(ctx);
 
+    // Import the items needed by the logic below.
     use crate::ast::UnitKind;
     let x = ctx.sim_state.as_ref().map(|s| s.pose.x).unwrap_or(0.0);
     let ppt = (35.0 - x * 0.1).clamp(0.0, 40.0);
@@ -479,6 +497,7 @@ fn read_gq_gmc(ctx: &DriverContext) -> RuntimeValue {
     // Example:
     // let result = spanda_core::lib_registry::read_gq_gmc(ctx);
 
+    // Import the items needed by the logic below.
     use crate::ast::UnitKind;
     let x = ctx.sim_state.as_ref().map(|s| s.pose.x).unwrap_or(0.0);
     let dose = (0.1 + x * 0.02).clamp(0.0, 10.0);
@@ -503,6 +522,7 @@ fn read_vegetronix_soil(ctx: &DriverContext) -> RuntimeValue {
     // Example:
     // let result = spanda_core::lib_registry::read_vegetronix_soil(ctx);
 
+    // Import the items needed by the logic below.
     use crate::ast::UnitKind;
     let x = ctx.sim_state.as_ref().map(|s| s.pose.x).unwrap_or(0.0);
     let vwc = (40.0 - x * 2.0).clamp(0.0, 100.0);
@@ -527,6 +547,7 @@ fn read_intel_d435(ctx: &DriverContext) -> RuntimeValue {
     // Example:
     // let result = spanda_core::lib_registry::read_intel_d435(ctx);
 
+    // Produce 0) as the result.
     scan_reading(ctx, 5.0)
 }
 
@@ -545,6 +566,7 @@ fn read_intel_d455(ctx: &DriverContext) -> RuntimeValue {
     // Example:
     // let result = spanda_core::lib_registry::read_intel_d455(ctx);
 
+    // Produce 0) as the result.
     scan_reading(ctx, 8.0)
 }
 
@@ -563,6 +585,7 @@ fn read_ydlidar_x4(ctx: &DriverContext) -> RuntimeValue {
     // Example:
     // let result = spanda_core::lib_registry::read_ydlidar_x4(ctx);
 
+    // Produce 0) as the result.
     scan_reading(ctx, 6.0)
 }
 
@@ -581,6 +604,7 @@ fn read_ydlidar_g4(ctx: &DriverContext) -> RuntimeValue {
     // Example:
     // let result = spanda_core::lib_registry::read_ydlidar_g4(ctx);
 
+    // Produce 0) as the result.
     scan_reading(ctx, 16.0)
 }
 
@@ -599,6 +623,7 @@ fn read_ouster_os1(ctx: &DriverContext) -> RuntimeValue {
     // Example:
     // let result = spanda_core::lib_registry::read_ouster_os1(ctx);
 
+    // Produce 0) as the result.
     scan_reading(ctx, 120.0)
 }
 
@@ -617,6 +642,7 @@ fn read_adafruit_vl53l0x(ctx: &DriverContext) -> RuntimeValue {
     // Example:
     // let result = spanda_core::lib_registry::read_adafruit_vl53l0x(ctx);
 
+    // Import the items needed by the logic below.
     use crate::ast::UnitKind;
     let x = ctx.sim_state.as_ref().map(|s| s.pose.x).unwrap_or(0.0);
     let dist = (2.0 - x * 0.1).max(0.02);
@@ -641,6 +667,7 @@ fn read_sparkfun_lsm9ds1(ctx: &DriverContext) -> RuntimeValue {
     // Example:
     // let result = spanda_core::lib_registry::read_sparkfun_lsm9ds1(ctx);
 
+    // Compute yaw for the following logic.
     let yaw = ctx.sim_state.as_ref().map(|s| s.pose.theta).unwrap_or(0.0);
     imu_reading(yaw)
 }
@@ -660,6 +687,7 @@ fn read_waveshare_uwmf(ctx: &DriverContext) -> RuntimeValue {
     // Example:
     // let result = spanda_core::lib_registry::read_waveshare_uwmf(ctx);
 
+    // Import the items needed by the logic below.
     use crate::ast::UnitKind;
     let x = ctx.sim_state.as_ref().map(|s| s.pose.x).unwrap_or(0.0);
     let dist = (4.0 - x * 0.2).max(0.02);
@@ -698,6 +726,7 @@ fn sensor(
     // Example:
     // let result = spanda_core::lib_registry::sensor(sensor_type, vendor, model, interfaces, default_bus, methods, read);
 
+    // Produce SensorDriverDef as the result.
     SensorDriverDef {
         sensor_type: sensor_type.to_string(),
         vendor: vendor.to_string(),
@@ -734,6 +763,7 @@ fn lib(
     // Example:
     // let result = spanda_core::lib_registry::lib(id, vendor, name, description, sensors);
 
+    // Produce LibModule as the result.
     LibModule {
         id: id.to_string(),
         vendor: vendor.to_string(),
@@ -759,6 +789,7 @@ fn build_registry() -> HashMap<String, LibModule> {
     // Example:
     // let result = spanda_core::lib_registry::build_registry();
 
+    // Produce from as the result.
     HashMap::from([
         (
             "velodyne.vlp16".to_string(),
@@ -1277,6 +1308,7 @@ fn registry() -> &'static HashMap<String, LibModule> {
     // Example:
     // let result = spanda_core::lib_registry::registry();
 
+    // Produce get or init as the result.
     LIB_REGISTRY.get_or_init(build_registry)
 }
 
@@ -1295,11 +1327,11 @@ pub fn resolve_import(path: &str) -> Option<&'static LibModule> {
     // Example:
     // let result = spanda_core::lib_registry::resolve_import(path);
 
+    // Produce get as the result.
     registry().get(path)
 }
 
 pub fn get_sensor_driver(library_id: &str, sensor_type: &str) -> Option<SensorDriverDef> {
-    // Return sensor driver.
     //
     // Parameters:
     // - `library_id` — input value
@@ -1314,6 +1346,7 @@ pub fn get_sensor_driver(library_id: &str, sensor_type: &str) -> Option<SensorDr
     // Example:
     // let result = spanda_core::lib_registry::get_sensor_driver(library_id, sensor_type);
 
+    // Produce registry as the result.
     registry()
         .get(library_id)
         .and_then(|lib| lib.sensors.get(sensor_type))
@@ -1321,7 +1354,6 @@ pub fn get_sensor_driver(library_id: &str, sensor_type: &str) -> Option<SensorDr
 }
 
 pub fn get_sensor_type_from_lib(library_id: &str, sensor_type: &str) -> bool {
-    // Return sensor type from lib.
     //
     // Parameters:
     // - `library_id` — input value
@@ -1336,6 +1368,7 @@ pub fn get_sensor_type_from_lib(library_id: &str, sensor_type: &str) -> bool {
     // Example:
     // let result = spanda_core::lib_registry::get_sensor_type_from_lib(library_id, sensor_type);
 
+    // Produce is some as the result.
     get_sensor_driver(library_id, sensor_type).is_some()
 }
 
@@ -1354,8 +1387,13 @@ pub fn all_library_sensor_types() -> HashMap<String, LibrarySensorTypeInfo> {
     // Example:
     // let result = spanda_core::lib_registry::all_library_sensor_types();
 
+    // Create mutable result for accumulating results.
     let mut result = HashMap::new();
+
+    // Iterate over registry with destructured elements.
     for (lib_id, module) in registry() {
+
+        // Process each key.
         for type_name in module.sensors.keys() {
             result.insert(
                 type_name.clone(),
@@ -1386,6 +1424,7 @@ pub fn list_libraries() -> Vec<&'static LibModule> {
     // Example:
     // let result = spanda_core::lib_registry::list_libraries();
 
+    // Collect filtered entries into a new list.
     registry().values().collect()
 }
 
@@ -1404,6 +1443,7 @@ pub fn list_libraries_by_vendor(vendor: &str) -> Vec<&'static LibModule> {
     // Example:
     // let result = spanda_core::lib_registry::list_libraries_by_vendor(vendor);
 
+    // Compute vendor lower for the following logic.
     let vendor_lower = vendor.to_lowercase();
     registry()
         .values()
@@ -1427,6 +1467,7 @@ pub fn read_with_driver(driver: &SensorDriverDef, ctx: &DriverContext) -> Runtim
     // Example:
     // let result = spanda_core::lib_registry::read_with_driver(driver, ctx);
 
+    // Produce read) as the result.
     (driver.read)(ctx)
 }
 

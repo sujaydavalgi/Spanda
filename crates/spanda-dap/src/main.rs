@@ -25,13 +25,20 @@ fn read_message(reader: &mut dyn BufRead) -> io::Result<Option<Value>> {
     // Example:
     // let result = spanda_dap::main::read_message(reader);
 
+    // Create mutable line for accumulating results.
     let mut line = String::new();
     let mut content_length = 0usize;
+
+    // Run the loop body until it exits.
     loop {
         line.clear();
+
+        // Take the branch when read line equals 0.
         if reader.read_line(&mut line)? == 0 {
             return Ok(None);
         }
+
+        // Emit output when strip prefix provides a rest.
         if let Some(rest) = line.strip_prefix("Content-Length:") {
             content_length = rest.trim().parse().unwrap_or(0);
         } else if line.trim().is_empty() && content_length > 0 {
@@ -59,6 +66,7 @@ fn write_message(writer: &mut dyn Write, msg: &Value) -> io::Result<()> {
     // Example:
     // let result = spanda_dap::main::write_message(writer, msg);
 
+    // Hold the function body for execution.
     let body = serde_json::to_string(msg)?;
     write!(writer, "Content-Length: {}\r\n\r\n{}", body.len(), body)?;
     writer.flush()
@@ -81,6 +89,7 @@ fn respond(writer: &mut dyn Write, req: &Value, body: Value) -> io::Result<()> {
     // Example:
     // let result = spanda_dap::main::respond(writer, req, body);
 
+    // Produce write message as the result.
     write_message(
         writer,
         &json!({
@@ -109,6 +118,7 @@ fn step_kind(command: &str) -> DebugStepKind {
     // Example:
     // let result = spanda_dap::main::step_kind(command);
 
+    // Match on command and handle each case.
     match command {
         "stepIn" => DebugStepKind::StepIn,
         "stepOut" => DebugStepKind::StepOut,
@@ -125,9 +135,11 @@ fn with_machine<F, R>(
 ) -> Result<R, SpandaError>
 where
     F: FnOnce(&mut DebugMachine) -> Result<R, SpandaError>,
-{
+{    // Produce with as the result.
     DEBUG_MACHINE.with(|cell| {
         let mut slot = cell.borrow_mut();
+
+        // Take this path when slot.is none().
         if slot.is_none() {
             *slot = Some(DebugMachine::start(
                 source,
@@ -166,14 +178,18 @@ pub fn serve(
     // Example:
     // let result = spanda_dap::main::serve(source, source_path, reader, writer);
 
+    // Create mutable breakpoints for accumulating results.
     let mut breakpoints: HashSet<u32> = HashSet::new();
     let mut running = false;
 
+    // Repeat while let Some(req) = read message(reader)?.
     while let Some(req) = read_message(reader)? {
         let command = req
             .get("command")
             .and_then(|v| v.as_str())
             .unwrap_or_default();
+
+        // Match on command and handle each case.
         match command {
             "initialize" => {
                 respond(
@@ -198,11 +214,17 @@ pub fn serve(
             }
             "setBreakpoints" => {
                 breakpoints.clear();
+
+                // Emit output when req provides a bps.
                 if let Some(bps) = req
                     .pointer("/arguments/breakpoints")
                     .and_then(|v| v.as_array())
                 {
+
+                    // Iterate over bps.
                     for bp in bps {
+
+                        // Emit output when as u64 provides a line.
                         if let Some(line) = bp.get("line").and_then(|l| l.as_u64()) {
                             breakpoints.insert(line as u32);
                         }
@@ -219,6 +241,8 @@ pub fn serve(
                 respond(writer, &req, json!({}))?;
             }
             "continue" | "next" | "stepIn" | "stepOut" | "pause" => {
+
+                // Take this path when running.
                 if running {
                     let kind = step_kind(command);
                     let session = with_machine(source, source_path, &breakpoints, |machine| {
@@ -233,6 +257,8 @@ pub fn serve(
                             }],
                         }
                     });
+
+                    // Process each pause.
                     for pause in session.pauses {
                         write_message(
                             writer,
@@ -296,6 +322,8 @@ pub fn serve(
                                 "line": line,
                                 "column": 1,
                             });
+
+                            // Emit output when source provides a source.
                             if let Some(source) = &source {
                                 frame["source"] = source.clone();
                             }
@@ -385,6 +413,7 @@ fn main() {
     // Example:
     // let result = spanda_dap::main::main();
 
+    // Compute source for the following logic.
     let source = std::env::args().nth(1).unwrap_or_else(|| {
         eprintln!("Usage: spanda-dap <file.sd>");
         std::process::exit(1);
@@ -396,6 +425,8 @@ fn main() {
     let stdin = io::stdin();
     let mut reader = stdin.lock();
     let mut stdout = io::stdout();
+
+    // Handle the error returned from as str.
     if let Err(e) = serve(&text, Some(source.as_str()), &mut reader, &mut stdout) {
         eprintln!("DAP server error: {e}");
         std::process::exit(1);

@@ -20,6 +20,7 @@ pub struct Span {
 pub enum UnitKind {
     #[serde(rename = "none")]
     None,
+
     // Distance (canonical: m)
     #[serde(rename = "m")]
     M,
@@ -33,6 +34,7 @@ pub enum UnitKind {
     Ft,
     #[serde(rename = "in")]
     In,
+
     // Duration (canonical: s)
     #[serde(rename = "s")]
     S,
@@ -44,6 +46,7 @@ pub enum UnitKind {
     Min,
     #[serde(rename = "h")]
     H,
+
     // Velocity (canonical: m/s)
     #[serde(rename = "m/s")]
     MPerS,
@@ -51,21 +54,25 @@ pub enum UnitKind {
     KmPerH,
     #[serde(rename = "mph")]
     Mph,
+
     // Acceleration (canonical: m/s²)
     #[serde(rename = "m/s²")]
     MPerS2,
     #[serde(rename = "g")]
     G,
+
     // Angle (canonical: rad)
     #[serde(rename = "rad")]
     Rad,
     #[serde(rename = "deg")]
     Deg,
+
     // Angular velocity (canonical: rad/s)
     #[serde(rename = "rad/s")]
     RadPerS,
     #[serde(rename = "deg/s")]
     DegPerS,
+
     // Mass (canonical: kg)
     #[serde(rename = "kg")]
     Kg,
@@ -73,11 +80,13 @@ pub enum UnitKind {
     Gram,
     #[serde(rename = "lb")]
     Lb,
+
     // Force (canonical: N)
     #[serde(rename = "N")]
     N,
     #[serde(rename = "kN")]
     KN,
+
     // Power (canonical: W)
     #[serde(rename = "W")]
     W,
@@ -85,6 +94,7 @@ pub enum UnitKind {
     KW,
     #[serde(rename = "MW")]
     MW,
+
     // Voltage (canonical: V)
     #[serde(rename = "V")]
     V,
@@ -92,11 +102,13 @@ pub enum UnitKind {
     MVolt,
     #[serde(rename = "kV")]
     KVolt,
+
     // Current (canonical: A)
     #[serde(rename = "A")]
     A,
     #[serde(rename = "mA")]
     MA,
+
     // Temperature (canonical: celsius)
     #[serde(rename = "celsius")]
     Celsius,
@@ -104,6 +116,7 @@ pub enum UnitKind {
     Fahrenheit,
     #[serde(rename = "kelvin")]
     Kelvin,
+
     // Pressure (canonical: Pa)
     #[serde(rename = "Pa")]
     Pa,
@@ -115,6 +128,7 @@ pub enum UnitKind {
     Psi,
     #[serde(rename = "mbar")]
     Mbar,
+
     // Frequency (canonical: Hz)
     #[serde(rename = "Hz")]
     Hz,
@@ -122,44 +136,53 @@ pub enum UnitKind {
     KHz,
     #[serde(rename = "MHz")]
     MHz,
+
     // Humidity (canonical: rh, 0–100 %RH)
     #[serde(rename = "rh")]
     Rh,
     #[serde(rename = "%RH")]
     PercentRh,
+
     // Illuminance (canonical: lux)
     #[serde(rename = "lux")]
     Lux,
     #[serde(rename = "lx")]
     Lx,
+
     // Luminance (canonical: cd/m²)
     #[serde(rename = "cd/m²")]
     CdPerM2,
     #[serde(rename = "nit")]
     Nit,
+
     // Gas concentration (canonical: ppm)
     #[serde(rename = "ppm")]
     Ppm,
     #[serde(rename = "ppb")]
     Ppb,
+
     // Sound level (canonical: dB)
     #[serde(rename = "dB")]
     DB,
     #[serde(rename = "dBA")]
     DBA,
+
     // Magnetic field (canonical: uT)
     #[serde(rename = "uT")]
     MicroTesla,
     #[serde(rename = "gauss")]
     Gauss,
+
     // Rotational speed (canonical: rpm)
     #[serde(rename = "rpm")]
     Rpm,
+
     // Torque (canonical: N·m)
     #[serde(rename = "N·m")]
     NewtonMeter,
     #[serde(rename = "Nm")]
     Nm,
+
     // Energy (canonical: J)
     #[serde(rename = "J")]
     Joule,
@@ -167,12 +190,15 @@ pub enum UnitKind {
     Wh,
     #[serde(rename = "kWh")]
     KWh,
+
     // UV index (canonical: uvi)
     #[serde(rename = "uvi")]
     Uvi,
+
     // Acidity (canonical: pH)
     #[serde(rename = "pH")]
     Ph,
+
     // Conductivity (canonical: uS/cm)
     #[serde(rename = "uS/cm")]
     MicroSPerCm,
@@ -180,24 +206,29 @@ pub enum UnitKind {
     MilliSPerCm,
     #[serde(rename = "S/m")]
     SPerM,
+
     // Particulate matter (canonical: ug/m3)
     #[serde(rename = "ug/m3")]
     UgPerM3,
+
     // Turbidity (canonical: NTU)
     #[serde(rename = "NTU")]
     Ntu,
     #[serde(rename = "FNU")]
     Fnu,
+
     // Salinity (canonical: ppt)
     #[serde(rename = "ppt")]
     Ppt,
     #[serde(rename = "psu")]
     Psu,
+
     // Radiation dose rate (canonical: uSv/h)
     #[serde(rename = "uSv/h")]
     MicroSvPerH,
     #[serde(rename = "mSv/h")]
     MilliSvPerH,
+
     // Soil moisture (canonical: %VWC)
     #[serde(rename = "%VWC")]
     PercentVwc,
@@ -207,7 +238,6 @@ pub enum UnitKind {
 
 impl UnitKind {
     pub fn as_str(self) -> &'static str {
-        // Return as str.
         //
         // Parameters:
         // - `self` — method receiver
@@ -221,6 +251,7 @@ impl UnitKind {
         // Example:
         // let result = instance.as_str();
 
+        // Dispatch based on the enum variant or current state.
         match self {
             UnitKind::None => "none",
             UnitKind::M => "m",
@@ -300,7 +331,7 @@ impl UnitKind {
             UnitKind::PercentVwc => "%VWC",
             UnitKind::Vwc => "vwc",
         }
-    }
+}
 
     pub fn from_lexeme(lexeme: &str) -> Self {
         // Construct from lexeme.
@@ -317,6 +348,7 @@ impl UnitKind {
         // Example:
         // let result = spanda_core::ast::from_lexeme(lexeme);
 
+        // Match on lexeme and handle each case.
         match lexeme {
             "m" => UnitKind::M,
             "mm" => UnitKind::Mm,
@@ -395,7 +427,7 @@ impl UnitKind {
             "vwc" => UnitKind::Vwc,
             _ => UnitKind::None,
         }
-    }
+}
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -1026,6 +1058,7 @@ impl BinaryOp {
         // Example:
         // let result = spanda_core::ast::from_lexeme(lexeme);
 
+        // Match on lexeme and handle each case.
         match lexeme {
             "+" => Some(BinaryOp::Add),
             "-" => Some(BinaryOp::Sub),
@@ -1041,10 +1074,9 @@ impl BinaryOp {
             "or" => Some(BinaryOp::Or),
             _ => None,
         }
-    }
+}
 
     pub fn as_str(self) -> &'static str {
-        // Return as str.
         //
         // Parameters:
         // - `self` — method receiver
@@ -1058,6 +1090,7 @@ impl BinaryOp {
         // Example:
         // let result = instance.as_str();
 
+        // Dispatch based on the enum variant or current state.
         match self {
             BinaryOp::Add => "+",
             BinaryOp::Sub => "-",
@@ -1072,7 +1105,7 @@ impl BinaryOp {
             BinaryOp::And => "and",
             BinaryOp::Or => "or",
         }
-    }
+}
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -1104,10 +1137,11 @@ impl Program {
         // Example:
         // let result = instance.imports();
 
+        // Dispatch based on the enum variant or current state.
         match self {
             Program::Program { imports, .. } => imports,
         }
-    }
+}
 
     pub fn robots(&self) -> &[RobotDecl] {
         // Robots.
@@ -1124,10 +1158,11 @@ impl Program {
         // Example:
         // let result = instance.robots();
 
+        // Dispatch based on the enum variant or current state.
         match self {
             Program::Program { robots, .. } => robots,
         }
-    }
+}
 }
 
 impl RobotDecl {
@@ -1146,8 +1181,9 @@ impl RobotDecl {
         // Example:
         // let result = instance.name();
 
+        // Dispatch based on the enum variant or current state.
         match self {
             RobotDecl::RobotDecl { name, .. } => name,
         }
-    }
+}
 }

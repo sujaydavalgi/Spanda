@@ -75,6 +75,7 @@ fn bool_bindings() -> &'static Mutex<HashMap<String, bool>> {
     // Example:
     // let result = spanda_rt::condition::bool_bindings();
 
+    // Produce new as the result.
     static STORE: OnceLock<Mutex<HashMap<String, bool>>> = OnceLock::new();
     STORE.get_or_init(|| Mutex::new(HashMap::new()))
 }
@@ -94,6 +95,7 @@ fn double_bindings() -> &'static Mutex<HashMap<String, f64>> {
     // Example:
     // let result = spanda_rt::condition::double_bindings();
 
+    // Produce new as the result.
     static STORE: OnceLock<Mutex<HashMap<String, f64>>> = OnceLock::new();
     STORE.get_or_init(|| Mutex::new(HashMap::new()))
 }
@@ -113,6 +115,7 @@ fn scan_distances() -> &'static Mutex<HashMap<String, f64>> {
     // Example:
     // let result = spanda_rt::condition::scan_distances();
 
+    // Produce new as the result.
     static STORE: OnceLock<Mutex<HashMap<String, f64>>> = OnceLock::new();
     STORE.get_or_init(|| Mutex::new(HashMap::new()))
 }
@@ -133,6 +136,7 @@ pub fn store_bool(name: &str, value: bool) {
     // Example:
     // let result = spanda_rt::condition::store_bool(name, value);
 
+    // Produce bool bindings as the result.
     bool_bindings()
         .lock()
         .unwrap()
@@ -154,6 +158,7 @@ pub fn load_bool(name: &str) -> bool {
     // Example:
     // let result = spanda_rt::condition::load_bool(name);
 
+    // Produce bool bindings as the result.
     bool_bindings()
         .lock()
         .unwrap()
@@ -178,6 +183,7 @@ pub fn store_double(name: &str, value: f64) {
     // Example:
     // let result = spanda_rt::condition::store_double(name, value);
 
+    // Produce double bindings as the result.
     double_bindings()
         .lock()
         .unwrap()
@@ -199,6 +205,7 @@ pub fn load_double(name: &str) -> f64 {
     // Example:
     // let result = spanda_rt::condition::load_double(name);
 
+    // Produce double bindings as the result.
     double_bindings()
         .lock()
         .unwrap()
@@ -222,6 +229,7 @@ pub fn scan_nearest(name: &str) -> f64 {
     // Example:
     // let result = spanda_rt::condition::scan_nearest(name);
 
+    // Produce scan distances as the result.
     scan_distances()
         .lock()
         .unwrap()
@@ -247,6 +255,7 @@ fn eval_compare(op: RtCompareOp, left: f64, right: f64) -> bool {
     // Example:
     // let result = spanda_rt::condition::eval_compare(op, left, right);
 
+    // Match on op and handle each case.
     match op {
         RtCompareOp::Lt => left < right,
         RtCompareOp::Lte => left <= right,
@@ -272,6 +281,7 @@ pub fn eval_condition_json(json: &str) -> bool {
     // Example:
     // let result = spanda_rt::condition::eval_condition_json(json);
 
+    // Compute condition for the following logic.
     let condition: RtCondition = match serde_json::from_str(json) {
         Ok(value) => value,
         Err(_) => return false,
@@ -294,6 +304,7 @@ fn eval_condition(condition: &RtCondition) -> bool {
     // Example:
     // let result = spanda_rt::condition::eval_condition(condition);
 
+    // Match on condition and handle each case.
     match condition {
         RtCondition::Bool { value } => *value,
         RtCondition::Ident { name } => load_bool(name),
@@ -335,6 +346,7 @@ fn string_bindings() -> &'static Mutex<HashMap<String, String>> {
     // Example:
     // let result = spanda_rt::condition::string_bindings();
 
+    // Produce new as the result.
     static STORE: OnceLock<Mutex<HashMap<String, String>>> = OnceLock::new();
     STORE.get_or_init(|| Mutex::new(HashMap::new()))
 }
@@ -355,6 +367,7 @@ pub fn store_string(name: &str, value: &str) {
     // Example:
     // let result = spanda_rt::condition::store_string(name, value);
 
+    // Produce string bindings as the result.
     string_bindings()
         .lock()
         .unwrap()

@@ -55,6 +55,7 @@ fn build_profiles() -> HashMap<&'static str, SocProfile> {
     // Example:
     // let result = spanda_core::soc::build_profiles();
 
+    // Produce from as the result.
     HashMap::from([
         (
             "RaspberryPi4",
@@ -285,7 +286,6 @@ fn build_profiles() -> HashMap<&'static str, SocProfile> {
 }
 
 pub fn get_soc_profile(name: &str) -> Option<SocProfile> {
-    // Return soc profile.
     //
     // Parameters:
     // - `name` — input value
@@ -299,6 +299,7 @@ pub fn get_soc_profile(name: &str) -> Option<SocProfile> {
     // Example:
     // let result = spanda_core::soc::get_soc_profile(name);
 
+    // Produce remove as the result.
     build_profiles().remove(name)
 }
 
@@ -317,6 +318,7 @@ pub fn list_soc_profiles() -> Vec<SocProfile> {
     // Example:
     // let result = spanda_core::soc::list_soc_profiles();
 
+    // Collect filtered entries into a new list.
     build_profiles().into_values().collect()
 }
 
@@ -339,6 +341,7 @@ pub fn validate_hal_against_soc(
     // Example:
     // let result = spanda_core::soc::validate_hal_against_soc(profile, hal_members);
 
+    // Create mutable errors for accumulating results.
     let mut errors = Vec::new();
     let mut i2c_count = 0u32;
     let mut spi_count = 0u32;
@@ -346,10 +349,15 @@ pub fn validate_hal_against_soc(
     let mut adc_count = 0u32;
     let mut pwm_count = 0u32;
 
+    // Process each hal member.
     for m in hal_members {
+
+        // Match on m and handle each case.
         match m {
             HalMemberConfig::I2c { .. } => {
                 i2c_count += 1;
+
+                // Take this path when i2c count > profile.i2c buses.
                 if i2c_count > profile.i2c_buses {
                     errors.push(SocValidationError {
                         message: format!(
@@ -360,6 +368,8 @@ pub fn validate_hal_against_soc(
                         column: None,
                     });
                 }
+
+                // Check membership before continuing.
                 if !profile.capabilities.contains(&SocCapability::I2c) {
                     errors.push(SocValidationError {
                         message: format!("SoC {} does not support I2C", profile.name),
@@ -370,6 +380,8 @@ pub fn validate_hal_against_soc(
             }
             HalMemberConfig::Spi { .. } => {
                 spi_count += 1;
+
+                // Take this path when spi count > profile.spi buses.
                 if spi_count > profile.spi_buses {
                     errors.push(SocValidationError {
                         message: format!(
@@ -383,6 +395,8 @@ pub fn validate_hal_against_soc(
             }
             HalMemberConfig::Uart { .. } => {
                 uart_count += 1;
+
+                // Take this path when uart count > profile.uart ports.
                 if uart_count > profile.uart_ports {
                     errors.push(SocValidationError {
                         message: format!(
@@ -396,6 +410,8 @@ pub fn validate_hal_against_soc(
             }
             HalMemberConfig::Adc { .. } => {
                 adc_count += 1;
+
+                // Take this path when adc count > profile.adc channels.
                 if adc_count > profile.adc_channels {
                     errors.push(SocValidationError {
                         message: format!(
@@ -406,6 +422,8 @@ pub fn validate_hal_against_soc(
                         column: None,
                     });
                 }
+
+                // Check membership before continuing.
                 if !profile.capabilities.contains(&SocCapability::Adc) {
                     errors.push(SocValidationError {
                         message: format!("SoC {} does not support ADC", profile.name),
@@ -416,6 +434,8 @@ pub fn validate_hal_against_soc(
             }
             HalMemberConfig::Pwm { .. } => {
                 pwm_count += 1;
+
+                // Take this path when pwm count > profile.pwm channels.
                 if pwm_count > profile.pwm_channels {
                     errors.push(SocValidationError {
                         message: format!(
@@ -428,6 +448,8 @@ pub fn validate_hal_against_soc(
                 }
             }
             HalMemberConfig::Gpio { pin, .. } => {
+
+                // Take this path when *pin as u32 >= profile.gpio pins.
                 if *pin as u32 >= profile.gpio_pins {
                     errors.push(SocValidationError {
                         message: format!(

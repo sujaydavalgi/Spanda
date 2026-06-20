@@ -162,6 +162,7 @@ pub fn search_registry(query: &str) -> Vec<&'static RegistryEntry> {
     // Example:
     // let result = spanda_package::registry::search_registry(query);
 
+    // Compute q for the following logic.
     let q = query.to_lowercase();
     LOCAL_REGISTRY
         .iter()
@@ -188,11 +189,16 @@ pub fn search_registry_merged(query: &str) -> Vec<String> {
     // Example:
     // let result = spanda_package::registry::search_registry_merged(query);
 
+    // Create mutable names for accumulating results.
     let mut names: Vec<String> = search_registry(query)
         .into_iter()
         .map(|entry| entry.name.to_string())
         .collect();
+
+    // Iterate over search remote registry.
     for remote in super::registry_remote::search_remote_registry(query) {
+
+        // Take the branch when any equals name).
         if !names.iter().any(|name| name == &remote.name) {
             names.push(remote.name);
         }
@@ -216,6 +222,7 @@ pub fn find_registry_entry(name: &str) -> Option<&'static RegistryEntry> {
     // Example:
     // let result = spanda_package::registry::find_registry_entry(name);
 
+    // Iterate over LOCAL REGISTRY.
     LOCAL_REGISTRY.iter().find(|e| e.name == name)
 }
 
@@ -235,6 +242,7 @@ pub fn registry_package_dir(name: &str) -> Option<std::path::PathBuf> {
     // Example:
     // let result = spanda_package::registry::registry_package_dir(name);
 
+    // Produce find registry entry as the result.
     find_registry_entry(name)?;
     let candidates = [
         std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -246,6 +254,7 @@ pub fn registry_package_dir(name: &str) -> Option<std::path::PathBuf> {
 }
 
 impl RegistryEntry {
+
     /// Default safety level for registry packages (until per-entry metadata is stored remotely).
     pub fn safety_level(&self) -> SafetyLevel {
         // Safety level.
@@ -262,6 +271,7 @@ impl RegistryEntry {
         // Example:
         // let result = instance.safety_level();
 
+        // Match on name and handle each case.
         match self.name {
             "spanda-ros2" | "spanda-opencv" | "spanda-yolo" | "spanda-mqtt" => {
                 SafetyLevel::SimulationOnly
@@ -270,7 +280,7 @@ impl RegistryEntry {
             "spanda-openai" => SafetyLevel::Experimental,
             _ => SafetyLevel::Experimental,
         }
-    }
+}
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -299,6 +309,7 @@ pub fn registry_info(name: &str) -> Option<RegistryInfo> {
     // Example:
     // let result = spanda_package::registry::registry_info(name);
 
+    // Produce find registry entry as the result.
     find_registry_entry(name)
         .map(|e| RegistryInfo {
             name: e.name.to_string(),

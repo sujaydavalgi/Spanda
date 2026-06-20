@@ -21,7 +21,10 @@ fn python_cmd() -> Option<String> {
     // Example:
     // let result = spanda_core::transport_live::python_cmd();
 
+    // Iterate over ["python3", "python"].
     for cmd in ["python3", "python"] {
+
+        // Take this path when Command::new(cmd).
         if Command::new(cmd)
             .arg("-c")
             .arg("import sys")
@@ -52,6 +55,7 @@ fn payload_string(value: &RuntimeValue) -> String {
     // Example:
     // let result = spanda_core::transport_live::payload_string(value);
 
+    // Match on value and handle each case.
     match value {
         RuntimeValue::String { value } => value.clone(),
         RuntimeValue::Number { value, .. } => value.to_string(),
@@ -76,6 +80,7 @@ fn invoke_bridge(fn_name: &str, args: &[RuntimeValue]) -> bool {
     // Example:
     // let result = spanda_core::transport_live::invoke_bridge(fn_name, args);
 
+    // take the branch when python available is false.
     if !python_available() {
         return false;
     }
@@ -131,6 +136,7 @@ pub fn ros2_live_enabled() -> bool {
     // Example:
     // let result = spanda_core::transport_live::ros2_live_enabled();
 
+    // Produce is ok as the result.
     std::env::var("SPANDA_ROS2_LIVE").is_ok() || std::env::var("SPANDA_ROS2_RCLRS").is_ok()
 }
 
@@ -149,6 +155,7 @@ pub fn ros2_native_enabled() -> bool {
     // Example:
     // let result = spanda_core::transport_live::ros2_native_enabled();
 
+    // Produce is ok as the result.
     std::env::var("SPANDA_ROS2_NATIVE").is_ok()
 }
 
@@ -167,6 +174,7 @@ pub fn mqtt_live_enabled() -> bool {
     // Example:
     // let result = spanda_core::transport_live::mqtt_live_enabled();
 
+    // Produce is ok as the result.
     std::env::var("SPANDA_MQTT_LIVE").is_ok()
 }
 
@@ -186,6 +194,7 @@ pub fn try_ros2_native_publish(topic: &str, value: &RuntimeValue) -> bool {
     // Example:
     // let result = spanda_core::transport_live::try_ros2_native_publish(topic, value);
 
+    // take the branch when ros2 native enabled is false.
     if !ros2_native_enabled() {
         return false;
     }
@@ -225,6 +234,7 @@ pub fn try_ros2_native_subscribe(topic: &str) -> bool {
     // Example:
     // let result = spanda_core::transport_live::try_ros2_native_subscribe(topic);
 
+    // take the branch when ros2 native enabled is false.
     if !ros2_native_enabled() {
         return false;
     }
@@ -254,6 +264,7 @@ pub fn try_ros2_native_service_call(service: &str, service_type: &str, request: 
     // Example:
     // let result = spanda_core::transport_live::try_ros2_native_service_call(service, service_type, request);
 
+    // take the branch when ros2 native enabled is false.
     if !ros2_native_enabled() {
         return false;
     }
@@ -282,6 +293,7 @@ pub fn try_ros2_publish(topic: &str, value: &RuntimeValue) -> bool {
     // Example:
     // let result = spanda_core::transport_live::try_ros2_publish(topic, value);
 
+    // take this path when ros2 native enabled().
     if ros2_native_enabled() {
         return try_ros2_native_publish(topic, value);
     }
@@ -304,6 +316,7 @@ pub fn try_ros2_bridge_publish(topic: &str, value: &RuntimeValue) -> bool {
     // Example:
     // let result = spanda_core::transport_live::try_ros2_bridge_publish(topic, value);
 
+    // take the branch when ros2 live enabled is false.
     if !ros2_live_enabled() {
         return false;
     }
@@ -335,6 +348,7 @@ pub fn try_ros2_subscribe(topic: &str) -> bool {
     // Example:
     // let result = spanda_core::transport_live::try_ros2_subscribe(topic);
 
+    // take this path when ros2 native enabled().
     if ros2_native_enabled() {
         return try_ros2_native_subscribe(topic);
     }
@@ -356,6 +370,7 @@ pub fn try_ros2_bridge_subscribe(topic: &str) -> bool {
     // Example:
     // let result = spanda_core::transport_live::try_ros2_bridge_subscribe(topic);
 
+    // take the branch when ros2 live enabled is false.
     if !ros2_live_enabled() {
         return false;
     }
@@ -384,6 +399,7 @@ pub fn try_ros2_service_call(service: &str, service_type: &str, request: &str) -
     // Example:
     // let result = spanda_core::transport_live::try_ros2_service_call(service, service_type, request);
 
+    // take this path when ros2 native enabled().
     if ros2_native_enabled() {
         return try_ros2_native_service_call(service, service_type, request);
     }
@@ -407,6 +423,7 @@ pub fn try_ros2_bridge_service_call(service: &str, service_type: &str, request: 
     // Example:
     // let result = spanda_core::transport_live::try_ros2_bridge_service_call(service, service_type, request);
 
+    // take the branch when ros2 live enabled is false.
     if !ros2_live_enabled() {
         return false;
     }
@@ -442,6 +459,7 @@ pub fn try_mqtt_publish(topic: &str, value: &RuntimeValue) -> bool {
     // Example:
     // let result = spanda_core::transport_live::try_mqtt_publish(topic, value);
 
+    // take the branch when mqtt live enabled is false.
     if !mqtt_live_enabled() {
         return false;
     }

@@ -78,6 +78,7 @@ impl RuntimeTelemetry {
         // Example:
         // let result = instance.task_mut(name, priority, interval_ms);
 
+        // Call tasks on the current instance.
         self.tasks
             .entry(name.to_string())
             .or_insert_with(|| TaskMetrics {
@@ -86,7 +87,7 @@ impl RuntimeTelemetry {
                 interval_ms,
                 ..Default::default()
             })
-    }
+}
 
     pub fn record_task_tick(&mut self, name: &str, priority: TaskPriority, interval_ms: f64) {
         // Record task tick.
@@ -106,8 +107,9 @@ impl RuntimeTelemetry {
         // Example:
         // let result = instance.record_task_tick(name, priority, interval_ms);
 
+        // Call task mut on the current instance.
         self.task_mut(name, priority, interval_ms).ticks += 1;
-    }
+}
 
     pub fn record_task_duration(
         &mut self,
@@ -134,12 +136,15 @@ impl RuntimeTelemetry {
         // Example:
         // let result = instance.record_task_duration(name, priority, interval_ms, duration_ms);
 
+        // Compute entry for the following logic.
         let entry = self.task_mut(name, priority, interval_ms);
         entry.last_duration_ms = duration_ms;
+
+        // Take this path when duration ms > entry.max duration ms.
         if duration_ms > entry.max_duration_ms {
             entry.max_duration_ms = duration_ms;
         }
-    }
+}
 
     pub fn record_budget_violation(
         &mut self,
@@ -164,8 +169,9 @@ impl RuntimeTelemetry {
         // Example:
         // let result = instance.record_budget_violation(name, priority, interval_ms);
 
+        // Call task mut on the current instance.
         self.task_mut(name, priority, interval_ms).budget_violations += 1;
-    }
+}
 
     pub fn record_task_skip(&mut self, name: &str, priority: TaskPriority, interval_ms: f64) {
         // Record task skip.
@@ -185,8 +191,9 @@ impl RuntimeTelemetry {
         // Example:
         // let result = instance.record_task_skip(name, priority, interval_ms);
 
+        // Call task mut on the current instance.
         self.task_mut(name, priority, interval_ms).skipped += 1;
-    }
+}
 
     pub fn record_missed_deadline(&mut self, name: &str, priority: TaskPriority, interval_ms: f64) {
         // Record missed deadline.
@@ -206,8 +213,9 @@ impl RuntimeTelemetry {
         // Example:
         // let result = instance.record_missed_deadline(name, priority, interval_ms);
 
+        // Call task mut on the current instance.
         self.task_mut(name, priority, interval_ms).missed_deadlines += 1;
-    }
+}
 
     pub fn record_scheduler_start(&mut self, task_count: u64, base_tick_ms: f64) {
         // Record scheduler start.
@@ -226,9 +234,10 @@ impl RuntimeTelemetry {
         // Example:
         // let result = instance.record_scheduler_start(task_count, base_tick_ms);
 
+        // Call multiplexed tasks = task count; on the current instance.
         self.scheduler.multiplexed_tasks = task_count;
         self.scheduler.base_tick_ms = base_tick_ms;
-    }
+}
 
     pub fn record_scheduler_tick(&mut self) {
         // Record scheduler tick.
@@ -245,8 +254,9 @@ impl RuntimeTelemetry {
         // Example:
         // let result = instance.record_scheduler_tick();
 
+        // Call scheduler ticks += 1; on the current instance.
         self.scheduler.scheduler_ticks += 1;
-    }
+}
 
     pub fn record_emergency_stop(&mut self) {
         // Record emergency stop.
@@ -263,8 +273,9 @@ impl RuntimeTelemetry {
         // Example:
         // let result = instance.record_emergency_stop();
 
+        // Call emergency stops += 1; on the current instance.
         self.scheduler.emergency_stops += 1;
-    }
+}
 
     pub fn record_spawn(&mut self) {
         // Record spawn.
@@ -281,8 +292,9 @@ impl RuntimeTelemetry {
         // Example:
         // let result = instance.record_spawn();
 
+        // Call spawns += 1; on the current instance.
         self.execution.spawns += 1;
-    }
+}
 
     pub fn record_fire_and_forget_spawn(&mut self) {
         // Record fire and forget spawn.
@@ -299,8 +311,9 @@ impl RuntimeTelemetry {
         // Example:
         // let result = instance.record_fire_and_forget_spawn();
 
+        // Call fire and forget spawns += 1; on the current instance.
         self.execution.fire_and_forget_spawns += 1;
-    }
+}
 
     pub fn record_join(&mut self) {
         // Record join.
@@ -317,8 +330,9 @@ impl RuntimeTelemetry {
         // Example:
         // let result = instance.record_join();
 
+        // Call joins += 1; on the current instance.
         self.execution.joins += 1;
-    }
+}
 
     pub fn record_parallel_block(&mut self) {
         // Record parallel block.
@@ -335,8 +349,9 @@ impl RuntimeTelemetry {
         // Example:
         // let result = instance.record_parallel_block();
 
+        // Call parallel blocks += 1; on the current instance.
         self.execution.parallel_blocks += 1;
-    }
+}
 
     pub fn record_replay_frames(&mut self, count: u64) {
         // Record replay frames.
@@ -354,8 +369,9 @@ impl RuntimeTelemetry {
         // Example:
         // let result = instance.record_replay_frames(count);
 
+        // Call replay frames = count; on the current instance.
         self.replay_frames = count;
-    }
+}
 
     pub fn trigger_mut(
         &mut self,
@@ -380,6 +396,7 @@ impl RuntimeTelemetry {
         // Example:
         // let result = instance.trigger_mut(name, category, priority);
 
+        // Call triggers on the current instance.
         self.triggers
             .entry(name.to_string())
             .or_insert_with(|| TriggerMetrics {
@@ -388,7 +405,7 @@ impl RuntimeTelemetry {
                 priority: priority_label(priority),
                 ..Default::default()
             })
-    }
+}
 
     pub fn record_trigger_execution(
         &mut self,
@@ -417,16 +434,21 @@ impl RuntimeTelemetry {
         // Example:
         // let result = instance.record_trigger_execution(name, category, priority, duration_ms, failed);
 
+        // Compute entry for the following logic.
         let entry = self.trigger_mut(name, category, priority);
         entry.executions += 1;
+
+        // Take this path when failed.
         if failed {
             entry.failures += 1;
         }
         entry.last_duration_ms = duration_ms;
+
+        // Take this path when duration ms > entry.max duration ms.
         if duration_ms > entry.max_duration_ms {
             entry.max_duration_ms = duration_ms;
         }
-    }
+}
 
     pub fn record_trigger_missed_deadline(
         &mut self,
@@ -451,8 +473,9 @@ impl RuntimeTelemetry {
         // Example:
         // let result = instance.record_trigger_missed_deadline(name, category, priority);
 
+        // Call trigger mut on the current instance.
         self.trigger_mut(name, category, priority).missed_deadlines += 1;
-    }
+}
 }
 
 fn priority_label(priority: TaskPriority) -> String {
@@ -470,6 +493,7 @@ fn priority_label(priority: TaskPriority) -> String {
     // Example:
     // let result = spanda_core::telemetry::priority_label(priority);
 
+    // Match on priority and handle each case.
     match priority {
         TaskPriority::Critical => "critical".into(),
         TaskPriority::High => "high".into(),

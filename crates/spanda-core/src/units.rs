@@ -56,6 +56,7 @@ pub fn unit_category(unit: UnitKind) -> PhysicalCategory {
     // Example:
     // let result = spanda_core::units::unit_category(unit);
 
+    // Match on unit and handle each case.
     match unit {
         UnitKind::None => PhysicalCategory::Scalar,
         UnitKind::M | UnitKind::Mm | UnitKind::Cm | UnitKind::Km | UnitKind::Ft | UnitKind::In => {
@@ -118,9 +119,12 @@ pub fn units_compatible(a: UnitKind, b: UnitKind) -> bool {
     // Example:
     // let result = spanda_core::units::units_compatible(a, b);
 
+    // take the branch when a equals b.
     if a == b {
         return true;
     }
+
+    // Take the branch when a equals None.
     if a == UnitKind::None || b == UnitKind::None {
         return true;
     }
@@ -143,6 +147,7 @@ pub fn unit_matches_named_type(type_name: &str, unit: UnitKind) -> bool {
     // Example:
     // let result = spanda_core::units::unit_matches_named_type(type_name, unit);
 
+    // Match on type name and handle each case.
     match type_name {
         "Distance" => unit_category(unit) == PhysicalCategory::Distance,
         "Duration" => unit_category(unit) == PhysicalCategory::Duration,
@@ -195,6 +200,7 @@ pub fn to_canonical(value: f64, unit: UnitKind) -> (f64, UnitKind) {
     // Example:
     // let result = spanda_core::units::to_canonical(value, unit);
 
+    // Compute category for the following logic.
     let category = unit_category(unit);
     let canonical = canonical_unit(category);
     (to_canonical_linear(value, unit), canonical)
@@ -215,6 +221,7 @@ pub fn canonical_unit(category: PhysicalCategory) -> UnitKind {
     // Example:
     // let result = spanda_core::units::canonical_unit(category);
 
+    // Match on category and handle each case.
     match category {
         PhysicalCategory::Scalar => UnitKind::None,
         PhysicalCategory::Distance => UnitKind::M,
@@ -268,9 +275,12 @@ pub fn convert_value(value: f64, from: UnitKind, to: UnitKind) -> Option<f64> {
     // Example:
     // let result = spanda_core::units::convert_value(value, from, to);
 
+    // take the branch when from equals to.
     if from == to {
         return Some(value);
     }
+
+    // Take the branch when units compatible is false.
     if !units_compatible(from, to) {
         return None;
     }
@@ -296,6 +306,7 @@ fn from_canonical(value: f64, category: PhysicalCategory, to: UnitKind) -> f64 {
     // Example:
     // let result = spanda_core::units::from_canonical(value, category, to);
 
+    // Match on category and handle each case.
     match category {
         PhysicalCategory::Distance => match to {
             UnitKind::M => value,
@@ -478,6 +489,7 @@ fn to_canonical_linear(value: f64, unit: UnitKind) -> f64 {
     // Example:
     // let result = spanda_core::units::to_canonical_linear(value, unit);
 
+    // Match on unit and handle each case.
     match unit {
         UnitKind::M => value,
         UnitKind::Mm => value / 1000.0,
@@ -575,9 +587,12 @@ pub fn align_for_binary(
     // Example:
     // let result = spanda_core::units::align_for_binary(left, left_unit, right, right_unit);
 
+    // take the branch when units compatible is false.
     if !units_compatible(left_unit, right_unit) {
         return None;
     }
+
+    // Take the branch when left unit equals right unit.
     if left_unit == right_unit {
         return Some((left, right, left_unit));
     }

@@ -18,6 +18,7 @@ pub struct RegisteredTrigger {
     pub kind: TriggerKind,
     pub priority: TaskPriority,
     pub body: Vec<Stmt>,
+
     /// Agent scope when declared inside an agent block.
     pub agent: Option<String>,
 }
@@ -46,8 +47,9 @@ impl TriggerRegistry {
         // Example:
         // let value = spanda_core::triggers::new();
 
+        // Build the result via default.
         Self::default()
-    }
+}
 
     pub fn register(&mut self, decl: &TriggerHandlerDecl, agent: Option<String>) {
         // Register the value.
@@ -66,6 +68,7 @@ impl TriggerRegistry {
         // Example:
         // let result = instance.register(decl, agent);
 
+        // Compute TriggerHandlerDecl for the following logic.
         let TriggerHandlerDecl::TriggerHandlerDecl {
             trigger_kind,
             priority,
@@ -75,6 +78,8 @@ impl TriggerRegistry {
         let name = trigger_display_name(trigger_kind, agent.as_deref());
         let id = self.next_id;
         self.next_id += 1;
+
+        // For event triggers, record the event name in the index.
         if let TriggerKind::Event { name: event_name } = trigger_kind {
             self.event_index.insert(event_name.clone(), id);
         }
@@ -87,7 +92,7 @@ impl TriggerRegistry {
             agent,
         });
         let _ = span;
-    }
+}
 
     pub fn register_legacy_event(&mut self, event_name: String, body: Vec<Stmt>) {
         // Register legacy event.
@@ -106,6 +111,7 @@ impl TriggerRegistry {
         // Example:
         // let result = instance.register_legacy_event(event_name, body);
 
+        // Register the value handler.
         self.register(
             &TriggerHandlerDecl::TriggerHandlerDecl {
                 trigger_kind: TriggerKind::Event {
@@ -117,10 +123,9 @@ impl TriggerRegistry {
             },
             None,
         );
-    }
+}
 
     pub fn handler_count(&self) -> usize {
-        // Return the number of handler.
         //
         // Parameters:
         // - `self` — method receiver
@@ -134,8 +139,9 @@ impl TriggerRegistry {
         // Example:
         // let result = instance.handler_count();
 
+        // Call len on the current instance.
         self.handlers.len()
-    }
+}
 
     pub fn all(&self) -> &[RegisteredTrigger] {
         // All.
@@ -152,8 +158,9 @@ impl TriggerRegistry {
         // Example:
         // let result = instance.all();
 
+        // Return handlers from this handle.
         &self.handlers
-    }
+}
 
     pub fn get(&self, id: usize) -> Option<&RegisteredTrigger> {
         // Get.
@@ -171,8 +178,9 @@ impl TriggerRegistry {
         // Example:
         // let result = instance.get(id);
 
+        // Iterate over handlers.
         self.handlers.iter().find(|h| h.id == id)
-    }
+}
 
     pub fn event_handler_body(&self, event_name: &str) -> Option<&[Stmt]> {
         // Event handler body.
@@ -190,11 +198,12 @@ impl TriggerRegistry {
         // Example:
         // let result = instance.event_handler_body(event_name);
 
+        // Call event index on the current instance.
         self.event_index
             .get(event_name)
             .and_then(|id| self.get(*id))
             .map(|h| h.body.as_slice())
-    }
+}
 
     pub fn handlers_for_event(&self, event_name: &str) -> Vec<&RegisteredTrigger> {
         // Handlers for event.
@@ -212,11 +221,12 @@ impl TriggerRegistry {
         // Example:
         // let result = instance.handlers_for_event(event_name);
 
+        // Call handlers on the current instance.
         self.handlers
             .iter()
             .filter(|h| matches!(&h.kind, TriggerKind::Event { name } if name == event_name))
             .collect()
-    }
+}
 
     pub fn handlers_for_message(
         &self,
@@ -239,6 +249,7 @@ impl TriggerRegistry {
         // Example:
         // let result = instance.handlers_for_message(topic_name, topic_path);
 
+        // Call handlers on the current instance.
         self.handlers
             .iter()
             .filter(|h| match &h.kind {
@@ -251,7 +262,7 @@ impl TriggerRegistry {
                 _ => false,
             })
             .collect()
-    }
+}
 
     pub fn timer_handlers(&self) -> Vec<&RegisteredTrigger> {
         // Timer handlers.
@@ -268,11 +279,12 @@ impl TriggerRegistry {
         // Example:
         // let result = instance.timer_handlers();
 
+        // Call handlers on the current instance.
         self.handlers
             .iter()
             .filter(|h| matches!(h.kind, TriggerKind::Timer { .. }))
             .collect()
-    }
+}
 
     pub fn condition_handlers(&self) -> Vec<&RegisteredTrigger> {
         // Condition handlers.
@@ -289,11 +301,12 @@ impl TriggerRegistry {
         // Example:
         // let result = instance.condition_handlers();
 
+        // Call handlers on the current instance.
         self.handlers
             .iter()
             .filter(|h| matches!(h.kind, TriggerKind::Condition { .. }))
             .collect()
-    }
+}
 
     pub fn handlers_for_state_entered(&self, state: &str) -> Vec<&RegisteredTrigger> {
         // Handlers for state entered.
@@ -311,6 +324,7 @@ impl TriggerRegistry {
         // Example:
         // let result = instance.handlers_for_state_entered(state);
 
+        // Call handlers on the current instance.
         self.handlers
             .iter()
             .filter(|h| {
@@ -320,7 +334,7 @@ impl TriggerRegistry {
                 )
             })
             .collect()
-    }
+}
 
     pub fn handlers_for_state_exited(&self, state: &str) -> Vec<&RegisteredTrigger> {
         // Handlers for state exited.
@@ -338,6 +352,7 @@ impl TriggerRegistry {
         // Example:
         // let result = instance.handlers_for_state_exited(state);
 
+        // Call handlers on the current instance.
         self.handlers
             .iter()
             .filter(|h| {
@@ -347,7 +362,7 @@ impl TriggerRegistry {
                 )
             })
             .collect()
-    }
+}
 
     pub fn handlers_for_category(
         &self,
@@ -370,6 +385,7 @@ impl TriggerRegistry {
         // Example:
         // let result = instance.handlers_for_category(category, event);
 
+        // Call handlers on the current instance.
         self.handlers
             .iter()
             .filter(|h| match (&h.kind, category) {
@@ -383,7 +399,7 @@ impl TriggerRegistry {
                 _ => false,
             })
             .collect()
-    }
+}
 
     pub fn sorted_by_priority(handlers: Vec<&RegisteredTrigger>) -> Vec<&RegisteredTrigger> {
         // Sorted by priority.
@@ -400,10 +416,11 @@ impl TriggerRegistry {
         // Example:
         // let result = spanda_core::triggers::sorted_by_priority(handlers);
 
+        // Create mutable sorted for accumulating results.
         let mut sorted = handlers;
         sorted.sort_by_key(|h| priority_rank(h.priority));
         sorted
-    }
+}
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -430,6 +447,7 @@ pub fn priority_rank(priority: TaskPriority) -> u8 {
     // Example:
     // let result = spanda_core::triggers::priority_rank(priority);
 
+    // Match on priority and handle each case.
     match priority {
         TaskPriority::Critical => 0,
         TaskPriority::High => 1,
@@ -454,6 +472,7 @@ pub fn trigger_display_name(kind: &TriggerKind, agent: Option<&str>) -> String {
     // Example:
     // let result = spanda_core::triggers::trigger_display_name(kind, agent);
 
+    // Compute base for the following logic.
     let base = match kind {
         TriggerKind::Event { name } => format!("event:{name}"),
         TriggerKind::Message { topic } => format!("message:{topic}"),
@@ -467,6 +486,8 @@ pub fn trigger_display_name(kind: &TriggerKind, agent: Option<&str>) -> String {
         TriggerKind::Verification { event } => format!("verification:{event}"),
         TriggerKind::Twin { event } => format!("twin:{event}"),
     };
+
+    // Emit output when agent provides a agent.
     if let Some(agent) = agent {
         format!("{agent}/{base}")
     } else {
@@ -498,6 +519,7 @@ impl TriggerTimerSchedule {
         // Example:
         // let result = spanda_core::triggers::from_handler(handler);
 
+        // take this path when let TriggerKind::Timer { interval ms } = handler.kind.
         if let TriggerKind::Timer { interval_ms } = handler.kind {
             Some(Self {
                 trigger_id: handler.id,
@@ -507,7 +529,7 @@ impl TriggerTimerSchedule {
         } else {
             None
         }
-    }
+}
 }
 
 /// Tracks edge state for condition triggers (fire on transition to true).
@@ -534,7 +556,10 @@ impl ConditionTriggerState {
         // Example:
         // let result = instance.should_fire(trigger_id, active);
 
+        // Compute was for the following logic.
         let was = self.was_active.contains(&trigger_id);
+
+        // Take this path when active.
         if active {
             self.was_active.insert(trigger_id);
             !was
@@ -542,10 +567,9 @@ impl ConditionTriggerState {
             self.was_active.remove(&trigger_id);
             false
         }
-    }
+}
 
     pub fn is_level_active(&self, trigger_id: usize) -> bool {
-        // Return whether level active.
         //
         // Parameters:
         // - `self` — method receiver
@@ -560,8 +584,9 @@ impl ConditionTriggerState {
         // Example:
         // let result = instance.is_level_active(trigger_id);
 
+        // Call contains on the current instance.
         self.was_active.contains(&trigger_id)
-    }
+}
 }
 
 #[cfg(test)]

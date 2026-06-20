@@ -14,7 +14,6 @@ pub struct FfiRegistry {
 
 impl Default for FfiRegistry {
     fn default() -> Self {
-        // Return the default value.
         //
         // Parameters:
         // None.
@@ -28,8 +27,9 @@ impl Default for FfiRegistry {
         // Example:
         // let value = spanda_core::ffi::default();
 
+        // Build the result via new.
         Self::new()
-    }
+}
 }
 
 impl FfiRegistry {
@@ -48,13 +48,14 @@ impl FfiRegistry {
         // Example:
         // let value = spanda_core::ffi::new();
 
+        // Create mutable registry for accumulating results.
         let mut registry = Self {
             handlers: HashMap::new(),
         };
         registry.register("stub_echo", stub_echo);
         registry.register("stub_add", stub_add);
         registry
-    }
+}
 
     pub fn register(&mut self, name: &str, handler: FfiHandler) {
         // Register the value.
@@ -73,11 +74,11 @@ impl FfiRegistry {
         // Example:
         // let result = instance.register(name, handler);
 
+        // Append into self.
         self.handlers.insert(name.to_string(), handler);
-    }
+}
 
     pub fn has_handler(&self, name: &str) -> bool {
-        // Return whether this value has handler.
         //
         // Parameters:
         // - `self` — method receiver
@@ -92,8 +93,9 @@ impl FfiRegistry {
         // Example:
         // let result = instance.has_handler(name);
 
+        // Call contains key on the current instance.
         self.handlers.contains_key(name)
-    }
+}
 
     pub fn call(
         &self,
@@ -116,13 +118,15 @@ impl FfiRegistry {
         // Example:
         // let result = instance.call(decl, args);
 
+        // keep entries that match the expected pattern.
         if matches!(decl.bridge, BridgeKind::Python) && !self.handlers.contains_key(&decl.name) {
             return crate::bridge::python::call_extern(decl, args);
         }
+
+        // Keep entries that match the expected pattern.
         if matches!(decl.bridge, BridgeKind::Cpp) && !self.handlers.contains_key(&decl.name) {
             return crate::bridge::cpp::call_extern(decl, args);
         }
-
         let handler = self
             .handlers
             .get(&decl.name)
@@ -138,7 +142,7 @@ impl FfiRegistry {
                 line: decl.span.start.line,
             })?;
         handler(args)
-    }
+}
 }
 
 fn stub_echo(args: &[RuntimeValue]) -> Result<RuntimeValue, SpandaError> {
@@ -156,6 +160,7 @@ fn stub_echo(args: &[RuntimeValue]) -> Result<RuntimeValue, SpandaError> {
     // Example:
     // let result = spanda_core::ffi::stub_echo(args);
 
+    // Return the success value to the caller.
     Ok(args.first().cloned().unwrap_or(RuntimeValue::Void))
 }
 
@@ -174,6 +179,7 @@ fn stub_add(args: &[RuntimeValue]) -> Result<RuntimeValue, SpandaError> {
     // Example:
     // let result = spanda_core::ffi::stub_add(args);
 
+    // Compute a for the following logic.
     let a = match args.first() {
         Some(RuntimeValue::Number { value, .. }) => *value,
         _ => 0.0,

@@ -74,7 +74,7 @@ impl StateMachineRuntime {
             states,
             transitions,
         }
-    }
+}
 
     pub fn try_enter(&mut self, target: &str) -> Option<String> {
         // Attempts a transition to `target` when allowed from the current state.
@@ -109,13 +109,15 @@ impl StateMachineRuntime {
             .transitions
             .iter()
             .any(|(from, to)| from == &self.current && to == target);
+
+        // Take the branch when allowed is false.
         if !allowed {
             return None;
         }
         let previous = self.current.clone();
         self.current = target.to_string();
         Some(previous)
-    }
+}
 }
 
 #[cfg(test)]

@@ -17,5 +17,6 @@ fn main() {
     // Example:
     // let result = spanda_node::build::main();
 
+    // Produce setup as the result.
     napi_build::setup();
 }

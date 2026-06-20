@@ -23,6 +23,7 @@ pub fn format_source(source: &str) -> String {
     // use spanda_core::format::format_source;
     // let input = "module m;\nexport fn f(x:Int)->Int{return x;}\n";
     // let out = format_source(input);
+
     // assert!(out.contains("export fn f(x: Int) -> Int"));
     match format_ast(source) {
         Ok(formatted) => formatted,
@@ -46,6 +47,7 @@ pub fn format_ast(source: &str) -> Result<String, SpandaError> {
     // use spanda_core::format::format_ast;
     // let input = "module m;\nexport fn f() -> Int { return 0; }\n";
     // let out = format_ast(input).unwrap();
+
     // assert!(out.contains("export fn f()"));
     let tokens = crate::lexer::tokenize(source)?;
     let program = crate::parser::parse(tokens)?;
@@ -67,14 +69,21 @@ fn normalize_whitespace(source: &str) -> String {
     // Example:
     // let result = spanda_core::format::normalize_whitespace(source);
 
+    // Start the generated output buffer.
     let mut out = String::new();
+
+    // Handle each input line.
     for line in source.lines() {
         out.push_str(line.trim_end());
         out.push('\n');
     }
+
+    // Repeat while out.ends with("\n\n").
     while out.ends_with("\n\n") {
         out.pop();
     }
+
+    // Take the branch when ends with is false.
     if !out.ends_with('\n') {
         out.push('\n');
     }

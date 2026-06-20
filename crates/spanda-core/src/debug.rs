@@ -47,8 +47,9 @@ impl DebugSession {
         // Example:
         // let result = instance.paused();
 
+        // Produce is empty as the result.
         !self.pauses.is_empty()
-    }
+}
 }
 
 #[derive(Clone)]
@@ -74,12 +75,13 @@ impl DebugController {
         // Example:
         // let value = spanda_core::debug::new(options);
 
+        // Assemble the struct fields and return it.
         Self {
             breakpoints: options.breakpoints,
             step: RefCell::new(options.step),
             pauses: Rc::new(RefCell::new(Vec::new())),
         }
-    }
+}
 
     pub fn pauses(&self) -> Rc<RefCell<Vec<DebugPause>>> {
         // Pauses.
@@ -96,8 +98,9 @@ impl DebugController {
         // Example:
         // let result = instance.pauses();
 
+        // Call clone on the current instance.
         self.pauses.clone()
-    }
+}
 
     pub fn should_pause(&self, line: u32) -> bool {
         // Should pause.
@@ -115,12 +118,13 @@ impl DebugController {
         // Example:
         // let result = instance.should_pause(line);
 
+        // take this path when *self.step.borrow().
         if *self.step.borrow() {
             *self.step.borrow_mut() = false;
             return true;
         }
         self.breakpoints.contains(&line)
-    }
+}
 
     pub fn record_pause(
         &self,
@@ -145,12 +149,13 @@ impl DebugController {
         // Example:
         // let result = instance.record_pause(line, reason, variables);
 
+        // Append into self.
         self.pauses.borrow_mut().push(DebugPause {
             line,
             reason: reason.to_string(),
             variables,
         });
-    }
+}
 
     pub fn command(&self, cmd: DebugCommand) {
         // Command.
@@ -168,10 +173,11 @@ impl DebugController {
         // Example:
         // let result = instance.command(cmd);
 
+        // keep entries that match the expected pattern.
         if matches!(cmd, DebugCommand::Step) {
             *self.step.borrow_mut() = true;
         }
-    }
+}
 }
 
 pub fn stmt_line(stmt: &crate::ast::Stmt) -> u32 {
@@ -189,7 +195,10 @@ pub fn stmt_line(stmt: &crate::ast::Stmt) -> u32 {
     // Example:
     // let result = spanda_core::debug::stmt_line(stmt);
 
+    // Import the items needed by the logic below.
     use crate::ast::Stmt;
+
+    // Match on stmt and handle each case.
     match stmt {
         Stmt::VarDecl { span, .. }
         | Stmt::IfStmt { span, .. }

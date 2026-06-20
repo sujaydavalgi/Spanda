@@ -37,6 +37,7 @@ impl TransportKind {
         // Example:
         // let result = spanda_core::comm::from_ident(s);
 
+        // Match on s and handle each case.
         match s {
             "local" => Some(Self::Local),
             "ros2" => Some(Self::Ros2),
@@ -46,10 +47,9 @@ impl TransportKind {
             "sim" => Some(Self::Sim),
             _ => None,
         }
-    }
+}
 
     pub fn as_str(self) -> &'static str {
-        // Return as str.
         //
         // Parameters:
         // - `self` — method receiver
@@ -63,6 +63,7 @@ impl TransportKind {
         // Example:
         // let result = instance.as_str();
 
+        // Dispatch based on the enum variant or current state.
         match self {
             Self::Local => "local",
             Self::Ros2 => "ros2",
@@ -71,7 +72,7 @@ impl TransportKind {
             Self::Websocket => "websocket",
             Self::Sim => "sim",
         }
-    }
+}
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -141,12 +142,15 @@ impl MessageRegistry {
         // Example:
         // let value = spanda_core::comm::new();
 
+        // Create mutable reg for accumulating results.
         let mut reg = Self::default();
+
+        // Iterate over each name in ["Velocity", "Pose", "Scan", "String"].
         for name in ["Velocity", "Pose", "Scan", "String"] {
             reg.builtin.insert(name.into());
         }
         reg
-    }
+}
 
     pub fn register(&mut self, decl: &MessageDecl) {
         // Register the value.
@@ -164,6 +168,7 @@ impl MessageRegistry {
         // Example:
         // let result = instance.register(decl);
 
+        // Compute MessageDecl for the following logic.
         let MessageDecl::MessageDecl {
             name,
             fields,
@@ -181,7 +186,7 @@ impl MessageRegistry {
                 version: *version,
             },
         );
-    }
+}
 
     pub fn from_program(
         messages: &[MessageDecl],
@@ -202,10 +207,15 @@ impl MessageRegistry {
         // Example:
         // let result = spanda_core::comm::from_program(messages, structs);
 
+        // Create mutable reg for accumulating results.
         let mut reg = Self::new();
+
+        // Process each message.
         for msg in messages {
             reg.register(msg);
         }
+
+        // Process each struct.
         for s in structs {
             let crate::foundations::StructDecl::StructDecl { name, fields, .. } = s;
             reg.schemas.insert(
@@ -221,10 +231,9 @@ impl MessageRegistry {
             );
         }
         reg
-    }
+}
 
     pub fn is_known(&self, name: &str) -> bool {
-        // Return whether known.
         //
         // Parameters:
         // - `self` — method receiver
@@ -239,8 +248,9 @@ impl MessageRegistry {
         // Example:
         // let result = instance.is_known(name);
 
+        // Call contains on the current instance.
         self.builtin.contains(name) || self.schemas.contains_key(name)
-    }
+}
 
     pub fn get(&self, name: &str) -> Option<&MessageSchema> {
         // Get.
@@ -258,8 +268,9 @@ impl MessageRegistry {
         // Example:
         // let result = instance.get(name);
 
+        // Call get on the current instance.
         self.schemas.get(name)
-    }
+}
 
     pub fn resolve_type(&self, name: &str) -> Option<SpandaType> {
         // Resolve type.
@@ -277,6 +288,7 @@ impl MessageRegistry {
         // Example:
         // let result = instance.resolve_type(name);
 
+        // Match on name and handle each case.
         match name {
             "Velocity" => Some(SpandaType::Velocity),
             "Pose" => Some(SpandaType::Pose),
@@ -296,7 +308,7 @@ impl MessageRegistry {
             }
             _ => None,
         }
-    }
+}
 }
 
 // ── Communication declarations ─────────────────────────────────────────────
@@ -396,7 +408,6 @@ pub struct SimNetworkConfig {
 
 impl Default for SimNetworkConfig {
     fn default() -> Self {
-        // Return the default value.
         //
         // Parameters:
         // None.
@@ -410,11 +421,12 @@ impl Default for SimNetworkConfig {
         // Example:
         // let value = spanda_core::comm::default();
 
+        // Assemble the struct fields and return it.
         Self {
             delay_ms: 0.0,
             packet_loss: 0.0,
         }
-    }
+}
 }
 
 pub trait CommBus {
@@ -477,13 +489,14 @@ impl InMemoryCommBus {
         // Example:
         // let value = spanda_core::comm::new();
 
+        // Assemble the struct fields and return it.
         Self {
             discovered_robots: vec!["RoverA".into(), "RoverB".into()],
             discovered_agents: vec!["Vision".into(), "Planner".into(), "Navigator".into()],
             discovered_devices: vec!["Camera".into(), "IMU".into(), "Lidar".into()],
             ..Default::default()
         }
-    }
+}
 
     pub fn register_robot(&mut self, name: impl Into<String>) {
         // Register robot.
@@ -501,8 +514,9 @@ impl InMemoryCommBus {
         // Example:
         // let result = instance.register_robot(name);
 
+        // Append into self.
         self.discovered_robots.push(name.into());
-    }
+}
 
     pub fn register_agent(&mut self, name: impl Into<String>) {
         // Register agent.
@@ -520,8 +534,9 @@ impl InMemoryCommBus {
         // Example:
         // let result = instance.register_agent(name);
 
+        // Append into self.
         self.discovered_agents.push(name.into());
-    }
+}
 
     pub fn register_device(&mut self, name: impl Into<String>) {
         // Register device.
@@ -539,8 +554,9 @@ impl InMemoryCommBus {
         // Example:
         // let result = instance.register_device(name);
 
+        // Append into self.
         self.discovered_devices.push(name.into());
-    }
+}
 
     pub fn active_faults(&self) -> Vec<String> {
         // Active faults.
@@ -557,8 +573,9 @@ impl InMemoryCommBus {
         // Example:
         // let result = instance.active_faults();
 
+        // Call clone on the current instance.
         self.faults.clone()
-    }
+}
 
     pub fn subscription_paths(&self) -> Vec<String> {
         // Subscription paths.
@@ -575,8 +592,9 @@ impl InMemoryCommBus {
         // Example:
         // let result = instance.subscription_paths();
 
+        // Collect filtered entries into a new list.
         self.subscriptions.keys().cloned().collect()
-    }
+}
 
     pub fn push_inbound(&mut self, topic_path: &str, value: RuntimeValue) {
         // Push inbound.
@@ -595,11 +613,12 @@ impl InMemoryCommBus {
         // Example:
         // let result = instance.push_inbound(topic_path, value);
 
+        // Call buffers on the current instance.
         self.buffers
             .entry(topic_path.to_string())
             .or_default()
             .push_back(value);
-    }
+}
 
     /// Deliver a message to a peer robot topic namespace (`/{peer}/{topic}`).
     pub fn publish_peer(
@@ -627,9 +646,10 @@ impl InMemoryCommBus {
         // Example:
         // let result = instance.publish_peer(peer, topic, value, transport);
 
+        // Resolve the filesystem path for the next step.
         let path = format!("/{peer}/{topic}");
         self.publish(&path, "PeerMessage", value, transport);
-    }
+}
 }
 
 impl CommBus for InMemoryCommBus {
@@ -658,11 +678,16 @@ impl CommBus for InMemoryCommBus {
         // Example:
         // let result = instance.publish(topic_path, message_type, value, transport);
 
+        // take the branch when any equals "NetworkOutage").
         if self.faults.iter().any(|f| f == "NetworkOutage") {
             return;
         }
+
+        // Take this path when self.network.packet loss > 0.0.
         if self.network.packet_loss > 0.0 {
             let hash = topic_path.len() + message_type.len();
+
+            // Take this path when (hash as f64 * 0.13).fract() < self.network.packet loss.
             if (hash as f64 * 0.13).fract() < self.network.packet_loss {
                 return;
             }
@@ -673,10 +698,12 @@ impl CommBus for InMemoryCommBus {
             value: value.clone(),
             transport,
         });
+
+        // Emit output when get mut provides a buf.
         if let Some(buf) = self.buffers.get_mut(topic_path) {
             buf.push_back(value);
         }
-    }
+}
 
     fn subscribe(&mut self, topic_path: &str, handler: &str) {
         // Subscribe.
@@ -695,12 +722,13 @@ impl CommBus for InMemoryCommBus {
         // Example:
         // let result = instance.subscribe(topic_path, handler);
 
+        // Call subscriptions on the current instance.
         self.subscriptions
             .entry(topic_path.to_string())
             .or_default()
             .push(handler.to_string());
         self.buffers.entry(topic_path.to_string()).or_default();
-    }
+}
 
     fn receive(&mut self, topic_path: &str) -> Option<RuntimeValue> {
         // Receive.
@@ -718,8 +746,9 @@ impl CommBus for InMemoryCommBus {
         // Example:
         // let result = instance.receive(topic_path);
 
+        // Transform self and continue the chain.
         self.buffers.get_mut(topic_path).and_then(|q| q.pop_front())
-    }
+}
 
     fn call_service(
         &mut self,
@@ -744,11 +773,12 @@ impl CommBus for InMemoryCommBus {
         // Example:
         // let result = instance.call_service(_service_name, service_type, _request);
 
+        // Build a Object runtime value.
         RuntimeValue::Object {
             type_name: service_type.to_string(),
             fields: HashMap::from([("ok".into(), RuntimeValue::Bool { value: true })]),
         }
-    }
+}
 
     fn send_action(
         &mut self,
@@ -773,11 +803,12 @@ impl CommBus for InMemoryCommBus {
         // Example:
         // let result = instance.send_action(_action_name, action_type, _goal);
 
+        // Build a Object runtime value.
         RuntimeValue::Object {
             type_name: action_type.to_string(),
             fields: HashMap::from([("success".into(), RuntimeValue::Bool { value: true })]),
         }
-    }
+}
 
     fn discover(&self, target: DiscoverTarget, filter: &DiscoverFilter) -> Vec<String> {
         // Discover.
@@ -796,11 +827,14 @@ impl CommBus for InMemoryCommBus {
         // Example:
         // let result = instance.discover(target, filter);
 
+        // Compute base for the following logic.
         let base = match target {
             DiscoverTarget::Robots => self.discovered_robots.clone(),
             DiscoverTarget::Agents => self.discovered_agents.clone(),
             DiscoverTarget::Devices => self.discovered_devices.clone(),
         };
+
+        // Emit output when capability provides a cap.
         if let Some(cap) = &filter.capability {
             base.into_iter()
                 .filter(|n| n.to_lowercase().contains(&cap.to_lowercase()))
@@ -808,7 +842,7 @@ impl CommBus for InMemoryCommBus {
         } else {
             base
         }
-    }
+}
 
     fn published_messages(&self) -> Vec<PublishedCommMessage> {
         // Published messages.
@@ -825,8 +859,9 @@ impl CommBus for InMemoryCommBus {
         // Example:
         // let result = instance.published_messages();
 
+        // Call clone on the current instance.
         self.published.clone()
-    }
+}
 
     fn inject_fault(&mut self, fault: &str) {
         // Inject fault.
@@ -844,8 +879,9 @@ impl CommBus for InMemoryCommBus {
         // Example:
         // let result = instance.inject_fault(fault);
 
+        // Append into self.
         self.faults.push(fault.to_string());
-    }
+}
 
     fn set_network_config(&mut self, config: SimNetworkConfig) {
         // Set network config.
@@ -863,8 +899,9 @@ impl CommBus for InMemoryCommBus {
         // Example:
         // let result = instance.set_network_config(config);
 
+        // Call network = config; on the current instance.
         self.network = config;
-    }
+}
 
     fn active_faults(&self) -> Vec<String> {
         // Active faults.
@@ -881,8 +918,9 @@ impl CommBus for InMemoryCommBus {
         // Example:
         // let result = instance.active_faults();
 
+        // Call clone on the current instance.
         self.faults.clone()
-    }
+}
 
     fn subscription_paths(&self) -> Vec<String> {
         // Subscription paths.
@@ -899,8 +937,9 @@ impl CommBus for InMemoryCommBus {
         // Example:
         // let result = instance.subscription_paths();
 
+        // Collect filtered entries into a new list.
         self.subscriptions.keys().cloned().collect()
-    }
+}
 
     fn push_inbound(&mut self, topic_path: &str, value: RuntimeValue) {
         // Push inbound.
@@ -919,11 +958,12 @@ impl CommBus for InMemoryCommBus {
         // Example:
         // let result = instance.push_inbound(topic_path, value);
 
+        // Call buffers on the current instance.
         self.buffers
             .entry(topic_path.to_string())
             .or_default()
             .push_back(value);
-    }
+}
 }
 
 // ── Safety communication wrappers ────────────────────────────────────────────
@@ -955,20 +995,27 @@ pub fn validate_comm_safety_chain(
     // Example:
     // let result = spanda_core::comm::validate_comm_safety_chain(stage, value);
 
+    // Match on stage and handle each case.
     match stage {
         CommSafetyStage::ActionProposal => {
+
+            // Keep entries that match the expected pattern.
             if !matches!(value, RuntimeValue::Object { type_name, .. } if type_name == "ActionProposal")
             {
                 return Err("Expected ActionProposal before safety validation".into());
             }
         }
         CommSafetyStage::SafeAction => {
+
+            // Keep entries that match the expected pattern.
             if !matches!(value, RuntimeValue::Object { type_name, .. } if type_name == "SafeAction")
             {
                 return Err("Expected SafeAction before command conversion".into());
             }
         }
         CommSafetyStage::CommandMessage => {
+
+            // Keep entries that match the expected pattern.
             if !matches!(value, RuntimeValue::Object { type_name, .. } if type_name == "CommandMessage")
             {
                 return Err("Expected CommandMessage before actuator dispatch".into());
@@ -997,6 +1044,7 @@ pub fn estimate_topic_bandwidth_mbps(rate_hz: f64, message_size_bytes: f64) -> f
     // Example:
     // let result = spanda_core::comm::estimate_topic_bandwidth_mbps(rate_hz, message_size_bytes);
 
+    // Produce 0 as the result.
     (rate_hz * message_size_bytes * 8.0) / 1_000_000.0
 }
 
@@ -1015,6 +1063,7 @@ pub fn default_message_size(message_type: &str) -> f64 {
     // Example:
     // let result = spanda_core::comm::default_message_size(message_type);
 
+    // Match on message type and handle each case.
     match message_type {
         "Scan" | "LidarScan" | "LidarReading" => 64_000.0,
         "Pose" | "Velocity" => 128.0,
@@ -1038,6 +1087,7 @@ pub fn qos_to_spanda_type(qos: &QosDecl) -> SpandaType {
     // Example:
     // let result = spanda_core::comm::qos_to_spanda_type(qos);
 
+    // Compute value for the following logic.
     let _ = qos;
     SpandaType::Named { name: "QoS".into() }
 }
@@ -1059,7 +1109,6 @@ pub const SAFETY_MESSAGE_TYPES: &[&str] = &[
 pub const COMM_CAPABILITIES: &[&str] = &["subscribe", "publish", "call", "execute", "discover"];
 
 pub fn is_comm_capability(action: &str) -> bool {
-    // Return whether comm capability.
     //
     // Parameters:
     // - `action` — input value
@@ -1073,6 +1122,7 @@ pub fn is_comm_capability(action: &str) -> bool {
     // Example:
     // let result = spanda_core::comm::is_comm_capability(action);
 
+    // Produce contains as the result.
     COMM_CAPABILITIES.contains(&action)
 }
 

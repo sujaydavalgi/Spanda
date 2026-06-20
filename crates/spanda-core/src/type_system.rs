@@ -28,11 +28,12 @@ pub fn resolve_type_name(name: &str) -> Result<SpandaType, String> {
     // Example:
     // let result = spanda_core::type_system::resolve_type_name(name);
 
+    // Resolve the symbol name used below.
     let name = name.strip_prefix("std.").unwrap_or(name);
     let name = name.rsplit('.').next().unwrap_or(name);
 
+    // Match on name and handle each case.
     match name {
-        // Foundation
         "Int" | "int" => Ok(SpandaType::Int),
         "Float" | "float" => Ok(SpandaType::Float),
         "Bool" | "bool" => Ok(SpandaType::Bool),
@@ -41,7 +42,6 @@ pub fn resolve_type_name(name: &str) -> Result<SpandaType, String> {
         "Bytes" | "bytes" => Ok(SpandaType::Bytes),
         "Null" | "null" => Ok(SpandaType::Null),
         "Void" | "void" => Ok(SpandaType::Void),
-        // Time
         "Time" => Ok(SpandaType::Named {
             name: "Time".into(),
         }),
@@ -52,7 +52,6 @@ pub fn resolve_type_name(name: &str) -> Result<SpandaType, String> {
         "Interval" => Ok(SpandaType::Named {
             name: "Interval".into(),
         }),
-        // Physical unit types
         "Distance" => Ok(SpandaType::Number { unit: UnitKind::M }),
         "Velocity" => Ok(SpandaType::Velocity),
         "Acceleration" => Ok(SpandaType::Number {
@@ -71,7 +70,6 @@ pub fn resolve_type_name(name: &str) -> Result<SpandaType, String> {
         | "SoilMoisture" => Ok(SpandaType::Named {
             name: name.to_string(),
         }),
-        // Spatial / robotics
         "Point2D" | "Point3D" | "Vector2D" | "Vector3D" | "Quaternion" | "Pose" => {
             Ok(SpandaType::Pose)
         }
@@ -80,17 +78,14 @@ pub fn resolve_type_name(name: &str) -> Result<SpandaType, String> {
         "Waypoint" | "MotionCommand" | "ControlSignal" | "PIDConfig" => Ok(SpandaType::Named {
             name: name.to_string(),
         }),
-        // Sensors
         "CameraFrame" | "Image" | "DepthImage" | "PointCloud" | "LidarScan" => Ok(SpandaType::Scan),
         "GpsFix" | "ImuData" | "AudioFrame" => Ok(SpandaType::Named {
             name: name.to_string(),
         }),
-        // AI
         "LLM" | "VisionModel" | "EmbeddingModel" | "Prompt" | "Completion" | "Embedding"
         | "Token" | "Context" | "Memory" | "Plan" | "ReasoningTrace" => Ok(SpandaType::Named {
             name: name.to_string(),
         }),
-        // Agent / autonomy
         "Agent" | "Goal" | "Task" | "Skill" | "Capability" | "Intent" => Ok(SpandaType::Named {
             name: name.to_string(),
         }),
@@ -100,46 +95,38 @@ pub fn resolve_type_name(name: &str) -> Result<SpandaType, String> {
         "SafeAction" => Ok(SpandaType::Named {
             name: "SafeAction".into(),
         }),
-        // HRI
         "Command" | "Conversation" | "Speech" | "Gesture" | "Emotion" | "Feedback" | "Approval" => {
             Ok(SpandaType::Named {
                 name: name.to_string(),
             })
         }
-        // Security / audit / crypto
         "Identity" | "RobotIdentity" | "Signature" | "Permission" | "TrustLevel" | "Hash"
         | "AuditEvent" | "AuditLog" | "ProvenanceRecord" | "MissionRecord" | "RecordId" => {
             Ok(SpandaType::Named {
                 name: name.to_string(),
             })
         }
-        // Robotics graph
         "Robot" | "Sensor" | "Actuator" | "Event" | "Bus" | "CompatibilityReport" => {
             Ok(SpandaType::Named {
                 name: name.to_string(),
             })
         }
-        // Core / collections / io
         "Result" | "Option" | "Error" | "File" | "Reader" | "Writer" | "Logger" | "LogLevel" => {
             Ok(SpandaType::Named {
                 name: name.to_string(),
             })
         }
-        // Uncertainty
         "Confidence" | "Prediction" | "Probability" => Ok(SpandaType::Named {
             name: name.to_string(),
         }),
-        // Safety
         "Risk" | "Hazard" | "SafetyConstraint" | "EmergencyStop" => Ok(SpandaType::Named {
             name: name.to_string(),
         }),
-        // Digital twin
         "Twin" | "SimulationState" | "Telemetry" | "Replay" | "Fault" | "Scenario" => {
             Ok(SpandaType::Named {
                 name: name.to_string(),
             })
         }
-        // Network / communication (std.network)
         "Transport"
         | "QosProfile"
         | "QoS"
@@ -156,12 +143,10 @@ pub fn resolve_type_name(name: &str) -> Result<SpandaType, String> {
         | "Endpoint" => Ok(SpandaType::Named {
             name: name.to_string(),
         }),
-        // Advanced
         "KnowledgeGraph" | "Belief" | "Observation" | "WorldModel" | "Policy" | "Reward"
         | "StateEstimate" | "SensorFusion" | "FusedObservation" => Ok(SpandaType::Named {
             name: name.to_string(),
         }),
-        // Legacy aliases
         "Scan" => Ok(SpandaType::Scan),
         other if is_known_domain_type(other) => Ok(SpandaType::Named {
             name: other.to_string(),
@@ -186,8 +171,11 @@ pub fn resolve_generic_type(name: &str, args: &[SpandaType]) -> Result<SpandaTyp
     // Example:
     // let result = spanda_core::type_system::resolve_generic_type(name, args);
 
+    // Compute base for the following logic.
     let base = name.rsplit('.').next().unwrap_or(name);
     let expected = generic_arity(base).ok_or_else(|| format!("Unknown generic type '{base}'"))?;
+
+    // Take the branch when len differs from expected.
     if args.len() != expected {
         return Err(format!(
             "Type '{base}' expects {expected} type argument(s), got {}",
@@ -215,6 +203,7 @@ pub fn generic_arity(name: &str) -> Option<usize> {
     // Example:
     // let result = spanda_core::type_system::generic_arity(name);
 
+    // Match on name and handle each case.
     match name {
         "Array" | "Set" | "Queue" | "Stack" | "Topic" | "Message" | "Twin" | "Future" => Some(1),
         "Map" | "Service" | "Tuple" | "Result" => Some(2),
@@ -226,7 +215,6 @@ pub fn generic_arity(name: &str) -> Option<usize> {
 }
 
 fn is_known_domain_type(name: &str) -> bool {
-    // Return whether known domain type.
     //
     // Parameters:
     // - `name` — input value
@@ -240,6 +228,7 @@ fn is_known_domain_type(name: &str) -> bool {
     // Example:
     // let result = spanda_core::type_system::is_known_domain_type(name);
 
+    // Produce contains as the result.
     KNOWN_DOMAIN_TYPES.contains(&name)
 }
 
@@ -391,6 +380,7 @@ pub fn physical_category(ty: &SpandaType) -> PhysicalCategory {
     // Example:
     // let result = spanda_core::type_system::physical_category(ty);
 
+    // Match on ty and handle each case.
     match ty {
         SpandaType::Int | SpandaType::Float => PhysicalCategory::Scalar,
         SpandaType::Number { unit, .. } => units::unit_category(*unit),
@@ -454,12 +444,16 @@ pub fn binary_physical_op_allowed(
     // Example:
     // let result = spanda_core::type_system::binary_physical_op_allowed(op, left, right);
 
+    // Import the items needed by the logic below.
     use crate::ast::BinaryOp;
     let cat_l = physical_category(left);
     let cat_r = physical_category(right);
 
+    // Match on op and handle each case.
     match op {
         BinaryOp::Add | BinaryOp::Sub => {
+
+            // Take the branch when cat l equals Scalar.
             if cat_l == PhysicalCategory::Scalar && cat_r == PhysicalCategory::Scalar {
                 return true;
             }
@@ -479,7 +473,6 @@ pub fn binary_physical_op_allowed(
 }
 
 pub fn is_action_proposal_type(ty: &SpandaType) -> bool {
-    // Return whether action proposal type.
     //
     // Parameters:
     // - `ty` — input value
@@ -493,6 +486,7 @@ pub fn is_action_proposal_type(ty: &SpandaType) -> bool {
     // Example:
     // let result = spanda_core::type_system::is_action_proposal_type(ty);
 
+    // Produce matches! as the result.
     matches!(
         ty,
         SpandaType::Named { name } if name == "ActionProposal"
@@ -500,7 +494,6 @@ pub fn is_action_proposal_type(ty: &SpandaType) -> bool {
 }
 
 pub fn is_safe_action_type(ty: &SpandaType) -> bool {
-    // Return whether safe action type.
     //
     // Parameters:
     // - `ty` — input value
@@ -514,6 +507,7 @@ pub fn is_safe_action_type(ty: &SpandaType) -> bool {
     // Example:
     // let result = spanda_core::type_system::is_safe_action_type(ty);
 
+    // Produce matches! as the result.
     matches!(
         ty,
         SpandaType::Named { name } if name == "SafeAction"
@@ -535,6 +529,7 @@ pub fn std_namespaces() -> HashMap<&'static str, &'static [&'static str]> {
     // Example:
     // let result = spanda_core::type_system::std_namespaces();
 
+    // Create mutable m for accumulating results.
     let mut m = HashMap::new();
     m.insert(
         "std.time",

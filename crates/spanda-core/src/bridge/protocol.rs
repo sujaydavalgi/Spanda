@@ -15,9 +15,11 @@ use std::process::{Command, Stdio};
 /// JSON request envelope sent to a bridge subprocess on stdin.
 #[derive(Serialize)]
 pub struct BridgeRequest<'a> {
+
     /// Extern function name to invoke.
     #[serde(rename = "fn")]
     pub fn_name: &'a str,
+
     /// JSON-encoded argument values.
     pub args: Vec<serde_json::Value>,
 }
@@ -25,10 +27,13 @@ pub struct BridgeRequest<'a> {
 /// JSON response envelope read from a bridge subprocess stdout.
 #[derive(Deserialize)]
 pub struct BridgeResponse {
+
     /// `true` when the handler succeeded.
     pub ok: bool,
+
     /// Handler return value when `ok` is true.
     pub result: Option<serde_json::Value>,
+
     /// Error message when `ok` is false.
     pub error: Option<String>,
 }
@@ -49,6 +54,7 @@ pub fn runtime_value_to_json(value: &RuntimeValue) -> serde_json::Value {
     // use spanda_core::bridge::protocol::runtime_value_to_json;
     // use spanda_core::runtime::RuntimeValue;
     // let json = runtime_value_to_json(&RuntimeValue::Bool { value: true });
+
     // assert_eq!(json, serde_json::json!(true));
     match value {
         RuntimeValue::Number { value, .. } => serde_json::Value::Number(
@@ -71,8 +77,11 @@ pub fn json_to_runtime_value(value: &serde_json::Value, return_type: &SpandaType
     //
     // Returns:
     //
+
     // Coerced [`RuntimeValue`] (defaults for missing fields).
     use crate::ast::UnitKind;
+
+    // Match on return type and handle each case.
     match return_type {
         SpandaType::Bool => RuntimeValue::Bool {
             value: value.as_bool().unwrap_or(false),
@@ -124,6 +133,7 @@ pub fn call_subprocess_bridge(
     // Example:
     //
     // use spanda_core::bridge::protocol::call_subprocess_bridge;
+
     // // Typically invoked via bridge::python::call_extern or bridge::cpp::call_extern.
     let line = decl.span.start.line;
     let request = BridgeRequest {
@@ -134,19 +144,18 @@ pub fn call_subprocess_bridge(
         message: format!("Failed to encode {bridge_label} bridge request: {e}"),
         line,
     })?;
-
     let mut command = Command::new(executable);
     command
         .args(extra_args)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
-
     let mut child = command.spawn().map_err(|e| SpandaError::Runtime {
         message: format!("Failed to spawn {bridge_label} bridge: {e}"),
         line,
     })?;
 
+    // Take this path when let Some(mut stdin) = child.stdin.take().
     if let Some(mut stdin) = child.stdin.take() {
         stdin
             .write_all(request_json.as_bytes())
@@ -156,12 +165,12 @@ pub fn call_subprocess_bridge(
             })?;
         stdin.write_all(b"\n").ok();
     }
-
     let output = child.wait_with_output().map_err(|e| SpandaError::Runtime {
         message: format!("{bridge_label} bridge process failed: {e}"),
         line,
     })?;
 
+    // Handle output when the subprocess succeeds.
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
         return Err(SpandaError::Runtime {
@@ -173,7 +182,6 @@ pub fn call_subprocess_bridge(
             line,
         });
     }
-
     let stdout = String::from_utf8_lossy(&output.stdout);
     let resp: BridgeResponse =
         serde_json::from_str(stdout.trim()).map_err(|e| SpandaError::Runtime {
@@ -184,6 +192,7 @@ pub fn call_subprocess_bridge(
             line,
         })?;
 
+    // Take the branch when ok is false.
     if !resp.ok {
         return Err(SpandaError::Runtime {
             message: resp
@@ -192,7 +201,6 @@ pub fn call_subprocess_bridge(
             line,
         });
     }
-
     Ok(json_to_runtime_value(
         &resp.result.unwrap_or(serde_json::Value::Null),
         &decl.return_type,

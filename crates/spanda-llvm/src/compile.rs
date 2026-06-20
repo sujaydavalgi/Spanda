@@ -40,11 +40,11 @@ pub fn compile_native(
     // Example:
     // let result = spanda_llvm::compile::compile_native(sir, opts);
 
+    // Compute clang for the following logic.
     let clang =
         opts.clang.clone().or_else(detect_clang).ok_or_else(|| {
             "clang not found — install LLVM/clang to use compile-native".to_string()
         })?;
-
     let ir = emit_module_ir_with_options(
         sir,
         opts.target_triple.as_deref(),
@@ -54,20 +54,17 @@ pub fn compile_native(
     std::fs::create_dir_all(&build_dir).map_err(|e| e.to_string())?;
     let llvm_ir_path = build_dir.join("program.ll");
     std::fs::write(&llvm_ir_path, ir).map_err(|e| e.to_string())?;
-
     let rt_lib = ensure_spanda_rt_staticlib(&opts.workspace_root)?;
     let output = if opts.output.is_absolute() {
         opts.output.clone()
     } else {
         opts.workspace_root.join(&opts.output)
     };
-
     let mut cmd = Command::new(clang);
     cmd.arg(llvm_ir_path.as_os_str())
         .arg(rt_lib.as_os_str())
         .arg("-o")
         .arg(output.as_os_str());
-
     let triple = opts
         .target_triple
         .clone()
@@ -75,6 +72,7 @@ pub fn compile_native(
         .unwrap_or_else(|| default_target_triple_for_host().to_string());
     cmd.args(["-target", triple.as_str()]);
 
+    // Take this path when cfg!(target os = "macos").
     if cfg!(target_os = "macos") {
         cmd.arg("-Wl,-no_warn_duplicate_libraries");
         cmd.args([
@@ -85,16 +83,16 @@ pub fn compile_native(
         ]);
         cmd.arg("-liconv");
     }
-
     let status = cmd
         .status()
         .map_err(|e| format!("failed to run clang: {e}"))?;
+
+    // Handle output when the subprocess succeeds.
     if !status.success() {
         return Err(format!(
             "clang failed linking native binary (exit {status})"
         ));
     }
-
     Ok(CompileNativeResult {
         llvm_ir_path,
         executable: output,
@@ -116,6 +114,7 @@ fn hal_profile_triple(profile: Option<&str>) -> Option<&'static str> {
     // Example:
     // let result = spanda_llvm::compile::hal_profile_triple(profile);
 
+    // Match on profile? and handle each case.
     match profile? {
         "embedded-arm" => Some("aarch64-unknown-linux-gnu"),
         "esp32" => Some("xtensa-esp32-elf"),
@@ -138,7 +137,10 @@ fn detect_clang() -> Option<String> {
     // Example:
     // let result = spanda_llvm::compile::detect_clang();
 
+    // Iterate over ["clang", "clang-18", "clang-17", "clang-16"].
     for candidate in ["clang", "clang-18", "clang-17", "clang-16"] {
+
+        // Take this path when Command::new(candidate).
         if Command::new(candidate)
             .arg("--version")
             .status()
@@ -166,6 +168,7 @@ fn resolve_target_dir(workspace_root: &Path) -> PathBuf {
     // Example:
     // let result = spanda_llvm::compile::resolve_target_dir(workspace_root);
 
+    // Produce var as the result.
     std::env::var("CARGO_TARGET_DIR")
         .map(PathBuf::from)
         .unwrap_or_else(|_| workspace_root.join("target"))
@@ -186,25 +189,33 @@ fn ensure_spanda_rt_staticlib(workspace_root: &Path) -> Result<PathBuf, String> 
     // Example:
     // let result = spanda_llvm::compile::ensure_spanda_rt_staticlib(workspace_root);
 
+    // Compute target dir for the following logic.
     let target_dir = resolve_target_dir(workspace_root);
     let profile = "debug";
     let lib_path = target_dir.join(profile).join("libspanda_rt.a");
+
+    // Continue only when the path is a regular file.
     if lib_path.is_file() {
         return Ok(lib_path);
     }
-
     let mut cmd = Command::new("cargo");
     cmd.current_dir(workspace_root)
         .args(["build", "-p", "spanda-rt"]);
+
+    // Handle the success value from var.
     if let Ok(dir) = std::env::var("CARGO_TARGET_DIR") {
         cmd.env("CARGO_TARGET_DIR", dir);
     }
     let status = cmd
         .status()
         .map_err(|e| format!("failed to build spanda-rt: {e}"))?;
+
+    // Handle output when the subprocess succeeds.
     if !status.success() {
         return Err("cargo build -p spanda-rt failed".into());
     }
+
+    // Continue only when the path is a regular file.
     if lib_path.is_file() {
         Ok(lib_path)
     } else {

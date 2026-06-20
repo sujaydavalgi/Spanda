@@ -49,6 +49,7 @@ impl SpandaError {
         // Example:
         // let result = instance.diagnostics();
 
+        // Dispatch based on the enum variant or current state.
         match self {
             SpandaError::Lexer {
                 message,
@@ -80,7 +81,7 @@ impl SpandaError {
                 column: 1,
             }],
         }
-    }
+}
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -127,18 +128,23 @@ pub struct RunOptions {
     pub lidar_range: f64,
     #[serde(skip)]
     pub module_registry: Option<crate::modules::ModuleRegistry>,
+
     /// Emit scheduler multiplexing and tick diagnostics to runtime logs.
     #[serde(default)]
     pub trace_scheduler: bool,
+
     /// Emit per-task tick and deadline diagnostics to runtime logs.
     #[serde(default)]
     pub trace_tasks: bool,
+
     /// Log digital twin replay frame summaries (simulation).
     #[serde(default)]
     pub replay_trace: bool,
+
     /// Emit trigger dispatch diagnostics to runtime logs.
     #[serde(default)]
     pub trace_triggers: bool,
+
     /// Emit event trigger diagnostics to runtime logs.
     #[serde(default)]
     pub trace_events: bool,
@@ -159,6 +165,7 @@ fn default_max_loop_iterations() -> usize {
     // Example:
     // let result = spanda_core::error::default_max_loop_iterations();
 
+    // Produce 10 as the result.
     10
 }
 
@@ -177,6 +184,7 @@ fn default_lidar_range() -> f64 {
     // Example:
     // let result = spanda_core::error::default_lidar_range();
 
+    // Produce 0 as the result.
     10.0
 }
 

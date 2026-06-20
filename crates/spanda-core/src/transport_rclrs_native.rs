@@ -41,11 +41,18 @@ fn library_candidates() -> Vec<PathBuf> {
     // Example:
     // let result = spanda_core::transport_rclrs_native::library_candidates();
 
+    // Create mutable paths for accumulating results.
     let mut paths = Vec::new();
+
+    // Handle the success value from var.
     if let Ok(path) = std::env::var("SPANDA_ROS2_RCLRS_LIB") {
         paths.push(PathBuf::from(path));
     }
+
+    // Handle the success value from current exe.
     if let Ok(exe) = std::env::current_exe() {
+
+        // Emit output when parent provides a dir.
         if let Some(dir) = exe.parent() {
             #[cfg(target_os = "macos")]
             paths.push(dir.join("libspanda_ros2_rclrs_native.dylib"));
@@ -77,6 +84,7 @@ fn load_library(path: &Path) -> Option<NativeLib> {
     // Example:
     // let result = spanda_core::transport_rclrs_native::load_library(path);
 
+    // Compute library for the following logic.
     let library = unsafe { libloading::Library::new(path).ok()? };
     unsafe {
         let sdk_available = *library.get(b"spanda_ros2_rclrs_sdk_available").ok()?;
@@ -110,10 +118,17 @@ fn native() -> Option<&'static NativeLib> {
     // Example:
     // let result = spanda_core::transport_rclrs_native::native();
 
+    // Produce NATIVE as the result.
     NATIVE
         .get_or_init(|| {
+
+            // Process each filesystem path.
             for path in library_candidates() {
+
+                // Continue only when the path is a regular file.
                 if path.is_file() {
+
+                    // Emit output when load library provides a lib.
                     if let Some(lib) = load_library(&path) {
                         return Some(lib);
                     }
@@ -139,6 +154,7 @@ fn c_string(value: &str) -> Option<CString> {
     // Example:
     // let result = spanda_core::transport_rclrs_native::c_string(value);
 
+    // Produce ok as the result.
     CString::new(value).ok()
 }
 
@@ -157,6 +173,7 @@ pub fn sdk_available() -> bool {
     // Example:
     // let result = spanda_core::transport_rclrs_native::sdk_available();
 
+    // Produce native as the result.
     native()
         .map(|lib| unsafe { (lib.sdk_available)() })
         .unwrap_or(false)
@@ -177,11 +194,14 @@ pub fn init_node(name: &str) -> Result<(), String> {
     // Example:
     // let result = spanda_core::transport_rclrs_native::init_node(name);
 
+    // Compute Some for the following logic.
     let Some(lib) = native() else {
         return Err("native rclrs library not loaded — set SPANDA_ROS2_RCLRS_LIB".into());
     };
     let name = c_string(name).ok_or_else(|| "invalid node name".to_string())?;
     let code = unsafe { (lib.init_node)(name.as_ptr()) };
+
+    // Take the branch when code equals 0.
     if code == 0 {
         Ok(())
     } else {
@@ -205,6 +225,7 @@ pub fn publish(topic: &str, payload: &str) -> bool {
     // Example:
     // let result = spanda_core::transport_rclrs_native::publish(topic, payload);
 
+    // Compute Some for the following logic.
     let Some(lib) = native() else {
         return false;
     };
@@ -232,6 +253,7 @@ pub fn subscribe(topic: &str) -> bool {
     // Example:
     // let result = spanda_core::transport_rclrs_native::subscribe(topic);
 
+    // Compute Some for the following logic.
     let Some(lib) = native() else {
         return false;
     };
@@ -258,6 +280,7 @@ pub fn service_call(service: &str, service_type: &str, request: &str) -> bool {
     // Example:
     // let result = spanda_core::transport_rclrs_native::service_call(service, service_type, request);
 
+    // Compute Some for the following logic.
     let Some(lib) = native() else {
         return false;
     };

@@ -5,9 +5,11 @@ use serde::{Deserialize, Serialize};
 /// Driver / adapter package model — what a community package provides and requires.
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct AdapterMetadata {
+
     /// Symbols this package exports (e.g. `LidarAdapter`, `Topic<LidarScan>`).
     #[serde(default)]
     pub provides: Vec<String>,
+
     /// Capabilities this adapter needs from the runtime.
     #[serde(default)]
     pub requires: Vec<String>,
@@ -37,6 +39,7 @@ pub fn framework_packages() -> &'static [FrameworkPackage] {
     // Example:
     // let result = spanda_package::adapter::framework_packages();
 
+    // Return the static list of known values.
     &[
         FrameworkPackage {
             name: "spanda-ros2",
@@ -122,6 +125,7 @@ pub fn framework_import_paths() -> Vec<&'static str> {
     // Example:
     // let result = spanda_package::adapter::framework_import_paths();
 
+    // Produce framework packages as the result.
     framework_packages()
         .iter()
         .flat_map(|p| p.import_paths.iter().copied())

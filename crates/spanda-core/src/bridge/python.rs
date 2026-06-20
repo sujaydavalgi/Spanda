@@ -27,8 +27,11 @@ pub fn bridge_script_path() -> Option<PathBuf> {
     // Example:
     // let result = spanda_core::python::bridge_script_path();
 
+    // handle the success value from var.
     if let Ok(path) = std::env::var("SPANDA_PYTHON_BRIDGE") {
         let p = PathBuf::from(path);
+
+        // Continue only when the path is a regular file.
         if p.is_file() {
             return Some(p);
         }
@@ -53,10 +56,13 @@ fn candidate_script_paths() -> Vec<PathBuf> {
     // Example:
     // let result = spanda_core::python::candidate_script_paths();
 
+    // Create mutable paths for accumulating results.
     let mut paths = vec![
         PathBuf::from("scripts/spanda_python_bridge.py"),
         PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../scripts/spanda_python_bridge.py"),
     ];
+
+    // Handle the success value from current dir.
     if let Ok(cwd) = std::env::current_dir() {
         paths.push(cwd.join("scripts/spanda_python_bridge.py"));
     }
@@ -78,6 +84,7 @@ pub fn python_available() -> bool {
     // Example:
     // let result = spanda_core::python::python_available();
 
+    // Produce is some as the result.
     python_command().is_some()
 }
 
@@ -96,7 +103,10 @@ fn python_command() -> Option<String> {
     // Example:
     // let result = spanda_core::python::python_command();
 
+    // Iterate over ["python3", "python"].
     for cmd in ["python3", "python"] {
+
+        // Take this path when Command::new(cmd).
         if Command::new(cmd)
             .arg("-c")
             .arg("import sys")
@@ -131,13 +141,17 @@ pub fn call_extern(
     // Example:
     // let result = spanda_core::python::call_extern(decl, args);
 
+    // Produce #[cfg as the result.
     #[cfg(feature = "python-native")]
+
+    // Take this path when std::env::var("SPANDA PYTHON SUBPROCESS").is err().
     if std::env::var("SPANDA_PYTHON_SUBPROCESS").is_err() {
+
+        // Take this path when super::python native::native available().
         if super::python_native::native_available() {
             return super::python_native::call_extern(decl, args);
         }
     }
-
     let line = decl.span.start.line;
     let script = bridge_script_path().ok_or_else(|| SpandaError::Runtime {
         message: "Python bridge script not found — set SPANDA_PYTHON_BRIDGE or run from repo root"
@@ -178,6 +192,7 @@ mod tests {
         // Example:
         // let result = spanda_core::python::test_decl(name);
 
+        // Produce ExternFnDecl as the result.
         ExternFnDecl {
             name: name.into(),
             library: Some("python".into()),
@@ -197,7 +212,7 @@ mod tests {
                 },
             },
         }
-    }
+}
 
     #[test]
     fn subprocess_py_add_when_python_available() {

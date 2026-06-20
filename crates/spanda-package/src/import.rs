@@ -19,6 +19,7 @@ pub fn builtin_import_paths() -> &'static [&'static str] {
     // Example:
     // let result = spanda_package::import::builtin_import_paths();
 
+    // Return the static list of known values.
     &[
         "sensors.lidar",
         "sensors.camera",
@@ -88,6 +89,7 @@ pub fn resolve_package_import(path: &str) -> bool {
     // Example:
     // let result = spanda_package::import::resolve_package_import(path);
 
+    // Check membership before continuing.
     if builtin_import_paths().contains(&path) {
         return true;
     }
@@ -110,6 +112,7 @@ pub fn all_registered_import_paths() -> Vec<String> {
     // Example:
     // let result = spanda_package::import::all_registered_import_paths();
 
+    // Create mutable paths for accumulating results.
     let mut paths: Vec<String> = builtin_import_paths()
         .iter()
         .map(|s| (*s).to_string())

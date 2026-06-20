@@ -45,7 +45,6 @@ pub enum BridgeKind {
 
 impl BridgeKind {
     pub fn as_str(&self) -> &'static str {
-        // Return as str.
         //
         // Parameters:
         // - `self` — method receiver
@@ -59,12 +58,13 @@ impl BridgeKind {
         // Example:
         // let result = instance.as_str();
 
+        // Dispatch based on the enum variant or current state.
         match self {
             Self::Native => "native",
             Self::Python => "python",
             Self::Cpp => "cpp",
         }
-    }
+}
 }
 
 /// Foreign function interface declaration (`extern fn read_sensor() -> Int;`).
@@ -255,6 +255,7 @@ impl TaskPriority {
         // Example:
         // let result = spanda_core::foundations::from_ident(ident);
 
+        // Match on ident and handle each case.
         match ident {
             "critical" => Some(Self::Critical),
             "high" => Some(Self::High),
@@ -262,7 +263,7 @@ impl TaskPriority {
             "low" => Some(Self::Low),
             _ => None,
         }
-    }
+}
 }
 
 /// Event declaration and handler.
@@ -559,7 +560,6 @@ pub struct SecureBlockDecl {
 
 impl Default for SecureBlockDecl {
     fn default() -> Self {
-        // Return the default value.
         //
         // Parameters:
         // None.
@@ -573,6 +573,7 @@ impl Default for SecureBlockDecl {
         // Example:
         // let value = spanda_core::foundations::default();
 
+        // Assemble the struct fields and return it.
         Self {
             signed: false,
             min_trust: None,
@@ -590,7 +591,7 @@ impl Default for SecureBlockDecl {
                 },
             },
         }
-    }
+}
 }
 
 /// Capability granted to an agent (`can [ read(lidar), propose_motion ]`).
@@ -617,6 +618,7 @@ pub fn resolve_module_import(path: &str) -> bool {
     // Example:
     // let result = spanda_core::foundations::resolve_module_import(path);
 
+    // Produce matches! as the result.
     matches!(
         path,
         "sensors.lidar"
@@ -687,6 +689,7 @@ pub fn resolve_type_alias(name: &str) -> Option<&'static str> {
     // Example:
     // let result = spanda_core::foundations::resolve_type_alias(name);
 
+    // Match on name and handle each case.
     match name {
         "Distance" | "meter" | "Meter" => Some("distance"),
         "Angle" | "radian" | "Radian" => Some("angle"),

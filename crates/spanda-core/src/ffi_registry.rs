@@ -26,15 +26,20 @@ pub fn resolve_ffi_import(path: &str) -> bool {
     // Example:
     // let result = spanda_core::ffi_registry::resolve_ffi_import(path);
 
+    // Check membership before continuing.
     if FFI_BRIDGE_IMPORTS.contains(&path) {
         return true;
     }
+
+    // Emit output when ") provides a suffix.
     if let Some(suffix) = path.strip_prefix("python.") {
         return !suffix.is_empty()
             && suffix
                 .chars()
                 .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '.');
     }
+
+    // Emit output when ") provides a suffix.
     if let Some(suffix) = path.strip_prefix("cpp.") {
         return !suffix.is_empty()
             && suffix

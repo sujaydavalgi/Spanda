@@ -35,11 +35,15 @@ pub fn vendor_dependencies(
     // Example:
     // let result = spanda_package::vendor::vendor_dependencies(project_root, lockfile);
 
+    // Compute vendor root for the following logic.
     let vendor_root = project_root.join(".spanda/packages");
     fs::create_dir_all(&vendor_root).map_err(PackageError::Io)?;
     let mut report = VendorReport::default();
 
+    // Iterate over dependencies with destructured elements.
     for (name, dep) in &lockfile.dependencies {
+
+        // Match on source and handle each case.
         match &dep.source {
             LockedSource::Local { path } => {
                 report
@@ -47,6 +51,8 @@ pub fn vendor_dependencies(
                     .push(format!("{name} (local path {})", path.display()));
             }
             LockedSource::Registry { .. } => {
+
+                // Match on version, &vendor root)? and handle each case.
                 match vendor_registry_package(project_root, name, &dep.version, &vendor_root)? {
                     Some(path) => report.vendored.push(format!("{name} → {}", path.display())),
                     None => report.warnings.push(format!(
@@ -61,6 +67,8 @@ pub fn vendor_dependencies(
                 rev,
             } => {
                 let dest = vendor_root.join(name);
+
+                // Act only when the target path already exists.
                 if dest.exists() {
                     fs::remove_dir_all(&dest).map_err(PackageError::Io)?;
                 }
@@ -75,7 +83,6 @@ pub fn vendor_dependencies(
             }
         }
     }
-
     Ok(report)
 }
 
@@ -102,17 +109,22 @@ fn vendor_registry_package(
     // Example:
     // let result = spanda_package::vendor::vendor_registry_package(project_root, name, version, vendor_root);
 
+    // Compute dest for the following logic.
     let dest = vendor_root.join(name);
+
+    // Act only when the target path already exists.
     if dest.exists() {
         fs::remove_dir_all(&dest).map_err(PackageError::Io)?;
     }
 
+    // Emit output when registry package dir provides a src.
     if let Some(src) = registry_package_dir(name) {
         copy_dir_recursive(&src, &dest)?;
         let _ = project_root;
         return Ok(Some(dest));
     }
 
+    // Match on fetch registry tarball and handle each case.
     match fetch_registry_tarball(project_root, name, version, &dest) {
         Ok(path) => Ok(Some(path)),
         Err(err) => {
@@ -147,7 +159,10 @@ fn vendor_git(
     // Example:
     // let result = spanda_package::vendor::vendor_git(url, branch, tag, rev, dest);
 
+    // Create mutable args for accumulating results.
     let mut args = vec!["clone", "--depth", "1"];
+
+    // Emit output when tag provides a t.
     if let Some(t) = tag {
         args.push("--branch");
         args.push(t);
@@ -160,23 +175,27 @@ fn vendor_git(
         dest.to_str()
             .ok_or_else(|| PackageError::Dependency("invalid vendor destination path".into()))?,
     );
-
     let status = Command::new("git")
         .args(&args)
         .status()
         .map_err(|e| PackageError::Dependency(format!("git clone failed for {url}: {e}")))?;
+
+    // Handle output when the subprocess succeeds.
     if !status.success() {
         return Err(PackageError::Dependency(format!(
             "git clone exited with {status} for {url}"
         )));
     }
 
+    // Emit output when rev provides a revision.
     if let Some(revision) = rev {
         let checkout = Command::new("git")
             .args(["checkout", revision])
             .current_dir(dest)
             .status()
             .map_err(|e| PackageError::Dependency(format!("git checkout failed: {e}")))?;
+
+        // Handle output when the subprocess succeeds.
         if !checkout.success() {
             return Err(PackageError::Dependency(format!(
                 "git checkout {revision} failed"
@@ -202,11 +221,16 @@ fn copy_dir_recursive(src: &Path, dest: &Path) -> PackageResult<()> {
     // Example:
     // let result = spanda_package::vendor::copy_dir_recursive(src, dest);
 
+    // Produce Io)? as the result.
     fs::create_dir_all(dest).map_err(PackageError::Io)?;
+
+    // Process each registry entry.
     for entry in fs::read_dir(src).map_err(PackageError::Io)? {
         let entry = entry.map_err(PackageError::Io)?;
         let file_type = entry.file_type().map_err(PackageError::Io)?;
         let target = dest.join(entry.file_name());
+
+        // Treat the path as a directory and scan its contents.
         if file_type.is_dir() {
             copy_dir_recursive(&entry.path(), &target)?;
         } else {

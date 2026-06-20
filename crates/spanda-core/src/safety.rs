@@ -68,11 +68,12 @@ impl SafetyMonitor {
         // Example:
         // let value = spanda_core::safety::new(config);
 
+        // Assemble the struct fields and return it.
         Self {
             config,
             emergency_stop: false,
         }
-    }
+}
 
     pub fn evaluate_before_motion(&mut self, env: &Environment, pose: &Pose2d) -> SafetyEvaluation {
         // Evaluate before motion.
@@ -91,12 +92,15 @@ impl SafetyMonitor {
         // Example:
         // let result = instance.evaluate_before_motion(env, pose);
 
+        // Compute peek for the following logic.
         let peek = self.peek_before_motion(env, pose);
+
+        // Take the branch when emergency stop is false.
         if !peek.allowed && peek.emergency_stop {
             self.emergency_stop = true;
         }
         peek
-    }
+}
 
     pub fn peek_before_motion(&self, env: &Environment, pose: &Pose2d) -> SafetyEvaluation {
         // Peek before motion.
@@ -115,6 +119,7 @@ impl SafetyMonitor {
         // Example:
         // let result = instance.peek_before_motion(env, pose);
 
+        // take this path when self.emergency stop.
         if self.emergency_stop {
             return SafetyEvaluation {
                 allowed: false,
@@ -123,7 +128,10 @@ impl SafetyMonitor {
             };
         }
 
+        // Process each stop if rule.
         for rule in &self.config.stop_if_rules {
+
+            // Take this path when rule(env).
             if rule(env) {
                 return SafetyEvaluation {
                     allowed: false,
@@ -133,7 +141,10 @@ impl SafetyMonitor {
             }
         }
 
+        // Process each zone.
         for zone in &self.config.zones {
+
+            // Take this path when Self::is point in zone(pose.x, pose.y, zone).
             if Self::is_point_in_zone(pose.x, pose.y, zone) {
                 return SafetyEvaluation {
                     allowed: false,
@@ -142,13 +153,12 @@ impl SafetyMonitor {
                 };
             }
         }
-
         SafetyEvaluation {
             allowed: true,
             reason: None,
             emergency_stop: false,
         }
-    }
+}
 
     pub fn validate_action_proposal(
         &self,
@@ -175,7 +185,10 @@ impl SafetyMonitor {
         // Example:
         // let result = instance.validate_action_proposal(linear, angular, env, pose);
 
+        // Compute peek for the following logic.
         let peek = self.peek_before_motion(env, pose);
+
+        // Take the branch when allowed is false.
         if !peek.allowed {
             return ValidateActionResult::Err {
                 reason: peek
@@ -187,10 +200,9 @@ impl SafetyMonitor {
             linear: self.clamp_speed(linear),
             angular,
         })
-    }
+}
 
     pub fn is_in_zone(&self, zone_name: &str, pose: &Pose2d) -> bool {
-        // Return whether in zone.
         //
         // Parameters:
         // - `self` — method receiver
@@ -206,11 +218,12 @@ impl SafetyMonitor {
         // Example:
         // let result = instance.is_in_zone(zone_name, pose);
 
+        // Compute Some for the following logic.
         let Some(zone) = self.config.zones.iter().find(|z| z.name == zone_name) else {
             return false;
         };
         Self::is_point_in_zone(pose.x, pose.y, zone)
-    }
+}
 
     pub fn clamp_speed(&self, requested: f64) -> f64 {
         // Clamp speed.
@@ -228,16 +241,16 @@ impl SafetyMonitor {
         // Example:
         // let result = instance.clamp_speed(requested);
 
+        // Compute sign for the following logic.
         let sign = if requested == 0.0 {
             1.0
         } else {
             requested.signum()
         };
         requested.abs().min(self.config.max_speed) * sign
-    }
+}
 
     pub fn is_emergency_stop(&self) -> bool {
-        // Return whether emergency stop.
         //
         // Parameters:
         // - `self` — method receiver
@@ -251,8 +264,9 @@ impl SafetyMonitor {
         // Example:
         // let result = instance.is_emergency_stop();
 
+        // Call emergency stop on the current instance.
         self.emergency_stop
-    }
+}
 
     pub fn set_emergency_stop(&mut self, active: bool) {
         // Set emergency stop.
@@ -270,8 +284,9 @@ impl SafetyMonitor {
         // Example:
         // let result = instance.set_emergency_stop(active);
 
+        // Call emergency stop = active; on the current instance.
         self.emergency_stop = active;
-    }
+}
 
     pub fn reset(&mut self) {
         // Reset the value.
@@ -288,11 +303,11 @@ impl SafetyMonitor {
         // Example:
         // let result = instance.reset();
 
+        // Call emergency stop = false; on the current instance.
         self.emergency_stop = false;
-    }
+}
 
     fn is_point_in_zone(x: f64, y: f64, zone: &SafetyZoneRuntime) -> bool {
-        // Return whether point in zone.
         //
         // Parameters:
         // - `x` — input value
@@ -308,8 +323,11 @@ impl SafetyMonitor {
         // Example:
         // let result = spanda_core::safety::is_point_in_zone(x, y, zone);
 
+        // Match on shape and handle each case.
         match zone.shape {
             SafetyZoneShape::Circle => {
+
+                // Emit output when radius provides a radius.
                 if let Some(radius) = zone.radius {
                     let dx = x - zone.x;
                     let dy = y - zone.y;
@@ -319,6 +337,8 @@ impl SafetyMonitor {
                 }
             }
             SafetyZoneShape::Rect => {
+
+                // Take this path when let (Some(width), Some(height)) = (zone.width, zone.height).
                 if let (Some(width), Some(height)) = (zone.width, zone.height) {
                     x >= zone.x && x <= zone.x + width && y >= zone.y && y <= zone.y + height
                 } else {
@@ -326,7 +346,7 @@ impl SafetyMonitor {
                 }
             }
         }
-    }
+}
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -364,6 +384,7 @@ pub fn create_safety_config_from_robot(
     // Example:
     // let result = spanda_core::safety::create_safety_config_from_robot(max_speed, stop_if_rules, zones);
 
+    // Produce SafetyConfig as the result.
     SafetyConfig {
         max_speed,
         stop_if_rules,
@@ -386,6 +407,7 @@ pub fn apply_emergency_stop(state: RobotState) -> RobotState {
     // Example:
     // let result = spanda_core::safety::apply_emergency_stop(state);
 
+    // Produce RobotState as the result.
     RobotState {
         emergency_stop: true,
         velocity: crate::error::VelocityState {
@@ -417,10 +439,13 @@ pub fn interpolate_poses(
     // Example:
     // let result = spanda_core::safety::interpolate_poses(from, to, steps);
 
+    // Compute count for the following logic.
     let count = steps.max(2.0).floor() as usize;
     let from_z = from.z.unwrap_or(0.0);
     let to_z = to.z.unwrap_or(0.0);
     let mut waypoints = Vec::with_capacity(count);
+
+    // Iterate over count.
     for i in 0..count {
         let t = i as f64 / (count as f64 - 1.0);
         waypoints.push(Pose3d {

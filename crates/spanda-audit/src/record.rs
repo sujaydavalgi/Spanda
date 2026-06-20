@@ -39,11 +39,12 @@ impl DeviceIdentity {
         // Example:
         // let value = spanda_audit::record::new(id, public_key);
 
+        // Assemble the struct fields and return it.
         Self {
             id: id.into(),
             public_key: public_key.into(),
         }
-    }
+}
 
     pub fn signing_material(&self) -> String {
         // Signing material.
@@ -59,13 +60,14 @@ impl DeviceIdentity {
         //
         // Example:
         // let result = instance.signing_material();
+
         // Material used to derive the Ed25519 signing key.
         if self.public_key.is_empty() || crate::crypto::is_hex_public_key(&self.public_key) {
             format!("spanda-device-{}", self.id)
         } else {
             self.public_key.clone()
         }
-    }
+}
 
     pub fn verifying_key_hex(&self) -> String {
         // Verifying key hex.
@@ -81,13 +83,14 @@ impl DeviceIdentity {
         //
         // Example:
         // let result = instance.verifying_key_hex();
+
         // Hex-encoded Ed25519 public key for signature verification.
         if crate::crypto::is_hex_public_key(&self.public_key) {
             self.public_key.clone()
         } else {
             crate::crypto::public_key_from_material(&self.signing_material())
         }
-    }
+}
 
     pub fn default_key(&self) -> String {
         // Default key.
@@ -103,9 +106,10 @@ impl DeviceIdentity {
         //
         // Example:
         // let result = instance.default_key();
+
         // Backward-compatible alias for signing material.
         self.signing_material()
-    }
+}
 }
 
 /// Append-only audit event.
@@ -138,6 +142,7 @@ impl AuditRecord {
         // Example:
         // let result = instance.canonical_body();
 
+        // Produce format! as the result.
         format!(
             "{}|{}|{}|{}",
             self.timestamp.to_rfc3339(),
@@ -148,7 +153,7 @@ impl AuditRecord {
                 .map(|h| h.0.as_str())
                 .unwrap_or("")
         )
-    }
+}
 }
 
 /// Provenance metadata linking audit records to signed mission logs.

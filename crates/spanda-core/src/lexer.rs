@@ -353,7 +353,6 @@ pub enum UnitLexeme {
 
 impl UnitLexeme {
     pub fn as_str(self) -> &'static str {
-        // Return as str.
         //
         // Parameters:
         // - `self` — method receiver
@@ -367,6 +366,7 @@ impl UnitLexeme {
         // Example:
         // let result = instance.as_str();
 
+        // Dispatch based on the enum variant or current state.
         match self {
             UnitLexeme::PercentVwc => "%VWC",
             UnitLexeme::PercentRh => "%RH",
@@ -448,7 +448,7 @@ impl UnitLexeme {
             UnitLexeme::Psu => "psu",
             UnitLexeme::Vwc => "vwc",
         }
-    }
+}
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -488,6 +488,7 @@ pub fn unit_from_lexeme(lexeme: UnitLexeme) -> UnitKind {
     // Example:
     // let result = spanda_core::lexer::unit_from_lexeme(lexeme);
 
+    // Produce as str as the result.
     UnitKind::from_lexeme(lexeme.as_str())
 }
 
@@ -588,6 +589,7 @@ fn keywords() -> HashMap<&'static str, TokenType> {
     // Example:
     // let result = spanda_core::lexer::keywords();
 
+    // Produce from as the result.
     HashMap::from([
         ("import", TokenType::Import),
         ("module", TokenType::Module),
@@ -757,24 +759,27 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, SpandaError> {
     // Example:
     // let result = spanda_core::lexer::tokenize(source);
 
+    // Compute keywords for the following logic.
     let keywords = keywords();
     let mut tokens = Vec::new();
     let mut line: u32 = 1;
     let mut column: u32 = 1;
     let mut i = 0;
     let chars: Vec<char> = source.chars().collect();
-
     let loc = |line: u32, column: u32, offset: usize| (line, column, offset);
 
+    // Repeat while i < chars.len().
     while i < chars.len() {
         let ch = chars[i];
 
+        // Take the branch when ch equals ' ' || ch == '\t' || ch == '\r'.
         if ch == ' ' || ch == '\t' || ch == '\r' {
             i += 1;
             column += 1;
             continue;
         }
 
+        // Take the branch when ch equals '\n'.
         if ch == '\n' {
             i += 1;
             line += 1;
@@ -782,15 +787,18 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, SpandaError> {
             continue;
         }
 
+        // Take the branch when ch equals len.
         if ch == '/' && i + 1 < chars.len() && chars[i + 1] == '/' {
+
+            // Repeat while i < chars.len() && chars[i] != '\n'.
             while i < chars.len() && chars[i] != '\n' {
                 i += 1;
             }
             continue;
         }
-
         let (start_line, start_column, start_offset) = loc(line, column, i);
 
+        // Match on ch and handle each case.
         match ch {
             '[' => {
                 push_single(
@@ -1090,7 +1098,11 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, SpandaError> {
                 i += 1;
                 column += 1;
                 let mut value = String::new();
+
+                // Repeat while i < chars.len() && chars[i] != '"'.
                 while i < chars.len() && chars[i] != '"' {
+
+                    // Take the branch when chars[i] equals len.
                     if chars[i] == '\\' && i + 1 < chars.len() {
                         value.push(chars[i + 1]);
                         i += 2;
@@ -1101,6 +1113,8 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, SpandaError> {
                         column += 1;
                     }
                 }
+
+                // Take this path when i >= chars.len().
                 if i >= chars.len() {
                     return Err(SpandaError::Lexer {
                         message: "Unterminated string".to_string(),
@@ -1124,6 +1138,8 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, SpandaError> {
                 i += 2;
                 column += 2;
                 let mut hex_str = String::new();
+
+                // Repeat while i < chars.len() && is hex digit(chars[i]).
                 while i < chars.len() && is_hex_digit(chars[i]) {
                     hex_str.push(chars[i]);
                     i += 1;
@@ -1142,6 +1158,8 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, SpandaError> {
             }
             _ if is_digit(ch) || (ch == '.' && i + 1 < chars.len() && is_digit(chars[i + 1])) => {
                 let mut num_str = String::new();
+
+                // Repeat while i < chars.len() && (is digit(chars[i]) || chars[i] == '.').
                 while i < chars.len() && (is_digit(chars[i]) || chars[i] == '.') {
                     num_str.push(chars[i]);
                     i += 1;
@@ -1149,20 +1167,30 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, SpandaError> {
                 }
                 let num: f64 = num_str.parse().unwrap_or(0.0);
 
+                // Repeat while i < chars.len() && (chars[i] == ' ' || chars[i] == '\t').
                 while i < chars.len() && (chars[i] == ' ' || chars[i] == '\t') {
                     i += 1;
                     column += 1;
                 }
-
                 let mut matched_unit: Option<UnitLexeme> = None;
+
+                // Iterate over UNIT SUFFIXES.
                 for suffix in UNIT_SUFFIXES {
                     let suffix_str = suffix.as_str();
                     let suffix_chars: Vec<char> = suffix_str.chars().collect();
+
+                    // Take this path when i + suffix chars.len() <= chars.len().
                     if i + suffix_chars.len() <= chars.len() {
                         let slice: String = chars[i..i + suffix_chars.len()].iter().collect();
+
+                        // Take the branch when slice equals suffix str.
                         if slice == suffix_str {
                             let next = chars.get(i + suffix_chars.len()).copied();
+
+                            // Emit output when next provides a n.
                             if let Some(n) = next {
+
+                                // Take the branch when is ident char equals '/'.
                                 if is_ident_char(n) || n == '/' {
                                     continue;
                                 }
@@ -1175,6 +1203,7 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, SpandaError> {
                     }
                 }
 
+                // Emit output when matched unit provides a unit.
                 if let Some(unit) = matched_unit {
                     tokens.push(Token {
                         token_type: TokenType::UnitLiteral,
@@ -1199,6 +1228,8 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, SpandaError> {
             }
             _ if is_ident_start(ch) => {
                 let mut ident = String::new();
+
+                // Repeat while i < chars.len() && is ident char(chars[i]).
                 while i < chars.len() && is_ident_char(chars[i]) {
                     ident.push(chars[i]);
                     i += 1;
@@ -1227,7 +1258,6 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, SpandaError> {
             }
         }
     }
-
     tokens.push(Token {
         token_type: TokenType::Eof,
         lexeme: String::new(),
@@ -1237,12 +1267,10 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, SpandaError> {
         column,
         offset: i,
     });
-
     Ok(tokens)
 }
 
 fn is_hex_digit(ch: char) -> bool {
-    // Return whether hex digit.
     //
     // Parameters:
     // - `ch` — input value
@@ -1256,11 +1284,11 @@ fn is_hex_digit(ch: char) -> bool {
     // Example:
     // let result = spanda_core::lexer::is_hex_digit(ch);
 
+    // Produce contains as the result.
     is_digit(ch) || ('a'..='f').contains(&ch) || ('A'..='F').contains(&ch)
 }
 
 fn is_digit(ch: char) -> bool {
-    // Return whether digit.
     //
     // Parameters:
     // - `ch` — input value
@@ -1274,11 +1302,11 @@ fn is_digit(ch: char) -> bool {
     // Example:
     // let result = spanda_core::lexer::is_digit(ch);
 
+    // Produce is ascii digit as the result.
     ch.is_ascii_digit()
 }
 
 fn is_ident_start(ch: char) -> bool {
-    // Return whether ident start.
     //
     // Parameters:
     // - `ch` — input value
@@ -1292,11 +1320,11 @@ fn is_ident_start(ch: char) -> bool {
     // Example:
     // let result = spanda_core::lexer::is_ident_start(ch);
 
+    // Produce is ascii alphabetic as the result.
     ch.is_ascii_alphabetic() || ch == '_'
 }
 
 fn is_ident_char(ch: char) -> bool {
-    // Return whether ident char.
     //
     // Parameters:
     // - `ch` — input value
@@ -1310,6 +1338,7 @@ fn is_ident_char(ch: char) -> bool {
     // Example:
     // let result = spanda_core::lexer::is_ident_char(ch);
 
+    // Produce is ident start as the result.
     is_ident_start(ch) || is_digit(ch)
 }
 
@@ -1340,6 +1369,7 @@ fn push_single(
     // Example:
     // let result = spanda_core::lexer::push_single(tokens, token_type, lexeme, line, column, offset);
 
+    // Append into tokens.
     tokens.push(Token {
         token_type,
         lexeme: lexeme.to_string(),

@@ -19,18 +19,16 @@ fn main() {
     // Example:
     // let result = spanda_core::build::main();
 
+    // Compute manifest dir for the following logic.
     let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
     let src = manifest_dir.join("src/bridge/spanda_cpp_bridge.cpp");
     let bin = out_dir.join("spanda_cpp_bridge");
     let obj = out_dir.join("spanda_cpp_bridge.o");
     let static_lib = out_dir.join("libspanda_cpp_bridge.a");
-
     println!("cargo:rerun-if-changed={}", src.display());
-
     let cxx = env::var("CXX").unwrap_or_else(|_| "c++".into());
     let cpp_native = env::var("CARGO_FEATURE_CPP_NATIVE").is_ok();
-
     let ok = Command::new(&cxx)
         .args([
             "-std=c++17",
@@ -42,6 +40,7 @@ fn main() {
         .map(|s| s.success())
         .unwrap_or(false);
 
+    // Continue only when the path is a regular file.
     if ok && bin.is_file() {
         println!("cargo:rustc-env=SPANDA_CPP_BRIDGE_BIN={}", bin.display());
     } else {
@@ -51,10 +50,10 @@ fn main() {
         );
     }
 
+    // Take the branch when cpp native is false.
     if !cpp_native {
         return;
     }
-
     let obj_ok = Command::new(&cxx)
         .args([
             "-std=c++17",
@@ -68,11 +67,11 @@ fn main() {
         .map(|s| s.success())
         .unwrap_or(false);
 
+    // Continue only when the path is a regular file.
     if !obj_ok || !obj.is_file() {
         println!("cargo:warning=spanda-cpp-bridge: failed to compile in-process C++ bridge object");
         return;
     }
-
     let ar = env::var("AR").unwrap_or_else(|_| "ar".into());
     let lib_ok = Command::new(&ar)
         .args(["rcs", static_lib.to_str().unwrap(), obj.to_str().unwrap()])
@@ -80,9 +79,12 @@ fn main() {
         .map(|s| s.success())
         .unwrap_or(false);
 
+    // Continue only when the path is a regular file.
     if lib_ok && static_lib.is_file() {
         println!("cargo:rustc-link-search=native={}", out_dir.display());
         println!("cargo:rustc-link-lib=static=spanda_cpp_bridge");
+
+        // Take the branch when as deref equals Ok.
         if env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("macos") {
             println!("cargo:rustc-link-lib=c++");
         } else {

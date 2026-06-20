@@ -44,18 +44,20 @@ pub fn resolve_dependencies(
     // Example:
     // let result = spanda_package::resolver::resolve_dependencies(project_root, manifest, options);
 
+    // Create mutable lockfile deps for accumulating results.
     let mut lockfile_deps = BTreeMap::new();
     let mut warnings = Vec::new();
 
+    // Iterate over all dependencies with destructured elements.
     for (name, spec) in manifest.all_dependencies() {
         let locked = resolve_one(project_root, name, spec, options)?;
         lockfile_deps.insert(name.to_string(), locked);
     }
 
+    // Take this path when options.offline.
     if options.offline {
         warnings.push("resolved in offline mode — registry packages use cached versions".into());
     }
-
     Ok(ResolveResult {
         lockfile_deps,
         warnings,
@@ -85,6 +87,7 @@ fn resolve_one(
     // Example:
     // let result = spanda_package::resolver::resolve_one(project_root, name, spec, _options);
 
+    // Match on source kind and handle each case.
     match spec.source_kind() {
         DependencySourceKind::Local => {
             let path = spec.local_path(project_root).ok_or_else(|| {
@@ -165,7 +168,10 @@ fn load_dep_manifest(path: &Path) -> PackageResult<PackageManifest> {
     // Example:
     // let result = spanda_package::resolver::load_dep_manifest(path);
 
+    // Compute manifest path for the following logic.
     let manifest_path = path.join(MANIFEST_FILENAME);
+
+    // Continue only when the path is a regular file.
     if !manifest_path.is_file() {
         return Err(PackageError::Dependency(format!(
             "dependency at {} has no spanda.toml",
@@ -194,6 +200,7 @@ fn select_registry_version(
     // Example:
     // let result = spanda_package::resolver::select_registry_version(entry, req);
 
+    // Create mutable candidates for accumulating results.
     let mut candidates: Vec<Version> = entry
         .versions()
         .iter()
@@ -235,6 +242,7 @@ mod tests {
         // Example:
         // let result = spanda_package::resolver::write_manifest(dir, name, version);
 
+        // Compute content for the following logic.
         let content = format!(
             r#"
 [package]
@@ -243,7 +251,7 @@ version = "{version}"
 "#
         );
         fs::write(dir.join(MANIFEST_FILENAME), content).unwrap();
-    }
+}
 
     #[test]
     fn resolves_local_dependency() {

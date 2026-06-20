@@ -20,6 +20,7 @@ pub fn parse(tokens: Vec<Token>) -> Result<Program, SpandaError> {
     // Example:
     // let result = spanda_core::parser::parse(tokens);
 
+    // Produce parse program as the result.
     Parser::new(tokens).parse_program()
 }
 
@@ -46,8 +47,9 @@ impl Parser {
         // Example:
         // let value = spanda_core::parser::new(tokens);
 
+        // Assemble the struct fields and return it.
         Self { tokens, pos: 0 }
-    }
+}
 
     fn peek(&self) -> &Token {
         // Peek.
@@ -64,8 +66,9 @@ impl Parser {
         // Example:
         // let result = instance.peek();
 
+        // Return pos] from this handle.
         &self.tokens[self.pos]
-    }
+}
 
     fn previous(&self) -> &Token {
         // Previous.
@@ -82,8 +85,9 @@ impl Parser {
         // Example:
         // let result = instance.previous();
 
+        // Return pos - 1] from this handle.
         &self.tokens[self.pos - 1]
-    }
+}
 
     fn advance(&mut self) -> Token {
         // Advance.
@@ -100,11 +104,12 @@ impl Parser {
         // Example:
         // let result = instance.advance();
 
+        // take the branch when token type differs from Eof.
         if self.peek().token_type != TokenType::Eof {
             self.pos += 1;
         }
         self.tokens[self.pos - 1].clone()
-    }
+}
 
     fn check(&self, ty: TokenType) -> bool {
         // Check input.
@@ -122,8 +127,9 @@ impl Parser {
         // Example:
         // let result = instance.check(ty);
 
+        // Call peek on the current instance.
         self.peek().token_type == ty
-    }
+}
 
     fn match_types(&mut self, types: &[TokenType]) -> bool {
         // Match types.
@@ -141,14 +147,17 @@ impl Parser {
         // Example:
         // let result = instance.match_types(types);
 
+        // Process each type.
         for t in types {
+
+            // Take this path when self.check(*t).
             if self.check(*t) {
                 self.advance();
                 return true;
             }
         }
         false
-    }
+}
 
     fn expect(&mut self, ty: TokenType, message: &str) -> Result<Token, SpandaError> {
         // Expect.
@@ -167,6 +176,7 @@ impl Parser {
         // Example:
         // let result = instance.expect(ty, message);
 
+        // take this path when self.check(ty).
         if self.check(ty) {
             Ok(self.advance())
         } else {
@@ -177,7 +187,7 @@ impl Parser {
                 column: t.column,
             })
         }
-    }
+}
 
     fn span_from(&self, start: &Token, end: &Token) -> Span {
         // Span from.
@@ -196,11 +206,12 @@ impl Parser {
         // Example:
         // let result = instance.span_from(start, end);
 
+        // Produce Span as the result.
         Span {
             start: loc(start),
             end: loc(end),
         }
-    }
+}
 
     fn parse_binding_ident(&mut self, message: &str) -> Result<String, SpandaError> {
         // Parse binding ident.
@@ -218,6 +229,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_binding_ident(message);
 
+        // Compute t for the following logic.
         let t = self.peek();
         let ok = matches!(
             t.token_type,
@@ -257,6 +269,8 @@ impl Parser {
                 | TokenType::Device
                 | TokenType::Bus
         );
+
+        // Take this path when ok.
         if ok {
             Ok(self.advance().lexeme)
         } else {
@@ -266,7 +280,7 @@ impl Parser {
                 column: t.column,
             })
         }
-    }
+}
 
     fn parse_label(&mut self, message: &str) -> Result<String, SpandaError> {
         // Parse label.
@@ -284,6 +298,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_label(message);
 
+        // Compute t for the following logic.
         let t = self.peek();
         let ok = matches!(
             t.token_type,
@@ -325,6 +340,8 @@ impl Parser {
                 | TokenType::Verify
                 | TokenType::Requires
         );
+
+        // Take this path when ok.
         if ok {
             Ok(self.advance().lexeme)
         } else {
@@ -334,7 +351,7 @@ impl Parser {
                 column: t.column,
             })
         }
-    }
+}
 
     fn parse_hal_binding_name(&mut self, message: &str) -> Result<String, SpandaError> {
         // Parse hal binding name.
@@ -352,6 +369,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_hal_binding_name(message);
 
+        // Compute t for the following logic.
         let t = self.peek();
         let ok = matches!(
             t.token_type,
@@ -368,6 +386,8 @@ impl Parser {
                 | TokenType::Deploy
                 | TokenType::Bus
         );
+
+        // Take this path when ok.
         if ok {
             Ok(self.advance().lexeme)
         } else {
@@ -377,7 +397,7 @@ impl Parser {
                 column: t.column,
             })
         }
-    }
+}
 
     fn parse_type_name_part(&mut self, message: &str) -> Result<String, SpandaError> {
         // Parse type name part.
@@ -395,11 +415,12 @@ impl Parser {
         // Example:
         // let result = instance.parse_type_name_part(message);
 
+        // take this path when self.check(TokenType::Ident).
         if self.check(TokenType::Ident) {
             return Ok(self.advance().lexeme);
         }
         self.parse_label(message)
-    }
+}
 
     fn parse_type_name(&mut self) -> Result<String, SpandaError> {
         // Parse type name.
@@ -416,12 +437,15 @@ impl Parser {
         // Example:
         // let result = instance.parse_type_name();
 
+        // Create mutable name for accumulating results.
         let mut name = self.parse_type_name_part("Expected type name")?;
+
+        // Take this path when self.check(TokenType::Lt).
         if self.check(TokenType::Lt) {
             name = self.finish_generic_type_name(name)?;
         }
         Ok(name)
-    }
+}
 
     fn finish_generic_type_name(&mut self, base: String) -> Result<String, SpandaError> {
         // Finish generic type name.
@@ -439,11 +463,18 @@ impl Parser {
         // Example:
         // let result = instance.finish_generic_type_name(base);
 
+        // Call expect on the current instance.
         self.expect(TokenType::Lt, "Expected '<' to open generic type")?;
         let mut args = Vec::new();
+
+        // Take the branch when Gt) is false.
         if !self.check(TokenType::Gt) {
+
+            // Run the loop body until it exits.
             loop {
                 args.push(self.parse_type_name()?);
+
+                // Take the branch when Comma]) is false.
                 if !self.match_types(&[TokenType::Comma]) {
                     break;
                 }
@@ -451,7 +482,7 @@ impl Parser {
         }
         self.expect(TokenType::Gt, "Expected '>' to close generic type")?;
         Ok(format!("{base}<{args}>", args = args.join(", ")))
-    }
+}
 
     fn parse_type_annotation(&mut self) -> Result<SpandaType, SpandaError> {
         // Parse type annotation.
@@ -468,22 +499,35 @@ impl Parser {
         // Example:
         // let result = instance.parse_type_annotation();
 
+        // Import the items needed by the logic below.
         use crate::type_system::{resolve_generic_type, resolve_type_name};
         let start = self.peek().clone();
+
+        // Take this path when self.match types(&[TokenType::Dyn]).
         if self.match_types(&[TokenType::Dyn]) {
             let trait_name = self.parse_type_name_part("Expected trait name after dyn")?;
             return Ok(SpandaType::TraitObject { trait_name });
         }
         let mut parts = vec![self.parse_type_name_part("Expected type name")?];
+
+        // Repeat while self.match types(&[TokenType::Dot]).
         while self.match_types(&[TokenType::Dot]) {
             parts.push(self.parse_type_name_part("Expected type name after '.'")?);
         }
         let qualified = parts.join(".");
+
+        // Take this path when self.match types(&[TokenType::Lt]).
         if self.match_types(&[TokenType::Lt]) {
             let mut args = Vec::new();
+
+            // Take the branch when Gt) is false.
             if !self.check(TokenType::Gt) {
+
+                // Run the loop body until it exits.
                 loop {
                     args.push(self.parse_type_annotation()?);
+
+                    // Take the branch when Comma]) is false.
                     if !self.match_types(&[TokenType::Comma]) {
                         break;
                     }
@@ -497,6 +541,8 @@ impl Parser {
                 column: start.column,
             })
         } else {
+
+            // Match on resolve type name and handle each case.
             match resolve_type_name(&qualified) {
                 Ok(ty) => Ok(ty),
                 Err(_msg) if !qualified.contains('.') => Ok(SpandaType::Named { name: qualified }),
@@ -507,7 +553,7 @@ impl Parser {
                 }),
             }
         }
-    }
+}
 
     fn parse_program(&mut self) -> Result<Program, SpandaError> {
         // Parse program.
@@ -524,8 +570,11 @@ impl Parser {
         // Example:
         // let result = instance.parse_program();
 
+        // Compute start for the following logic.
         let start = self.peek().clone();
         let mut module_name = None;
+
+        // Take this path when self.check(TokenType::Module).
         if self.check(TokenType::Module) {
             self.advance();
             module_name = Some(self.parse_dotted_name("Expected module name after 'module'")?);
@@ -548,10 +597,16 @@ impl Parser {
         let mut simulate_compatibility = None;
         let mut messages = Vec::new();
         let mut robots = Vec::new();
+
+        // Repeat while self.check(TokenType::Import).
         while self.check(TokenType::Import) {
             imports.push(self.parse_import()?);
         }
+
+        // Repeat while !self.check(TokenType::Eof).
         while !self.check(TokenType::Eof) {
+
+            // Take this path when self.is module fn start().
             if self.is_module_fn_start() {
                 functions.push(self.parse_module_fn()?);
             } else if self.match_types(&[TokenType::Extern]) {
@@ -606,7 +661,7 @@ impl Parser {
             robots,
             span: self.span_from(&start, self.previous()),
         })
-    }
+}
 
     fn parse_hardware(&mut self) -> Result<HardwareDecl, SpandaError> {
         // Parse hardware.
@@ -623,6 +678,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_hardware();
 
+        // Import the items needed by the logic below.
         use crate::foundations::HardwareDecl;
         let start = self.advance();
         let name = self.expect(TokenType::Ident, "Expected hardware profile name")?;
@@ -640,7 +696,10 @@ impl Parser {
         let mut min_control_period_ms = None;
         let mut power_draw_w = None;
 
+        // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+
+            // Take this path when self.match types(&[TokenType::Cpu]).
             if self.match_types(&[TokenType::Cpu]) {
                 self.expect(TokenType::Colon, "Expected ':' after cpu")?;
                 cpu = Some(self.parse_label("Expected CPU identifier")?);
@@ -655,11 +714,15 @@ impl Parser {
                 self.expect(TokenType::Semicolon, "Expected ';' after storage")?;
             } else if self.match_types(&[TokenType::Gpu]) {
                 self.expect(TokenType::Colon, "Expected ':' after gpu")?;
+
+                // Take this path when self.check(TokenType::True).
                 if self.check(TokenType::True) {
                     self.advance();
                     gpu_required = true;
                 } else {
                     gpu_tops = Some(self.parse_number_value()?);
+
+                    // Take the branch when lexeme equals "TOPS".
                     if self.check(TokenType::Ident) && self.peek().lexeme == "TOPS" {
                         self.advance();
                     }
@@ -671,7 +734,11 @@ impl Parser {
                 actuators = self.parse_hardware_type_list("actuators")?;
             } else if self.match_types(&[TokenType::Battery]) {
                 self.expect(TokenType::Lbrace, "Expected '{' after battery")?;
+
+                // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
                 while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+
+                    // Take this path when self.match types(&[TokenType::Capacity]).
                     if self.match_types(&[TokenType::Capacity]) {
                         self.expect(TokenType::Colon, "Expected ':' after capacity")?;
                         battery_wh = Some(self.parse_energy_wh_value()?);
@@ -688,7 +755,11 @@ impl Parser {
                 self.expect(TokenType::Rbrace, "Expected '}' to close battery block")?;
             } else if self.match_types(&[TokenType::Network]) {
                 self.expect(TokenType::Lbrace, "Expected '{' after network")?;
+
+                // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
                 while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+
+                    // Take this path when self.match types(&[TokenType::Bandwidth]).
                     if self.match_types(&[TokenType::Bandwidth]) {
                         self.expect(TokenType::Colon, "Expected ':' after bandwidth")?;
                         network_bandwidth_mbps = Some(self.parse_network_amount()?);
@@ -709,7 +780,11 @@ impl Parser {
                 self.expect(TokenType::Rbrace, "Expected '}' to close network block")?;
             } else if self.match_types(&[TokenType::Timing]) {
                 self.expect(TokenType::Lbrace, "Expected '{' after timing")?;
+
+                // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
                 while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+
+                    // Take this path when self.match types(&[TokenType::MinPeriod]).
                     if self.match_types(&[TokenType::MinPeriod]) {
                         self.expect(TokenType::Colon, "Expected ':' after min_period")?;
                         min_control_period_ms = Some(self.parse_duration()?);
@@ -727,6 +802,8 @@ impl Parser {
             } else if self.match_types(&[TokenType::Resource]) {
                 self.expect(TokenType::Colon, "Expected ':' after resource")?;
                 power_draw_w = Some(self.parse_number_value()?);
+
+                // Take the branch when lexeme equals "W".
                 if self.check(TokenType::Ident) && self.peek().lexeme == "W" {
                     self.advance();
                 }
@@ -757,7 +834,7 @@ impl Parser {
             power_draw_w,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_hardware_type_list(&mut self, kind: &str) -> Result<Vec<String>, SpandaError> {
         // Parse hardware type list.
@@ -775,12 +852,21 @@ impl Parser {
         // Example:
         // let result = instance.parse_hardware_type_list(kind);
 
+        // Call expect on the current instance.
         self.expect(TokenType::Lbracket, &format!("Expected '[' after {kind}"))?;
         let mut items = Vec::new();
+
+        // Take the branch when Rbracket) is false.
         if !self.check(TokenType::Rbracket) {
+
+            // Run the loop body until it exits.
             loop {
                 items.push(self.parse_label(&format!("Expected {kind} type name"))?);
+
+                // Take this path when self.match types(&[TokenType::Comma]).
                 if self.match_types(&[TokenType::Comma]) {
+
+                    // Take this path when self.check(TokenType::Rbracket).
                     if self.check(TokenType::Rbracket) {
                         break;
                     }
@@ -798,7 +884,7 @@ impl Parser {
             &format!("Expected ';' after {kind} list"),
         )?;
         Ok(items)
-    }
+}
 
     fn parse_storage_amount(&mut self) -> Result<f64, SpandaError> {
         // Parse storage amount.
@@ -815,7 +901,10 @@ impl Parser {
         // Example:
         // let result = instance.parse_storage_amount();
 
+        // Compute the value consumed by the next step.
         let value = self.parse_number_value()?;
+
+        // Take this path when self.check(TokenType::Ident).
         if self.check(TokenType::Ident) {
             let unit = self.peek().lexeme.as_str();
             let mb = match unit {
@@ -824,6 +913,8 @@ impl Parser {
                 "TB" | "Tb" => value * 1024.0 * 1024.0,
                 _ => value,
             };
+
+            // Take the branch when unit equals "GB".
             if unit == "GB"
                 || unit == "MB"
                 || unit == "TB"
@@ -836,7 +927,7 @@ impl Parser {
             return Ok(mb);
         }
         Ok(value)
-    }
+}
 
     fn parse_number_value(&mut self) -> Result<f64, SpandaError> {
         // Parse number value.
@@ -853,7 +944,10 @@ impl Parser {
         // Example:
         // let result = instance.parse_number_value();
 
+        // Compute tok for the following logic.
         let tok = self.expect(TokenType::Number, "Expected number")?;
+
+        // Match on value and handle each case.
         match tok.value {
             TokenValue::Number(n) => Ok(n),
             _ => Err(SpandaError::Parse {
@@ -862,7 +956,7 @@ impl Parser {
                 column: tok.column,
             }),
         }
-    }
+}
 
     fn parse_deploy(&mut self) -> Result<DeployDecl, SpandaError> {
         // Parse deploy.
@@ -879,15 +973,24 @@ impl Parser {
         // Example:
         // let result = instance.parse_deploy();
 
+        // Import the items needed by the logic below.
         use crate::foundations::DeployDecl;
         let start = self.advance();
         let robot_name = self.parse_label("Expected robot name after deploy")?;
         self.expect(TokenType::To, "Expected 'to' after deploy robot name")?;
         let mut targets = Vec::new();
+
+        // Take this path when self.match types(&[TokenType::Lbracket]).
         if self.match_types(&[TokenType::Lbracket]) {
+
+            // Take the branch when Rbracket) is false.
             if !self.check(TokenType::Rbracket) {
+
+                // Run the loop body until it exits.
                 loop {
                     targets.push(self.parse_label("Expected hardware target name")?);
+
+                    // Take the branch when Comma]) is false.
                     if !self.match_types(&[TokenType::Comma]) {
                         break;
                     }
@@ -904,7 +1007,7 @@ impl Parser {
             targets,
             span: self.span_from(&start, end),
         })
-    }
+}
 
     fn parse_network_amount(&mut self) -> Result<f64, SpandaError> {
         // Parse network amount.
@@ -921,20 +1024,27 @@ impl Parser {
         // Example:
         // let result = instance.parse_network_amount();
 
+        // Compute the value consumed by the next step.
         let value = self.parse_number_value()?;
+
+        // Take this path when self.check(TokenType::Ident).
         if self.check(TokenType::Ident) {
             let unit = self.peek().lexeme.as_str();
+
+            // Take the branch when unit equals "Mbps" || unit == "mbps".
             if unit == "Mbps" || unit == "mbps" {
                 self.advance();
                 return Ok(value);
             }
+
+            // Take the branch when unit equals "Gbps" || unit == "gbps".
             if unit == "Gbps" || unit == "gbps" {
                 self.advance();
                 return Ok(value * 1000.0);
             }
         }
         Ok(value)
-    }
+}
 
     fn parse_requires_hardware(
         &mut self,
@@ -953,6 +1063,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_requires_hardware();
 
+        // Import the items needed by the logic below.
         use crate::foundations::RequiresHardwareDecl;
         let start = self.advance();
         self.expect(TokenType::Lbrace, "Expected '{' after requires_hardware")?;
@@ -962,7 +1073,11 @@ impl Parser {
         let mut gpu_required = false;
         let mut sensors = Vec::new();
         let mut actuators = Vec::new();
+
+        // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+
+            // Take this path when self.match types(&[TokenType::Memory]).
             if self.match_types(&[TokenType::Memory]) {
                 self.expect(
                     TokenType::Gte,
@@ -984,18 +1099,26 @@ impl Parser {
                     "Expected ';' after storage requirement",
                 )?;
             } else if self.match_types(&[TokenType::Gpu]) {
+
+                // Take this path when self.check(TokenType::Gte).
                 if self.check(TokenType::Gte) {
                     self.advance();
                     gpu_tops_min = Some(self.parse_number_value()?);
+
+                    // Take the branch when lexeme equals "TOPS".
                     if self.check(TokenType::Ident) && self.peek().lexeme == "TOPS" {
                         self.advance();
                     }
                 } else {
                     self.expect(TokenType::Colon, "Expected ':' or '>=' after gpu")?;
+
+                    // Take this path when self.match types(&[TokenType::True]).
                     if self.match_types(&[TokenType::True]) {
                         gpu_required = true;
                     } else {
                         gpu_tops_min = Some(self.parse_number_value()?);
+
+                        // Take the branch when lexeme equals "TOPS".
                         if self.check(TokenType::Ident) && self.peek().lexeme == "TOPS" {
                             self.advance();
                         }
@@ -1025,7 +1148,7 @@ impl Parser {
             actuators,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_requires_network(
         &mut self,
@@ -1044,12 +1167,17 @@ impl Parser {
         // Example:
         // let result = instance.parse_requires_network();
 
+        // Import the items needed by the logic below.
         use crate::foundations::RequiresNetworkDecl;
         let start = self.advance();
         self.expect(TokenType::Lbrace, "Expected '{' after requires_network")?;
         let mut bandwidth_mbps_min = None;
         let mut latency_ms_max = None;
+
+        // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+
+            // Take this path when self.match types(&[TokenType::Bandwidth]).
             if self.match_types(&[TokenType::Bandwidth]) {
                 self.expect(TokenType::Gte, "Expected '>=' after bandwidth")?;
                 bandwidth_mbps_min = Some(self.parse_network_amount()?);
@@ -1079,7 +1207,7 @@ impl Parser {
             latency_ms_max,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_simulate_compatibility(
         &mut self,
@@ -1098,6 +1226,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_simulate_compatibility();
 
+        // Import the items needed by the logic below.
         use crate::foundations::{SimFaultDecl, SimulateCompatibilityDecl};
         let start = self.advance();
         self.expect(
@@ -1105,7 +1234,11 @@ impl Parser {
             "Expected '{' after simulate_compatibility",
         )?;
         let mut faults = Vec::new();
+
+        // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+
+            // Take this path when self.match types(&[TokenType::Fault]).
             if self.match_types(&[TokenType::Fault]) {
                 let fault_start = self.peek().clone();
                 let fault_type = self.parse_label("Expected fault type name")?;
@@ -1131,7 +1264,7 @@ impl Parser {
             faults,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_mission(&mut self) -> Result<crate::foundations::MissionDecl, SpandaError> {
         // Parse mission.
@@ -1148,11 +1281,16 @@ impl Parser {
         // Example:
         // let result = instance.parse_mission();
 
+        // Import the items needed by the logic below.
         use crate::foundations::MissionDecl;
         let start = self.advance();
         self.expect(TokenType::Lbrace, "Expected '{' after mission")?;
         let mut duration_hours = None;
+
+        // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+
+            // Take this path when self.match types(&[TokenType::Duration]).
             if self.match_types(&[TokenType::Duration]) {
                 self.expect(TokenType::Colon, "Expected ':' after duration")?;
                 duration_hours = Some(self.parse_duration_hours()?);
@@ -1179,7 +1317,7 @@ impl Parser {
             duration_hours,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_duration_hours(&mut self) -> Result<f64, SpandaError> {
         // Parse duration hours.
@@ -1196,13 +1334,18 @@ impl Parser {
         // Example:
         // let result = instance.parse_duration_hours();
 
+        // take this path when self.check(TokenType::UnitLiteral).
         if self.check(TokenType::UnitLiteral) {
             let tok = self.advance();
+
+            // Take this path when let (TokenValue::Number(n), Some(unit lex)) = (tok.value, tok.unit).
             if let (TokenValue::Number(n), Some(unit_lex)) = (tok.value, tok.unit) {
                 return Ok(Self::duration_to_hours(n, unit_from_lexeme(unit_lex)));
             }
         }
         let value = self.parse_number_value()?;
+
+        // Take this path when self.check(TokenType::Ident).
         if self.check(TokenType::Ident) {
             let unit = self.peek().lexeme.as_str();
             let hours = match unit {
@@ -1211,6 +1354,8 @@ impl Parser {
                 "s" | "sec" | "secs" => value / 3600.0,
                 _ => value,
             };
+
+            // Take the branch when unit equals "h".
             if unit == "h"
                 || unit == "hr"
                 || unit == "hrs"
@@ -1229,7 +1374,7 @@ impl Parser {
             return Ok(hours);
         }
         Ok(value)
-    }
+}
 
     fn duration_to_hours(value: f64, unit: UnitKind) -> f64 {
         // Duration to hours.
@@ -1247,6 +1392,7 @@ impl Parser {
         // Example:
         // let result = spanda_core::parser::duration_to_hours(value, unit);
 
+        // Match on unit and handle each case.
         match unit {
             UnitKind::H => value,
             UnitKind::Min => value / 60.0,
@@ -1255,7 +1401,7 @@ impl Parser {
             UnitKind::Us => value / 3_600_000_000.0,
             _ => value,
         }
-    }
+}
 
     fn parse_energy_wh_value(&mut self) -> Result<f64, SpandaError> {
         // Parse energy wh value.
@@ -1272,8 +1418,11 @@ impl Parser {
         // Example:
         // let result = instance.parse_energy_wh_value();
 
+        // take this path when self.check(TokenType::UnitLiteral).
         if self.check(TokenType::UnitLiteral) {
             let tok = self.advance();
+
+            // Take this path when let (TokenValue::Number(n), Some(unit lex)) = (tok.value, tok.unit).
             if let (TokenValue::Number(n), Some(unit_lex)) = (tok.value, tok.unit) {
                 let unit = unit_from_lexeme(unit_lex);
                 return Ok(match unit {
@@ -1285,6 +1434,8 @@ impl Parser {
             }
         }
         let value = self.parse_number_value()?;
+
+        // Take this path when self.check(TokenType::Ident).
         if self.check(TokenType::Ident) {
             let unit = self.peek().lexeme.as_str();
             let wh = match unit {
@@ -1293,13 +1444,15 @@ impl Parser {
                 "J" => value / 3600.0,
                 _ => value,
             };
+
+            // Take the branch when unit equals "Wh" || unit == "kWh" || unit == "J".
             if unit == "Wh" || unit == "kWh" || unit == "J" {
                 self.advance();
             }
             return Ok(wh);
         }
         Ok(value)
-    }
+}
 
     fn parse_budget(&mut self) -> Result<crate::foundations::ResourceBudgetDecl, SpandaError> {
         // Parse budget.
@@ -1316,6 +1469,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_budget();
 
+        // Import the items needed by the logic below.
         use crate::foundations::ResourceBudgetDecl;
         let start = self.advance();
         self.expect(TokenType::Lbrace, "Expected '{' after budget")?;
@@ -1324,7 +1478,11 @@ impl Parser {
         let mut cpu_pct_max = None;
         let mut network_mbps_max = None;
         let mut storage_mb_max = None;
+
+        // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+
+            // Take this path when self.match types(&[TokenType::Battery]).
             if self.match_types(&[TokenType::Battery]) {
                 self.expect(TokenType::Lte, "Expected '<=' after battery in budget")?;
                 battery_pct_max = Some(self.parse_percent_value()?);
@@ -1363,7 +1521,7 @@ impl Parser {
             storage_mb_max,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_percent_value(&mut self) -> Result<f64, SpandaError> {
         // Parse percent value.
@@ -1380,14 +1538,16 @@ impl Parser {
         // Example:
         // let result = instance.parse_percent_value();
 
+        // Compute the value consumed by the next step.
         let value = self.parse_number_value()?;
+
+        // Take the branch when lexeme equals "%".
         if self.check(TokenType::Ident) && self.peek().lexeme == "%" {
             self.advance();
         } else if self.match_types(&[TokenType::Percent]) {
-            // consumed
         }
         Ok(value)
-    }
+}
 
     fn parse_dotted_name(&mut self, message: &str) -> Result<String, SpandaError> {
         // Parse dotted name.
@@ -1405,12 +1565,15 @@ impl Parser {
         // Example:
         // let result = instance.parse_dotted_name(message);
 
+        // Create mutable parts for accumulating results.
         let mut parts = vec![self.parse_import_segment(message)?];
+
+        // Repeat while self.match types(&[TokenType::Dot]).
         while self.match_types(&[TokenType::Dot]) {
             parts.push(self.parse_import_segment("Expected name after '.'")?);
         }
         Ok(parts.join("."))
-    }
+}
 
     fn parse_import(&mut self) -> Result<ImportDecl, SpandaError> {
         // Parse import.
@@ -1427,6 +1590,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_import();
 
+        // Compute start for the following logic.
         let start = self.advance();
         let vendor = self.parse_import_segment("Expected library vendor name")?;
         self.expect(TokenType::Dot, "Expected '.' in import path")?;
@@ -1436,7 +1600,7 @@ impl Parser {
             path: format!("{}.{}", vendor, module),
             span: self.span_from(&start, self.previous()),
         })
-    }
+}
 
     fn parse_import_segment(&mut self, message: &str) -> Result<String, SpandaError> {
         // Parse import segment.
@@ -1454,9 +1618,12 @@ impl Parser {
         // Example:
         // let result = instance.parse_import_segment(message);
 
+        // take this path when self.check(TokenType::Ident).
         if self.check(TokenType::Ident) {
             return Ok(self.advance().lexeme);
         }
+
+        // Take this path when self.check(TokenType::Eof).
         if self.check(TokenType::Eof)
             || self.check(TokenType::Dot)
             || self.check(TokenType::Semicolon)
@@ -1469,10 +1636,9 @@ impl Parser {
             });
         }
         Ok(self.advance().lexeme)
-    }
+}
 
     fn is_module_fn_start(&self) -> bool {
-        // Return whether module fn start.
         //
         // Parameters:
         // - `self` — method receiver
@@ -1486,12 +1652,13 @@ impl Parser {
         // Example:
         // let result = instance.is_module_fn_start();
 
+        // Call check on the current instance.
         self.check(TokenType::Export)
             || self.check(TokenType::Public)
             || self.check(TokenType::Private)
             || self.check(TokenType::Async)
             || self.check(TokenType::Fn)
-    }
+}
 
     fn parse_type_params(&mut self) -> Result<Vec<String>, SpandaError> {
         // Parse type params.
@@ -1508,19 +1675,24 @@ impl Parser {
         // Example:
         // let result = instance.parse_type_params();
 
+        // take the branch when Lt]) is false.
         if !self.match_types(&[TokenType::Lt]) {
             return Ok(Vec::new());
         }
         let mut params = Vec::new();
+
+        // Run the loop body until it exits.
         loop {
             params.push(self.parse_label("Expected type parameter name")?);
+
+            // Take the branch when Comma]) is false.
             if !self.match_types(&[TokenType::Comma]) {
                 break;
             }
         }
         self.expect(TokenType::Gt, "Expected '>' after type parameters")?;
         Ok(params)
-    }
+}
 
     fn parse_module_fn(&mut self) -> Result<crate::foundations::ModuleFnDecl, SpandaError> {
         // Parse module fn.
@@ -1537,9 +1709,12 @@ impl Parser {
         // Example:
         // let result = instance.parse_module_fn();
 
+        // Import the items needed by the logic below.
         use crate::foundations::{ModuleFnDecl, ModuleParamDecl, Visibility};
         let start = self.peek().clone();
         let mut visibility = Visibility::Private;
+
+        // Take this path when self.match types(&[TokenType::Export]).
         if self.match_types(&[TokenType::Export]) {
             visibility = Visibility::Export;
         } else if self.match_types(&[TokenType::Public]) {
@@ -1553,7 +1728,11 @@ impl Parser {
         let type_params = self.parse_type_params()?;
         self.expect(TokenType::Lparen, "Expected '(' after function name")?;
         let mut params = Vec::new();
+
+        // Take the branch when Rparen) is false.
         if !self.check(TokenType::Rparen) {
+
+            // Run the loop body until it exits.
             loop {
                 let pstart = self.peek().clone();
                 let pname = self.parse_label("Expected parameter name")?;
@@ -1564,6 +1743,8 @@ impl Parser {
                     type_ann,
                     span: self.span_from(&pstart, self.previous()),
                 });
+
+                // Take the branch when Comma]) is false.
                 if !self.match_types(&[TokenType::Comma]) {
                     break;
                 }
@@ -1585,7 +1766,7 @@ impl Parser {
             body,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_extern_fn(&mut self) -> Result<crate::foundations::ExternFnDecl, SpandaError> {
         // Parse extern fn.
@@ -1602,6 +1783,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_extern_fn();
 
+        // Import the items needed by the logic below.
         use crate::foundations::{BridgeKind, ExternFnDecl, ModuleParamDecl};
         let start = self.previous().clone();
         let (library, bridge) = if self.match_types(&[TokenType::String]) {
@@ -1614,6 +1796,8 @@ impl Parser {
             };
             (Some(lib), BridgeKind::Native)
         } else if self.check(TokenType::Ident) {
+
+            // Match on as str and handle each case.
             match self.peek().lexeme.as_str() {
                 "python" => {
                     self.advance();
@@ -1632,7 +1816,11 @@ impl Parser {
         let name = self.parse_label("Expected extern function name")?;
         self.expect(TokenType::Lparen, "Expected '(' after extern function name")?;
         let mut params = Vec::new();
+
+        // Take the branch when Rparen) is false.
         if !self.check(TokenType::Rparen) {
+
+            // Run the loop body until it exits.
             loop {
                 let pstart = self.peek().clone();
                 let pname = self.parse_label("Expected parameter name")?;
@@ -1643,6 +1831,8 @@ impl Parser {
                     type_ann,
                     span: self.span_from(&pstart, self.previous()),
                 });
+
+                // Take the branch when Comma]) is false.
                 if !self.match_types(&[TokenType::Comma]) {
                     break;
                 }
@@ -1663,7 +1853,7 @@ impl Parser {
             return_type,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_test(&mut self) -> Result<crate::foundations::TestDecl, SpandaError> {
         // Parse test.
@@ -1680,6 +1870,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_test();
 
+        // Import the items needed by the logic below.
         use crate::foundations::TestDecl;
         let start = self.advance(); // test ident
         let name_tok = self.expect(TokenType::String, "Expected test name string")?;
@@ -1698,7 +1889,7 @@ impl Parser {
             body,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_struct(&mut self) -> Result<StructDecl, SpandaError> {
         // Parse struct.
@@ -1715,6 +1906,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_struct();
 
+        // Compute start for the following logic.
         let start = self.advance();
         let name = self.expect(TokenType::Ident, "Expected struct name")?;
         let type_params = if self.check(TokenType::Lt) {
@@ -1724,6 +1916,8 @@ impl Parser {
         };
         self.expect(TokenType::Lbrace, "Expected '{' after struct name")?;
         let mut fields = Vec::new();
+
+        // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
             let field_start = self.peek().clone();
             let field_name = self.expect(TokenType::Ident, "Expected field name")?;
@@ -1743,7 +1937,7 @@ impl Parser {
             fields,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_enum(&mut self) -> Result<EnumDecl, SpandaError> {
         // Parse enum.
@@ -1760,17 +1954,26 @@ impl Parser {
         // Example:
         // let result = instance.parse_enum();
 
+        // Compute start for the following logic.
         let start = self.advance();
         let name = self.expect(TokenType::Ident, "Expected enum name")?;
         self.expect(TokenType::Lbrace, "Expected '{' after enum name")?;
         let mut variants = Vec::new();
+
+        // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
             let variant_start = self.peek().clone();
             let variant_name = self.expect(TokenType::Ident, "Expected enum variant")?;
             let mut field_types = Vec::new();
+
+            // Take this path when self.match types(&[TokenType::Lparen]).
             if self.match_types(&[TokenType::Lparen]) {
+
+                // Repeat while !self.check(TokenType::Rparen) && !self.check(TokenType::Eof).
                 while !self.check(TokenType::Rparen) && !self.check(TokenType::Eof) {
                     field_types.push(self.parse_type_name()?);
+
+                    // Take the branch when Comma]) is false.
                     if !self.match_types(&[TokenType::Comma]) {
                         break;
                     }
@@ -1782,6 +1985,8 @@ impl Parser {
                 field_types,
                 span: self.span_from(&variant_start, self.previous()),
             });
+
+            // Take this path when self.match types(&[TokenType::Comma]).
             if self.match_types(&[TokenType::Comma]) {
                 continue;
             }
@@ -1792,7 +1997,7 @@ impl Parser {
             variants,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_trait(&mut self) -> Result<TraitDecl, SpandaError> {
         // Parse trait.
@@ -1809,10 +2014,13 @@ impl Parser {
         // Example:
         // let result = instance.parse_trait();
 
+        // Compute start for the following logic.
         let start = self.advance();
         let name = self.expect(TokenType::Ident, "Expected trait name")?;
         self.expect(TokenType::Lbrace, "Expected '{' after trait name")?;
         let mut methods = Vec::new();
+
+        // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
             methods.push(self.parse_trait_method()?);
         }
@@ -1822,7 +2030,7 @@ impl Parser {
             methods,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_trait_method(&mut self) -> Result<TraitMethodDecl, SpandaError> {
         // Parse trait method.
@@ -1839,11 +2047,16 @@ impl Parser {
         // Example:
         // let result = instance.parse_trait_method();
 
+        // Compute start for the following logic.
         let start = self.advance(); // fn
         let name = self.parse_label("Expected method name after fn")?;
         self.expect(TokenType::Lparen, "Expected '(' after method name")?;
         let mut params = Vec::new();
+
+        // Take the branch when Rparen) is false.
         if !self.check(TokenType::Rparen) {
+
+            // Run the loop body until it exits.
             loop {
                 let param_start = self.peek().clone();
                 let param_name = self.parse_label("Expected parameter name")?;
@@ -1854,6 +2067,8 @@ impl Parser {
                     type_name: type_name.lexeme,
                     span: self.span_from(&param_start, self.previous()),
                 });
+
+                // Take the branch when Comma]) is false.
                 if !self.match_types(&[TokenType::Comma]) {
                     break;
                 }
@@ -1872,10 +2087,9 @@ impl Parser {
             return_type: return_type.lexeme,
             span: self.span_from(&start, self.previous()),
         })
-    }
+}
 
     fn is_robot_member_keyword(&self, kw: &str) -> bool {
-        // Return whether robot member keyword.
         //
         // Parameters:
         // - `self` — method receiver
@@ -1890,8 +2104,9 @@ impl Parser {
         // Example:
         // let result = instance.is_robot_member_keyword(kw);
 
+        // Call check on the current instance.
         self.check(TokenType::Ident) && self.peek().lexeme == kw
-    }
+}
 
     fn parse_robot(&mut self) -> Result<RobotDecl, SpandaError> {
         // Parse robot.
@@ -1908,6 +2123,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_robot();
 
+        // Compute start for the following logic.
         let start = self.expect(TokenType::Robot, "Expected 'robot'")?;
         let name_tok = self.expect(TokenType::Ident, "Expected robot name")?;
         self.expect(TokenType::Lbrace, "Expected '{' after robot name")?;
@@ -1947,7 +2163,11 @@ impl Parser {
         let mut devices = Vec::new();
         let mut agent_channels = Vec::new();
         let mut twin_sync = None;
+
+        // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+
+            // Take this path when self.check(TokenType::Soc).
             if self.check(TokenType::Soc) {
                 soc = Some(self.parse_soc()?);
             } else if self.check(TokenType::Hal) {
@@ -1971,6 +2191,8 @@ impl Parser {
             } else if self.check(TokenType::Ident) && self.is_agent_channel() {
                 agent_channels.push(self.parse_agent_channel()?);
             } else if self.check(TokenType::Agent) {
+
+                // Take this path when self.is agent shorthand().
                 if self.is_agent_shorthand() {
                     self.parse_agent_shorthand(&mut agents)?;
                 } else {
@@ -1986,6 +2208,8 @@ impl Parser {
                 events.push(self.parse_event()?);
             } else if self.check(TokenType::On) {
                 let trigger = self.parse_on_trigger()?;
+
+                // Take this path when let TriggerHandlerDecl::TriggerHandlerDecl.
                 if let TriggerHandlerDecl::TriggerHandlerDecl {
                     trigger_kind: TriggerKind::Event { name },
                     body,
@@ -2092,10 +2316,9 @@ impl Parser {
             twin_sync,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn is_agent_shorthand(&mut self) -> bool {
-        // Return whether agent shorthand.
         //
         // Parameters:
         // - `self` — method receiver
@@ -2109,19 +2332,23 @@ impl Parser {
         // Example:
         // let result = instance.is_agent_shorthand();
 
+        // Create mutable idx for accumulating results.
         let mut idx = self.pos + 1;
+
+        // Take this path when idx >= self.tokens.len().
         if idx >= self.tokens.len() {
             return false;
         }
+
+        // Take the branch when token type differs from Ident.
         if self.tokens[idx].token_type != TokenType::Ident {
             return false;
         }
         idx += 1;
         idx < self.tokens.len() && self.tokens[idx].token_type == TokenType::Semicolon
-    }
+}
 
     fn is_agent_channel(&self) -> bool {
-        // Return whether agent channel.
         //
         // Parameters:
         // - `self` — method receiver
@@ -2135,12 +2362,13 @@ impl Parser {
         // Example:
         // let result = instance.is_agent_channel();
 
+        // Compute idx for the following logic.
         let idx = self.pos;
         idx + 2 < self.tokens.len()
             && self.tokens[idx].token_type == TokenType::Ident
             && self.tokens[idx + 1].token_type == TokenType::Arrow
             && self.tokens[idx + 2].token_type == TokenType::Ident
-    }
+}
 
     fn parse_agent_shorthand(&mut self, agents: &mut Vec<AgentDecl>) -> Result<(), SpandaError> {
         // Parse agent shorthand.
@@ -2158,6 +2386,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_agent_shorthand(agents);
 
+        // Compute start for the following logic.
         let start = self.advance();
         let name = self.expect(TokenType::Ident, "Expected agent name")?;
         self.expect(TokenType::Semicolon, "Expected ';' after agent reference")?;
@@ -2174,7 +2403,7 @@ impl Parser {
             span: self.span_from(&start, self.previous()),
         });
         Ok(())
-    }
+}
 
     fn parse_bus(&mut self) -> Result<crate::comm::BusDecl, SpandaError> {
         // Parse bus.
@@ -2191,6 +2420,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_bus();
 
+        // Import the items needed by the logic below.
         use crate::comm::{BusDecl, TransportKind};
         let start = self.advance();
         let transport_name = self.expect(TokenType::Ident, "Expected bus transport name")?;
@@ -2202,7 +2432,7 @@ impl Parser {
             transport,
             span: self.span_from(&start, self.previous()),
         })
-    }
+}
 
     fn parse_peer_robot(&mut self) -> Result<crate::comm::PeerRobotDecl, SpandaError> {
         // Parse peer robot.
@@ -2219,6 +2449,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_peer_robot();
 
+        // Import the items needed by the logic below.
         use crate::comm::PeerRobotDecl;
         let start = self.advance();
         let name = self.expect(TokenType::Ident, "Expected peer robot name")?;
@@ -2227,7 +2458,7 @@ impl Parser {
             name: name.lexeme,
             span: self.span_from(&start, self.previous()),
         })
-    }
+}
 
     fn parse_device(&mut self) -> Result<crate::comm::DeviceDecl, SpandaError> {
         // Parse device.
@@ -2244,6 +2475,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_device();
 
+        // Import the items needed by the logic below.
         use crate::comm::DeviceDecl;
         let start = self.advance();
         let name = self.expect(TokenType::Ident, "Expected device name")?;
@@ -2258,7 +2490,7 @@ impl Parser {
             device_type: device_type.lexeme,
             span: self.span_from(&start, self.previous()),
         })
-    }
+}
 
     fn parse_agent_channel(&mut self) -> Result<crate::comm::AgentChannelDecl, SpandaError> {
         // Parse agent channel.
@@ -2275,6 +2507,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_agent_channel();
 
+        // Import the items needed by the logic below.
         use crate::comm::AgentChannelDecl;
         let start = self.peek().clone();
         let from_agent = self
@@ -2297,10 +2530,9 @@ impl Parser {
             message_type,
             span: self.span_from(&start, self.previous()),
         })
-    }
+}
 
     fn is_twin_sync(&self) -> bool {
-        // Return whether twin sync.
         //
         // Parameters:
         // - `self` — method receiver
@@ -2314,11 +2546,12 @@ impl Parser {
         // Example:
         // let result = instance.is_twin_sync();
 
+        // Compute idx for the following logic.
         let idx = self.pos + 1;
         idx < self.tokens.len()
             && self.tokens[idx].token_type == TokenType::Ident
             && self.tokens[idx].lexeme == "sync"
-    }
+}
 
     #[allow(dead_code)]
     fn parse_twin_sync(&mut self) -> Result<crate::comm::TwinSyncDecl, SpandaError> {
@@ -2336,6 +2569,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_twin_sync();
 
+        // Import the items needed by the logic below.
         use crate::comm::TwinSyncDecl;
         let start = self.advance(); // twin
         self.expect(TokenType::Ident, "Expected 'sync' after twin")?;
@@ -2344,7 +2578,11 @@ impl Parser {
         let mut replay = false;
         let mut faults = false;
         let mut events = false;
+
+        // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+
+            // Take this path when self.match types(&[TokenType::Telemetry]).
             if self.match_types(&[TokenType::Telemetry]) {
                 telemetry = true;
                 self.expect(TokenType::Semicolon, "Expected ';' after telemetry")?;
@@ -2357,6 +2595,8 @@ impl Parser {
             } else if self.match_types(&[TokenType::Event])
                 || (self.check(TokenType::Ident) && self.peek().lexeme == "events")
             {
+
+                // Take this path when self.check(TokenType::Ident).
                 if self.check(TokenType::Ident) {
                     self.advance();
                 }
@@ -2379,7 +2619,7 @@ impl Parser {
             events,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_trait_impl(&mut self) -> Result<crate::foundations::TraitImplDecl, SpandaError> {
         // Parse trait impl.
@@ -2396,6 +2636,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_trait_impl();
 
+        // Import the items needed by the logic below.
         use crate::foundations::TraitImplDecl;
         let start = self.expect(TokenType::Impl, "Expected 'impl'")?;
         let trait_name = self.parse_label("Expected trait name after 'impl'")?;
@@ -2403,6 +2644,8 @@ impl Parser {
         let agent_name = self.parse_label("Expected agent name after 'for'")?;
         self.expect(TokenType::Lbrace, "Expected '{' after trait impl header")?;
         let mut methods = Vec::new();
+
+        // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
             methods.push(self.parse_trait_impl_method()?);
         }
@@ -2413,7 +2656,7 @@ impl Parser {
             methods,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_trait_impl_method(
         &mut self,
@@ -2432,12 +2675,17 @@ impl Parser {
         // Example:
         // let result = instance.parse_trait_impl_method();
 
+        // Import the items needed by the logic below.
         use crate::foundations::TraitImplMethodDecl;
         let start = self.expect(TokenType::Fn, "Expected 'fn' in trait impl method")?;
         let name = self.parse_label("Expected method name")?;
         self.expect(TokenType::Lparen, "Expected '(' after method name")?;
         let mut params = Vec::new();
+
+        // Take the branch when Rparen) is false.
         if !self.check(TokenType::Rparen) {
+
+            // Run the loop body until it exits.
             loop {
                 let pstart = self.peek().clone();
                 let pname = self.parse_label("Expected parameter name")?;
@@ -2450,6 +2698,8 @@ impl Parser {
                     type_name: ptype,
                     span: self.span_from(&pstart, self.previous()),
                 });
+
+                // Take the branch when Comma]) is false.
                 if !self.match_types(&[TokenType::Comma]) {
                     break;
                 }
@@ -2476,7 +2726,7 @@ impl Parser {
             body,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_soc(&mut self) -> Result<SocDecl, SpandaError> {
         // Parse soc.
@@ -2493,6 +2743,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_soc();
 
+        // Compute start for the following logic.
         let start = self.advance();
         let profile = self.expect(TokenType::Ident, "Expected SoC profile name")?;
         self.expect(TokenType::Semicolon, "Expected ';' after soc declaration")?;
@@ -2500,7 +2751,7 @@ impl Parser {
             profile: profile.lexeme,
             span: self.span_from(&start, self.previous()),
         })
-    }
+}
 
     fn parse_hal(&mut self) -> Result<HalBlock, SpandaError> {
         // Parse hal.
@@ -2517,9 +2768,12 @@ impl Parser {
         // Example:
         // let result = instance.parse_hal();
 
+        // Compute start for the following logic.
         let start = self.advance();
         self.expect(TokenType::Lbrace, "Expected '{' after hal")?;
         let mut members = Vec::new();
+
+        // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
             members.push(self.parse_hal_member()?);
         }
@@ -2528,7 +2782,7 @@ impl Parser {
             members,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_hal_member(&mut self) -> Result<HalMemberDecl, SpandaError> {
         // Parse hal member.
@@ -2545,7 +2799,10 @@ impl Parser {
         // Example:
         // let result = instance.parse_hal_member();
 
+        // Compute start for the following logic.
         let start = self.peek().clone();
+
+        // Take this path when self.match types(&[TokenType::I2c]).
         if self.match_types(&[TokenType::I2c]) {
             let name = self.parse_hal_binding_name("Expected I2C bus name")?;
             self.expect(TokenType::At, "Expected 'at' after I2C bus name")?;
@@ -2557,11 +2814,15 @@ impl Parser {
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::Spi]).
         if self.match_types(&[TokenType::Spi]) {
             let name = self.parse_hal_binding_name("Expected SPI bus name")?;
             self.expect(TokenType::At, "Expected 'at' after SPI bus name")?;
             let bus = self.expect(TokenType::Number, "Expected SPI bus number")?;
             let mut cs_pin = None;
+
+            // Take this path when self.match types(&[TokenType::Pin]).
             if self.match_types(&[TokenType::Pin]) {
                 cs_pin = Some(num(
                     &self.expect(TokenType::Number, "Expected CS pin number")?
@@ -2575,6 +2836,8 @@ impl Parser {
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::Gpio]).
         if self.match_types(&[TokenType::Gpio]) {
             let name = self.parse_hal_binding_name("Expected GPIO name")?;
             let direction = if self.match_types(&[TokenType::Out]) {
@@ -2594,6 +2857,8 @@ impl Parser {
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::Pwm]).
         if self.match_types(&[TokenType::Pwm]) {
             let name = self.parse_hal_binding_name("Expected PWM name")?;
             self.expect(TokenType::On, "Expected 'on' after PWM name")?;
@@ -2609,6 +2874,8 @@ impl Parser {
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::Uart]).
         if self.match_types(&[TokenType::Uart]) {
             let name = self.parse_hal_binding_name("Expected UART name")?;
             self.expect(TokenType::On, "Expected 'on' after UART name")?;
@@ -2623,6 +2890,8 @@ impl Parser {
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::Adc]).
         if self.match_types(&[TokenType::Adc]) {
             let name = self.parse_hal_binding_name("Expected ADC name")?;
             self.expect(TokenType::On, "Expected 'on' after ADC name")?;
@@ -2641,7 +2910,7 @@ impl Parser {
             line: t.line,
             column: t.column,
         })
-    }
+}
 
     fn parse_frequency_hz(&mut self) -> Result<f64, SpandaError> {
         // Parse frequency hz.
@@ -2658,13 +2927,20 @@ impl Parser {
         // Example:
         // let result = instance.parse_frequency_hz();
 
+        // Compute tok for the following logic.
         let tok = self.peek().clone();
+
+        // Take the branch when token type equals Hz).
         if tok.token_type == TokenType::UnitLiteral && tok.unit == Some(UnitLexeme::Hz) {
             self.advance();
             return Ok(num(&tok));
         }
+
+        // Take the branch when token type equals Number.
         if tok.token_type == TokenType::Number {
             self.advance();
+
+            // Take the branch when lexeme equals "Hz".
             if self.check(TokenType::Ident) && self.peek().lexeme == "Hz" {
                 self.advance();
             }
@@ -2675,7 +2951,7 @@ impl Parser {
             line: tok.line,
             column: tok.column,
         })
-    }
+}
 
     fn parse_message(&mut self) -> Result<crate::comm::MessageDecl, SpandaError> {
         // Parse message.
@@ -2692,13 +2968,18 @@ impl Parser {
         // Example:
         // let result = instance.parse_message();
 
+        // Import the items needed by the logic below.
         use crate::comm::MessageDecl;
         let start = self.advance();
         let name = self.expect(TokenType::Ident, "Expected message name")?;
         self.expect(TokenType::Lbrace, "Expected '{' after message name")?;
         let mut fields = Vec::new();
         let mut version = None;
+
+        // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+
+            // Take the branch when lexeme equals "version".
             if self.check(TokenType::Ident) && self.peek().lexeme == "version" {
                 self.advance();
                 self.expect(TokenType::Colon, "Expected ':' after version")?;
@@ -2724,7 +3005,7 @@ impl Parser {
             version,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_qos_block(&mut self) -> Result<crate::comm::QosDecl, SpandaError> {
         // Parse qos block.
@@ -2741,6 +3022,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_qos_block();
 
+        // Import the items needed by the logic below.
         use crate::comm::{QosDecl, QosReliability};
         let start = self.peek().clone();
         self.expect(TokenType::Lbrace, "Expected '{' for topic QoS block")?;
@@ -2748,8 +3030,14 @@ impl Parser {
         let mut rate_hz = None;
         let mut deadline_ms = None;
         let mut history = None;
+
+        // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+
+            // Take this path when self.match types(&[TokenType::Qos]).
             if self.match_types(&[TokenType::Qos]) {
+
+                // Take this path when self.match types(&[TokenType::Reliable]).
                 if self.match_types(&[TokenType::Reliable]) {
                     reliability = Some(QosReliability::Reliable);
                 } else if self.match_types(&[TokenType::BestEffort]) {
@@ -2785,7 +3073,7 @@ impl Parser {
             history,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_node(&mut self) -> Result<NodeDecl, SpandaError> {
         // Parse node.
@@ -2802,6 +3090,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_node();
 
+        // Compute start for the following logic.
         let start = self.advance();
         let name = self.expect(TokenType::Ident, "Expected node name")?;
         let namespace = if self.match_types(&[TokenType::On]) {
@@ -2818,7 +3107,7 @@ impl Parser {
             namespace,
             span: self.span_from(&start, self.previous()),
         })
-    }
+}
 
     fn parse_topic(&mut self) -> Result<TopicDecl, SpandaError> {
         // Parse topic.
@@ -2835,20 +3124,25 @@ impl Parser {
         // Example:
         // let result = instance.parse_topic();
 
+        // Import the items needed by the logic below.
         use crate::comm::{TopicRole, TransportKind};
         let start = self.advance();
         let name = self.parse_label("Expected topic name")?;
         self.expect(TokenType::Colon, "Expected ':' after topic name")?;
         let message_type = self.parse_label("Expected message type")?;
-
         let mut role = TopicRole::Both;
         let mut topic_path = None;
         let mut qos = None;
         let mut transport = None;
 
+        // Take this path when self.match types(&[TokenType::Publish]).
         if self.match_types(&[TokenType::Publish]) {
             role = TopicRole::Publish;
+
+            // Take this path when self.match types(&[TokenType::On]).
             if self.match_types(&[TokenType::On]) {
+
+                // Take this path when self.check(TokenType::String).
                 if self.check(TokenType::String) {
                     topic_path = Some(str_val(&self.advance()));
                 } else {
@@ -2859,7 +3153,11 @@ impl Parser {
             }
         } else if self.match_types(&[TokenType::Subscribe]) {
             role = TopicRole::Subscribe;
+
+            // Take this path when self.match types(&[TokenType::On]).
             if self.match_types(&[TokenType::On]) {
+
+                // Take this path when self.check(TokenType::String).
                 if self.check(TokenType::String) {
                     topic_path = Some(str_val(&self.advance()));
                 } else {
@@ -2870,11 +3168,15 @@ impl Parser {
             }
         }
 
+        // Take this path when self.check(TokenType::Lbrace).
         if self.check(TokenType::Lbrace) {
             qos = Some(self.parse_qos_block()?);
         }
 
+        // Take this path when self.match types(&[TokenType::On]) && topic path.is none() && transpor.
         if self.match_types(&[TokenType::On]) && topic_path.is_none() && transport.is_none() {
+
+            // Take this path when self.check(TokenType::String).
             if self.check(TokenType::String) {
                 topic_path = Some(str_val(&self.advance()));
             } else {
@@ -2882,13 +3184,11 @@ impl Parser {
                 transport = TransportKind::from_ident(&ident.lexeme);
             }
         }
-
         let secure = if self.check(TokenType::Secure) {
             Some(self.parse_secure_block()?)
         } else {
             None
         };
-
         self.expect(TokenType::Semicolon, "Expected ';' after topic declaration")?;
         Ok(TopicDecl::TopicDecl {
             name,
@@ -2900,7 +3200,7 @@ impl Parser {
             secure,
             span: self.span_from(&start, self.previous()),
         })
-    }
+}
 
     fn parse_service(&mut self) -> Result<ServiceDecl, SpandaError> {
         // Parse service.
@@ -2917,14 +3217,20 @@ impl Parser {
         // Example:
         // let result = instance.parse_service();
 
+        // Compute start for the following logic.
         let start = self.advance();
         let name = self.expect(TokenType::Ident, "Expected service name")?;
 
+        // Take this path when self.check(TokenType::Lbrace).
         if self.check(TokenType::Lbrace) {
             self.advance();
             let mut request_type = None;
             let mut response_type = None;
+
+            // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
             while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+
+                // Take this path when self.match types(&[TokenType::Request]).
                 if self.match_types(&[TokenType::Request]) {
                     request_type = Some(
                         self.expect(TokenType::Ident, "Expected request type")?
@@ -2965,7 +3271,6 @@ impl Parser {
                 span: self.span_from(&start, self.previous()),
             });
         }
-
         self.expect(TokenType::Colon, "Expected ':' after service name")?;
         let service_type = self.expect(TokenType::Ident, "Expected service type")?;
         let secure = if self.check(TokenType::Secure) {
@@ -2985,7 +3290,7 @@ impl Parser {
             secure,
             span: self.span_from(&start, self.previous()),
         })
-    }
+}
 
     fn parse_action(&mut self) -> Result<ActionDecl, SpandaError> {
         // Parse action.
@@ -3002,15 +3307,21 @@ impl Parser {
         // Example:
         // let result = instance.parse_action();
 
+        // Compute start for the following logic.
         let start = self.advance();
         let name = self.expect(TokenType::Ident, "Expected action name")?;
 
+        // Take this path when self.check(TokenType::Lbrace).
         if self.check(TokenType::Lbrace) {
             self.advance();
             let mut request_type = None;
             let mut feedback_type = None;
             let mut result_type = None;
+
+            // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
             while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+
+                // Take this path when self.match types(&[TokenType::Request]).
                 if self.match_types(&[TokenType::Request]) {
                     request_type = Some(
                         self.expect(TokenType::Ident, "Expected request type")?
@@ -3058,7 +3369,6 @@ impl Parser {
                 span: self.span_from(&start, self.previous()),
             });
         }
-
         self.expect(TokenType::Colon, "Expected ':' after action name")?;
         let action_type = self.expect(TokenType::Ident, "Expected action type")?;
         let secure = if self.check(TokenType::Secure) {
@@ -3079,7 +3389,7 @@ impl Parser {
             secure,
             span: self.span_from(&start, self.previous()),
         })
-    }
+}
 
     fn parse_sensor(&mut self) -> Result<SensorDecl, SpandaError> {
         // Parse sensor.
@@ -3096,6 +3406,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_sensor();
 
+        // Compute start for the following logic.
         let start = self.advance();
         let name = self.expect(TokenType::Ident, "Expected sensor name")?;
         self.expect(TokenType::Colon, "Expected ':' after sensor name")?;
@@ -3109,6 +3420,8 @@ impl Parser {
             None
         };
         let binding = if self.match_types(&[TokenType::On]) {
+
+            // Take this path when self.check(TokenType::String).
             if self.check(TokenType::String) {
                 Some(SensorBinding::Topic {
                     path: str_val(&self.advance()),
@@ -3134,7 +3447,7 @@ impl Parser {
             binding,
             span: self.span_from(&start, self.previous()),
         })
-    }
+}
 
     fn parse_actuator(&mut self) -> Result<ActuatorDecl, SpandaError> {
         // Parse actuator.
@@ -3151,6 +3464,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_actuator();
 
+        // Compute start for the following logic.
         let start = self.advance();
         let name = self.expect(TokenType::Ident, "Expected actuator name")?;
         self.expect(TokenType::Colon, "Expected ':' after actuator name")?;
@@ -3164,7 +3478,7 @@ impl Parser {
             actuator_type: actuator_type.lexeme,
             span: self.span_from(&start, self.previous()),
         })
-    }
+}
 
     fn parse_safety(&mut self) -> Result<SafetyBlock, SpandaError> {
         // Parse safety.
@@ -3181,11 +3495,16 @@ impl Parser {
         // Example:
         // let result = instance.parse_safety();
 
+        // Compute start for the following logic.
         let start = self.advance();
         self.expect(TokenType::Lbrace, "Expected '{' after safety")?;
         let mut rules = Vec::new();
         let mut zones = Vec::new();
+
+        // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+
+            // Take this path when self.check(TokenType::StopIf).
             if self.check(TokenType::StopIf) {
                 rules.push(self.parse_stop_if_rule()?);
             } else if self.check(TokenType::Zone) {
@@ -3207,7 +3526,7 @@ impl Parser {
             zones,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_verify(&mut self) -> Result<crate::foundations::VerifyDecl, SpandaError> {
         // Parse verify.
@@ -3224,12 +3543,17 @@ impl Parser {
         // Example:
         // let result = instance.parse_verify();
 
+        // Import the items needed by the logic below.
         use crate::foundations::VerifyDecl;
         let start = self.advance();
         self.expect(TokenType::Lbrace, "Expected '{' after verify")?;
         let mut rules = Vec::new();
         let mut warnings = Vec::new();
+
+        // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+
+            // Take this path when self.match types(&[TokenType::Warning]).
             if self.match_types(&[TokenType::Warning]) {
                 warnings.push(self.parse_expr()?);
             } else {
@@ -3243,7 +3567,7 @@ impl Parser {
             warnings,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_observe(&mut self) -> Result<crate::foundations::ObserveDecl, SpandaError> {
         // Parse observe.
@@ -3260,10 +3584,13 @@ impl Parser {
         // Example:
         // let result = instance.parse_observe();
 
+        // Import the items needed by the logic below.
         use crate::foundations::ObserveDecl;
         let start = self.advance();
         self.expect(TokenType::Lbrace, "Expected '{' after observe")?;
         let mut sensors = Vec::new();
+
+        // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
             let sensor = self.expect(TokenType::Ident, "Expected sensor name in observe block")?;
             sensors.push(sensor.lexeme);
@@ -3274,7 +3601,7 @@ impl Parser {
             sensors,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_identity(&mut self) -> Result<IdentityDecl, SpandaError> {
         // Parse identity.
@@ -3291,10 +3618,13 @@ impl Parser {
         // Example:
         // let result = instance.parse_identity();
 
+        // Compute start for the following logic.
         let start = self.advance();
         let type_name = self.expect(TokenType::Ident, "Expected identity type name")?;
         self.expect(TokenType::Lbrace, "Expected '{' after identity type")?;
         let mut fields = Vec::new();
+
+        // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
             let key = self.parse_config_key_token()?;
             self.expect(TokenType::Colon, "Expected ':' in identity field")?;
@@ -3308,7 +3638,7 @@ impl Parser {
             fields,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_audit(&mut self) -> Result<AuditDecl, SpandaError> {
         // Parse audit.
@@ -3325,12 +3655,17 @@ impl Parser {
         // Example:
         // let result = instance.parse_audit();
 
+        // Compute start for the following logic.
         let start = self.advance();
         let name = self.expect(TokenType::Ident, "Expected audit name")?;
         self.expect(TokenType::Lbrace, "Expected '{' after audit name")?;
         let mut records = Vec::new();
+
+        // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
             self.expect(TokenType::Ident, "Expected 'record' in audit block")?;
+
+            // Take the branch when lexeme differs from "record".
             if self.previous().lexeme != "record" {
                 let t = self.previous();
                 return Err(SpandaError::Parse {
@@ -3348,7 +3683,7 @@ impl Parser {
             records,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_provenance(&mut self) -> Result<ProvenanceDecl, SpandaError> {
         // Parse provenance.
@@ -3365,14 +3700,19 @@ impl Parser {
         // Example:
         // let result = instance.parse_provenance();
 
+        // Compute start for the following logic.
         let start = self.advance();
         let name = self.expect(TokenType::Ident, "Expected provenance name")?;
         self.expect(TokenType::Lbrace, "Expected '{' after provenance name")?;
         let mut hash_algo = "sha256".to_string();
         let mut signed_by = String::new();
+
+        // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
             let key = self.parse_config_key_token()?;
             self.expect(TokenType::Colon, "Expected ':' in provenance field")?;
+
+            // Match on as str and handle each case.
             match key.as_str() {
                 "hash" => {
                     hash_algo = self
@@ -3400,7 +3740,7 @@ impl Parser {
             signed_by,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_signed_record(&mut self) -> Result<SignedRecordDecl, SpandaError> {
         // Parse signed record.
@@ -3417,6 +3757,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_signed_record();
 
+        // Compute start for the following logic.
         let start = self.advance();
         let event_name = self.expect(TokenType::Ident, "Expected signed record event name")?;
         self.expect(
@@ -3433,7 +3774,7 @@ impl Parser {
             signed_by,
             span: self.span_from(&start, self.previous()),
         })
-    }
+}
 
     fn parse_secret(&mut self) -> Result<crate::foundations::SecretDecl, SpandaError> {
         // Parse secret.
@@ -3450,6 +3791,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_secret();
 
+        // Import the items needed by the logic below.
         use crate::foundations::{SecretDecl, SecretSourceDecl};
         let start = self.advance();
         let name = self.expect(TokenType::Ident, "Expected secret name")?;
@@ -3480,7 +3822,7 @@ impl Parser {
             source,
             span: self.span_from(&start, self.previous()),
         })
-    }
+}
 
     fn parse_trust(&mut self) -> Result<crate::foundations::TrustDecl, SpandaError> {
         // Parse trust.
@@ -3497,6 +3839,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_trust();
 
+        // Import the items needed by the logic below.
         use crate::foundations::TrustDecl;
         let start = self.advance();
         let level = self
@@ -3507,7 +3850,7 @@ impl Parser {
             level,
             span: self.span_from(&start, self.previous()),
         })
-    }
+}
 
     fn parse_dotted_capability(&mut self) -> Result<String, SpandaError> {
         // Parse dotted capability.
@@ -3524,14 +3867,17 @@ impl Parser {
         // Example:
         // let result = instance.parse_dotted_capability();
 
+        // Compute first for the following logic.
         let first = self.parse_label("Expected capability name")?;
+
+        // Take this path when self.match types(&[TokenType::Dot]).
         if self.match_types(&[TokenType::Dot]) {
             let second = self.parse_label("Expected capability suffix")?;
             Ok(format!("{first}.{second}"))
         } else {
             Ok(first)
         }
-    }
+}
 
     fn parse_permissions(&mut self) -> Result<crate::foundations::PermissionsDecl, SpandaError> {
         // Parse permissions.
@@ -3548,13 +3894,20 @@ impl Parser {
         // Example:
         // let result = instance.parse_permissions();
 
+        // Import the items needed by the logic below.
         use crate::foundations::PermissionsDecl;
         let start = self.advance();
         self.expect(TokenType::Lbracket, "Expected '[' after permissions")?;
         let mut capabilities = Vec::new();
+
+        // Take the branch when Rbracket) is false.
         if !self.check(TokenType::Rbracket) {
+
+            // Run the loop body until it exits.
             loop {
                 capabilities.push(self.parse_dotted_capability()?);
+
+                // Take the branch when Comma]) is false.
                 if !self.match_types(&[TokenType::Comma]) {
                     break;
                 }
@@ -3569,7 +3922,7 @@ impl Parser {
             capabilities,
             span: self.span_from(&start, self.previous()),
         })
-    }
+}
 
     fn parse_secure_block(&mut self) -> Result<crate::foundations::SecureBlockDecl, SpandaError> {
         // Parse secure block.
@@ -3586,18 +3939,25 @@ impl Parser {
         // Example:
         // let result = instance.parse_secure_block();
 
+        // Import the items needed by the logic below.
         use crate::foundations::SecureBlockDecl;
         let start = self.advance();
         self.expect(TokenType::Lbrace, "Expected '{' after secure")?;
         let mut signed = false;
         let mut min_trust = None;
         let mut requires = Vec::new();
+
+        // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
             let field = self.parse_label("Expected secure field name")?;
             self.expect(TokenType::Assign, "Expected '=' in secure field")?;
+
+            // Match on as str and handle each case.
             match field.as_str() {
                 "signed" => {
                     signed = self.match_types(&[TokenType::True]);
+
+                    // Take the branch when signed is false.
                     if !signed {
                         self.expect(TokenType::False, "Expected true or false for signed")?;
                     }
@@ -3607,9 +3967,15 @@ impl Parser {
                 }
                 "requires" => {
                     self.expect(TokenType::Lbracket, "Expected '[' after requires")?;
+
+                    // Take the branch when Rbracket) is false.
                     if !self.check(TokenType::Rbracket) {
+
+                        // Run the loop body until it exits.
                         loop {
                             requires.push(self.parse_dotted_capability()?);
+
+                            // Take the branch when Comma]) is false.
                             if !self.match_types(&[TokenType::Comma]) {
                                 break;
                             }
@@ -3634,7 +4000,7 @@ impl Parser {
             requires,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_config_value_string(&mut self) -> Result<String, SpandaError> {
         // Parse config value string.
@@ -3651,7 +4017,10 @@ impl Parser {
         // Example:
         // let result = instance.parse_config_value_string();
 
+        // Compute tok for the following logic.
         let tok = self.advance();
+
+        // Match on token type and handle each case.
         match tok.token_type {
             TokenType::String => Ok(tok.lexeme.trim_matches('"').to_string()),
             TokenType::Ident => Ok(tok.lexeme),
@@ -3661,7 +4030,7 @@ impl Parser {
                 column: tok.column,
             }),
         }
-    }
+}
 
     fn expr_path_string(expr: &Expr) -> String {
         // Expr path string.
@@ -3678,6 +4047,7 @@ impl Parser {
         // Example:
         // let result = spanda_core::parser::expr_path_string(expr);
 
+        // Match on expr and handle each case.
         match expr {
             Expr::IdentExpr { name, .. } => name.clone(),
             Expr::MemberExpr {
@@ -3687,7 +4057,7 @@ impl Parser {
             }
             _ => String::new(),
         }
-    }
+}
 
     fn parse_ai_model(&mut self) -> Result<AiModelDecl, SpandaError> {
         // Parse ai model.
@@ -3704,6 +4074,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_ai_model();
 
+        // Compute start for the following logic.
         let start = self.advance();
         let name = self.expect(TokenType::Ident, "Expected ai model name")?;
         self.expect(TokenType::Colon, "Expected ':' after ai model name")?;
@@ -3717,7 +4088,7 @@ impl Parser {
             config,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_ai_config_entries(&mut self) -> Result<Vec<AiConfigEntry>, SpandaError> {
         // Parse ai config entries.
@@ -3734,7 +4105,10 @@ impl Parser {
         // Example:
         // let result = instance.parse_ai_config_entries();
 
+        // Create mutable entries for accumulating results.
         let mut entries = Vec::new();
+
+        // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
             let entry_start = self.peek().clone();
             let key = self.parse_config_key_token()?;
@@ -3751,7 +4125,7 @@ impl Parser {
             });
         }
         Ok(entries)
-    }
+}
 
     fn parse_config_key_token(&mut self) -> Result<String, SpandaError> {
         // Parse config key token.
@@ -3768,6 +4142,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_config_key_token();
 
+        // take this path when self.check(TokenType::Ident) || self.check(TokenType::Provider).
         if self.check(TokenType::Ident) || self.check(TokenType::Provider) {
             Ok(self.advance().lexeme)
         } else if self.check(TokenType::SignedBy) {
@@ -3781,7 +4156,7 @@ impl Parser {
                 column: t.column,
             })
         }
-    }
+}
 
     fn parse_config_value(&mut self) -> Result<ConfigValue, SpandaError> {
         // Parse config value.
@@ -3798,6 +4173,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_config_value();
 
+        // take this path when self.match types(&[TokenType::String]).
         if self.match_types(&[TokenType::String]) {
             Ok(ConfigValue::String(str_val(self.previous())))
         } else if self.match_types(&[TokenType::True]) {
@@ -3806,6 +4182,8 @@ impl Parser {
             Ok(ConfigValue::Bool(false))
         } else if self.match_types(&[TokenType::Number, TokenType::UnitLiteral]) {
             let n = num(self.previous());
+
+            // Take this path when self.check(TokenType::Ident).
             if self.check(TokenType::Ident) {
                 let unit = self.peek().lexeme.as_str();
                 let scaled = match unit {
@@ -3814,6 +4192,8 @@ impl Parser {
                     "TOPS" | "tops" => n,
                     _ => n,
                 };
+
+                // Take the branch when unit equals "GB".
                 if unit == "GB"
                     || unit == "Gb"
                     || unit == "MB"
@@ -3835,7 +4215,7 @@ impl Parser {
                 column: t.column,
             })
         }
-    }
+}
 
     fn parse_agent(&mut self) -> Result<AgentDecl, SpandaError> {
         // Parse agent.
@@ -3852,6 +4232,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_agent();
 
+        // Compute start for the following logic.
         let start = self.advance();
         let name = self.expect(TokenType::Ident, "Expected agent name")?;
         self.expect(TokenType::Lbrace, "Expected '{' after agent name")?;
@@ -3863,7 +4244,11 @@ impl Parser {
         let mut goal = String::new();
         let mut plan_body = Vec::new();
         let mut trigger_handlers = Vec::new();
+
+        // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+
+            // Take this path when self.match types(&[TokenType::Uses]).
             if self.match_types(&[TokenType::Uses]) {
                 uses_ai.push(
                     self.expect(TokenType::Ident, "Expected model name after uses")?
@@ -3886,9 +4271,15 @@ impl Parser {
                 self.expect(TokenType::Semicolon, "Expected ';' after memory")?;
             } else if self.match_types(&[TokenType::Tools]) {
                 self.expect(TokenType::Lbracket, "Expected '[' after tools")?;
+
+                // Take the branch when Rbracket) is false.
                 if !self.check(TokenType::Rbracket) {
+
+                    // Run the loop body until it exits.
                     loop {
                         tools.push(self.expect(TokenType::Ident, "Expected tool name")?.lexeme);
+
+                        // Take the branch when Comma]) is false.
                         if !self.match_types(&[TokenType::Comma]) {
                             break;
                         }
@@ -3901,9 +4292,15 @@ impl Parser {
                 self.expect(TokenType::Semicolon, "Expected ';' after skill")?;
             } else if self.match_types(&[TokenType::Can]) {
                 self.expect(TokenType::Lbracket, "Expected '[' after can")?;
+
+                // Take the branch when Rbracket) is false.
                 if !self.check(TokenType::Rbracket) {
+
+                    // Run the loop body until it exits.
                     loop {
                         capabilities.push(self.parse_capability()?);
+
+                        // Take the branch when Comma]) is false.
                         if !self.match_types(&[TokenType::Comma]) {
                             break;
                         }
@@ -3942,7 +4339,7 @@ impl Parser {
             trigger_handlers,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_capability(&mut self) -> Result<CapabilityDecl, SpandaError> {
         // Parse capability.
@@ -3959,6 +4356,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_capability();
 
+        // Compute start for the following logic.
         let start = self.peek().clone();
         let action = if self.match_types(&[TokenType::Plan]) {
             "plan".to_string()
@@ -3989,7 +4387,7 @@ impl Parser {
             target,
             span: self.span_from(&start, self.previous()),
         })
-    }
+}
 
     fn parse_safety_zone(&mut self) -> Result<SafetyZoneDecl, SpandaError> {
         // Parse safety zone.
@@ -4006,6 +4404,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_safety_zone();
 
+        // Compute start for the following logic.
         let start = self.advance();
         let name = self.expect(TokenType::Ident, "Expected zone name")?;
         let shape = if self.match_types(&[TokenType::Circle]) {
@@ -4049,7 +4448,7 @@ impl Parser {
             height,
             span: self.span_from(&start, self.previous()),
         })
-    }
+}
 
     fn parse_max_speed_rule(&mut self) -> Result<SafetyRule, SpandaError> {
         // Parse max speed rule.
@@ -4066,6 +4465,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_max_speed_rule();
 
+        // Compute start for the following logic.
         let start = self.advance();
         let name = start.lexeme.clone();
         self.expect(TokenType::Assign, "Expected '=' in safety rule")?;
@@ -4082,7 +4482,7 @@ impl Parser {
             unit,
             span: self.span_from(&start, self.previous()),
         })
-    }
+}
 
     fn parse_stop_if_rule(&mut self) -> Result<SafetyRule, SpandaError> {
         // Parse stop if rule.
@@ -4099,6 +4499,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_stop_if_rule();
 
+        // Compute start for the following logic.
         let start = self.advance();
         let condition = self.parse_expr()?;
         self.expect(TokenType::Semicolon, "Expected ';' after stop_if rule")?;
@@ -4106,7 +4507,7 @@ impl Parser {
             condition,
             span: self.span_from(&start, self.previous()),
         })
-    }
+}
 
     fn parse_contract_clauses(&mut self) -> Result<ContractClauses, SpandaError> {
         // Parse contract clauses.
@@ -4123,10 +4524,15 @@ impl Parser {
         // Example:
         // let result = instance.parse_contract_clauses();
 
+        // Create mutable requires for accumulating results.
         let mut requires = None;
         let mut ensures = None;
         let mut invariant = None;
+
+        // Repeat while !self.check(TokenType::Lbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Lbrace) && !self.check(TokenType::Eof) {
+
+            // Take this path when self.match types(&[TokenType::Requires]).
             if self.match_types(&[TokenType::Requires]) {
                 requires = Some(self.parse_expr()?);
             } else if self.match_types(&[TokenType::Ensures]) {
@@ -4138,7 +4544,7 @@ impl Parser {
             }
         }
         Ok((requires, ensures, invariant))
-    }
+}
 
     fn parse_behavior(&mut self) -> Result<BehaviorDecl, SpandaError> {
         // Parse behavior.
@@ -4155,6 +4561,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_behavior();
 
+        // Compute start for the following logic.
         let start = self.advance();
         let name = self.expect(TokenType::Ident, "Expected behavior name")?;
         self.expect(TokenType::Lparen, "Expected '(' after behavior name")?;
@@ -4171,7 +4578,7 @@ impl Parser {
             body,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_task(&mut self) -> Result<TaskDecl, SpandaError> {
         // Parse task.
@@ -4188,10 +4595,15 @@ impl Parser {
         // Example:
         // let result = instance.parse_task();
 
+        // Compute start for the following logic.
         let start = self.advance();
         let name = self.expect(TokenType::Ident, "Expected task name")?;
         let mut priority = crate::foundations::TaskPriority::Normal;
+
+        // Take this path when self.check(TokenType::Ident).
         if self.check(TokenType::Ident) {
+
+            // Take this path when let Some(parsed priority) =.
             if let Some(parsed_priority) =
                 crate::foundations::TaskPriority::from_ident(&self.peek().lexeme)
             {
@@ -4207,6 +4619,8 @@ impl Parser {
         let (requires, ensures, invariant) = self.parse_contract_clauses()?;
         self.expect(TokenType::Lbrace, "Expected '{' after task signature")?;
         let mut budget = None;
+
+        // Take this path when self.check(TokenType::Budget).
         if self.check(TokenType::Budget) {
             budget = Some(self.parse_budget()?);
         }
@@ -4223,7 +4637,7 @@ impl Parser {
             body,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_state_machine(&mut self) -> Result<StateMachineDecl, SpandaError> {
         // Parse state machine.
@@ -4240,12 +4654,17 @@ impl Parser {
         // Example:
         // let result = instance.parse_state_machine();
 
+        // Compute start for the following logic.
         let start = self.advance();
         let name = self.expect(TokenType::Ident, "Expected state machine name")?;
         self.expect(TokenType::Lbrace, "Expected '{' after state machine name")?;
         let mut states = Vec::new();
         let mut transitions = Vec::new();
+
+        // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+
+            // Take this path when self.match types(&[TokenType::State]).
             if self.match_types(&[TokenType::State]) {
                 states.push(self.expect(TokenType::Ident, "Expected state name")?.lexeme);
                 self.expect(TokenType::Semicolon, "Expected ';' after state")?;
@@ -4277,7 +4696,7 @@ impl Parser {
             transitions,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_event(&mut self) -> Result<EventDecl, SpandaError> {
         // Parse event.
@@ -4294,11 +4713,16 @@ impl Parser {
         // Example:
         // let result = instance.parse_event();
 
+        // Compute start for the following logic.
         let start = self.advance();
         let name = self.expect(TokenType::Ident, "Expected event name")?;
         let mut fields = Vec::new();
+
+        // Take this path when self.check(TokenType::Lbrace).
         if self.check(TokenType::Lbrace) {
             self.advance();
+
+            // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
             while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
                 let field_start = self.peek().clone();
                 let field_name = self.expect(TokenType::Ident, "Expected event field name")?;
@@ -4319,7 +4743,7 @@ impl Parser {
             fields,
             span: self.span_from(&start, self.previous()),
         })
-    }
+}
 
     fn parse_on_trigger(&mut self) -> Result<TriggerHandlerDecl, SpandaError> {
         // Parse on trigger.
@@ -4336,6 +4760,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_on_trigger();
 
+        // Compute start for the following logic.
         let start = self.advance(); // on
         let kind = if self.match_types(&[TokenType::State]) {
             self.parse_state_trigger_kind()?
@@ -4368,7 +4793,6 @@ impl Parser {
             TriggerKind::Twin { event }
         } else {
             let name = self.expect(TokenType::Ident, "Expected trigger target name")?;
-            // Event vs message disambiguation deferred to type checker.
             TriggerKind::Event { name: name.lexeme }
         };
         let priority = self.parse_optional_trigger_priority()?;
@@ -4381,7 +4805,7 @@ impl Parser {
             body,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_state_trigger_kind(&mut self) -> Result<TriggerKind, SpandaError> {
         // Parse state trigger kind.
@@ -4398,8 +4822,11 @@ impl Parser {
         // Example:
         // let result = instance.parse_state_trigger_kind();
 
+        // Compute phase for the following logic.
         let phase = self.expect(TokenType::Ident, "Expected Entered or Exited")?;
         let phase_name = phase.lexeme.to_ascii_lowercase();
+
+        // Take the branch when phase name equals "entered".
         if phase_name == "entered" {
             self.expect(TokenType::Lparen, "Expected '(' after Entered")?;
             let state = self.expect(TokenType::Ident, "Expected state name")?.lexeme;
@@ -4417,7 +4844,7 @@ impl Parser {
                 column: phase.column,
             })
         }
-    }
+}
 
     fn parse_optional_trigger_priority(&mut self) -> Result<TaskPriority, SpandaError> {
         // Parse optional trigger priority.
@@ -4434,6 +4861,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_optional_trigger_priority();
 
+        // take this path when self.match types(&[TokenType::Priority]).
         if self.match_types(&[TokenType::Priority]) {
             let ident = self.expect(TokenType::Ident, "Expected trigger priority level")?;
             TaskPriority::from_ident(&ident.lexeme).ok_or_else(|| SpandaError::Parse {
@@ -4442,6 +4870,8 @@ impl Parser {
                 column: ident.column,
             })
         } else if self.check(TokenType::Ident) {
+
+            // Emit output when lexeme) provides a priority.
             if let Some(priority) = TaskPriority::from_ident(&self.peek().lexeme) {
                 self.advance();
                 Ok(priority)
@@ -4451,7 +4881,7 @@ impl Parser {
         } else {
             Ok(TaskPriority::Normal)
         }
-    }
+}
 
     fn parse_every_trigger(&mut self) -> Result<TriggerHandlerDecl, SpandaError> {
         // Parse every trigger.
@@ -4468,6 +4898,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_every_trigger();
 
+        // Compute start for the following logic.
         let start = self.advance(); // every
         let interval_ms = self.parse_duration()?;
         let priority = self.parse_optional_trigger_priority()?;
@@ -4480,7 +4911,7 @@ impl Parser {
             body,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_when_trigger(&mut self) -> Result<TriggerHandlerDecl, SpandaError> {
         // Parse when trigger.
@@ -4497,6 +4928,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_when_trigger();
 
+        // Compute start for the following logic.
         let start = self.advance(); // when
         let expr = self.parse_expr()?;
         let priority = self.parse_optional_trigger_priority()?;
@@ -4509,7 +4941,7 @@ impl Parser {
             body,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_while_trigger(&mut self) -> Result<TriggerHandlerDecl, SpandaError> {
         // Parse while trigger.
@@ -4526,6 +4958,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_while_trigger();
 
+        // Compute start for the following logic.
         let start = self.advance(); // while
         let expr = self.parse_expr()?;
         let priority = self.parse_optional_trigger_priority()?;
@@ -4538,7 +4971,7 @@ impl Parser {
             body,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_agent_on_trigger(&mut self) -> Result<TriggerHandlerDecl, SpandaError> {
         // Parse agent on trigger.
@@ -4555,6 +4988,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_agent_on_trigger();
 
+        // Compute start for the following logic.
         let start = self.advance(); // on
         let name = self
             .expect(TokenType::Ident, "Expected trigger target in agent block")?
@@ -4569,7 +5003,7 @@ impl Parser {
             body,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_twin(&mut self) -> Result<TwinDecl, SpandaError> {
         // Parse twin.
@@ -4586,17 +5020,24 @@ impl Parser {
         // Example:
         // let result = instance.parse_twin();
 
+        // Compute start for the following logic.
         let start = self.advance();
         let name = self.expect(TokenType::Ident, "Expected twin name")?;
         self.expect(TokenType::Lbrace, "Expected '{' after twin name")?;
         let mut mirrors = Vec::new();
         let mut replay = false;
+
+        // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+
+            // Take this path when self.match types(&[TokenType::Mirror]).
             if self.match_types(&[TokenType::Mirror]) {
                 mirrors.push(self.parse_label("Expected mirror field")?);
                 self.expect(TokenType::Semicolon, "Expected ';' after mirror")?;
             } else if self.match_types(&[TokenType::Replay]) {
                 replay = self.match_types(&[TokenType::True]);
+
+                // Take the branch when replay is false.
                 if !replay {
                     self.expect(TokenType::False, "Expected true or false after replay")?;
                 }
@@ -4617,7 +5058,7 @@ impl Parser {
             replay,
             span: self.span_from(&start, &end),
         })
-    }
+}
 
     fn parse_block(&mut self) -> Result<Vec<Stmt>, SpandaError> {
         // Parse block.
@@ -4634,12 +5075,15 @@ impl Parser {
         // Example:
         // let result = instance.parse_block();
 
+        // Create mutable stmts for accumulating results.
         let mut stmts = Vec::new();
+
+        // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
             stmts.push(self.parse_stmt()?);
         }
         Ok(stmts)
-    }
+}
 
     fn parse_stmt(&mut self) -> Result<Stmt, SpandaError> {
         // Parse stmt.
@@ -4656,7 +5100,10 @@ impl Parser {
         // Example:
         // let result = instance.parse_stmt();
 
+        // Compute start for the following logic.
         let start = self.peek().clone();
+
+        // Take this path when self.match types(&[TokenType::Return]).
         if self.match_types(&[TokenType::Return]) {
             let value = if self.check(TokenType::Semicolon) {
                 None
@@ -4669,6 +5116,8 @@ impl Parser {
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::Let]).
         if self.match_types(&[TokenType::Let]) {
             let name = self.parse_local_name("Expected variable name")?;
             let type_annotation = if self.match_types(&[TokenType::Colon]) {
@@ -4681,6 +5130,8 @@ impl Parser {
             } else {
                 None
             };
+
+            // Take this path when type annotation.is none() && init.is none().
             if type_annotation.is_none() && init.is_none() {
                 let t = self.peek();
                 return Err(SpandaError::Parse {
@@ -4697,6 +5148,8 @@ impl Parser {
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::If]).
         if self.match_types(&[TokenType::If]) {
             let condition = self.parse_expr()?;
             self.expect(TokenType::Lbrace, "Expected '{' after if condition")?;
@@ -4717,6 +5170,8 @@ impl Parser {
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::Loop]).
         if self.match_types(&[TokenType::Loop]) {
             self.expect(TokenType::Every, "Expected 'every' after loop")?;
             let interval_ms = self.parse_duration()?;
@@ -4729,8 +5184,12 @@ impl Parser {
                 span: self.span_from(&start, &end),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::Publish]).
         if self.match_types(&[TokenType::Publish]) {
             let topic_name = self.parse_subscribe_target()?;
+
+            // Take this path when self.match types(&[TokenType::Lparen]).
             if self.match_types(&[TokenType::Lparen]) {
                 let value = self.parse_expr()?;
                 self.expect(TokenType::Rparen, "Expected ')' after publish value")?;
@@ -4750,6 +5209,8 @@ impl Parser {
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::Subscribe]).
         if self.match_types(&[TokenType::Subscribe]) {
             let target = self.parse_subscribe_target()?;
             self.expect(TokenType::Semicolon, "Expected ';' after subscribe")?;
@@ -4758,6 +5219,8 @@ impl Parser {
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::Execute]).
         if self.match_types(&[TokenType::Execute]) {
             let action = self.expect(TokenType::Ident, "Expected action name after execute")?;
             let goal = if self.match_types(&[TokenType::Lparen]) {
@@ -4774,6 +5237,8 @@ impl Parser {
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::Discover]).
         if self.match_types(&[TokenType::Discover]) {
             let target = self.parse_discover_target()?;
             let filter = self.parse_discover_filter()?;
@@ -4784,6 +5249,8 @@ impl Parser {
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::Receive]).
         if self.match_types(&[TokenType::Receive]) {
             let topic_name = self.parse_subscribe_target()?;
             self.expect(TokenType::To, "Expected 'to' after topic in receive")?;
@@ -4795,6 +5262,8 @@ impl Parser {
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::Call]).
         if self.match_types(&[TokenType::Call]) {
             let service = self.expect(TokenType::Ident, "Expected service name after call")?;
             self.expect(TokenType::Lparen, "Expected '(' after service name")?;
@@ -4805,6 +5274,8 @@ impl Parser {
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::SendGoal]).
         if self.match_types(&[TokenType::SendGoal]) {
             let action = self.expect(TokenType::Ident, "Expected action name after send_goal")?;
             self.expect(TokenType::With, "Expected 'with' after action name")?;
@@ -4819,12 +5290,16 @@ impl Parser {
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::EmergencyStop]).
         if self.match_types(&[TokenType::EmergencyStop]) {
             self.expect(TokenType::Semicolon, "Expected ';' after emergency_stop")?;
             return Ok(Stmt::EmergencyStopStmt {
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::ResetEmergencyStop]).
         if self.match_types(&[TokenType::ResetEmergencyStop]) {
             self.expect(
                 TokenType::Semicolon,
@@ -4834,6 +5309,8 @@ impl Parser {
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::Emit]).
         if self.match_types(&[TokenType::Emit]) {
             let event = self.parse_label("Expected event name after emit")?;
             self.expect(TokenType::Semicolon, "Expected ';' after emit statement")?;
@@ -4842,6 +5319,8 @@ impl Parser {
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::Enter]).
         if self.match_types(&[TokenType::Enter]) {
             let state = self.parse_label("Expected state name after enter")?;
             self.expect(TokenType::Semicolon, "Expected ';' after enter statement")?;
@@ -4850,6 +5329,8 @@ impl Parser {
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::Remember]).
         if self.match_types(&[TokenType::Remember]) {
             let key = str_val(&self.expect(TokenType::String, "Expected memory key string")?);
             self.expect(TokenType::Comma, "Expected ',' after memory key")?;
@@ -4864,13 +5345,23 @@ impl Parser {
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::Spawn]).
         if self.match_types(&[TokenType::Spawn]) {
             let callee = self.parse_label("Expected function name after spawn")?;
             let mut args = Vec::new();
+
+            // Take this path when self.match types(&[TokenType::Lparen]).
             if self.match_types(&[TokenType::Lparen]) {
+
+                // Take the branch when Rparen) is false.
                 if !self.check(TokenType::Rparen) {
+
+                    // Run the loop body until it exits.
                     loop {
                         args.push(self.parse_expr()?);
+
+                        // Take the branch when Comma]) is false.
                         if !self.match_types(&[TokenType::Comma]) {
                             break;
                         }
@@ -4888,12 +5379,18 @@ impl Parser {
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::Select]).
         if self.match_types(&[TokenType::Select]) {
             self.expect(TokenType::Lbrace, "Expected '{' after select")?;
             let mut arms = Vec::new();
+
+            // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
             while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
                 let arm_start = self.peek().clone();
                 let recv = self.expect(TokenType::Ident, "Expected 'recv' in select arm")?;
+
+                // Take the branch when lexeme differs from "recv".
                 if recv.lexeme != "recv" {
                     return Err(SpandaError::Parse {
                         message: "Expected 'recv' in select arm".into(),
@@ -4926,6 +5423,8 @@ impl Parser {
                 span: self.span_from(&start, &end),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::Parallel]).
         if self.match_types(&[TokenType::Parallel]) {
             self.expect(TokenType::Lbrace, "Expected '{' after parallel")?;
             let body = self.parse_block()?;
@@ -4942,7 +5441,7 @@ impl Parser {
             expr,
             span: self.span_from(&start, self.previous()),
         })
-    }
+}
 
     fn parse_subscribe_target(&mut self) -> Result<String, SpandaError> {
         // Parse subscribe target.
@@ -4959,14 +5458,17 @@ impl Parser {
         // Example:
         // let result = instance.parse_subscribe_target();
 
+        // Compute first for the following logic.
         let first = self.parse_label("Expected subscribe target")?;
+
+        // Take this path when self.match types(&[TokenType::Dot]).
         if self.match_types(&[TokenType::Dot]) {
             let second = self.parse_label("Expected member after '.'")?;
             Ok(format!("{first}.{second}"))
         } else {
             Ok(first)
         }
-    }
+}
 
     fn parse_discover_target(&mut self) -> Result<crate::comm::DiscoverTarget, SpandaError> {
         // Parse discover target.
@@ -4983,10 +5485,13 @@ impl Parser {
         // Example:
         // let result = instance.parse_discover_target();
 
+        // Import the items needed by the logic below.
         use crate::comm::DiscoverTarget;
         let name = self
             .expect(TokenType::Ident, "Expected discover target")?
             .lexeme;
+
+        // Match on as str and handle each case.
         match name.as_str() {
             "robots" => Ok(DiscoverTarget::Robots),
             "agents" => Ok(DiscoverTarget::Agents),
@@ -4997,7 +5502,7 @@ impl Parser {
                 column: self.previous().column,
             }),
         }
-    }
+}
 
     fn parse_discover_filter(
         &mut self,
@@ -5016,6 +5521,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_discover_filter();
 
+        // take the branch when Where]) is false.
         if !self.match_types(&[TokenType::Where]) {
             return Ok(None);
         }
@@ -5030,7 +5536,7 @@ impl Parser {
         Ok(Some(crate::comm::DiscoverFilter {
             capability: Some(cap),
         }))
-    }
+}
 
     fn parse_duration(&mut self) -> Result<f64, SpandaError> {
         // Parse duration.
@@ -5047,17 +5553,26 @@ impl Parser {
         // Example:
         // let result = instance.parse_duration();
 
+        // Compute tok for the following logic.
         let tok = self.peek().clone();
+
+        // Take the branch when token type equals Ms).
         if tok.token_type == TokenType::UnitLiteral && tok.unit == Some(UnitLexeme::Ms) {
             self.advance();
             return Ok(num(&tok));
         }
+
+        // Take the branch when token type equals S).
         if tok.token_type == TokenType::UnitLiteral && tok.unit == Some(UnitLexeme::S) {
             self.advance();
             return Ok(num(&tok) * 1000.0);
         }
+
+        // Take the branch when token type equals Number.
         if tok.token_type == TokenType::Number {
             self.advance();
+
+            // Take the branch when lexeme equals "ms".
             if self.check(TokenType::Ident) && self.peek().lexeme == "ms" {
                 self.advance();
             }
@@ -5068,7 +5583,7 @@ impl Parser {
             line: tok.line,
             column: tok.column,
         })
-    }
+}
 
     fn parse_unit_suffix(&mut self) -> Result<UnitKind, SpandaError> {
         // Parse unit suffix.
@@ -5085,6 +5600,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_unit_suffix();
 
+        // Call try parse unit suffix on the current instance.
         self.try_parse_unit_suffix().ok_or_else(|| {
             let t = self.peek();
             SpandaError::Parse {
@@ -5093,7 +5609,7 @@ impl Parser {
                 column: t.column,
             }
         })
-    }
+}
 
     fn try_parse_unit_suffix(&mut self) -> Option<UnitKind> {
         // Try parse unit suffix.
@@ -5110,10 +5626,13 @@ impl Parser {
         // Example:
         // let result = instance.try_parse_unit_suffix();
 
+        // take this path when self.check(TokenType::UnitLiteral).
         if self.check(TokenType::UnitLiteral) {
             let t = self.advance();
             return Some(unit_from_lexeme(t.unit?));
         }
+
+        // Take this path when self.check(TokenType::Ident).
         if self.check(TokenType::Ident)
             && self.peek().lexeme == "m"
             && self.tokens.get(self.pos + 1).map(|t| t.token_type) == Some(TokenType::Slash)
@@ -5122,6 +5641,8 @@ impl Parser {
             self.pos += 3;
             return Some(UnitKind::MPerS);
         }
+
+        // Take this path when self.check(TokenType::Ident).
         if self.check(TokenType::Ident)
             && self.peek().lexeme == "rad"
             && self.tokens.get(self.pos + 1).map(|t| t.token_type) == Some(TokenType::Slash)
@@ -5130,15 +5651,19 @@ impl Parser {
             self.pos += 3;
             return Some(UnitKind::RadPerS);
         }
+
+        // Take this path when self.check(TokenType::Ident).
         if self.check(TokenType::Ident) {
             let lexeme = self.peek().lexeme.clone();
+
+            // Take this path when is unit ident(&lexeme).
             if is_unit_ident(&lexeme) {
                 self.advance();
                 return Some(UnitKind::from_lexeme(&lexeme));
             }
         }
         None
-    }
+}
 
     fn parse_expr(&mut self) -> Result<Expr, SpandaError> {
         // Parse expr.
@@ -5155,8 +5680,9 @@ impl Parser {
         // Example:
         // let result = instance.parse_expr();
 
+        // Call parse or on the current instance.
         self.parse_or()
-    }
+}
 
     fn parse_or(&mut self) -> Result<Expr, SpandaError> {
         // Parse or.
@@ -5173,7 +5699,10 @@ impl Parser {
         // Example:
         // let result = instance.parse_or();
 
+        // Create mutable left for accumulating results.
         let mut left = self.parse_and()?;
+
+        // Repeat while self.match types(&[TokenType::Or]).
         while self.match_types(&[TokenType::Or]) {
             let op_start = self.previous().clone();
             let right = self.parse_and()?;
@@ -5185,7 +5714,7 @@ impl Parser {
             };
         }
         Ok(left)
-    }
+}
 
     fn parse_and(&mut self) -> Result<Expr, SpandaError> {
         // Parse and.
@@ -5202,7 +5731,10 @@ impl Parser {
         // Example:
         // let result = instance.parse_and();
 
+        // Create mutable left for accumulating results.
         let mut left = self.parse_comparison()?;
+
+        // Repeat while self.match types(&[TokenType::And]).
         while self.match_types(&[TokenType::And]) {
             let op_start = self.previous().clone();
             let right = self.parse_comparison()?;
@@ -5214,7 +5746,7 @@ impl Parser {
             };
         }
         Ok(left)
-    }
+}
 
     fn parse_comparison(&mut self) -> Result<Expr, SpandaError> {
         // Parse comparison.
@@ -5231,7 +5763,10 @@ impl Parser {
         // Example:
         // let result = instance.parse_comparison();
 
+        // Create mutable left for accumulating results.
         let mut left = self.parse_additive()?;
+
+        // Repeat while self.match types(&[.
         while self.match_types(&[
             TokenType::Lt,
             TokenType::Lte,
@@ -5250,7 +5785,7 @@ impl Parser {
             };
         }
         Ok(left)
-    }
+}
 
     fn parse_additive(&mut self) -> Result<Expr, SpandaError> {
         // Parse additive.
@@ -5267,7 +5802,10 @@ impl Parser {
         // Example:
         // let result = instance.parse_additive();
 
+        // Create mutable left for accumulating results.
         let mut left = self.parse_multiplicative()?;
+
+        // Repeat while self.match types(&[TokenType::Plus, TokenType::Minus]).
         while self.match_types(&[TokenType::Plus, TokenType::Minus]) {
             let op_tok = self.previous().clone();
             let right = self.parse_multiplicative()?;
@@ -5279,7 +5817,7 @@ impl Parser {
             };
         }
         Ok(left)
-    }
+}
 
     fn parse_multiplicative(&mut self) -> Result<Expr, SpandaError> {
         // Parse multiplicative.
@@ -5296,7 +5834,10 @@ impl Parser {
         // Example:
         // let result = instance.parse_multiplicative();
 
+        // Create mutable left for accumulating results.
         let mut left = self.parse_unary()?;
+
+        // Repeat while self.match types(&[TokenType::Star, TokenType::Slash]).
         while self.match_types(&[TokenType::Star, TokenType::Slash]) {
             let op_tok = self.previous().clone();
             let right = self.parse_unary()?;
@@ -5308,7 +5849,7 @@ impl Parser {
             };
         }
         Ok(left)
-    }
+}
 
     fn parse_unary(&mut self) -> Result<Expr, SpandaError> {
         // Parse unary.
@@ -5325,6 +5866,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_unary();
 
+        // take this path when self.match types(&[TokenType::Await]).
         if self.match_types(&[TokenType::Await]) {
             let start = self.previous().clone();
             let operand = self.parse_unary()?;
@@ -5333,6 +5875,8 @@ impl Parser {
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::Spawn]).
         if self.match_types(&[TokenType::Spawn]) {
             let start = self.previous().clone();
             let callee = Box::new(Expr::IdentExpr {
@@ -5340,10 +5884,18 @@ impl Parser {
                 span: self.span_from(&start, self.previous()),
             });
             let mut args = Vec::new();
+
+            // Take this path when self.match types(&[TokenType::Lparen]).
             if self.match_types(&[TokenType::Lparen]) {
+
+                // Take the branch when Rparen) is false.
                 if !self.check(TokenType::Rparen) {
+
+                    // Run the loop body until it exits.
                     loop {
                         args.push(self.parse_expr()?);
+
+                        // Take the branch when Comma]) is false.
                         if !self.match_types(&[TokenType::Comma]) {
                             break;
                         }
@@ -5357,6 +5909,8 @@ impl Parser {
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::Minus, TokenType::Not]).
         if self.match_types(&[TokenType::Minus, TokenType::Not]) {
             let op_tok = self.previous().clone();
             let op = if op_tok.token_type == TokenType::Not {
@@ -5372,7 +5926,7 @@ impl Parser {
             });
         }
         self.parse_postfix()
-    }
+}
 
     fn parse_postfix(&mut self) -> Result<Expr, SpandaError> {
         // Parse postfix.
@@ -5389,8 +5943,13 @@ impl Parser {
         // Example:
         // let result = instance.parse_postfix();
 
+        // Create mutable expr for accumulating results.
         let mut expr = self.parse_primary()?;
+
+        // Run the loop body until it exits.
         loop {
+
+            // Take this path when self.match types(&[TokenType::Dot]).
             if self.match_types(&[TokenType::Dot]) {
                 let prop = self.parse_property_name()?;
                 let start = expr_span(&expr);
@@ -5405,8 +5964,14 @@ impl Parser {
             } else if self.match_types(&[TokenType::Lparen]) {
                 let mut args = Vec::new();
                 let mut named_args = Vec::new();
+
+                // Take the branch when Rparen) is false.
                 if !self.check(TokenType::Rparen) {
+
+                    // Run the loop body until it exits.
                     loop {
+
+                        // Take this path when self.is named arg start().
                         if self.is_named_arg_start() {
                             let name = self.parse_named_arg_name()?;
                             self.advance();
@@ -5418,6 +5983,8 @@ impl Parser {
                         } else {
                             args.push(self.parse_expr()?);
                         }
+
+                        // Take the branch when Comma]) is false.
                         if !self.match_types(&[TokenType::Comma]) {
                             break;
                         }
@@ -5435,7 +6002,11 @@ impl Parser {
                     },
                 };
             } else if self.check(TokenType::Lt) {
+
+                // Take this path when let Expr::IdentExpr { name, span, .. } = &expr.
                 if let Expr::IdentExpr { name, span, .. } = &expr {
+
+                    // Take this path when name.chars().next().is some and(|c| c.is uppercase()).
                     if name.chars().next().is_some_and(|c| c.is_uppercase()) {
                         let start = span.start;
                         let full = self.finish_generic_type_name(name.clone())?;
@@ -5451,11 +6022,19 @@ impl Parser {
                 }
                 break;
             } else if self.check(TokenType::Lbrace) {
+
+                // Take this path when let Expr::IdentExpr { name, .. } = &expr.
                 if let Expr::IdentExpr { name, .. } = &expr {
+
+                    // Take this path when name.chars().next().is some and(|c| c.is uppercase()).
                     if name.chars().next().is_some_and(|c| c.is_uppercase()) {
                         self.advance();
                         let mut fields = Vec::new();
+
+                        // Take the branch when Rbrace) is false.
                         if !self.check(TokenType::Rbrace) {
+
+                            // Run the loop body until it exits.
                             loop {
                                 let fstart = self.peek().clone();
                                 let field_name = self.parse_label("Expected struct field name")?;
@@ -5469,6 +6048,8 @@ impl Parser {
                                     value,
                                     span: self.span_from(&fstart, self.previous()),
                                 });
+
+                                // Take the branch when Comma]) is false.
                                 if !self.match_types(&[TokenType::Comma]) {
                                     break;
                                 }
@@ -5494,7 +6075,7 @@ impl Parser {
             }
         }
         Ok(expr)
-    }
+}
 
     fn parse_primary(&mut self) -> Result<Expr, SpandaError> {
         // Parse primary.
@@ -5511,18 +6092,29 @@ impl Parser {
         // Example:
         // let result = instance.parse_primary();
 
+        // Compute start for the following logic.
         let start = self.peek().clone();
+
+        // Take this path when self.match types(&[TokenType::Match]).
         if self.match_types(&[TokenType::Match]) {
             let scrutinee = self.parse_expr()?;
             self.expect(TokenType::Lbrace, "Expected '{' after match scrutinee")?;
             let mut arms = Vec::new();
+
+            // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
             while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
                 let arm_start = self.peek().clone();
                 let variant = self.parse_import_segment("Expected match arm variant")?;
                 let mut bindings = Vec::new();
+
+                // Take this path when self.match types(&[TokenType::Lparen]).
                 if self.match_types(&[TokenType::Lparen]) {
+
+                    // Repeat while !self.check(TokenType::Rparen) && !self.check(TokenType::Eof).
                     while !self.check(TokenType::Rparen) && !self.check(TokenType::Eof) {
                         bindings.push(self.parse_import_segment("Expected binding name")?);
+
+                        // Take the branch when Comma]) is false.
                         if !self.match_types(&[TokenType::Comma]) {
                             break;
                         }
@@ -5552,6 +6144,8 @@ impl Parser {
                 span: self.span_from(&start, &end),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::Call]).
         if self.match_types(&[TokenType::Call]) {
             let service = self.expect(TokenType::Ident, "Expected service name after call")?;
             self.expect(TokenType::Lparen, "Expected '(' after service name")?;
@@ -5561,6 +6155,8 @@ impl Parser {
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::Execute]).
         if self.match_types(&[TokenType::Execute]) {
             let action = self.expect(TokenType::Ident, "Expected action name after execute")?;
             let goal = if self.match_types(&[TokenType::Lparen]) {
@@ -5576,6 +6172,8 @@ impl Parser {
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::Discover]).
         if self.match_types(&[TokenType::Discover]) {
             let target = self.parse_discover_target()?;
             let filter = self.parse_discover_filter()?;
@@ -5585,38 +6183,52 @@ impl Parser {
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::Robot]).
         if self.match_types(&[TokenType::Robot]) {
             return Ok(Expr::IdentExpr {
                 name: "robot".into(),
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::Safety]).
         if self.match_types(&[TokenType::Safety]) {
             return Ok(Expr::IdentExpr {
                 name: "safety".into(),
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::Actuator]).
         if self.match_types(&[TokenType::Actuator]) {
             return Ok(Expr::IdentExpr {
                 name: "actuator".into(),
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::True]).
         if self.match_types(&[TokenType::True]) {
             return Ok(Expr::LiteralExpr {
                 value: LiteralValue::Bool(true),
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::False]).
         if self.match_types(&[TokenType::False]) {
             return Ok(Expr::LiteralExpr {
                 value: LiteralValue::Bool(false),
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::Number]).
         if self.match_types(&[TokenType::Number]) {
             let tok = self.previous().clone();
+
+            // Emit output when try parse unit suffix provides a unit.
             if let Some(unit) = self.try_parse_unit_suffix() {
                 return Ok(Expr::UnitLiteralExpr {
                     value: num(&tok),
@@ -5629,6 +6241,8 @@ impl Parser {
                 span: self.span_from(&start, &tok),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::UnitLiteral]).
         if self.match_types(&[TokenType::UnitLiteral]) {
             let tok = self.previous().clone();
             return Ok(Expr::UnitLiteralExpr {
@@ -5637,12 +6251,16 @@ impl Parser {
                 span: self.span_from(&start, &tok),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::String]).
         if self.match_types(&[TokenType::String]) {
             return Ok(Expr::LiteralExpr {
                 value: LiteralValue::String(str_val(self.previous())),
                 span: self.span_from(&start, self.previous()),
             });
         }
+
+        // Take this path when self.match types(&[.
         if self.match_types(&[
             TokenType::Ident,
             TokenType::Action,
@@ -5678,6 +6296,8 @@ impl Parser {
                 span: self.span_from(&start, tok),
             });
         }
+
+        // Take this path when self.match types(&[TokenType::Lparen]).
         if self.match_types(&[TokenType::Lparen]) {
             let mut expr = self.parse_expr()?;
             let end = self.expect(TokenType::Rparen, "Expected ')' after expression")?;
@@ -5697,7 +6317,7 @@ impl Parser {
             line: t.line,
             column: t.column,
         })
-    }
+}
 
     fn parse_property_name(&mut self) -> Result<Token, SpandaError> {
         // Parse property name.
@@ -5714,6 +6334,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_property_name();
 
+        // Compute lexeme for the following logic.
         let lexeme = self.parse_label("Expected property name after '.'")?;
         Ok(Token {
             token_type: TokenType::Ident,
@@ -5724,7 +6345,7 @@ impl Parser {
             column: self.previous().column,
             offset: self.previous().offset,
         })
-    }
+}
 
     fn parse_local_name(&mut self, message: &str) -> Result<Token, SpandaError> {
         // Parse local name.
@@ -5742,6 +6363,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_local_name(message);
 
+        // Compute lexeme for the following logic.
         let lexeme = self.parse_binding_ident(message)?;
         Ok(Token {
             token_type: TokenType::Ident,
@@ -5752,10 +6374,9 @@ impl Parser {
             column: self.previous().column,
             offset: self.previous().offset,
         })
-    }
+}
 
     fn is_named_arg_start(&self) -> bool {
-        // Return whether named arg start.
         //
         // Parameters:
         // - `self` — method receiver
@@ -5769,12 +6390,13 @@ impl Parser {
         // Example:
         // let result = instance.is_named_arg_start();
 
+        // Transform self and continue the chain.
         self.tokens.get(self.pos + 1).map(|t| t.token_type) == Some(TokenType::Colon)
             && (self.check(TokenType::Ident)
                 || self.check(TokenType::From)
                 || self.check(TokenType::To)
                 || self.check(TokenType::Goal))
-    }
+}
 
     fn parse_named_arg_name(&mut self) -> Result<String, SpandaError> {
         // Parse named arg name.
@@ -5791,6 +6413,7 @@ impl Parser {
         // Example:
         // let result = instance.parse_named_arg_name();
 
+        // take this path when self.match types(&[TokenType::From]).
         if self.match_types(&[TokenType::From]) {
             Ok("from".into())
         } else if self.match_types(&[TokenType::To]) {
@@ -5800,7 +6423,7 @@ impl Parser {
         } else {
             Ok(self.advance().lexeme)
         }
-    }
+}
 }
 
 fn loc(t: &Token) -> SourceLocation {
@@ -5818,6 +6441,7 @@ fn loc(t: &Token) -> SourceLocation {
     // Example:
     // let result = spanda_core::parser::loc(t);
 
+    // Produce SourceLocation as the result.
     SourceLocation {
         line: t.line,
         column: t.column,
@@ -5840,6 +6464,7 @@ fn num(tok: &Token) -> f64 {
     // Example:
     // let result = spanda_core::parser::num(tok);
 
+    // Match on value and handle each case.
     match &tok.value {
         TokenValue::Number(n) => *n,
         _ => 0.0,
@@ -5861,6 +6486,7 @@ fn str_val(tok: &Token) -> String {
     // Example:
     // let result = spanda_core::parser::str_val(tok);
 
+    // Match on value and handle each case.
     match &tok.value {
         TokenValue::String(s) => s.clone(),
         _ => tok.lexeme.clone(),
@@ -5868,7 +6494,6 @@ fn str_val(tok: &Token) -> String {
 }
 
 fn is_unit_ident(lexeme: &str) -> bool {
-    // Return whether unit ident.
     //
     // Parameters:
     // - `lexeme` — input value
@@ -5882,6 +6507,7 @@ fn is_unit_ident(lexeme: &str) -> bool {
     // Example:
     // let result = spanda_core::parser::is_unit_ident(lexeme);
 
+    // Produce matches! as the result.
     matches!(lexeme, "m" | "s" | "ms" | "rad" | "deg" | "Hz")
 }
 
@@ -5900,6 +6526,7 @@ fn expr_span(expr: &Expr) -> Span {
     // Example:
     // let result = spanda_core::parser::expr_span(expr);
 
+    // Match on expr and handle each case.
     match expr {
         Expr::LiteralExpr { span, .. }
         | Expr::UnitLiteralExpr { span, .. }
@@ -5934,6 +6561,7 @@ fn re_span_expr(expr: Expr, span: Span) -> Expr {
     // Example:
     // let result = spanda_core::parser::re_span_expr(expr, span);
 
+    // Match on expr and handle each case.
     match expr {
         Expr::LiteralExpr { value, .. } => Expr::LiteralExpr { value, span },
         Expr::UnitLiteralExpr { value, unit, .. } => Expr::UnitLiteralExpr { value, unit, span },

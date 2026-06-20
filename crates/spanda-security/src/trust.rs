@@ -31,13 +31,14 @@ impl TrustLevel {
         // Example:
         // let result = spanda_security::trust::all();
 
+        // Return the static list of known values.
         &[
             Self::Untrusted,
             Self::Restricted,
             Self::Trusted,
             Self::Certified,
         ]
-    }
+}
 
     pub fn rank(self) -> u8 {
         // Rank.
@@ -54,16 +55,16 @@ impl TrustLevel {
         // Example:
         // let result = instance.rank();
 
+        // Dispatch based on the enum variant or current state.
         match self {
             Self::Untrusted => 0,
             Self::Restricted => 1,
             Self::Trusted => 2,
             Self::Certified => 3,
         }
-    }
+}
 
     pub fn as_str(self) -> &'static str {
-        // Return as str.
         //
         // Parameters:
         // - `self` — method receiver
@@ -77,13 +78,14 @@ impl TrustLevel {
         // Example:
         // let result = instance.as_str();
 
+        // Dispatch based on the enum variant or current state.
         match self {
             Self::Untrusted => "untrusted",
             Self::Restricted => "restricted",
             Self::Trusted => "trusted",
             Self::Certified => "certified",
         }
-    }
+}
 
     pub fn satisfies(self, required: TrustLevel) -> bool {
         // Satisfies.
@@ -101,8 +103,9 @@ impl TrustLevel {
         // Example:
         // let result = instance.satisfies(required);
 
+        // Call rank on the current instance.
         self.rank().cmp(&required.rank()) != Ordering::Less
-    }
+}
 }
 
 impl FromStr for TrustLevel {
@@ -123,6 +126,7 @@ impl FromStr for TrustLevel {
         // Example:
         // let result = spanda_security::trust::from_str(s);
 
+        // Match on s and handle each case.
         match s {
             "untrusted" => Ok(Self::Untrusted),
             "restricted" => Ok(Self::Restricted),
@@ -130,7 +134,7 @@ impl FromStr for TrustLevel {
             "certified" => Ok(Self::Certified),
             other => Err(format!("unknown trust level '{other}'")),
         }
-    }
+}
 }
 
 #[cfg(test)]

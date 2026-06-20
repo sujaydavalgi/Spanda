@@ -19,6 +19,7 @@ fn spanda_bin() -> String {
     // Example:
     // let result = spanda_cli::package_cli::spanda_bin();
 
+    // Produce expect as the result.
     std::env::var("CARGO_BIN_EXE_spanda").expect("CARGO_BIN_EXE_spanda not set")
 }
 

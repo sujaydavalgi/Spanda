@@ -37,6 +37,7 @@ impl SignedMessage {
         // Example:
         // let result = spanda_security::signed::sign(payload, identity);
 
+        // Compute payload for the following logic.
         let payload = payload.into();
         let hash = spanda_audit::sha256(&payload);
         let sig_value = sign(&payload, &identity.signing_key());
@@ -48,7 +49,7 @@ impl SignedMessage {
             },
             hash: hash.0,
         }
-    }
+}
 
     pub fn verify(&self, identity: &RobotIdentity) -> SecurityResult<bool> {
         // Verify.
@@ -66,6 +67,7 @@ impl SignedMessage {
         // Example:
         // let result = instance.verify(identity);
 
+        // take the branch when signer id differs from id.
         if self.signature.signer_id != identity.id() {
             return Err(SecurityError::SignatureInvalid);
         }
@@ -74,7 +76,7 @@ impl SignedMessage {
             &self.signature.value,
             &identity.signing_key(),
         ))
-    }
+}
 
     pub fn to_json(&self) -> SecurityResult<String> {
         // Convert to json.
@@ -91,9 +93,10 @@ impl SignedMessage {
         // Example:
         // let result = instance.to_json();
 
+        // Produce to string as the result.
         serde_json::to_string(self)
             .map_err(|e| SecurityError::Other(format!("serialization failed: {e}")))
-    }
+}
 }
 
 #[cfg(test)]

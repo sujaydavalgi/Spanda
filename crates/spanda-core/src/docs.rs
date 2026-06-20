@@ -49,6 +49,7 @@ fn render_program_docs(program: &Program) -> String {
     // Example:
     // let result = spanda_core::docs::render_program_docs(program);
 
+    // Destructure the program into its top-level sections.
     let Program::Program {
         module_name,
         imports,
@@ -60,7 +61,6 @@ fn render_program_docs(program: &Program) -> String {
         robots,
         ..
     } = program;
-
     let mut out = String::new();
     let title = module_name
         .as_deref()
@@ -68,8 +68,11 @@ fn render_program_docs(program: &Program) -> String {
         .replace('.', "/");
     out.push_str(&format!("# Module `{title}`\n\n"));
 
+    // Skip further work when !imports is empty.
     if !imports.is_empty() {
         out.push_str("## Imports\n\n");
+
+        // Emit codegen metadata for each import.
         for import in imports {
             let ImportDecl::ImportDecl { path, .. } = import;
             out.push_str(&format!("- `{path}`\n"));
@@ -77,48 +80,66 @@ fn render_program_docs(program: &Program) -> String {
         out.push('\n');
     }
 
+    // Skip further work when !functions is empty.
     if !functions.is_empty() {
         out.push_str("## Functions\n\n");
+
+        // Generate code for each module function.
         for func in functions {
             out.push_str(&render_module_fn(func));
             out.push('\n');
         }
     }
 
+    // Skip further work when !structs is empty.
     if !structs.is_empty() {
         out.push_str("## Structs\n\n");
+
+        // Process each struct.
         for s in structs {
             out.push_str(&render_struct(s));
             out.push('\n');
         }
     }
 
+    // Skip further work when !enums is empty.
     if !enums.is_empty() {
         out.push_str("## Enums\n\n");
+
+        // Process each enum.
         for e in enums {
             out.push_str(&render_enum(e));
             out.push('\n');
         }
     }
 
+    // Skip further work when !traits is empty.
     if !traits.is_empty() {
         out.push_str("## Traits\n\n");
+
+        // Process each trait.
         for t in traits {
             out.push_str(&render_trait(t));
             out.push('\n');
         }
     }
 
+    // Skip further work when !robots is empty.
     if !robots.is_empty() {
         out.push_str("## Robots\n\n");
+
+        // Handle each robot declared in the program.
         for robot in robots {
             out.push_str(&render_robot(robot));
             out.push('\n');
         }
     }
 
+    // Skip further work when !tests is empty.
     if !tests.is_empty() {
         out.push_str("## Tests\n\n");
+
+        // Run each test block in program order.
         for test in tests {
             out.push_str(&format!(
                 "- `\"{}\"` ({} statements)\n",
@@ -128,7 +149,6 @@ fn render_program_docs(program: &Program) -> String {
         }
         out.push('\n');
     }
-
     out
 }
 
@@ -147,6 +167,7 @@ fn render_module_fn(func: &crate::foundations::ModuleFnDecl) -> String {
     // Example:
     // let result = spanda_core::docs::render_module_fn(func);
 
+    // Compute visibility for the following logic.
     let visibility = match func.visibility {
         Visibility::Export => "export ",
         Visibility::Public => "public ",
@@ -186,8 +207,11 @@ fn render_struct(decl: &crate::foundations::StructDecl) -> String {
     // Example:
     // let result = spanda_core::docs::render_struct(decl);
 
+    // Compute crate for the following logic.
     let crate::foundations::StructDecl::StructDecl { name, fields, .. } = decl;
     let mut out = format!("### `{name}`\n\n");
+
+    // Check each struct field.
     for field in fields {
         out.push_str(&format!("- `{}`: `{}`\n", field.name, field.type_name));
     }
@@ -209,9 +233,14 @@ fn render_enum(decl: &crate::foundations::EnumDecl) -> String {
     // Example:
     // let result = spanda_core::docs::render_enum(decl);
 
+    // Compute crate for the following logic.
     let crate::foundations::EnumDecl::EnumDecl { name, variants, .. } = decl;
     let mut out = format!("### `{name}`\n\n");
+
+    // Handle each enum variant arm.
     for variant in variants {
+
+        // Skip further work when field types is empty.
         if variant.field_types.is_empty() {
             out.push_str(&format!("- `{}`\n", variant.name));
         } else {
@@ -240,8 +269,11 @@ fn render_trait(decl: &crate::foundations::TraitDecl) -> String {
     // Example:
     // let result = spanda_core::docs::render_trait(decl);
 
+    // Compute crate for the following logic.
     let crate::foundations::TraitDecl::TraitDecl { name, methods, .. } = decl;
     let mut out = format!("### `{name}`\n\n");
+
+    // Process each method.
     for method in methods {
         let params = method
             .params
@@ -272,6 +304,7 @@ fn render_robot(robot: &RobotDecl) -> String {
     // Example:
     // let result = spanda_core::docs::render_robot(robot);
 
+    // Compute RobotDecl for the following logic.
     let RobotDecl::RobotDecl {
         name,
         sensors,
@@ -282,8 +315,12 @@ fn render_robot(robot: &RobotDecl) -> String {
         ..
     } = robot;
     let mut out = format!("### `{name}`\n\n");
+
+    // Skip further work when !sensors is empty.
     if !sensors.is_empty() {
         out.push_str("**Sensors**\n\n");
+
+        // Process each sensor.
         for sensor in sensors {
             let SensorDecl::SensorDecl {
                 name, sensor_type, ..
@@ -292,8 +329,12 @@ fn render_robot(robot: &RobotDecl) -> String {
         }
         out.push('\n');
     }
+
+    // Skip further work when !actuators is empty.
     if !actuators.is_empty() {
         out.push_str("**Actuators**\n\n");
+
+        // Process each actuator.
         for actuator in actuators {
             let ActuatorDecl::ActuatorDecl {
                 name,
@@ -304,24 +345,36 @@ fn render_robot(robot: &RobotDecl) -> String {
         }
         out.push('\n');
     }
+
+    // Skip further work when !agents is empty.
     if !agents.is_empty() {
         out.push_str("**Agents**\n\n");
+
+        // Process each agent.
         for agent in agents {
             let AgentDecl::AgentDecl { name, goal, .. } = agent;
             out.push_str(&format!("- `{name}` — goal: \"{goal}\"\n"));
         }
         out.push('\n');
     }
+
+    // Skip further work when !behaviors is empty.
     if !behaviors.is_empty() {
         out.push_str("**Behaviors**\n\n");
+
+        // Process each behavior.
         for behavior in behaviors {
             let BehaviorDecl::BehaviorDecl { name, .. } = behavior;
             out.push_str(&format!("- `{name}()`\n"));
         }
         out.push('\n');
     }
+
+    // Skip further work when !tasks is empty.
     if !tasks.is_empty() {
         out.push_str("**Tasks**\n\n");
+
+        // Process each task.
         for task in tasks {
             let crate::foundations::TaskDecl::TaskDecl {
                 name, interval_ms, ..
@@ -347,6 +400,7 @@ fn type_name(ty: &SpandaType) -> String {
     // Example:
     // let result = spanda_core::docs::type_name(ty);
 
+    // Match on ty and handle each case.
     match ty {
         SpandaType::Void => "Void".into(),
         SpandaType::Int => "Int".into(),
@@ -357,6 +411,8 @@ fn type_name(ty: &SpandaType) -> String {
         SpandaType::Bytes => "Bytes".into(),
         SpandaType::Null => "Null".into(),
         SpandaType::Number { unit } => {
+
+            // Take the branch when *unit equals None.
             if *unit == UnitKind::None {
                 "Number".into()
             } else {

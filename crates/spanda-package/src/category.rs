@@ -44,6 +44,7 @@ impl PackageCategory {
         // Example:
         // let result = spanda_package::category::all();
 
+        // Return the static list of known values.
         &[
             Self::Ai,
             Self::Robotics,
@@ -65,10 +66,9 @@ impl PackageCategory {
             Self::SupplyChain,
             Self::Ledger,
         ]
-    }
+}
 
     pub fn as_str(&self) -> &'static str {
-        // Return as str.
         //
         // Parameters:
         // - `self` — method receiver
@@ -82,6 +82,7 @@ impl PackageCategory {
         // Example:
         // let result = instance.as_str();
 
+        // Dispatch based on the enum variant or current state.
         match self {
             Self::Ai => "ai",
             Self::Robotics => "robotics",
@@ -103,7 +104,7 @@ impl PackageCategory {
             Self::SupplyChain => "supply-chain",
             Self::Ledger => "ledger",
         }
-    }
+}
 }
 
 impl FromStr for PackageCategory {
@@ -124,6 +125,7 @@ impl FromStr for PackageCategory {
         // Example:
         // let result = spanda_package::category::from_str(s);
 
+        // Match on s and handle each case.
         match s {
             "ai" => Ok(Self::Ai),
             "robotics" => Ok(Self::Robotics),
@@ -146,7 +148,7 @@ impl FromStr for PackageCategory {
             "ledger" => Ok(Self::Ledger),
             other => Err(format!("unknown package category '{other}'")),
         }
-    }
+}
 }
 
 impl std::fmt::Display for PackageCategory {

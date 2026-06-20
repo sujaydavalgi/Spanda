@@ -136,6 +136,7 @@ pub fn take_events() -> Vec<String> {
     // Example:
     // let result = spanda_rt::take_events();
 
+    // Collect filtered entries into a new list.
     EVENTS.lock().unwrap().drain(..).collect()
 }
 
@@ -154,6 +155,7 @@ fn log_event(msg: String) {
     // Example:
     // let result = spanda_rt::log_event(msg);
 
+    // take this path when let Ok(mut events) = EVENTS.lock().
     if let Ok(mut events) = EVENTS.lock() {
         events.push(msg);
     }
@@ -174,6 +176,7 @@ fn ptr_to_str(ptr: *const c_char) -> String {
     // Example:
     // let result = spanda_rt::ptr_to_str(ptr);
 
+    // take this path when ptr.is null().
     if ptr.is_null() {
         return "<null>".into();
     }
@@ -196,6 +199,7 @@ fn events_since(start: usize) -> Vec<String> {
     // Example:
     // let result = spanda_rt::events_since(start);
 
+    // Produce to vec as the result.
     EVENTS.lock().unwrap()[start..].to_vec()
 }
 

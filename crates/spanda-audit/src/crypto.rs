@@ -27,11 +27,11 @@ fn signing_key_from_material(material: &str) -> SigningKey {
     // Example:
     // let result = spanda_audit::crypto::signing_key_from_material(material);
 
+    // Produce from bytes as the result.
     SigningKey::from_bytes(&seed_bytes(material))
 }
 
 pub(crate) fn is_hex_public_key(key: &str) -> bool {
-    // Return whether hex public key.
     //
     // Parameters:
     // - `key` — input value
@@ -45,6 +45,7 @@ pub(crate) fn is_hex_public_key(key: &str) -> bool {
     // Example:
     // let result = spanda_audit::crypto::is_hex_public_key(key);
 
+    // Produce is ascii hexdigit as the result.
     key.len() == 64 && key.chars().all(|c| c.is_ascii_hexdigit())
 }
 
@@ -64,6 +65,7 @@ pub fn public_key_from_material(material: &str) -> String {
     // Example:
     // let result = spanda_audit::crypto::public_key_from_material(material);
 
+    // Produce encode as the result.
     hex::encode(
         signing_key_from_material(material)
             .verifying_key()
@@ -87,6 +89,7 @@ pub fn sha256(data: &str) -> Hash {
     // Example:
     // let result = spanda_audit::crypto::sha256(data);
 
+    // Create mutable hasher for accumulating results.
     let mut hasher = Sha256::new();
     hasher.update(data.as_bytes());
     Hash(hex::encode(hasher.finalize()))
@@ -109,8 +112,13 @@ pub fn sign(data: &str, key_material: &str) -> String {
     // Example:
     // let result = spanda_audit::crypto::sign(data, key_material);
 
+    // Compute sk for the following logic.
     let sk = if key_material.len() == 64 && key_material.chars().all(|c| c.is_ascii_hexdigit()) {
+
+        // Handle the success value from decode.
         if let Ok(bytes) = hex::decode(key_material) {
+
+            // Take the branch when len equals 32.
             if bytes.len() == 32 {
                 SigningKey::from_bytes(&bytes.try_into().expect("32-byte seed"))
             } else {
@@ -124,7 +132,6 @@ pub fn sign(data: &str, key_material: &str) -> String {
     };
     hex::encode(sk.sign(data.as_bytes()).to_bytes())
 }
-
 /// Verify an Ed25519 signature.
 ///
 /// `key` may be a hex-encoded public key (64 hex chars) or signing material (derives public key).
@@ -145,6 +152,7 @@ pub fn verify_signature(data: &str, signature: &str, key: &str) -> bool {
     // Example:
     // let result = spanda_audit::crypto::verify_signature(data, signature, key);
 
+    // Compute sig bytes for the following logic.
     let sig_bytes = match hex::decode(signature) {
         Ok(bytes) if bytes.len() == 64 => bytes,
         _ => return false,
@@ -154,12 +162,18 @@ pub fn verify_signature(data: &str, signature: &str, key: &str) -> bool {
             .try_into()
             .expect("signature length checked above"),
     );
-
     let verify_with = |vk: &VerifyingKey| vk.verify_strict(data.as_bytes(), &sig).is_ok();
 
+    // Take this path when is hex public key(key).
     if is_hex_public_key(key) {
+
+        // Handle the success value from decode.
         if let Ok(pk) = hex::decode(key) {
+
+            // Take the branch when len equals 32.
             if pk.len() == 32 {
+
+                // Handle the success value from expect.
                 if let Ok(vk) = VerifyingKey::from_bytes(&pk.try_into().expect("32-byte key")) {
                     return verify_with(&vk);
                 }
@@ -167,7 +181,6 @@ pub fn verify_signature(data: &str, signature: &str, key: &str) -> bool {
         }
         return false;
     }
-
     verify_with(&signing_key_from_material(key).verifying_key())
 }
 

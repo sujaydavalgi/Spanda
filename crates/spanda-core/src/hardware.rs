@@ -64,10 +64,11 @@ impl CompatibilityReport {
         // Example:
         // let result = instance.errors();
 
+        // Call items on the current instance.
         self.items
             .iter()
             .filter(|i| i.severity == CompatSeverity::Error)
-    }
+}
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -111,6 +112,7 @@ fn builtin_profiles() -> HashMap<String, HardwareProfile> {
     // Example:
     // let result = spanda_core::hardware::builtin_profiles();
 
+    // Produce from as the result.
     HashMap::from([
         profile(
             "RoverV1",
@@ -232,6 +234,7 @@ fn profile(
     // Example:
     // let result = spanda_core::hardware::profile(name, cpu, memory_mb, storage_mb, gpu_tops, gpu_required, sensors, actuators, battery_wh, network_bandwidth_mbps, network_latency_ms, min_control_period_ms, power_draw_w);
 
+    // Produce value as the result.
     (
         name.into(),
         HardwareProfile {
@@ -267,6 +270,7 @@ pub fn list_hardware_profiles() -> Vec<String> {
     // Example:
     // let result = spanda_core::hardware::list_hardware_profiles();
 
+    // Create mutable names for accumulating results.
     let mut names: Vec<_> = builtin_profiles().into_keys().collect();
     names.sort();
     names
@@ -287,6 +291,7 @@ pub fn hardware_profile_from_decl(decl: &HardwareDecl) -> HardwareProfile {
     // Example:
     // let result = spanda_core::hardware::hardware_profile_from_decl(decl);
 
+    // Compute HardwareDecl for the following logic.
     let HardwareDecl::HardwareDecl {
         name,
         cpu,
@@ -335,10 +340,13 @@ pub fn build_profile_registry(program: &Program) -> HashMap<String, HardwareProf
     // Example:
     // let result = spanda_core::hardware::build_profile_registry(program);
 
+    // Create mutable registry for accumulating results.
     let mut registry = builtin_profiles();
     let Program::Program {
         hardware_profiles, ..
     } = program;
+
+    // Process each hardware profile.
     for decl in hardware_profiles {
         let profile = hardware_profile_from_decl(decl);
         registry.insert(profile.name.clone(), profile);
@@ -364,6 +372,7 @@ fn pass(category: &str, message: impl Into<String>, line: u32, column: u32) -> C
     // Example:
     // let result = spanda_core::hardware::pass(category, message, line, column);
 
+    // Produce CompatItem as the result.
     CompatItem {
         category: category.into(),
         message: message.into(),
@@ -391,6 +400,7 @@ fn warn(category: &str, message: impl Into<String>, line: u32, column: u32) -> C
     // Example:
     // let result = spanda_core::hardware::warn(category, message, line, column);
 
+    // Produce CompatItem as the result.
     CompatItem {
         category: category.into(),
         message: message.into(),
@@ -418,6 +428,7 @@ fn error(category: &str, message: impl Into<String>, line: u32, column: u32) -> 
     // Example:
     // let result = spanda_core::hardware::error(category, message, line, column);
 
+    // Produce CompatItem as the result.
     CompatItem {
         category: category.into(),
         message: message.into(),
@@ -442,6 +453,7 @@ fn sensor_adapter(sensor_type: &str) -> Option<&'static str> {
     // Example:
     // let result = spanda_core::hardware::sensor_adapter(sensor_type);
 
+    // Match on sensor type and handle each case.
     match sensor_type {
         "Camera" => Some("CameraAdapter"),
         "Lidar" => Some("LidarAdapter"),
@@ -466,6 +478,7 @@ fn actuator_adapter(actuator_type: &str) -> Option<&'static str> {
     // Example:
     // let result = spanda_core::hardware::actuator_adapter(actuator_type);
 
+    // Match on actuator type and handle each case.
     match actuator_type {
         "DifferentialDrive" => Some("MotorAdapter"),
         "RoboticArm" => Some("ArmAdapter"),
@@ -491,6 +504,7 @@ fn apply_fault(mut profile: HardwareProfile, fault_type: &str) -> HardwareProfil
     // Example:
     // let result = spanda_core::hardware::apply_fault(mut profile, fault_type);
 
+    // Match on fault type and handle each case.
     match fault_type {
         "CameraFailure" => {
             profile.sensors.retain(|s| s != "Camera");
@@ -499,6 +513,8 @@ fn apply_fault(mut profile: HardwareProfile, fault_type: &str) -> HardwareProfil
             profile.sensors.retain(|s| s != "Lidar");
         }
         "BatteryDegradation" => {
+
+            // Emit output when battery wh provides a b.
             if let Some(b) = profile.battery_wh {
                 profile.battery_wh = Some(b * 0.5);
             }
@@ -530,8 +546,13 @@ fn collect_loop_intervals(stmts: &[Stmt]) -> Vec<f64> {
     // Example:
     // let result = spanda_core::hardware::collect_loop_intervals(stmts);
 
+    // Create mutable intervals for accumulating results.
     let mut intervals = Vec::new();
+
+    // Execute each statement in sequence.
     for stmt in stmts {
+
+        // Match on stmt and handle each case.
         match stmt {
             Stmt::LoopStmt {
                 interval_ms, body, ..
@@ -545,6 +566,8 @@ fn collect_loop_intervals(stmts: &[Stmt]) -> Vec<f64> {
                 ..
             } => {
                 intervals.extend(collect_loop_intervals(then_branch));
+
+                // Emit output when else branch provides a el.
                 if let Some(el) = else_branch {
                     intervals.extend(collect_loop_intervals(el));
                 }
@@ -555,9 +578,13 @@ fn collect_loop_intervals(stmts: &[Stmt]) -> Vec<f64> {
     intervals
 }
 
-fn ai_config_number(config: &[(String, ConfigValue)], key: &str) -> Option<f64> {
+fn ai_config_number(config: &[(String, ConfigValue)], key: &str) -> Option<f64> {    // Iterate over config.
     config.iter().find_map(|e| {
+
+        // Take the branch when 0 equals key.
         if e.0 == key {
+
+            // Match on 1 and handle each case.
             match &e.1 {
                 ConfigValue::Number(n) => Some(*n),
                 _ => None,
@@ -568,11 +595,15 @@ fn ai_config_number(config: &[(String, ConfigValue)], key: &str) -> Option<f64> 
     })
 }
 
-fn ai_config_bool(config: &[(String, ConfigValue)], key: &str) -> bool {
+fn ai_config_bool(config: &[(String, ConfigValue)], key: &str) -> bool {    // Iterate over config.
     config.iter().any(|(k, v)| {
+
+        // Take the branch when k differs from key.
         if k != key {
             return false;
         }
+
+        // Match on v and handle each case.
         match v {
             ConfigValue::Bool(true) => true,
             ConfigValue::Number(n) => *n > 0.0,
@@ -600,6 +631,7 @@ fn verify_requires_hardware(
     // Example:
     // let result = spanda_core::hardware::verify_requires_hardware(req, profile);
 
+    // Compute RequiresHardwareDecl for the following logic.
     let RequiresHardwareDecl::RequiresHardwareDecl {
         memory_mb_min,
         storage_mb_min,
@@ -613,7 +645,10 @@ fn verify_requires_hardware(
     let line = span.start.line;
     let column = span.start.column;
 
+    // Emit output when memory mb min provides a min mem.
     if let Some(min_mem) = memory_mb_min {
+
+        // Match on memory mb and handle each case.
         match profile.memory_mb {
             Some(mem) if mem >= *min_mem => {
                 items.push(pass(
@@ -640,7 +675,10 @@ fn verify_requires_hardware(
         }
     }
 
+    // Emit output when storage mb min provides a min storage.
     if let Some(min_storage) = storage_mb_min {
+
+        // Match on storage mb and handle each case.
         match profile.storage_mb {
             Some(storage) if storage >= *min_storage => {
                 items.push(pass(
@@ -667,6 +705,7 @@ fn verify_requires_hardware(
         }
     }
 
+    // Take this path when *gpu required && !profile.gpu required && profile.gpu tops.is none().
     if *gpu_required && !profile.gpu_required && profile.gpu_tops.is_none() {
         items.push(error(
             "gpu",
@@ -679,7 +718,10 @@ fn verify_requires_hardware(
         ));
     }
 
+    // Emit output when gpu tops min provides a min tops.
     if let Some(min_tops) = gpu_tops_min {
+
+        // Match on gpu tops and handle each case.
         match profile.gpu_tops {
             Some(tops) if tops >= *min_tops => {
                 items.push(pass(
@@ -705,9 +747,12 @@ fn verify_requires_hardware(
             )),
         }
     }
-
     let sensor_set: HashSet<_> = profile.sensors.iter().collect();
+
+    // Process each sensor.
     for sensor_type in sensors {
+
+        // Check membership before continuing.
         if sensor_set.contains(sensor_type) {
             items.push(pass(
                 "sensors",
@@ -731,9 +776,12 @@ fn verify_requires_hardware(
             ));
         }
     }
-
     let actuator_set: HashSet<_> = profile.actuators.iter().collect();
+
+    // Process each actuator.
     for actuator_type in actuators {
+
+        // Check membership before continuing.
         if actuator_set.contains(actuator_type) {
             items.push(pass(
                 "actuators",
@@ -757,7 +805,6 @@ fn verify_requires_hardware(
             ));
         }
     }
-
     items
 }
 
@@ -780,6 +827,7 @@ fn verify_requires_network(
     // Example:
     // let result = spanda_core::hardware::verify_requires_network(req, profile);
 
+    // Compute RequiresNetworkDecl for the following logic.
     let RequiresNetworkDecl::RequiresNetworkDecl {
         bandwidth_mbps_min,
         latency_ms_max,
@@ -789,7 +837,10 @@ fn verify_requires_network(
     let line = span.start.line;
     let column = span.start.column;
 
+    // Emit output when bandwidth mbps min provides a min bw.
     if let Some(min_bw) = bandwidth_mbps_min {
+
+        // Match on network bandwidth mbps and handle each case.
         match profile.network_bandwidth_mbps {
             Some(bw) if bw >= *min_bw => {
                 items.push(pass(
@@ -816,7 +867,10 @@ fn verify_requires_network(
         }
     }
 
+    // Emit output when latency ms max provides a max lat.
     if let Some(max_lat) = latency_ms_max {
+
+        // Match on network latency ms and handle each case.
         match profile.network_latency_ms {
             Some(lat) if lat <= *max_lat => {
                 items.push(pass(
@@ -842,7 +896,6 @@ fn verify_requires_network(
             )),
         }
     }
-
     items
 }
 
@@ -867,6 +920,7 @@ fn verify_resource_budget(
     // Example:
     // let result = spanda_core::hardware::verify_resource_budget(budget, profile, task_interval_ms);
 
+    // Compute ResourceBudgetDecl for the following logic.
     let ResourceBudgetDecl::ResourceBudgetDecl {
         battery_pct_max,
         memory_mb_max,
@@ -879,7 +933,10 @@ fn verify_resource_budget(
     let line = span.start.line;
     let column = span.start.column;
 
+    // Emit output when memory mb max provides a mem max.
     if let Some(mem_max) = memory_mb_max {
+
+        // Match on memory mb and handle each case.
         match profile.memory_mb {
             Some(total) if *mem_max <= total => {
                 items.push(pass(
@@ -906,8 +963,11 @@ fn verify_resource_budget(
         }
     }
 
+    // Emit output when cpu pct max provides a cpu max.
     if let Some(cpu_max) = cpu_pct_max {
         let duty = (ESTIMATED_TASK_COST_MS / task_interval_ms.max(1.0)) * 100.0;
+
+        // Take this path when duty <= *cpu max.
         if duty <= *cpu_max {
             items.push(pass(
                 "cpu",
@@ -925,6 +985,7 @@ fn verify_resource_budget(
         }
     }
 
+    // Emit output when battery pct max provides a bat max.
     if let Some(bat_max) = battery_pct_max {
         let duty_pct = (task_interval_ms / 1000.0) * (*bat_max / 100.0);
         items.push(pass(
@@ -935,7 +996,10 @@ fn verify_resource_budget(
         ));
     }
 
+    // Emit output when network mbps max provides a net max.
     if let Some(net_max) = network_mbps_max {
+
+        // Match on network bandwidth mbps and handle each case.
         match profile.network_bandwidth_mbps {
             Some(bw) if *net_max <= bw => {
                 items.push(pass(
@@ -962,7 +1026,10 @@ fn verify_resource_budget(
         }
     }
 
+    // Emit output when storage mb max provides a stor max.
     if let Some(stor_max) = storage_mb_max {
+
+        // Match on storage mb and handle each case.
         match profile.storage_mb {
             Some(total) if *stor_max <= total => {
                 items.push(pass(
@@ -988,7 +1055,6 @@ fn verify_resource_budget(
             )),
         }
     }
-
     items
 }
 
@@ -1008,6 +1074,7 @@ fn verify_timing(robot: &RobotDecl, profile: &HardwareProfile) -> Vec<CompatItem
     // Example:
     // let result = spanda_core::hardware::verify_timing(robot, profile);
 
+    // Compute RobotDecl for the following logic.
     let RobotDecl::RobotDecl {
         tasks,
         behaviors,
@@ -1020,6 +1087,7 @@ fn verify_timing(robot: &RobotDecl, profile: &HardwareProfile) -> Vec<CompatItem
     let min_period = profile.min_control_period_ms;
     let mut total_cpu_pct = 0.0;
 
+    // Process each task.
     for task in tasks {
         let TaskDecl::TaskDecl {
             name,
@@ -1028,6 +1096,8 @@ fn verify_timing(robot: &RobotDecl, profile: &HardwareProfile) -> Vec<CompatItem
             span: task_span,
             ..
         } = task;
+
+        // Take this path when *interval ms < min period.
         if *interval_ms < min_period {
             items.push(error(
                 "timing",
@@ -1052,11 +1122,16 @@ fn verify_timing(robot: &RobotDecl, profile: &HardwareProfile) -> Vec<CompatItem
         total_cpu_pct += (ESTIMATED_TASK_COST_MS / interval_ms.max(1.0)) * 100.0;
     }
 
+    // Process each behavior.
     for behavior in behaviors {
         let BehaviorDecl::BehaviorDecl {
             name, body, span, ..
         } = behavior;
+
+        // Process each collect loop interval.
         for interval in collect_loop_intervals(body) {
+
+            // Take this path when interval < min period.
             if interval < min_period {
                 items.push(error(
                     "timing",
@@ -1082,6 +1157,7 @@ fn verify_timing(robot: &RobotDecl, profile: &HardwareProfile) -> Vec<CompatItem
         }
     }
 
+    // Take this path when total cpu pct > 100.0.
     if total_cpu_pct > 100.0 {
         items.push(error(
             "timing",
@@ -1113,7 +1189,6 @@ fn verify_timing(robot: &RobotDecl, profile: &HardwareProfile) -> Vec<CompatItem
             column,
         ));
     }
-
     items
 }
 
@@ -1133,9 +1208,11 @@ fn verify_ai_models(robot: &RobotDecl, profile: &HardwareProfile) -> Vec<CompatI
     // Example:
     // let result = spanda_core::hardware::verify_ai_models(robot, profile);
 
+    // Compute RobotDecl for the following logic.
     let RobotDecl::RobotDecl { ai_models, .. } = robot;
     let mut items = Vec::new();
 
+    // Process each ai model.
     for model in ai_models {
         let AiModelDecl::AiModelDecl {
             name, config, span, ..
@@ -1145,7 +1222,10 @@ fn verify_ai_models(robot: &RobotDecl, profile: &HardwareProfile) -> Vec<CompatI
             .map(|e| (e.key.clone(), e.value.clone()))
             .collect();
 
+        // Emit output when ai config number provides a mem req.
         if let Some(mem_req) = ai_config_number(&config_pairs, "memory_required") {
+
+            // Match on memory mb and handle each case.
             match profile.memory_mb {
                 Some(mem) if mem >= mem_req => {
                     items.push(pass(
@@ -1172,7 +1252,10 @@ fn verify_ai_models(robot: &RobotDecl, profile: &HardwareProfile) -> Vec<CompatI
             }
         }
 
+        // Take this path when ai config bool(&config pairs, "gpu required").
         if ai_config_bool(&config_pairs, "gpu_required") {
+
+            // Proceed only when is some is available.
             if profile.gpu_required || profile.gpu_tops.is_some() {
                 items.push(pass(
                     "ai",
@@ -1196,7 +1279,6 @@ fn verify_ai_models(robot: &RobotDecl, profile: &HardwareProfile) -> Vec<CompatI
             }
         }
     }
-
     items
 }
 
@@ -1216,6 +1298,7 @@ fn verify_battery_mission(mission: &MissionDecl, profile: &HardwareProfile) -> V
     // Example:
     // let result = spanda_core::hardware::verify_battery_mission(mission, profile);
 
+    // Compute MissionDecl for the following logic.
     let MissionDecl::MissionDecl {
         duration_hours,
         span,
@@ -1223,7 +1306,6 @@ fn verify_battery_mission(mission: &MissionDecl, profile: &HardwareProfile) -> V
     let mut items = Vec::new();
     let line = span.start.line;
     let column = span.start.column;
-
     let Some(battery_wh) = profile.battery_wh else {
         return vec![warn(
             "power",
@@ -1232,10 +1314,10 @@ fn verify_battery_mission(mission: &MissionDecl, profile: &HardwareProfile) -> V
             column,
         )];
     };
-
     let energy_wh = profile.power_draw_w * duration_hours;
     let margin = battery_wh - energy_wh;
 
+    // Take this path when energy wh > battery wh.
     if energy_wh > battery_wh {
         items.push(error(
             "power",
@@ -1269,7 +1351,6 @@ fn verify_battery_mission(mission: &MissionDecl, profile: &HardwareProfile) -> V
             column,
         ));
     }
-
     items
 }
 
@@ -1294,11 +1375,13 @@ fn verify_adapters(
     // Example:
     // let result = spanda_core::hardware::verify_adapters(robot, profile, program_traits);
 
+    // Compute RobotDecl for the following logic.
     let RobotDecl::RobotDecl {
         sensors, actuators, ..
     } = robot;
     let mut items = Vec::new();
 
+    // Iterate over the collection.
     for SensorDecl::SensorDecl {
         name,
         sensor_type,
@@ -1306,8 +1389,12 @@ fn verify_adapters(
         ..
     } in sensors
     {
+
+        // Emit output when sensor adapter provides a adapter.
         if let Some(adapter) = sensor_adapter(sensor_type) {
             let hw_ok = profile.sensors.iter().any(|s| s == sensor_type);
+
+            // Take this path when hw ok.
             if hw_ok {
                 let msg = if program_traits.contains(adapter) {
                     format!(
@@ -1325,6 +1412,7 @@ fn verify_adapters(
         }
     }
 
+    // Process each actuator.
     for actuator in actuators {
         let crate::ast::ActuatorDecl::ActuatorDecl {
             name,
@@ -1332,8 +1420,12 @@ fn verify_adapters(
             span,
             ..
         } = actuator;
+
+        // Emit output when actuator adapter provides a adapter.
         if let Some(adapter) = actuator_adapter(actuator_type) {
             let hw_ok = profile.actuators.iter().any(|a| a == actuator_type);
+
+            // Take this path when hw ok.
             if hw_ok {
                 let msg = if program_traits.contains(adapter) {
                     format!(
@@ -1350,7 +1442,6 @@ fn verify_adapters(
             }
         }
     }
-
     items
 }
 
@@ -1370,9 +1461,11 @@ fn verify_topic_bandwidth(topics: &[TopicDecl], profile: &HardwareProfile) -> Ve
     // Example:
     // let result = spanda_core::hardware::verify_topic_bandwidth(topics, profile);
 
+    // Create mutable total mbps for accumulating results.
     let mut total_mbps = 0.0;
     let mut items = Vec::new();
 
+    // Process each topic.
     for topic in topics {
         let TopicDecl::TopicDecl {
             name,
@@ -1383,13 +1476,12 @@ fn verify_topic_bandwidth(topics: &[TopicDecl], profile: &HardwareProfile) -> Ve
             ..
         } = topic;
 
+        // Keep entries that match the expected pattern.
         if matches!(role, TopicRole::Subscribe) {
             continue;
         }
-
         let Some(qos) = qos else { continue };
         let Some(rate_hz) = qos.rate_hz else { continue };
-
         let msg_size = default_message_size(message_type);
         let mbps = estimate_topic_bandwidth_mbps(rate_hz, msg_size);
         total_mbps += mbps;
@@ -1401,10 +1493,12 @@ fn verify_topic_bandwidth(topics: &[TopicDecl], profile: &HardwareProfile) -> Ve
         ));
     }
 
+    // Take this path when total mbps <= 0.0.
     if total_mbps <= 0.0 {
         return items;
     }
 
+    // Match on network bandwidth mbps and handle each case.
     match profile.network_bandwidth_mbps {
         Some(bw) if total_mbps <= bw => {
             items.push(pass(
@@ -1433,7 +1527,6 @@ fn verify_topic_bandwidth(topics: &[TopicDecl], profile: &HardwareProfile) -> Ve
             ));
         }
     }
-
     items
 }
 
@@ -1466,6 +1559,7 @@ fn verify_robot_against_profile(
     // Example:
     // let result = spanda_core::hardware::verify_robot_against_profile(robot, profile, program_traits, program_requires_hw, program_requires_net, span_line, span_column);
 
+    // Compute RobotDecl for the following logic.
     let RobotDecl::RobotDecl {
         name: robot_name,
         topics,
@@ -1478,11 +1572,11 @@ fn verify_robot_against_profile(
         tasks,
         ..
     } = robot;
-
     let mut items = Vec::new();
     let sensor_set: HashSet<_> = profile.sensors.iter().collect();
     let actuator_set: HashSet<_> = profile.actuators.iter().collect();
 
+    // Iterate over the collection.
     for SensorDecl::SensorDecl {
         name,
         sensor_type,
@@ -1490,6 +1584,8 @@ fn verify_robot_against_profile(
         ..
     } in sensors
     {
+
+        // Check membership before continuing.
         if sensor_set.contains(sensor_type) {
             items.push(pass(
                 "sensors",
@@ -1514,17 +1610,24 @@ fn verify_robot_against_profile(
         }
     }
 
+    // Emit output when observe provides a observe decl.
     if let Some(observe_decl) = observe {
         let crate::foundations::ObserveDecl::ObserveDecl {
             sensors: observe_sensors,
             span,
             ..
         } = observe_decl;
+
+        // Process each observe sensor.
         for sensor_name in observe_sensors {
             let declared = sensors.iter().find(|s| match s {
                 SensorDecl::SensorDecl { name, .. } => name == sensor_name,
             });
+
+            // Take this path when let Some(SensorDecl::SensorDecl { sensor type, .. }) = declared.
             if let Some(SensorDecl::SensorDecl { sensor_type, .. }) = declared {
+
+                // Check membership before continuing.
                 if !sensor_set.contains(sensor_type) {
                     items.push(error(
                         "sensors",
@@ -1540,6 +1643,7 @@ fn verify_robot_against_profile(
         }
     }
 
+    // Process each actuator.
     for actuator in actuators {
         let crate::ast::ActuatorDecl::ActuatorDecl {
             name,
@@ -1547,6 +1651,8 @@ fn verify_robot_against_profile(
             span,
             ..
         } = actuator;
+
+        // Check membership before continuing.
         if actuator_set.contains(actuator_type) {
             items.push(pass(
                 "actuators",
@@ -1571,6 +1677,7 @@ fn verify_robot_against_profile(
         }
     }
 
+    // Skip further work when sensors is empty.
     if sensors.is_empty() && actuators.is_empty() {
         items.push(pass(
             "robot",
@@ -1580,33 +1687,38 @@ fn verify_robot_against_profile(
         ));
     }
 
+    // Emit output when or provides a req.
     if let Some(req) = requires_hardware.as_ref().or(program_requires_hw) {
         items.extend(verify_requires_hardware(req, profile));
     }
+
+    // Emit output when or provides a req.
     if let Some(req) = requires_network.as_ref().or(program_requires_net) {
         items.extend(verify_requires_network(req, profile));
     }
 
+    // Process each task.
     for task in tasks {
         let TaskDecl::TaskDecl {
             budget,
             interval_ms,
             ..
         } = task;
+
+        // Emit output when budget provides a b.
         if let Some(b) = budget {
             items.extend(verify_resource_budget(b, profile, *interval_ms));
         }
     }
 
+    // Emit output when mission provides a m.
     if let Some(m) = mission {
         items.extend(verify_battery_mission(m, profile));
     }
-
     items.extend(verify_timing(robot, profile));
     items.extend(verify_ai_models(robot, profile));
     items.extend(verify_adapters(robot, profile, program_traits));
     items.extend(verify_topic_bandwidth(topics, profile));
-
     items
 }
 
@@ -1625,6 +1737,7 @@ fn trait_names(program: &Program) -> HashSet<String> {
     // Example:
     // let result = spanda_core::hardware::trait_names(program);
 
+    // Destructure the program into its top-level sections.
     let Program::Program { traits, .. } = program;
     traits
         .iter()
@@ -1655,17 +1768,23 @@ fn resolve_targets(
     // Example:
     // let result = spanda_core::hardware::resolve_targets(program, options, registry);
 
+    // Destructure the program into its top-level sections.
     let Program::Program {
         robots,
         deployments,
         ..
     } = program;
 
+    // Take this path when options.all targets.
     if options.all_targets {
         let profile_names: Vec<_> = registry.keys().cloned().collect();
         let mut pairs = Vec::new();
+
+        // Handle each robot declared in the program.
         for robot in robots {
             let RobotDecl::RobotDecl { name, span, .. } = robot;
+
+            // Process each profile name.
             for target in &profile_names {
                 pairs.push((
                     name.clone(),
@@ -1678,6 +1797,7 @@ fn resolve_targets(
         return pairs;
     }
 
+    // Emit output when target provides a target.
     if let Some(target) = &options.target {
         return robots
             .iter()
@@ -1692,14 +1812,17 @@ fn resolve_targets(
             })
             .collect();
     }
-
     let mut pairs = Vec::new();
+
+    // Process each deployment.
     for deploy in deployments {
         let DeployDecl::DeployDecl {
             robot_name,
             targets,
             span,
         } = deploy;
+
+        // Process each target.
         for t in targets {
             pairs.push((
                 robot_name.clone(),
@@ -1731,6 +1854,7 @@ pub fn verify_program_compatibility(
     // Example:
     // let result = spanda_core::hardware::verify_program_compatibility(program, options);
 
+    // Compute registry for the following logic.
     let registry = build_profile_registry(program);
     let Program::Program {
         robots,
@@ -1739,13 +1863,12 @@ pub fn verify_program_compatibility(
         simulate_compatibility,
         ..
     } = program;
-
     let mut items = Vec::new();
     let program_traits = trait_names(program);
     let targets_to_check = resolve_targets(program, options, &registry);
-
     let run_simulation = options.simulate || simulate_compatibility.is_some();
 
+    // Skip further work when targets to check is empty.
     if targets_to_check.is_empty() && options.target.is_none() && !options.all_targets {
         return CompatibilityReport {
             compatible: true,
@@ -1760,6 +1883,7 @@ pub fn verify_program_compatibility(
         };
     }
 
+    // Skip further work when all targets && robots is empty.
     if options.all_targets && robots.is_empty() {
         items.push(error(
             "deploy",
@@ -1768,6 +1892,8 @@ pub fn verify_program_compatibility(
             1,
         ));
     } else if let Some(target) = &options.target {
+
+        // Skip further work when robots is empty.
         if robots.is_empty() {
             items.push(error(
                 "deploy",
@@ -1777,10 +1903,10 @@ pub fn verify_program_compatibility(
             ));
         }
     }
-
     let primary_target = targets_to_check.first().map(|(_, t, _, _)| t.clone());
     let mut matrix_cells = Vec::new();
 
+    // Iterate over targets to check with destructured elements.
     for (robot_name, target_name, line, column) in &targets_to_check {
         let Some(mut profile) = registry.get(target_name).cloned() else {
             items.push(error(
@@ -1797,10 +1923,15 @@ pub fn verify_program_compatibility(
             continue;
         };
 
+        // Take this path when run simulation.
         if run_simulation {
+
+            // Take this path when let Some(SimulateCompatibilityDecl::SimulateCompatibilityDecl { faults.
             if let Some(SimulateCompatibilityDecl::SimulateCompatibilityDecl { faults, span }) =
                 simulate_compatibility
             {
+
+                // Inject each configured hardware fault.
                 for fault in faults {
                     profile = apply_fault(profile, &fault.fault_type);
                     items.push(pass(
@@ -1815,7 +1946,6 @@ pub fn verify_program_compatibility(
                 }
             }
         }
-
         let Some(robot) = robots.iter().find(|r| r.name() == *robot_name) else {
             items.push(error(
                 "deploy",
@@ -1830,14 +1960,12 @@ pub fn verify_program_compatibility(
             });
             continue;
         };
-
         items.push(pass(
             "deploy",
             format!("Verifying robot '{robot_name}' against hardware '{target_name}'"),
             *line,
             *column,
         ));
-
         let pair_items = verify_robot_against_profile(
             robot,
             &profile,
@@ -1851,14 +1979,12 @@ pub fn verify_program_compatibility(
             .iter()
             .any(|i| i.severity == CompatSeverity::Error);
         items.extend(pair_items);
-
         matrix_cells.push(MatrixCell {
             robot: robot_name.clone(),
             target: target_name.clone(),
             compatible: pair_ok,
         });
     }
-
     let matrix = if options.all_targets {
         Some(CompatibilityMatrix {
             cells: matrix_cells,
@@ -1866,9 +1992,7 @@ pub fn verify_program_compatibility(
     } else {
         None
     };
-
     let compatible = !items.iter().any(|i| i.severity == CompatSeverity::Error);
-
     CompatibilityReport {
         compatible,
         target: primary_target,
@@ -1897,6 +2021,7 @@ pub fn verify_program_compatibility_legacy(
     // Example:
     // let result = spanda_core::hardware::verify_program_compatibility_legacy(program, cli_target);
 
+    // Produce verify program compatibility as the result.
     verify_program_compatibility(
         program,
         &VerifyOptions {

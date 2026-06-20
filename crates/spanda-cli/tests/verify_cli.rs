@@ -19,6 +19,7 @@ fn spanda_bin() -> PathBuf {
     // Example:
     // let result = spanda_cli::verify_cli::spanda_bin();
 
+    // Produce var os as the result.
     std::env::var_os("CARGO_BIN_EXE_spanda")
         .map(PathBuf::from)
         .expect("CARGO_BIN_EXE_spanda not set (run via cargo test -p spanda-cli)")
@@ -39,6 +40,7 @@ fn rover_deploy() -> PathBuf {
     // Example:
     // let result = spanda_cli::verify_cli::rover_deploy();
 
+    // Produce sd") as the result.
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../examples/hardware/rover_deploy.sd")
 }
 
@@ -57,9 +59,12 @@ fn run_verify(args: &[&str]) -> (std::process::Output, PathBuf) {
     // Example:
     // let result = spanda_cli::verify_cli::run_verify(args);
 
+    // Compute file for the following logic.
     let file = rover_deploy();
     let mut cmd = Command::new(spanda_bin());
     cmd.arg("verify");
+
+    // Apply each command-line argument.
     for arg in args {
         cmd.arg(arg);
     }

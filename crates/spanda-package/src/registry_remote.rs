@@ -38,6 +38,7 @@ pub fn registry_base_url() -> Option<String> {
     // Example:
     // let result = spanda_package::registry_remote::registry_base_url();
 
+    // Produce var as the result.
     std::env::var("SPANDA_REGISTRY_URL")
         .ok()
         .map(|url| url.trim_end_matches('/').to_string())
@@ -59,14 +60,21 @@ pub fn fetch_index_json(url: &str) -> Result<String, String> {
     // Example:
     // let result = spanda_package::registry_remote::fetch_index_json(url);
 
+    // use path when file url path is present.
+
+    // Emit output when file url path provides a path.
     if let Some(path) = super::registry_fetch::file_url_path(url) {
         return fs::read_to_string(&path)
             .map_err(|e| format!("failed to read registry index at {}: {e}", path.display()));
     }
+
+    // Handle the success value from new.
     if let Ok(output) = std::process::Command::new("curl")
         .args(["-fsSL", url])
         .output()
     {
+
+        // Handle output when the subprocess succeeds.
         if output.status.success() {
             return String::from_utf8(output.stdout)
                 .map_err(|e| format!("registry response is not UTF-8: {e}"));
@@ -90,12 +98,15 @@ pub fn load_remote_registry() -> Vec<RemoteRegistryEntry> {
     // Example:
     // let result = spanda_package::registry_remote::load_remote_registry();
 
+    // Produce REMOTE CACHE as the result.
     REMOTE_CACHE
         .get_or_init(|| {
             let Some(base) = registry_base_url() else {
                 return Vec::new();
             };
             let url = format!("{base}/index.json");
+
+            // Match on fetch index json and handle each case.
             match fetch_index_json(&url) {
                 Ok(body) => serde_json::from_str(&body).unwrap_or_else(|e| {
                     eprintln!("Warning: invalid remote registry JSON at {url}: {e}");
@@ -125,6 +136,7 @@ pub fn find_remote_entry(name: &str) -> Option<RemoteRegistryEntry> {
     // Example:
     // let result = spanda_package::registry_remote::find_remote_entry(name);
 
+    // Produce load remote registry as the result.
     load_remote_registry()
         .into_iter()
         .find(|entry| entry.name == name)
@@ -145,6 +157,7 @@ pub fn search_remote_registry(query: &str) -> Vec<RemoteRegistryEntry> {
     // Example:
     // let result = spanda_package::registry_remote::search_remote_registry(query);
 
+    // Compute q for the following logic.
     let q = query.to_lowercase();
     load_remote_registry()
         .into_iter()
@@ -171,6 +184,7 @@ pub fn remote_category(name: &str) -> PackageCategory {
     // Example:
     // let result = spanda_package::registry_remote::remote_category(name);
 
+    // Produce Robotics) as the result.
     name.parse().unwrap_or(PackageCategory::Robotics)
 }
 
@@ -189,6 +203,7 @@ pub fn remote_safety_level(name: &str) -> SafetyLevel {
     // Example:
     // let result = spanda_package::registry_remote::remote_safety_level(name);
 
+    // Match on name and handle each case.
     match name {
         "spanda-ros2" | "spanda-opencv" | "spanda-yolo" | "spanda-mqtt" => {
             SafetyLevel::SimulationOnly
@@ -213,6 +228,7 @@ pub fn remote_as_static_view(entry: &RemoteRegistryEntry) -> RegistryEntryView<'
     // Example:
     // let result = spanda_package::registry_remote::remote_as_static_view(entry);
 
+    // Produce RegistryEntryView as the result.
     RegistryEntryView {
         name: entry.name.as_str(),
         description: entry.description.as_str(),
@@ -279,6 +295,9 @@ pub fn lookup_registry_entry(name: &str) -> Option<RegistryEntryLookup> {
     // Example:
     // let result = spanda_package::registry_remote::lookup_registry_entry(name);
 
+    // use entry when find registry entry is present.
+
+    // Emit output when find registry entry provides a entry.
     if let Some(entry) = super::registry::find_registry_entry(name) {
         return Some(RegistryEntryLookup::Local(entry));
     }
@@ -307,11 +326,12 @@ impl RegistryEntryLookup {
         // Example:
         // let result = instance.name();
 
+        // Dispatch based on the enum variant or current state.
         match self {
             RegistryEntryLookup::Local(entry) => entry.name,
             RegistryEntryLookup::Remote(entry) => &entry.name,
         }
-    }
+}
 
     pub fn versions(&self) -> Vec<String> {
         // Versions.
@@ -328,13 +348,14 @@ impl RegistryEntryLookup {
         // Example:
         // let result = instance.versions();
 
+        // Dispatch based on the enum variant or current state.
         match self {
             RegistryEntryLookup::Local(entry) => {
                 entry.versions.iter().map(|v| (*v).to_string()).collect()
             }
             RegistryEntryLookup::Remote(entry) => entry.versions.clone(),
         }
-    }
+}
 
     pub fn registry_label(&self) -> &'static str {
         // Registry label.
@@ -351,11 +372,12 @@ impl RegistryEntryLookup {
         // Example:
         // let result = instance.registry_label();
 
+        // Dispatch based on the enum variant or current state.
         match self {
             RegistryEntryLookup::Local(_) => "local",
             RegistryEntryLookup::Remote(_) => "remote",
         }
-    }
+}
 }
 
 #[cfg(test)]

@@ -31,6 +31,7 @@ impl Ros2Daemon {
         // Example:
         // let result = spanda_core::transport_rclrs_daemon::start();
 
+        // Compute script for the following logic.
         let script = daemon_script_path()?;
         let python = python_cmd().ok_or_else(|| "python3 not found for ROS2 daemon".to_string())?;
         let mut child = Command::new(&python)
@@ -53,7 +54,7 @@ impl Ros2Daemon {
             stdin,
             reader: BufReader::new(stdout),
         })
-    }
+}
 
     fn request(&mut self, op: &str, args: &[String]) -> bool {
         // Request.
@@ -72,18 +73,25 @@ impl Ros2Daemon {
         // Example:
         // let result = instance.request(op, args);
 
+        // Compute payload for the following logic.
         let payload = serde_json::json!({ "op": op, "args": args });
         let line = match serde_json::to_string(&payload) {
             Ok(text) => text,
             Err(_) => return false,
         };
+
+        // Take this path when writeln!(self.stdin, "{line}").is err().
         if writeln!(self.stdin, "{line}").is_err() {
             return false;
         }
+
+        // Take this path when self.stdin.flush().is err().
         if self.stdin.flush().is_err() {
             return false;
         }
         let mut response = String::new();
+
+        // Take this path when self.reader.read line(&mut response).is err().
         if self.reader.read_line(&mut response).is_err() {
             return false;
         }
@@ -91,7 +99,7 @@ impl Ros2Daemon {
             .ok()
             .and_then(|value| value.get("ok").and_then(|ok| ok.as_bool()))
             .unwrap_or(false)
-    }
+}
 }
 
 fn python_cmd() -> Option<String> {
@@ -109,7 +117,10 @@ fn python_cmd() -> Option<String> {
     // Example:
     // let result = spanda_core::transport_rclrs_daemon::python_cmd();
 
+    // Iterate over ["python3", "python"].
     for cmd in ["python3", "python"] {
+
+        // Take this path when Command::new(cmd).
         if Command::new(cmd)
             .arg("-c")
             .arg("import sys")
@@ -140,24 +151,35 @@ pub fn daemon_script_path() -> Result<PathBuf, String> {
     // Example:
     // let result = spanda_core::transport_rclrs_daemon::daemon_script_path();
 
+    // handle the success value from var.
     if let Ok(path) = std::env::var("SPANDA_ROS2_DAEMON_SCRIPT") {
         let path = PathBuf::from(path);
+
+        // Continue only when the path is a regular file.
         if path.is_file() {
             return Ok(path);
         }
     }
+
+    // Handle the success value from var.
     if let Ok(manifest) = std::env::var("CARGO_MANIFEST_DIR") {
         let path = PathBuf::from(manifest)
             .join("../../scripts/spanda_ros2_daemon.py")
             .canonicalize()
             .ok();
+
+        // Emit output when path provides a path.
         if let Some(path) = path {
+
+            // Continue only when the path is a regular file.
             if path.is_file() {
                 return Ok(path);
             }
         }
     }
     let path = PathBuf::from("scripts/spanda_ros2_daemon.py");
+
+    // Continue only when the path is a regular file.
     if path.is_file() {
         return Ok(path);
     }
@@ -167,7 +189,7 @@ pub fn daemon_script_path() -> Result<PathBuf, String> {
 fn with_daemon<F>(f: F) -> bool
 where
     F: FnOnce(&mut Ros2Daemon) -> bool,
-{
+{    // take the branch when python available is false.
     if !python_available() {
         return false;
     }
@@ -175,14 +197,22 @@ where
         Ok(guard) => guard,
         Err(_) => return false,
     };
+
+    // Take this path when guard.is none().
     if guard.is_none() {
+
+        // Match on start and handle each case.
         match Ros2Daemon::start() {
             Ok(daemon) => *guard = Some(daemon),
             Err(_) => return false,
         }
     }
     let daemon = guard.as_mut().expect("daemon");
+
+    // Proceed only when is some is available.
     if daemon.child.try_wait().ok().flatten().is_some() {
+
+        // Match on start and handle each case.
         match Ros2Daemon::start() {
             Ok(restarted) => *daemon = restarted,
             Err(_) => {
@@ -210,6 +240,7 @@ pub fn daemon_publish(topic: &str, value: &RuntimeValue) -> bool {
     // Example:
     // let result = spanda_core::transport_rclrs_daemon::daemon_publish(topic, value);
 
+    // Compute payload for the following logic.
     let payload = match value {
         RuntimeValue::String { value } => value.clone(),
         RuntimeValue::Number { value, .. } => value.to_string(),
@@ -234,6 +265,7 @@ pub fn daemon_subscribe(topic: &str) -> bool {
     // Example:
     // let result = spanda_core::transport_rclrs_daemon::daemon_subscribe(topic);
 
+    // Produce to string as the result.
     with_daemon(|daemon| daemon.request("subscribe", &[topic.to_string()]))
 }
 
@@ -254,6 +286,7 @@ pub fn daemon_service_call(service: &str, service_type: &str, request: &str) -> 
     // Example:
     // let result = spanda_core::transport_rclrs_daemon::daemon_service_call(service, service_type, request);
 
+    // Produce with daemon as the result.
     with_daemon(|daemon| {
         daemon.request(
             "service_call",

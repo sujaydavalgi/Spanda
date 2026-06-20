@@ -28,7 +28,6 @@ pub struct LintReport {
 
 impl LintReport {
     pub fn has_errors(&self) -> bool {
-        // Return whether this value has errors.
         //
         // Parameters:
         // - `self` — method receiver
@@ -42,10 +41,11 @@ impl LintReport {
         // Example:
         // let result = instance.has_errors();
 
+        // Call issues on the current instance.
         self.issues
             .iter()
             .any(|i| i.severity == LintSeverity::Error)
-    }
+}
 }
 
 pub fn lint(source: &str) -> Result<LintReport, SpandaError> {
@@ -63,6 +63,7 @@ pub fn lint(source: &str) -> Result<LintReport, SpandaError> {
     // Example:
     // let result = spanda_core::lint::lint(source);
 
+    // Tokenize the source before parsing.
     let tokens = crate::lexer::tokenize(source)?;
     let program = crate::parser::parse(tokens)?;
     Ok(lint_program(source, &program))
@@ -84,15 +85,22 @@ fn lint_concurrency(program: &Program, issues: &mut Vec<LintIssue>) {
     // Example:
     // let result = spanda_core::lint::lint_concurrency(program, issues);
 
+    // Extract robot declarations from the parsed program.
     let Program::Program { robots, .. } = program;
+
+    // Handle each robot declared in the program.
     for robot in robots {
         let RobotDecl::RobotDecl {
             behaviors, tasks, ..
         } = robot;
+
+        // Process each behavior.
         for behavior in behaviors {
             let BehaviorDecl::BehaviorDecl { body, .. } = behavior;
             lint_stmt_channel_flow(body, issues);
         }
+
+        // Process each task.
         for task in tasks {
             let TaskDecl::TaskDecl { body, .. } = task;
             lint_stmt_channel_flow(body, issues);
@@ -116,10 +124,15 @@ fn lint_stmt_channel_flow(stmts: &[Stmt], issues: &mut Vec<LintIssue>) {
     // Example:
     // let result = spanda_core::lint::lint_stmt_channel_flow(stmts, issues);
 
+    // Create mutable channels for accumulating results.
     let mut channels: std::collections::HashMap<String, (bool, bool, u32, u32)> =
         std::collections::HashMap::new();
     collect_channel_flow(stmts, &mut channels);
+
+    // Iterate over channels with destructured elements.
     for (name, (sent, recv, line, column)) in channels {
+
+        // Take this path when recv && !sent.
         if recv && !sent {
             issues.push(LintIssue {
                 rule: "channel-recv-without-send".into(),
@@ -131,6 +144,8 @@ fn lint_stmt_channel_flow(stmts: &[Stmt], issues: &mut Vec<LintIssue>) {
                 severity: LintSeverity::Warning,
             });
         }
+
+        // Take this path when sent && !recv.
         if sent && !recv {
             issues.push(LintIssue {
                 rule: "channel-send-without-recv".into(),
@@ -165,15 +180,24 @@ fn collect_channel_flow(
     // Example:
     // let result = spanda_core::lint::collect_channel_flow(stmts, channels);
 
+    // Execute each statement in sequence.
     for stmt in stmts {
+
+        // Match on stmt and handle each case.
         match stmt {
             Stmt::VarDecl {
                 name, init, span, ..
             } =>
             {
                 #[allow(clippy::collapsible_if)]
+
+                // Emit output when init provides a value.
                 if let Some(value) = init {
+
+                    // Keep entries that match the expected pattern.
                     if matches!(value, Expr::CallExpr { callee, .. }
+
+                        // Keep entries that match the expected pattern.
                         if matches!(callee.as_ref(), Expr::IdentExpr { name: n, .. } if n == "channel"))
                     {
                         channels.entry(name.clone()).or_insert((
@@ -197,6 +221,8 @@ fn collect_channel_flow(
                 ..
             } => {
                 collect_channel_flow(then_branch, channels);
+
+                // Emit output when else branch provides a else branch.
                 if let Some(else_branch) = else_branch {
                     collect_channel_flow(else_branch, channels);
                 }
@@ -204,7 +230,11 @@ fn collect_channel_flow(
             Stmt::LoopStmt { body, .. } => collect_channel_flow(body, channels),
             Stmt::ParallelStmt { body, .. } => collect_channel_flow(body, channels),
             Stmt::SelectStmt { arms, .. } => {
+
+                // Process each arm.
                 for arm in arms {
+
+                    // Match on channel and handle each case.
                     match &arm.channel {
                         Expr::IdentExpr { name, span } => {
                             let entry = channels.entry(name.clone()).or_insert((
@@ -216,8 +246,14 @@ fn collect_channel_flow(
                             entry.1 = true;
                         }
                         Expr::CallExpr { callee, args, .. } => {
+
+                            // Take this path when let Expr::IdentExpr { name: fn name, .. } = callee.as ref().
                             if let Expr::IdentExpr { name: fn_name, .. } = callee.as_ref() {
+
+                                // Take the branch when fn name equals "recv".
                                 if fn_name == "recv" {
+
+                                    // Take this path when let Some(Expr::IdentExpr { name, span }) = args.first().
                                     if let Some(Expr::IdentExpr { name, span }) = args.first() {
                                         let entry = channels.entry(name.clone()).or_insert((
                                             false,
@@ -259,10 +295,17 @@ fn mark_channel_usage(
     // Example:
     // let result = spanda_core::lint::mark_channel_usage(expr, channels);
 
+    // Match on expr and handle each case.
     match expr {
         Expr::CallExpr { callee, args, .. } => {
+
+            // Take this path when let Expr::IdentExpr { name: fn name, .. } = callee.as ref().
             if let Expr::IdentExpr { name: fn_name, .. } = callee.as_ref() {
+
+                // Take the branch when fn name equals "send" || fn name == "recv".
                 if fn_name == "send" || fn_name == "recv" {
+
+                    // Take this path when let Some(Expr::IdentExpr { name, span }) = args.first().
                     if let Some(Expr::IdentExpr { name, span }) = args.first() {
                         let entry = channels.entry(name.clone()).or_insert((
                             false,
@@ -270,6 +313,8 @@ fn mark_channel_usage(
                             span.start.line,
                             span.start.column,
                         ));
+
+                        // Take the branch when fn name equals "send".
                         if fn_name == "send" {
                             entry.0 = true;
                         } else {
@@ -278,6 +323,8 @@ fn mark_channel_usage(
                     }
                 }
             }
+
+            // Apply each command-line argument.
             for arg in args {
                 mark_channel_usage(arg, channels);
             }
@@ -290,6 +337,8 @@ fn mark_channel_usage(
         Expr::MemberExpr { object, .. } => mark_channel_usage(object, channels),
         Expr::SpawnExpr { callee, args, .. } => {
             mark_channel_usage(callee, channels);
+
+            // Apply each command-line argument.
             for arg in args {
                 mark_channel_usage(arg, channels);
             }
@@ -314,6 +363,7 @@ fn lint_program(source: &str, program: &Program) -> LintReport {
     // Example:
     // let result = spanda_core::lint::lint_program(source, program);
 
+    // Create mutable issues for accumulating results.
     let mut issues = Vec::new();
     lint_source_style(source, &mut issues);
     lint_program_structure(program, &mut issues);
@@ -338,8 +388,11 @@ fn lint_source_style(source: &str, issues: &mut Vec<LintIssue>) {
     // Example:
     // let result = spanda_core::lint::lint_source_style(source, issues);
 
+    // Iterate over enumerate with destructured elements.
     for (idx, line) in source.lines().enumerate() {
         let line_no = idx as u32 + 1;
+
+        // Take this path when line.ends with(' ') || line.ends with('\t').
         if line.ends_with(' ') || line.ends_with('\t') {
             issues.push(LintIssue {
                 rule: "trailing-whitespace".into(),
@@ -349,6 +402,8 @@ fn lint_source_style(source: &str, issues: &mut Vec<LintIssue>) {
                 severity: LintSeverity::Warning,
             });
         }
+
+        // Take this path when line.len() > 120.
         if line.len() > 120 {
             issues.push(LintIssue {
                 rule: "line-length".into(),
@@ -377,6 +432,7 @@ fn lint_program_structure(program: &Program, issues: &mut Vec<LintIssue>) {
     // Example:
     // let result = spanda_core::lint::lint_program_structure(program, issues);
 
+    // Destructure the program into its top-level sections.
     let Program::Program {
         module_name,
         tests,
@@ -384,6 +440,7 @@ fn lint_program_structure(program: &Program, issues: &mut Vec<LintIssue>) {
         ..
     } = program;
 
+    // Take this path when module name.is none().
     if module_name.is_none() {
         issues.push(LintIssue {
             rule: "missing-module".into(),
@@ -394,7 +451,10 @@ fn lint_program_structure(program: &Program, issues: &mut Vec<LintIssue>) {
         });
     }
 
+    // Run each test block in program order.
     for test in tests {
+
+        // Skip further work when body is empty.
         if test.body.is_empty() {
             issues.push(LintIssue {
                 rule: "empty-test".into(),
@@ -406,12 +466,17 @@ fn lint_program_structure(program: &Program, issues: &mut Vec<LintIssue>) {
         }
     }
 
+    // Handle each robot declared in the program.
     for robot in robots {
         let RobotDecl::RobotDecl { behaviors, .. } = robot;
+
+        // Process each behavior.
         for behavior in behaviors {
             let BehaviorDecl::BehaviorDecl {
                 name, body, span, ..
             } = behavior;
+
+            // Skip further work when body is empty.
             if body.is_empty() {
                 issues.push(LintIssue {
                     rule: "empty-behavior".into(),
@@ -442,7 +507,10 @@ fn lint_imports(source: &str, program: &Program, issues: &mut Vec<LintIssue>) {
     // Example:
     // let result = spanda_core::lint::lint_imports(source, program, issues);
 
+    // Destructure the program into its top-level sections.
     let Program::Program { imports, .. } = program;
+
+    // Emit codegen metadata for each import.
     for import in imports {
         let ImportDecl::ImportDecl { path, span } = import;
         let needle = path.split('.').next_back().unwrap_or(path.as_str());
@@ -450,6 +518,8 @@ fn lint_imports(source: &str, program: &Program, issues: &mut Vec<LintIssue>) {
             || source.contains(&format!("{path}::"))
             || source.contains(&format!("from {path}"))
             || is_std_import(path);
+
+        // Take the branch when referenced is false.
         if !referenced {
             issues.push(LintIssue {
                 rule: "unused-import".into(),
@@ -463,7 +533,6 @@ fn lint_imports(source: &str, program: &Program, issues: &mut Vec<LintIssue>) {
 }
 
 fn is_std_import(path: &str) -> bool {
-    // Return whether std import.
     //
     // Parameters:
     // - `path` — input value
@@ -477,6 +546,7 @@ fn is_std_import(path: &str) -> bool {
     // Example:
     // let result = spanda_core::lint::is_std_import(path);
 
+    // Produce ") as the result.
     path.starts_with("std.") || path.starts_with("sensors.")
 }
 

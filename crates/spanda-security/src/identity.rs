@@ -28,14 +28,14 @@ impl RobotIdentity {
         // Example:
         // let value = spanda_security::identity::new(id, public_key);
 
+        // Assemble the struct fields and return it.
         Self {
             device: DeviceIdentity::new(id, public_key),
             trust: TrustLevel::Trusted,
         }
-    }
+}
 
     pub fn with_trust(mut self, trust: TrustLevel) -> Self {
-        // Return a copy with trust updated.
         //
         // Parameters:
         // - `mut self` — input value
@@ -50,9 +50,10 @@ impl RobotIdentity {
         // Example:
         // let result = spanda_security::identity::with_trust(mut self, trust);
 
+        // Call trust = trust; on the current instance.
         self.trust = trust;
         self
-    }
+}
 
     pub fn id(&self) -> &str {
         // Id.
@@ -69,8 +70,9 @@ impl RobotIdentity {
         // Example:
         // let result = instance.id();
 
+        // Return id from this handle.
         &self.device.id
-    }
+}
 
     pub fn public_key(&self) -> &str {
         // Public key.
@@ -87,8 +89,9 @@ impl RobotIdentity {
         // Example:
         // let result = instance.public_key();
 
+        // Return public key from this handle.
         &self.device.public_key
-    }
+}
 
     pub fn signing_key(&self) -> String {
         // Signing key.
@@ -105,8 +108,9 @@ impl RobotIdentity {
         // Example:
         // let result = instance.signing_key();
 
+        // Call default key on the current instance.
         self.device.default_key()
-    }
+}
 }
 
 impl From<DeviceIdentity> for RobotIdentity {
@@ -125,9 +129,10 @@ impl From<DeviceIdentity> for RobotIdentity {
         // Example:
         // let result = spanda_security::identity::from(device);
 
+        // Assemble the struct fields and return it.
         Self {
             device,
             trust: TrustLevel::Trusted,
         }
-    }
+}
 }

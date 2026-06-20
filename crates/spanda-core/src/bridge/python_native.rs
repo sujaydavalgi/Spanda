@@ -17,6 +17,7 @@ pub fn native_available() -> bool {
     //
     // Returns:
     //
+
     // `true` if [`super::python::bridge_script_path`] resolves.
     bridge_script_path().is_some()
 }
@@ -38,6 +39,7 @@ pub fn call_extern(
     //
     // Options:
     //
+
     // Requires `python-native` Cargo feature and bridge script on disk.
     let line = decl.span.start.line;
     let script = bridge_script_path().ok_or_else(|| SpandaError::Runtime {
@@ -50,40 +52,43 @@ pub fn call_extern(
                 message: format!("Failed to encode native bridge args: {e}"),
                 line,
             })?;
-
     Python::with_gil(|py| -> PyResult<RuntimeValue> {
         let locals = PyDict::new(py);
         locals.set_item("script_path", script.to_string_lossy().to_string())?;
         locals.set_item("fn_name", &decl.name)?;
         locals.set_item("args_json", args_json)?;
-
         py.run(
             c"import json, importlib.util
 spec = importlib.util.spec_from_file_location('spanda_python_bridge', script_path)
+
+// Take this path when spec is None or spec.loader is None:.
 if spec is None or spec.loader is None:
     raise RuntimeError('failed to load python bridge module')
 mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
 args = json.loads(args_json)
 handler = mod.HANDLERS.get(fn_name)
+
+// Take this path when handler is None:.
 if handler is None:
     response = json.dumps({'ok': False, 'error': f\"Unknown python extern '{fn_name}'\"})
+
+// Handle any remaining cases.
 else:
     result = handler(*args)
     response = json.dumps({'ok': True, 'result': result})",
             None,
             Some(&locals),
         )?;
-
         let response: String = locals
             .get_item("response")?
             .ok_or_else(|| pyo3::exceptions::PyRuntimeError::new_err("missing response"))?
             .extract()?;
-
         let parsed: serde_json::Value = serde_json::from_str(&response).map_err(|e| {
             pyo3::exceptions::PyRuntimeError::new_err(format!("invalid bridge json: {e}"))
         })?;
 
+        // Take this path when parsed.
         if parsed
             .get("ok")
             .and_then(|v| v.as_bool())
@@ -96,7 +101,6 @@ else:
                 .to_string();
             return Err(pyo3::exceptions::PyRuntimeError::new_err(msg));
         }
-
         Ok(json_to_runtime_value(
             parsed.get("result").unwrap_or(&serde_json::Value::Null),
             &decl.return_type,
@@ -129,6 +133,7 @@ mod tests {
         // Example:
         // let result = spanda_core::python_native::test_decl(name);
 
+        // Produce ExternFnDecl as the result.
         ExternFnDecl {
             name: name.into(),
             library: Some("python".into()),
@@ -148,7 +153,7 @@ mod tests {
                 },
             },
         }
-    }
+}
 
     #[test]
     fn native_py_add_when_available() {

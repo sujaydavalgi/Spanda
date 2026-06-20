@@ -58,6 +58,7 @@ impl DebugMachine {
         // Example:
         // let result = spanda_core::debug_session::start(source, options);
 
+        // Parse and type-check the source program.
         let program = crate::compile(source)?.program;
         let step = options.step;
         let controller = DebugController::new(options.clone());
@@ -96,10 +97,9 @@ impl DebugMachine {
             source_path: options.source_path,
             finished: false,
         })
-    }
+}
 
     pub fn is_finished(&self) -> bool {
-        // Return whether finished.
         //
         // Parameters:
         // - `self` — method receiver
@@ -113,8 +113,9 @@ impl DebugMachine {
         // Example:
         // let result = instance.is_finished();
 
+        // Call finished on the current instance.
         self.finished
-    }
+}
 
     pub fn source_path(&self) -> Option<&str> {
         // Source path.
@@ -131,8 +132,9 @@ impl DebugMachine {
         // Example:
         // let result = instance.source_path();
 
+        // Call as deref on the current instance.
         self.source_path.as_deref()
-    }
+}
 
     pub fn pauses(&self) -> Vec<DebugPause> {
         // Pauses.
@@ -149,8 +151,9 @@ impl DebugMachine {
         // Example:
         // let result = instance.pauses();
 
+        // Call pauses on the current instance.
         self.controller.pauses().borrow().clone()
-    }
+}
 
     pub fn stack_trace(&self) -> Vec<(String, u32)> {
         // Stack trace.
@@ -167,11 +170,12 @@ impl DebugMachine {
         // Example:
         // let result = instance.stack_trace();
 
+        // Call stack trace frames on the current instance.
         self.stack_trace_frames()
             .into_iter()
             .map(|frame| (frame.name, frame.line))
             .collect()
-    }
+}
 
     pub fn stack_trace_frames(&self) -> Vec<DebugStackFrame> {
         // Stack trace frames.
@@ -188,6 +192,7 @@ impl DebugMachine {
         // Example:
         // let result = instance.stack_trace_frames();
 
+        // Call frames on the current instance.
         self.frames
             .iter()
             .rev()
@@ -201,7 +206,7 @@ impl DebugMachine {
                 }
             })
             .collect()
-    }
+}
 
     pub fn frame_variables(&self, frame_id: usize) -> HashMap<String, String> {
         // Frame variables.
@@ -219,6 +224,7 @@ impl DebugMachine {
         // Example:
         // let result = instance.frame_variables(frame_id);
 
+        // take the branch when frame id equals 0.
         if frame_id == 0 {
             return self.interpreter.env().snapshot_display();
         }
@@ -227,7 +233,7 @@ impl DebugMachine {
             .get(index)
             .map(|frame| frame.locals.clone())
             .unwrap_or_default()
-    }
+}
 
     pub fn set_variable(&mut self, name: &str, value: &str) -> Result<(), SpandaError> {
         // Set variable.
@@ -246,14 +252,17 @@ impl DebugMachine {
         // Example:
         // let result = instance.set_variable(name, value);
 
+        // Call interpreter on the current instance.
         self.interpreter
             .env_mut()
             .set(name, parse_debug_value(value));
+
+        // Emit output when last mut provides a frame.
         if let Some(frame) = self.frames.last_mut() {
             frame.locals = self.interpreter.env().snapshot_display();
         }
         Ok(())
-    }
+}
 
     pub fn run_until_pause(&mut self, step: DebugStepKind) -> Result<DebugSession, SpandaError> {
         // Run until pause.
@@ -271,7 +280,10 @@ impl DebugMachine {
         // Example:
         // let result = instance.run_until_pause(step);
 
+        // Call step kind = step; on the current instance.
         self.step_kind = step;
+
+        // Take the branch when step equals Continue.
         if step == DebugStepKind::Continue {
             self.controller
                 .command(crate::debug::DebugCommand::Continue);
@@ -284,8 +296,13 @@ impl DebugMachine {
             self.controller.command(crate::debug::DebugCommand::Step);
         }
 
+        // Run the loop body until it exits.
         loop {
+
+            // Skip further work when frames is empty.
             if self.frames.is_empty() {
+
+                // Proceed only when is some is available.
                 if self.step_out_target_depth.is_some() {
                     self.record_pause_at_top(1, "step-out");
                     self.step_out_target_depth = None;
@@ -294,12 +311,20 @@ impl DebugMachine {
                 break;
             }
             let frame_top = self.frames.len() - 1;
+
+            // Take this path when self.frames[frame top].index >= self.frames[frame top].stmts.len().
             if self.frames[frame_top].index >= self.frames[frame_top].stmts.len() {
+
+                // Emit output when take provides a env.
                 if let Some(env) = self.frames[frame_top].restore_env.take() {
                     self.interpreter.restore_env(env);
                 }
                 self.frames.pop();
+
+                // Emit output when step out target depth provides a target.
                 if let Some(target) = self.step_out_target_depth {
+
+                    // Take this path when self.frames.len() <= target.
                     if self.frames.len() <= target {
                         let line = self
                             .frames
@@ -314,10 +339,10 @@ impl DebugMachine {
                 }
                 continue;
             }
-
             let stmt = self.frames[frame_top].stmts[self.frames[frame_top].index].clone();
             let line = stmt_line(&stmt);
 
+            // Take this path when self.step out target depth.is none().
             if self.step_out_target_depth.is_none()
                 && matches!(step, DebugStepKind::Continue)
                 && self.controller.should_pause(line)
@@ -326,14 +351,15 @@ impl DebugMachine {
                 break;
             }
 
+            // Take this path when self.try enter inner(step, &stmt, frame top, line)?.
             if self.try_enter_inner(step, &stmt, frame_top, line)? {
                 break;
             }
-
             self.frames[frame_top].index += 1;
             self.interpreter.debug_execute_stmt(&stmt)?;
             self.sync_top_locals();
 
+            // Keep entries that match the expected pattern.
             if matches!(step, DebugStepKind::StepOver | DebugStepKind::StepIn) {
                 let reason = if step == DebugStepKind::StepIn {
                     "step-in"
@@ -344,11 +370,10 @@ impl DebugMachine {
                 break;
             }
         }
-
         Ok(DebugSession {
             pauses: self.controller.pauses().borrow().clone(),
         })
-    }
+}
 
     fn sync_top_locals(&mut self) {
         // Sync top locals.
@@ -365,10 +390,13 @@ impl DebugMachine {
         // Example:
         // let result = instance.sync_top_locals();
 
+        // use frame when last mut is present.
+
+        // Emit output when last mut provides a frame.
         if let Some(frame) = self.frames.last_mut() {
             frame.locals = self.interpreter.env().snapshot_display();
         }
-    }
+}
 
     fn record_pause_at_top(&mut self, line: u32, reason: &str) {
         // Record pause at top.
@@ -387,6 +415,7 @@ impl DebugMachine {
         // Example:
         // let result = instance.record_pause_at_top(line, reason);
 
+        // Call sync top locals on the current instance.
         self.sync_top_locals();
         let variables = self
             .frames
@@ -394,7 +423,7 @@ impl DebugMachine {
             .map(|frame| frame.locals.clone())
             .unwrap_or_default();
         self.controller.record_pause(line, reason, variables);
-    }
+}
 
     fn try_enter_inner(
         &mut self,
@@ -421,9 +450,12 @@ impl DebugMachine {
         // Example:
         // let result = instance.try_enter_inner(step, stmt, frame_top, line);
 
+        // take the branch when step differs from StepIn.
         if step != DebugStepKind::StepIn {
             return Ok(false);
         }
+
+        // Emit output when inner block provides a inner.
         if let Some(inner) = inner_block(stmt) {
             self.frames[frame_top].index += 1;
             let locals = self.interpreter.env().snapshot_display();
@@ -437,6 +469,8 @@ impl DebugMachine {
             self.record_pause_at_top(line, "step-in");
             return Ok(true);
         }
+
+        // Take this path when let Some((func name, func, args)) = self.interpreter.resolve sync call.
         if let Some((func_name, func, args)) = self.interpreter.resolve_sync_call(stmt) {
             let saved = self.interpreter.bind_call_args(&func, &args)?;
             self.frames[frame_top].index += 1;
@@ -452,7 +486,7 @@ impl DebugMachine {
             return Ok(true);
         }
         Ok(false)
-    }
+}
 }
 
 fn behavior_body(robot: &RobotDecl) -> Result<(String, Vec<Stmt>), SpandaError> {
@@ -470,6 +504,7 @@ fn behavior_body(robot: &RobotDecl) -> Result<(String, Vec<Stmt>), SpandaError> 
     // Example:
     // let result = spanda_core::debug_session::behavior_body(robot);
 
+    // Compute RobotDecl for the following logic.
     let RobotDecl::RobotDecl { behaviors, .. } = robot;
     let BehaviorDecl::BehaviorDecl { name, body, .. } =
         behaviors.first().ok_or_else(|| SpandaError::Runtime {
@@ -494,6 +529,7 @@ fn inner_block(stmt: &Stmt) -> Option<Vec<Stmt>> {
     // Example:
     // let result = spanda_core::debug_session::inner_block(stmt);
 
+    // Match on stmt and handle each case.
     match stmt {
         Stmt::IfStmt { then_branch, .. } => Some(then_branch.clone()),
         Stmt::LoopStmt { body, .. } => Some(body.clone()),
@@ -516,6 +552,7 @@ fn stmt_kind_label(stmt: &Stmt) -> &'static str {
     // Example:
     // let result = spanda_core::debug_session::stmt_kind_label(stmt);
 
+    // Match on stmt and handle each case.
     match stmt {
         Stmt::IfStmt { .. } => "if",
         Stmt::LoopStmt { .. } => "loop",
@@ -538,6 +575,7 @@ fn pause_reason(step: DebugStepKind) -> &'static str {
     // Example:
     // let result = spanda_core::debug_session::pause_reason(step);
 
+    // Match on step and handle each case.
     match step {
         DebugStepKind::Continue => "breakpoint",
         DebugStepKind::StepOver => "step",
@@ -561,13 +599,20 @@ fn parse_debug_value(text: &str) -> RuntimeValue {
     // Example:
     // let result = spanda_core::debug_session::parse_debug_value(text);
 
+    // Compute t for the following logic.
     let t = text.trim();
+
+    // Take the branch when t equals "true".
     if t == "true" {
         return RuntimeValue::Bool { value: true };
     }
+
+    // Take the branch when t equals "false".
     if t == "false" {
         return RuntimeValue::Bool { value: false };
     }
+
+    // Handle the success value from <f64>.
     if let Ok(value) = t.parse::<f64>() {
         return RuntimeValue::Number {
             value,

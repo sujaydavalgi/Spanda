@@ -32,13 +32,15 @@ pub fn bundle_package(root: &Path, manifest: &PackageManifest) -> PackageResult<
     // Example:
     // let result = spanda_package::publish::bundle_package(root, manifest);
 
+    // Compute sources for the following logic.
     let sources = collect_source_files(root)?;
+
+    // Skip further work when sources is empty.
     if sources.is_empty() {
         return Err(PackageError::Validation(
             "no source files to publish".into(),
         ));
     }
-
     let dist = root.join("dist");
     fs::create_dir_all(&dist).map_err(PackageError::from)?;
     let bundle_name = format!(
@@ -46,16 +48,15 @@ pub fn bundle_package(root: &Path, manifest: &PackageManifest) -> PackageResult<
         manifest.package.name, manifest.package.version
     );
     let bundle_path = dist.join(bundle_name);
-
     let mut paths = vec![root.join(MANIFEST_FILENAME)];
     let lock = root.join(crate::lockfile::LOCKFILE_FILENAME);
+
+    // Act only when the target path already exists.
     if lock.exists() {
         paths.push(lock);
     }
     paths.extend(sources);
-
     create_tar_gz(&bundle_path, root, &paths)?;
-
     Ok(PublishReport {
         bundle_path,
         uploaded: false,
@@ -80,16 +81,23 @@ pub fn publish_package(root: &Path, manifest: &PackageManifest) -> PackageResult
     // Example:
     // let result = spanda_package::publish::publish_package(root, manifest);
 
+    // Create mutable report for accumulating results.
     let mut report = bundle_package(root, manifest)?;
+
+    // Emit output when registry base url provides a base.
     if let Some(base) = registry_base_url() {
         let url = format!(
             "{base}/packages/{}/{}",
             manifest.package.name, manifest.package.version
         );
+
+        // Match on bundle path, &url) and handle each case.
         match upload_bundle(&report.bundle_path, &url) {
             Ok(()) => {
                 report.uploaded = true;
                 report.upload_url = Some(url);
+
+                // Handle the error returned from update registry index.
                 if let Err(err) = update_registry_index(&base, manifest) {
                     eprintln!("Warning: registry index update failed: {err}");
                 }
@@ -120,12 +128,12 @@ fn create_tar_gz(output: &Path, root: &Path, files: &[PathBuf]) -> PackageResult
     // Example:
     // let result = spanda_package::publish::create_tar_gz(output, root, files);
 
+    // Compute rel paths for the following logic.
     let rel_paths: Vec<String> = files
         .iter()
         .filter_map(|path| path.strip_prefix(root).ok())
         .map(|path| path.to_string_lossy().into_owned())
         .collect();
-
     let status = Command::new("tar")
         .arg("-czf")
         .arg(output)
@@ -135,6 +143,7 @@ fn create_tar_gz(output: &Path, root: &Path, files: &[PathBuf]) -> PackageResult
         .status()
         .map_err(PackageError::from)?;
 
+    // Handle output when the subprocess succeeds.
     if status.success() {
         Ok(())
     } else {
@@ -160,6 +169,7 @@ fn upload_bundle(bundle: &Path, url: &str) -> Result<(), String> {
     // Example:
     // let result = spanda_package::publish::upload_bundle(bundle, url);
 
+    // Start building the generated output buffer.
     let output = Command::new("curl")
         .args([
             "-fsSL",
@@ -173,6 +183,8 @@ fn upload_bundle(bundle: &Path, url: &str) -> Result<(), String> {
         ])
         .output()
         .map_err(|e| format!("curl not available: {e}"))?;
+
+    // Handle output when the subprocess succeeds.
     if output.status.success() {
         Ok(())
     } else {
@@ -200,6 +212,7 @@ fn update_registry_index(base: &str, manifest: &PackageManifest) -> Result<(), S
     // Example:
     // let result = spanda_package::publish::update_registry_index(base, manifest);
 
+    // Compute index url for the following logic.
     let index_url = format!("{base}/index.json");
     let body = fetch_index_json(&index_url).unwrap_or_else(|_| "[]".to_string());
     let mut entries: Vec<RemoteRegistryEntry> = serde_json::from_str(&body).unwrap_or_default();
@@ -209,10 +222,14 @@ fn update_registry_index(base: &str, manifest: &PackageManifest) -> Result<(), S
         .description
         .clone()
         .unwrap_or_else(|| manifest.package.name.clone());
+
+    // Emit output when entries provides a existing.
     if let Some(existing) = entries
         .iter_mut()
         .find(|entry| entry.name == manifest.package.name)
     {
+
+        // Check membership before continuing.
         if !existing.versions.contains(&version) {
             existing.versions.push(version);
         }
@@ -251,6 +268,7 @@ fn upload_json(url: &str, body: &str) -> Result<(), String> {
     // Example:
     // let result = spanda_package::publish::upload_json(url, body);
 
+    // Start building the generated output buffer.
     let output = Command::new("curl")
         .args([
             "-fsSL",
@@ -266,12 +284,16 @@ fn upload_json(url: &str, body: &str) -> Result<(), String> {
         .spawn()
         .and_then(|mut child| {
             use std::io::Write;
+
+            // Emit output when as mut provides a stdin.
             if let Some(stdin) = child.stdin.as_mut() {
                 stdin.write_all(body.as_bytes())?;
             }
             child.wait_with_output()
         })
         .map_err(|e| format!("curl not available: {e}"))?;
+
+    // Handle output when the subprocess succeeds.
     if output.status.success() {
         Ok(())
     } else {

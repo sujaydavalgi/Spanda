@@ -31,8 +31,9 @@ impl SecurePolicy {
         // Example:
         // let result = spanda_security::secure_comm::open();
 
+        // Build the result via default.
         Self::default()
-    }
+}
 
     pub fn signed_trusted() -> Self {
         // Signed trusted.
@@ -49,12 +50,13 @@ impl SecurePolicy {
         // Example:
         // let result = spanda_security::secure_comm::signed_trusted();
 
+        // Assemble the struct fields and return it.
         Self {
             signed: true,
             min_trust: Some(TrustLevel::Trusted),
             requires: vec!["identity.verify".into()],
         }
-    }
+}
 
     pub fn check_trust(&self, trust: TrustLevel) -> SecurityResult<()> {
         // Check trust.
@@ -72,7 +74,12 @@ impl SecurePolicy {
         // Example:
         // let result = instance.check_trust(trust);
 
+        // use required when min trust is present.
+
+        // Emit output when min trust provides a required.
         if let Some(required) = self.min_trust {
+
+            // Take the branch when satisfies is false.
             if !trust.satisfies(required) {
                 return Err(SecurityError::TrustInsufficient {
                     required: required.as_str().into(),
@@ -81,7 +88,7 @@ impl SecurePolicy {
             }
         }
         Ok(())
-    }
+}
 
     pub fn check_capabilities(&self, caps: &CapabilitySet) -> SecurityResult<()> {
         // Check capabilities.
@@ -99,11 +106,12 @@ impl SecurePolicy {
         // Example:
         // let result = instance.check_capabilities(caps);
 
+        // Validate each requested capability.
         for cap in &self.requires {
             caps.require(cap)?;
         }
         Ok(())
-    }
+}
 
     pub fn prepare_outbound(
         &self,
@@ -130,10 +138,15 @@ impl SecurePolicy {
         // Example:
         // let result = instance.prepare_outbound(payload, identity, caps, endpoint);
 
+        // skip further work when requires is empty.
         if self.signed || self.min_trust.is_some() || !self.requires.is_empty() {
             self.check_capabilities(caps)?;
+
+            // Emit output when identity provides a id.
             if let Some(id) = identity {
                 self.check_trust(id.trust)?;
+
+                // Take this path when self.signed.
                 if self.signed {
                     caps.require("identity.sign")?;
                     return Ok(Some(SignedMessage::sign(payload, id)));
@@ -145,7 +158,7 @@ impl SecurePolicy {
             });
         }
         Ok(None)
-    }
+}
 
     pub fn verify_inbound(
         &self,
@@ -172,24 +185,29 @@ impl SecurePolicy {
         // Example:
         // let result = instance.verify_inbound(signed, identity, caps, endpoint);
 
+        // skip further work when requires is empty.
         if self.signed || self.min_trust.is_some() || !self.requires.is_empty() {
             self.check_capabilities(caps)?;
             let id = identity.ok_or_else(|| SecurityError::IdentityRequired {
                 operation: endpoint.to_string(),
             })?;
             self.check_trust(id.trust)?;
+
+            // Take this path when self.signed.
             if self.signed {
                 let msg = signed.ok_or_else(|| SecurityError::SecureEndpoint {
                     endpoint: endpoint.to_string(),
                     reason: "missing signature".into(),
                 })?;
+
+                // Take the branch when verify is false.
                 if !msg.verify(id)? {
                     return Err(SecurityError::SignatureInvalid);
                 }
             }
         }
         Ok(())
-    }
+}
 }
 
 /// Registry of secure policies keyed by endpoint path.
@@ -214,8 +232,9 @@ impl SecureEndpointRegistry {
         // Example:
         // let value = spanda_security::secure_comm::new();
 
+        // Build the result via default.
         Self::default()
-    }
+}
 
     pub fn register(&mut self, path: impl Into<String>, policy: SecurePolicy) {
         // Register the value.
@@ -234,8 +253,9 @@ impl SecureEndpointRegistry {
         // Example:
         // let result = instance.register(path, policy);
 
+        // Append into self.
         self.policies.insert(path.into(), policy);
-    }
+}
 
     pub fn get(&self, path: &str) -> Option<&SecurePolicy> {
         // Get.
@@ -253,8 +273,9 @@ impl SecureEndpointRegistry {
         // Example:
         // let result = instance.get(path);
 
+        // Call get on the current instance.
         self.policies.get(path)
-    }
+}
 
     pub fn policy_or_open(&self, path: &str) -> SecurePolicy {
         // Policy or open.
@@ -272,8 +293,9 @@ impl SecureEndpointRegistry {
         // Example:
         // let result = instance.policy_or_open(path);
 
+        // Call get on the current instance.
         self.get(path).cloned().unwrap_or_default()
-    }
+}
 
     pub fn len(&self) -> usize {
         // Len.
@@ -290,11 +312,11 @@ impl SecureEndpointRegistry {
         // Example:
         // let result = instance.len();
 
+        // Call len on the current instance.
         self.policies.len()
-    }
+}
 
     pub fn is_empty(&self) -> bool {
-        // Return whether empty.
         //
         // Parameters:
         // - `self` — method receiver
@@ -308,8 +330,9 @@ impl SecureEndpointRegistry {
         // Example:
         // let result = instance.is_empty();
 
+        // Call is empty on the current instance.
         self.policies.is_empty()
-    }
+}
 }
 
 #[cfg(test)]

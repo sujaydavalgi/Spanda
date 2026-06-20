@@ -9,8 +9,10 @@ use std::path::PathBuf;
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum DependencySpec {
+
     /// Registry version constraint, e.g. `"0.1.0"` or `">=0.1.0, <1.0.0"`.
     Version(String),
+
     /// Inline table: `{ version = "0.1.0" }`, `{ path = "../lib" }`, or `{ git = "..." }`.
     Detail(DependencyDetail),
 }
@@ -48,9 +50,12 @@ impl DependencySpec {
         // Example:
         // let result = instance.parse_version_req();
 
+        // Dispatch based on the enum variant or current state.
         match self {
             Self::Version(v) => Ok(Some(parse_version_req(v)?)),
             Self::Detail(d) => {
+
+                // Emit output when version provides a v.
                 if let Some(v) = &d.version {
                     Ok(Some(parse_version_req(v)?))
                 } else {
@@ -58,7 +63,7 @@ impl DependencySpec {
                 }
             }
         }
-    }
+}
 
     pub fn source_kind(&self) -> DependencySourceKind {
         // Source kind.
@@ -75,9 +80,12 @@ impl DependencySpec {
         // Example:
         // let result = instance.source_kind();
 
+        // Dispatch based on the enum variant or current state.
         match self {
             Self::Version(_) => DependencySourceKind::Registry,
             Self::Detail(d) => {
+
+                // Proceed only when is some is available.
                 if d.path.is_some() {
                     DependencySourceKind::Local
                 } else if d.git.is_some() {
@@ -87,7 +95,7 @@ impl DependencySpec {
                 }
             }
         }
-    }
+}
 
     pub fn local_path(&self, project_root: &std::path::Path) -> Option<PathBuf> {
         // Local path.
@@ -105,9 +113,12 @@ impl DependencySpec {
         // Example:
         // let result = instance.local_path(project_root);
 
+        // Dispatch based on the enum variant or current state.
         match self {
             Self::Detail(d) if d.path.is_some() => {
                 let p = d.path.as_ref().unwrap();
+
+                // Take this path when p.is absolute().
                 if p.is_absolute() {
                     Some(p.clone())
                 } else {
@@ -116,7 +127,7 @@ impl DependencySpec {
             }
             _ => None,
         }
-    }
+}
 
     pub fn git_url(&self) -> Option<&str> {
         // Git url.
@@ -133,11 +144,12 @@ impl DependencySpec {
         // Example:
         // let result = instance.git_url();
 
+        // Dispatch based on the enum variant or current state.
         match self {
             Self::Detail(d) => d.git.as_deref(),
             _ => None,
         }
-    }
+}
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -192,6 +204,7 @@ pub fn parse_version_req(spec: &str) -> PackageResult<VersionReq> {
     // Example:
     // let result = spanda_package::dependency::parse_version_req(spec);
 
+    // Produce from) as the result.
     VersionReq::parse(spec).map_err(PackageError::from)
 }
 
@@ -210,6 +223,7 @@ pub fn parse_version(spec: &str) -> PackageResult<Version> {
     // Example:
     // let result = spanda_package::dependency::parse_version(spec);
 
+    // Produce from) as the result.
     Version::parse(spec).map_err(PackageError::from)
 }
 
@@ -229,6 +243,7 @@ pub fn version_satisfies(version: &Version, req: &VersionReq) -> bool {
     // Example:
     // let result = spanda_package::dependency::version_satisfies(version, req);
 
+    // Produce matches as the result.
     req.matches(version)
 }
 

@@ -34,6 +34,7 @@ fn to_js<T: Serialize>(value: &T) -> JsValue {
     // Example:
     // let result = spanda_wasm::to_js(value);
 
+    // Produce NULL) as the result.
     serde_wasm_bindgen::to_value(value).unwrap_or(JsValue::NULL)
 }
 
@@ -53,6 +54,7 @@ pub fn wasm_check(source: &str) -> JsValue {
     // Example:
     // let result = spanda_wasm::wasm_check(source);
 
+    // Compute resp for the following logic.
     let resp = match check(source) {
         Ok(()) => CheckResponse {
             ok: true,
@@ -83,6 +85,7 @@ pub fn wasm_run(source: &str, max_loop_iterations: u32) -> JsValue {
     // Example:
     // let result = spanda_wasm::wasm_run(source, max_loop_iterations);
 
+    // Compute resp for the following logic.
     let resp = match run(
         source,
         RunOptions {
@@ -120,6 +123,7 @@ pub fn wasm_ir(source: &str) -> JsValue {
     // Example:
     // let result = spanda_wasm::wasm_ir(source);
 
+    // Match on lower to sir and handle each case.
     match spanda_core::lower_to_sir(source) {
         Ok(sir) => serde_wasm_bindgen::to_value(&sir).unwrap_or(JsValue::NULL),
         Err(e) => to_js(&CheckResponse {
@@ -145,6 +149,7 @@ pub fn wasm_fmt(source: &str) -> String {
     // Example:
     // let result = spanda_wasm::wasm_fmt(source);
 
+    // Produce format source as the result.
     spanda_core::format_source(source)
 }
 
@@ -164,6 +169,7 @@ pub fn wasm_version() -> String {
     // Example:
     // let result = spanda_wasm::wasm_version();
 
+    // Produce to string as the result.
     env!("CARGO_PKG_VERSION").to_string()
 }
 
@@ -190,6 +196,7 @@ pub fn wasm_verify(source: &str) -> JsValue {
     // Example:
     // let result = spanda_wasm::wasm_verify(source);
 
+    // Compute resp for the following logic.
     let resp = match verify_compatibility(source, &VerifyOptions::default()) {
         Ok(report) => VerifyResponse {
             ok: report.compatible,

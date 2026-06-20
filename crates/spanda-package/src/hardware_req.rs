@@ -19,6 +19,7 @@ pub struct HardwareRequirements {
 }
 
 impl HardwareRequirements {
+
     /// Parse memory string like `">=2GB"` into megabytes.
     pub fn memory_mb_min(&self) -> Option<f64> {
         // Memory mb min.
@@ -35,8 +36,9 @@ impl HardwareRequirements {
         // Example:
         // let result = instance.memory_mb_min();
 
+        // Transform self and continue the chain.
         self.memory.as_ref().and_then(|s| parse_memory_mb(s))
-    }
+}
 
     pub fn storage_mb_min(&self) -> Option<f64> {
         // Storage mb min.
@@ -53,8 +55,9 @@ impl HardwareRequirements {
         // Example:
         // let result = instance.storage_mb_min();
 
+        // Transform self and continue the chain.
         self.storage.as_ref().and_then(|s| parse_memory_mb(s))
-    }
+}
 
     pub fn gpu_tops_min(&self) -> Option<f64> {
         // Gpu tops min.
@@ -71,8 +74,9 @@ impl HardwareRequirements {
         // Example:
         // let result = instance.gpu_tops_min();
 
+        // Transform self and continue the chain.
         self.gpu.as_ref().and_then(|s| parse_gpu_tops(s))
-    }
+}
 
     pub fn gpu_required(&self) -> bool {
         // Gpu required.
@@ -89,8 +93,9 @@ impl HardwareRequirements {
         // Example:
         // let result = instance.gpu_required();
 
+        // Call is some on the current instance.
         self.gpu.is_some()
-    }
+}
 }
 
 fn parse_memory_mb(s: &str) -> Option<f64> {
@@ -108,6 +113,7 @@ fn parse_memory_mb(s: &str) -> Option<f64> {
     // Example:
     // let result = spanda_package::hardware_req::parse_memory_mb(s);
 
+    // Compute s for the following logic.
     let s = s.trim();
     let (op, rest) = if let Some(r) = s.strip_prefix(">=") {
         (">=", r.trim())
@@ -133,6 +139,8 @@ fn parse_memory_mb(s: &str) -> Option<f64> {
         "GB" => value * 1024.0,
         _ => value,
     };
+
+    // Match on op and handle each case.
     match op {
         ">" => Some(mb + 1.0),
         _ => Some(mb),
@@ -154,6 +162,7 @@ fn parse_gpu_tops(s: &str) -> Option<f64> {
     // Example:
     // let result = spanda_package::hardware_req::parse_gpu_tops(s);
 
+    // Compute s for the following logic.
     let s = s.trim();
     let rest = s.strip_prefix(">=").unwrap_or(s).trim();
     let rest = rest.strip_suffix("TOPS").unwrap_or(rest).trim();
@@ -163,9 +172,11 @@ fn parse_gpu_tops(s: &str) -> Option<f64> {
 /// Capability declarations from `[capabilities]` in spanda.toml.
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct CapabilityRequirements {
+
     /// Capabilities the package needs at runtime (`uses`).
     #[serde(default)]
     pub uses: Vec<String>,
+
     /// Capabilities the consuming application must grant (`required`).
     #[serde(default)]
     pub required: Vec<String>,
@@ -187,11 +198,12 @@ impl CapabilityRequirements {
         // Example:
         // let result = instance.all();
 
+        // Call uses on the current instance.
         self.uses
             .iter()
             .chain(self.required.iter())
             .map(String::as_str)
-    }
+}
 }
 
 /// Known capability identifiers for validation.
@@ -210,6 +222,7 @@ pub fn known_capabilities() -> &'static [&'static str] {
     // Example:
     // let result = spanda_package::hardware_req::known_capabilities();
 
+    // Return the static list of known values.
     &[
         "network.outbound",
         "network.inbound",
@@ -250,6 +263,7 @@ pub fn high_risk_capabilities() -> &'static [&'static str] {
     // Example:
     // let result = spanda_package::hardware_req::high_risk_capabilities();
 
+    // Return the static list of known values.
     &[
         "ledger.anchor",
         "identity.sign",
@@ -260,7 +274,6 @@ pub fn high_risk_capabilities() -> &'static [&'static str] {
 }
 
 pub fn is_high_risk_capability(cap: &str) -> bool {
-    // Return whether high risk capability.
     //
     // Parameters:
     // - `cap` — input value
@@ -274,6 +287,7 @@ pub fn is_high_risk_capability(cap: &str) -> bool {
     // Example:
     // let result = spanda_package::hardware_req::is_high_risk_capability(cap);
 
+    // Produce contains as the result.
     high_risk_capabilities().contains(&cap)
 }
 
@@ -292,6 +306,7 @@ pub fn validate_capability(cap: &str) -> PackageResult<()> {
     // Example:
     // let result = spanda_package::hardware_req::validate_capability(cap);
 
+    // Check membership before continuing.
     if known_capabilities().contains(&cap) {
         Ok(())
     } else {

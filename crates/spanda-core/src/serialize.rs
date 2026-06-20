@@ -23,6 +23,7 @@ pub fn serialize_value(value: &RuntimeValue, format: &str) -> Result<RuntimeValu
     // Example:
     // let result = spanda_core::serialize::serialize_value(value, format);
 
+    // Match on as str and handle each case.
     match format.to_ascii_lowercase().as_str() {
         "json" => Ok(RuntimeValue::String {
             value: serde_json::to_string(&runtime_to_json(value)).map_err(|e| {
@@ -65,6 +66,7 @@ pub fn deserialize_value(data: &RuntimeValue, format: &str) -> Result<RuntimeVal
     // Example:
     // let result = spanda_core::serialize::deserialize_value(data, format);
 
+    // Match on as str and handle each case.
     match format.to_ascii_lowercase().as_str() {
         "json" => {
             let text = runtime_string(data)?;
@@ -120,6 +122,7 @@ fn runtime_string(value: &RuntimeValue) -> Result<String, SpandaError> {
     // Example:
     // let result = spanda_core::serialize::runtime_string(value);
 
+    // Match on value and handle each case.
     match value {
         RuntimeValue::String { value } => Ok(value.clone()),
         _ => {
@@ -143,6 +146,7 @@ fn runtime_to_json(value: &RuntimeValue) -> JsonValue {
     // Example:
     // let result = spanda_core::serialize::runtime_to_json(value);
 
+    // Match on value and handle each case.
     match value {
         RuntimeValue::Number { value, unit } => json!({
             "kind": "number",
@@ -159,6 +163,8 @@ fn runtime_to_json(value: &RuntimeValue) -> JsonValue {
             payloads,
         } => {
             let mut map = json!({ "kind": "enum", "enum": enum_name, "variant": variant });
+
+            // Skip further work when !payloads is empty.
             if !payloads.is_empty() {
                 map["payloads"] = json!(payloads.iter().map(runtime_to_json).collect::<Vec<_>>());
             }
@@ -169,6 +175,8 @@ fn runtime_to_json(value: &RuntimeValue) -> JsonValue {
             "value": runtime_to_json(value),
         }),
         RuntimeValue::Option { present, value } => {
+
+            // Take this path when *present.
             if *present {
                 json!({ "kind": "some", "value": runtime_to_json(value.as_ref().unwrap()) })
             } else {
@@ -180,6 +188,8 @@ fn runtime_to_json(value: &RuntimeValue) -> JsonValue {
             map.insert("kind".into(), json!("object"));
             map.insert("type".into(), json!(type_name));
             let mut field_map = serde_json::Map::new();
+
+            // Iterate over fields with destructured elements.
             for (k, v) in fields {
                 field_map.insert(k.clone(), runtime_to_json(v));
             }
@@ -211,6 +221,7 @@ fn runtime_kind_name(value: &RuntimeValue) -> &'static str {
     // Example:
     // let result = spanda_core::serialize::runtime_kind_name(value);
 
+    // Match on value and handle each case.
     match value {
         RuntimeValue::Scan { .. } => "scan",
         RuntimeValue::Trajectory { .. } => "trajectory",
@@ -244,6 +255,7 @@ fn json_to_runtime(value: &JsonValue) -> Result<RuntimeValue, SpandaError> {
     // Example:
     // let result = spanda_core::serialize::json_to_runtime(value);
 
+    // take this path when value.is null().
     if value.is_null() {
         return Ok(RuntimeValue::Null);
     }
@@ -251,6 +263,8 @@ fn json_to_runtime(value: &JsonValue) -> Result<RuntimeValue, SpandaError> {
         .as_object()
         .ok_or_else(|| RuntimeError::new("deserialize expected JSON object", 0).into_spanda())?;
     let kind = obj.get("kind").and_then(|v| v.as_str()).unwrap_or("");
+
+    // Match on kind and handle each case.
     match kind {
         "number" => {
             let n = obj.get("value").and_then(|v| v.as_f64()).unwrap_or(0.0);
@@ -332,7 +346,11 @@ fn json_to_runtime(value: &JsonValue) -> Result<RuntimeValue, SpandaError> {
                 .unwrap_or("Object")
                 .to_string();
             let mut fields = HashMap::new();
+
+            // Emit output when as object provides a field obj.
             if let Some(field_obj) = obj.get("fields").and_then(|v| v.as_object()) {
+
+                // Iterate over field obj with destructured elements.
                 for (k, v) in field_obj {
                     fields.insert(k.clone(), json_to_runtime(v)?);
                 }

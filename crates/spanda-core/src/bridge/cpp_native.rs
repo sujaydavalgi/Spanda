@@ -24,6 +24,7 @@ pub fn native_available() -> bool {
     //
     // Returns:
     //
+
     // `true` when `SPANDA_CPP_NATIVE` was set at compile time.
     option_env!("SPANDA_CPP_NATIVE").is_some()
 }
@@ -45,6 +46,7 @@ pub fn call_extern(
     //
     // Options:
     //
+
     // Requires `cpp-native` Cargo feature.
     let line = decl.span.start.line;
     let args_json = serde_json::json!({
@@ -54,7 +56,6 @@ pub fn call_extern(
         message: format!("Failed to encode native C++ bridge args: {e}"),
         line,
     })?;
-
     let fn_name = CString::new(decl.name.as_str()).map_err(|e| SpandaError::Runtime {
         message: format!("Invalid C++ extern name: {e}"),
         line,
@@ -63,7 +64,6 @@ pub fn call_extern(
         message: format!("Invalid C++ bridge args: {e}"),
         line,
     })?;
-
     let mut out = vec![0i8; 4096];
     let ok = unsafe {
         spanda_cpp_bridge_call(
@@ -73,13 +73,14 @@ pub fn call_extern(
             out.len(),
         )
     };
+
+    // Take the branch when ok equals 0.
     if ok == 0 {
         return Err(SpandaError::Runtime {
             message: "C++ native bridge call failed".into(),
             line,
         });
     }
-
     let response = unsafe {
         std::ffi::CStr::from_ptr(out.as_ptr())
             .to_string_lossy()
@@ -91,6 +92,7 @@ pub fn call_extern(
             line,
         })?;
 
+    // Take this path when parsed.
     if parsed
         .get("ok")
         .and_then(|v| v.as_bool())
@@ -105,7 +107,6 @@ pub fn call_extern(
             line,
         });
     }
-
     Ok(json_to_runtime_value(
         parsed.get("result").unwrap_or(&serde_json::Value::Null),
         &decl.return_type,
@@ -133,6 +134,7 @@ mod tests {
         // Example:
         // let result = spanda_core::cpp_native::test_decl(name);
 
+        // Produce ExternFnDecl as the result.
         ExternFnDecl {
             name: name.into(),
             library: Some("cpp".into()),
@@ -152,7 +154,7 @@ mod tests {
                 },
             },
         }
-    }
+}
 
     #[test]
     fn native_cpp_add_when_available() {

@@ -54,8 +54,9 @@ robot R {
         // Example:
         // let result = spanda_core::trait_impl::plan(goal);
 
+      // Produce stop as the result.
       wheels.stop();
-    }
+}
   }
 
   behavior run() {
