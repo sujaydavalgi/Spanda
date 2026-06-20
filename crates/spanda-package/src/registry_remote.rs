@@ -7,6 +7,7 @@ use crate::category::PackageCategory;
 use crate::registry::RegistryEntry;
 use crate::safety::SafetyLevel;
 use serde::{Deserialize, Serialize};
+use std::fs;
 use std::sync::OnceLock;
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -30,6 +31,10 @@ pub fn registry_base_url() -> Option<String> {
 }
 
 pub fn fetch_index_json(url: &str) -> Result<String, String> {
+    if let Some(path) = super::registry_fetch::file_url_path(url) {
+        return fs::read_to_string(&path)
+            .map_err(|e| format!("failed to read registry index at {}: {e}", path.display()));
+    }
     if let Ok(output) = std::process::Command::new("curl")
         .args(["-fsSL", url])
         .output()

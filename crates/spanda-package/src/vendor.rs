@@ -81,7 +81,7 @@ fn vendor_registry_package(
         return Ok(Some(dest));
     }
 
-    match fetch_registry_tarball(name, version, &dest) {
+    match fetch_registry_tarball(project_root, name, version, &dest) {
         Ok(path) => Ok(Some(path)),
         Err(err) => {
             let _ = err;
