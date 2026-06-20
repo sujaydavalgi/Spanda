@@ -526,6 +526,53 @@ impl<B: RobotBackend> Interpreter<B> {
         self.execute_stmt(stmt)
     }
 
+    pub fn resolve_sync_call(
+        &self,
+        stmt: &Stmt,
+    ) -> Option<(String, crate::foundations::ModuleFnDecl, Vec<crate::ast::Expr>)> {
+        use crate::ast::{Expr, Stmt};
+        let expr = match stmt {
+            Stmt::VarDecl { init: Some(init), .. } => init,
+            Stmt::ExprStmt { expr, .. } => expr,
+            Stmt::ReturnStmt { value: Some(value), .. } => value,
+            _ => return None,
+        };
+        let Expr::CallExpr { callee, args, .. } = expr else {
+            return None;
+        };
+        let Expr::IdentExpr { name, .. } = callee.as_ref() else {
+            return None;
+        };
+        let func = self
+            .module_functions
+            .get(name)
+            .or_else(|| self.imported_functions.get(name))?
+            .clone();
+        if func.is_async {
+            return None;
+        }
+        Some((name.clone(), func, args.clone()))
+    }
+
+    pub fn bind_call_args(
+        &mut self,
+        func: &crate::foundations::ModuleFnDecl,
+        args: &[crate::ast::Expr],
+    ) -> Result<Environment, SpandaError> {
+        let saved = self.env.clone_bindings();
+        for (i, param) in func.params.iter().enumerate() {
+            if let Some(arg) = args.get(i) {
+                let val = self.eval_expr(arg)?;
+                self.env.define(param.name.clone(), val);
+            }
+        }
+        Ok(saved)
+    }
+
+    pub fn restore_env(&mut self, env: Environment) {
+        self.env = env;
+    }
+
     pub fn run(
         &mut self,
         program: &Program,

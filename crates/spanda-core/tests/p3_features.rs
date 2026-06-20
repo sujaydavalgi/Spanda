@@ -85,6 +85,7 @@ robot R {
         DebugOptions {
             breakpoints: HashSet::new(),
             step: true,
+            source_path: None,
         },
     )
     .expect("debug run");

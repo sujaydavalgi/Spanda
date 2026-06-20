@@ -762,6 +762,7 @@ fn main() {
                 DebugOptions {
                     breakpoints: bp,
                     step: false,
+                    source_path: None,
                 },
             ) {
                 Ok(session) => {

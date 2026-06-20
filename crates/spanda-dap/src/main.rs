@@ -56,7 +56,12 @@ fn step_kind(command: &str) -> DebugStepKind {
     }
 }
 
-fn with_machine<F, R>(source: &str, breakpoints: &HashSet<u32>, f: F) -> Result<R, SpandaError>
+fn with_machine<F, R>(
+    source: &str,
+    source_path: Option<&str>,
+    breakpoints: &HashSet<u32>,
+    f: F,
+) -> Result<R, SpandaError>
 where
     F: FnOnce(&mut DebugMachine) -> Result<R, SpandaError>,
 {
@@ -68,6 +73,7 @@ where
                 DebugOptions {
                     breakpoints: breakpoints.clone(),
                     step: false,
+                    source_path: source_path.map(String::from),
                 },
             )?);
         }
@@ -76,7 +82,12 @@ where
     })
 }
 
-pub fn serve(source: &str, reader: &mut dyn BufRead, writer: &mut dyn Write) -> io::Result<()> {
+pub fn serve(
+    source: &str,
+    source_path: Option<&str>,
+    reader: &mut dyn BufRead,
+    writer: &mut dyn Write,
+) -> io::Result<()> {
     let mut breakpoints: HashSet<u32> = HashSet::new();
     let mut running = false;
 
@@ -96,6 +107,8 @@ pub fn serve(source: &str, reader: &mut dyn BufRead, writer: &mut dyn Write) -> 
                             "supportsSetVariable": true,
                             "supportsStepBack": false,
                             "supportsRestartRequest": false,
+                            "supportsStepIn": true,
+                            "supportsStepOut": true,
                         }
                     }),
                 )?;
@@ -130,7 +143,7 @@ pub fn serve(source: &str, reader: &mut dyn BufRead, writer: &mut dyn Write) -> 
             "continue" | "next" | "stepIn" | "stepOut" | "pause" => {
                 if running {
                     let kind = step_kind(command);
-                    let session = with_machine(source, &breakpoints, |machine| {
+                    let session = with_machine(source, source_path, &breakpoints, |machine| {
                         machine.run_until_pause(kind)
                     })
                     .unwrap_or_else(|e: SpandaError| spanda_core::DebugSession {
@@ -167,7 +180,7 @@ pub fn serve(source: &str, reader: &mut dyn BufRead, writer: &mut dyn Write) -> 
                     .pointer("/arguments/value")
                     .and_then(|v| v.as_str())
                     .unwrap_or_default();
-                let ok = with_machine(source, &breakpoints, |machine| {
+                let ok = with_machine(source, source_path, &breakpoints, |machine| {
                     machine.set_variable(name, value)
                 })
                 .is_ok();
@@ -190,18 +203,25 @@ pub fn serve(source: &str, reader: &mut dyn BufRead, writer: &mut dyn Write) -> 
                 )?;
             }
             "stackTrace" => {
-                let frames = with_machine(source, &breakpoints, |machine| {
+                let frames = with_machine(source, source_path, &breakpoints, |machine| {
+                    let source = machine.source_path().map(|path| {
+                        json!({ "path": path })
+                    });
                     Ok(machine
                         .stack_trace()
                         .into_iter()
                         .enumerate()
                         .map(|(idx, (name, line))| {
-                            json!({
+                            let mut frame = json!({
                                 "id": idx + 1,
                                 "name": name,
                                 "line": line,
                                 "column": 1,
-                            })
+                            });
+                            if let Some(source) = &source {
+                                frame["source"] = source.clone();
+                            }
+                            frame
                         })
                         .collect::<Vec<_>>())
                 })
@@ -282,7 +302,7 @@ fn main() {
     let stdin = io::stdin();
     let mut reader = stdin.lock();
     let mut stdout = io::stdout();
-    if let Err(e) = serve(&text, &mut reader, &mut stdout) {
+    if let Err(e) = serve(&text, Some(source.as_str()), &mut reader, &mut stdout) {
         eprintln!("DAP server error: {e}");
         std::process::exit(1);
     }
@@ -304,12 +324,12 @@ robot R {
 }
 "#;
         let mut breakpoints = HashSet::new();
-        let s1 = with_machine(source, &breakpoints, |m| {
+        let s1 = with_machine(source, None, &breakpoints, |m| {
             m.run_until_pause(DebugStepKind::StepOver)
         })
         .expect("first step");
         assert!(!s1.pauses.is_empty());
-        let s2 = with_machine(source, &breakpoints, |m| {
+        let s2 = with_machine(source, None, &breakpoints, |m| {
             m.run_until_pause(DebugStepKind::StepOver)
         })
         .expect("second step");

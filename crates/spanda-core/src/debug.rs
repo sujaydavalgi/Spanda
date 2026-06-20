@@ -21,6 +21,7 @@ pub struct DebugPause {
 pub struct DebugOptions {
     pub breakpoints: HashSet<u32>,
     pub step: bool,
+    pub source_path: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

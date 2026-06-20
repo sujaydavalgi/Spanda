@@ -3,7 +3,7 @@
 use crate::ast::{BehaviorDecl, Program, RobotDecl, Stmt, UnitKind};
 use crate::debug::{DebugController, DebugOptions, DebugPause, DebugSession, stmt_line};
 use crate::error::SpandaError;
-use crate::runtime::{Interpreter, InterpreterOptions, RuntimeValue};
+use crate::runtime::{Environment, Interpreter, InterpreterOptions, RuntimeValue};
 use crate::simulator::{create_default_simulator, Simulator, SimulatorConfig};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -19,6 +19,7 @@ struct DebugFrame {
     name: String,
     stmts: Vec<Stmt>,
     index: usize,
+    restore_env: Option<Environment>,
 }
 
 pub struct DebugMachine {
@@ -27,6 +28,7 @@ pub struct DebugMachine {
     controller: DebugController,
     step_kind: DebugStepKind,
     step_out_target_depth: Option<usize>,
+    source_path: Option<String>,
     finished: bool,
 }
 
@@ -34,7 +36,7 @@ impl DebugMachine {
     pub fn start(source: &str, options: DebugOptions) -> Result<Self, SpandaError> {
         let program = crate::compile(source)?.program;
         let step = options.step;
-        let controller = DebugController::new(options);
+        let controller = DebugController::new(options.clone());
         let mut interpreter = Interpreter::new(
             create_default_simulator(SimulatorConfig::default()),
             InterpreterOptions {
@@ -58,6 +60,7 @@ impl DebugMachine {
                 name,
                 stmts: body,
                 index: 0,
+                restore_env: None,
             }],
             controller,
             step_kind: if step {
@@ -66,12 +69,17 @@ impl DebugMachine {
                 DebugStepKind::Continue
             },
             step_out_target_depth: None,
+            source_path: options.source_path,
             finished: false,
         })
     }
 
     pub fn is_finished(&self) -> bool {
         self.finished
+    }
+
+    pub fn source_path(&self) -> Option<&str> {
+        self.source_path.as_deref()
     }
 
     pub fn pauses(&self) -> Vec<DebugPause> {
@@ -82,18 +90,13 @@ impl DebugMachine {
         self.frames
             .iter()
             .rev()
-            .enumerate()
-            .map(|(id, frame)| {
+            .map(|frame| {
                 let line = frame
                     .stmts
                     .get(frame.index)
                     .map(stmt_line)
                     .unwrap_or(1);
-                (if id == 0 {
-                    frame.name.clone()
-                } else {
-                    format!("{}#{}", frame.name, id)
-                }, line)
+                (frame.name.clone(), line)
             })
             .collect()
     }
@@ -131,6 +134,9 @@ impl DebugMachine {
             }
             let frame_top = self.frames.len() - 1;
             if self.frames[frame_top].index >= self.frames[frame_top].stmts.len() {
+                if let Some(env) = self.frames[frame_top].restore_env.take() {
+                    self.interpreter.restore_env(env);
+                }
                 self.frames.pop();
                 if let Some(target) = self.step_out_target_depth {
                     if self.frames.len() <= target {
@@ -152,25 +158,17 @@ impl DebugMachine {
             let stmt = self.frames[frame_top].stmts[self.frames[frame_top].index].clone();
             let line = stmt_line(&stmt);
 
-            if self.step_out_target_depth.is_none() && self.controller.should_pause(line) {
+            if self.step_out_target_depth.is_none()
+                && matches!(step, DebugStepKind::Continue)
+                && self.controller.should_pause(line)
+            {
                 let variables = self.interpreter.env().snapshot_display();
                 self.controller.record_pause(line, pause_reason(step), variables);
                 break;
             }
 
-            if step == DebugStepKind::StepIn {
-                if let Some(inner) = inner_block(&stmt) {
-                    self.frames[frame_top].index += 1;
-                    self.frames.push(DebugFrame {
-                        name: format!("{}:{}", self.frames[frame_top].name, stmt_kind_label(&stmt)),
-                        stmts: inner,
-                        index: 0,
-                    });
-                    let variables = self.interpreter.env().snapshot_display();
-                    self.controller
-                        .record_pause(line, "step-in", variables);
-                    break;
-                }
+            if self.try_enter_inner(step, &stmt, frame_top, line)? {
+                break;
             }
 
             self.frames[frame_top].index += 1;
@@ -178,7 +176,12 @@ impl DebugMachine {
 
             if matches!(step, DebugStepKind::StepOver | DebugStepKind::StepIn) {
                 let variables = self.interpreter.env().snapshot_display();
-                self.controller.record_pause(line, "step", variables);
+                let reason = if step == DebugStepKind::StepIn {
+                    "step-in"
+                } else {
+                    "step"
+                };
+                self.controller.record_pause(line, reason, variables);
                 break;
             }
         }
@@ -186,6 +189,67 @@ impl DebugMachine {
         Ok(DebugSession {
             pauses: self.controller.pauses().borrow().clone(),
         })
+    }
+
+    fn try_enter_inner(
+        &mut self,
+        step: DebugStepKind,
+        stmt: &Stmt,
+        frame_top: usize,
+        line: u32,
+    ) -> Result<bool, SpandaError> {
+        if step == DebugStepKind::StepIn {
+            if let Some(inner) = inner_block(stmt) {
+                self.frames[frame_top].index += 1;
+                self.frames.push(DebugFrame {
+                    name: format!(
+                        "{}:{}",
+                        self.frames[frame_top].name,
+                        stmt_kind_label(stmt)
+                    ),
+                    stmts: inner,
+                    index: 0,
+                    restore_env: None,
+                });
+                let variables = self.interpreter.env().snapshot_display();
+                self.controller.record_pause(line, "step-in", variables);
+                return Ok(true);
+            }
+            if let Some((func_name, func, args)) = self.interpreter.resolve_sync_call(stmt) {
+                let saved = self.interpreter.bind_call_args(&func, &args)?;
+                self.frames[frame_top].index += 1;
+                self.frames.push(DebugFrame {
+                    name: func_name,
+                    stmts: func.body.clone(),
+                    index: 0,
+                    restore_env: Some(saved),
+                });
+                let variables = self.interpreter.env().snapshot_display();
+                self.controller.record_pause(line, "step-in", variables);
+                return Ok(true);
+            }
+        }
+
+        if step == DebugStepKind::StepOver {
+            if let Some(inner) = inner_block(stmt) {
+                self.frames[frame_top].index += 1;
+                self.frames.push(DebugFrame {
+                    name: format!(
+                        "{}:{}",
+                        self.frames[frame_top].name,
+                        stmt_kind_label(stmt)
+                    ),
+                    stmts: inner,
+                    index: 0,
+                    restore_env: None,
+                });
+                let variables = self.interpreter.env().snapshot_display();
+                self.controller.record_pause(line, "step", variables);
+                return Ok(true);
+            }
+        }
+
+        Ok(false)
     }
 }
 
@@ -267,6 +331,7 @@ robot R {
             DebugOptions {
                 breakpoints: HashSet::new(),
                 step: true,
+                source_path: None,
             },
         )
         .expect("start");
@@ -301,6 +366,7 @@ robot R {
             DebugOptions {
                 breakpoints: HashSet::new(),
                 step: false,
+                source_path: None,
             },
         )
         .expect("start");
@@ -311,5 +377,63 @@ robot R {
             .run_until_pause(DebugStepKind::StepOut)
             .expect("step out");
         assert!(session.pauses.iter().any(|pause| pause.reason == "step-out"));
+    }
+
+    #[test]
+    fn resolve_sync_call_finds_export_fn_in_var_decl() {
+        let source = r#"
+module demo;
+export fn bump() -> Int { return 42; }
+robot R {
+  actuator wheels: DifferentialDrive;
+  behavior run() {
+    let _ = bump();
+    wheels.stop();
+  }
+}
+"#;
+        let program = crate::compile(source).expect("compile").program;
+        let mut interpreter = Interpreter::new(
+            create_default_simulator(SimulatorConfig::default()),
+            InterpreterOptions::default(),
+        );
+        interpreter.load_program_metadata(&program);
+        let (_, body) = behavior_body(&program.robots()[0]).expect("behavior");
+        assert!(interpreter.resolve_sync_call(&body[0]).is_some());
+    }
+
+    #[test]
+    fn step_in_enters_module_function_call() {
+        let source = r#"
+module demo;
+export fn bump() -> Int {
+  return 42;
+}
+robot R {
+  actuator wheels: DifferentialDrive;
+  behavior run() {
+    let _ = bump();
+    wheels.stop();
+  }
+}
+"#;
+        let mut machine = DebugMachine::start(
+            source,
+            DebugOptions {
+                breakpoints: HashSet::new(),
+                step: false,
+                source_path: None,
+            },
+        )
+        .expect("start");
+        let session = machine
+            .run_until_pause(DebugStepKind::StepIn)
+            .expect("step in call");
+        assert!(
+            machine.stack_trace().iter().any(|(name, _)| name == "bump"),
+            "stack: {:?}",
+            machine.stack_trace()
+        );
+        assert!(session.pauses.iter().any(|pause| pause.reason == "step-in"));
     }
 }
