@@ -11,6 +11,12 @@ Spanda is an AI-native autonomous systems programming language. Source files use
 | [architecture.md](./architecture.md) | **Compiler pipeline with diagrams** |
 | [triggers.md](./triggers.md) | **Unified trigger-driven execution** (`on`, `every`, `when`, safety, state, AI) |
 | [concurrency.md](./concurrency.md) | **Tasks, spawn, channels, fleet CLI, and runtime telemetry** |
+| [realtime.md](./realtime.md) | **Deadline-aware tasks, jitter bounds, wall-clock scheduling** |
+| [reliability.md](./reliability.md) | **Pipelines, watchdogs, recovery, retry/fallback, operating modes** |
+| [watchdogs.md](./watchdogs.md) | Task heartbeats and timeout handling |
+| [degraded-modes.md](./degraded-modes.md) | Operating `mode` blocks and graceful degradation |
+| [replay.md](./replay.md) | **Mission trace record, deterministic replay, frame playback** |
+| [regex.md](./regex.md) | **First-class regex literals, triggers, and validation rules** |
 | [vision.md](./vision.md) | Long-term vision and positioning |
 | [product-strategy.md](./product-strategy.md) | **Product strategy, priorities, v0.5 beta scope, killer demo** |
 | [killer-demo.md](./killer-demo.md) | **Flagship demo: safety-typed AI, verify, and sim (5 min)** |
@@ -49,7 +55,7 @@ packages/
 src/                        TypeScript interpreter, CLI wrapper, rust-bridge, and tests
 editor/vscode/              First-party VS Code extension scaffold
 scripts/                    Inline doc tooling, ROS2 daemon, Python bridge helpers
-examples/                   Sample `.sd` programs (showcase/, hardware/, communication/)
+examples/                   Sample `.sd` programs (showcase/, realtime/, regex/, hardware/, communication/)
 tests/                      Vitest suite and golden fixtures
 ```
 
@@ -60,15 +66,20 @@ spanda check examples/rover.sd
 spanda verify examples/hardware/rover_deploy.sd
 spanda verify robot.sd --target RoverV1 --all-targets --simulate
 spanda run examples/rover.sd
-spanda sim examples/rover.sd --replay
+spanda sim examples/rover.sd --replay --record
+spanda replay mission.trace --deterministic
+spanda replay mission.trace --playback --from T+00:30
 spanda fleet run examples/communication/multi_robot_fleet.sd
 spanda fmt examples/rover.sd
 ```
 
-Trace flags for `run`, `sim`, and `fleet run`:
+Trace and telemetry flags for `run`, `sim`, and `fleet run`:
 
 ```bash
 spanda run robot.sd --trace-scheduler --trace-tasks --trace-triggers --trace-events
+spanda run robot.sd --trace-realtime --metrics-json
+spanda sim robot.sd --record --trace-realtime
+spanda sim robot.sd --wall-clock
 ```
 
 Build the native CLI with `npm run build:rust` (output: `target/release/spanda`).

@@ -138,6 +138,26 @@ spanda sim src/main.sd --replay --trace-scheduler
 
 Trace output appears in the runtime log stream with prefixes like `trace-scheduler:`, `trace-task:`, and `trace-trigger:`.
 
+### Record and replay mission traces
+
+Record a simulation run, then inspect, verify, or play it back:
+
+```bash
+spanda sim examples/realtime/deterministic_replay.sd --record
+spanda replay mission.trace
+spanda replay mission.trace --deterministic   # re-run source and verify frame parity
+spanda replay mission.trace --playback --from T+00:30
+```
+
+Real-time telemetry and wall-clock scheduling:
+
+```bash
+spanda run examples/realtime/deadline_tasks.sd --trace-realtime --metrics-json
+spanda sim examples/realtime/latency_budget.sd --wall-clock
+```
+
+See [realtime.md](./realtime.md), [replay.md](./replay.md), and [reliability.md](./reliability.md).
+
 ---
 
 ## Try the showcase examples
@@ -169,6 +189,35 @@ spanda run examples/triggers_demo.sd --trace-triggers
 spanda run examples/concurrency.sd --trace-scheduler --trace-tasks
 spanda fleet run examples/communication/multi_robot_fleet.sd
 ```
+
+### Real-time, reliability, and regex
+
+Deadline-aware tasks, watchdogs, and degraded modes:
+
+```bash
+spanda check examples/realtime/deadline_tasks.sd
+spanda run examples/realtime/watchdog.sd --trace-realtime
+spanda run examples/realtime/degraded_mode.sd
+```
+
+Regex triggers and validation:
+
+```bash
+spanda check examples/regex/basic_regex.sd
+spanda run examples/regex/command_trigger.sd --trace-triggers
+```
+
+### Killer demo (5 minutes)
+
+Flagship safety walkthrough — compile-time AI gate, hardware verify, and sim:
+
+```bash
+spanda check examples/showcase/killer_demo.sd
+spanda verify examples/showcase/killer_demo.sd --json
+spanda sim examples/showcase/killer_demo.sd
+```
+
+Full script: [killer-demo.md](./killer-demo.md)
 
 ---
 
@@ -295,6 +344,10 @@ code --install-extension spanda-vscode-0.1.0.vsix
 ## Next steps
 
 - [spanda-language.md](./spanda-language.md) — full language reference
+- [killer-demo.md](./killer-demo.md) — 5-minute safety + verify walkthrough
+- [realtime.md](./realtime.md) — deadline-aware tasks and wall-clock mode
+- [replay.md](./replay.md) — mission trace record and playback
+- [regex.md](./regex.md) — regex literals and filters
 - [triggers.md](./triggers.md) — trigger-driven execution
 - [concurrency.md](./concurrency.md) — tasks, spawn, channels, fleet CLI
 - [hardware-compatibility.md](./hardware-compatibility.md) — deploy profiles

@@ -63,6 +63,10 @@ Spanda exists to be that coordination layer: one typed language where perception
 | **Physical units** | `1.0 m/s`, `0.5 rad`, `100 ms` — unit algebra enforced at compile time |
 | **Robot-native syntax** | Sensors, actuators, topics, services, actions, safety zones, and tasks are language keywords |
 | **Deterministic scheduling** | `task every 50ms` with optional resource `budget { }` |
+| **Real-time contracts** | `deadline`, `jitter <=`, `priority`, `critical isolated` tasks; latency `pipeline` budgets |
+| **Reliability primitives** | Watchdogs, operating `mode` blocks, `recover from`, retry/fallback on faults |
+| **Mission trace replay** | `spanda sim --record`, `spanda replay --deterministic` / `--playback` for regression and incident review |
+| **First-class regex** | Literals, `Regex` type, string methods, trigger/subscribe filters, `validate` rules |
 | **Trigger-driven execution** | Unified `on` / `every` / `when` / `while` handlers for events, topics, safety, state, and AI |
 | **Cooperative concurrency** | `spawn`, `join`, `parallel`, channels, and `select` with scheduler telemetry |
 | **Simulation built in** | `spanda run` / `spanda sim` — test without hardware |
@@ -157,6 +161,8 @@ Curated demos in [`examples/showcase/`](examples/showcase/):
 
 Additional runnable examples: `examples/concurrency.sd`, `examples/communication/multi_robot_fleet.sd`
 
+Real-time and reliability demos in [`examples/realtime/`](examples/realtime/); regex demos in [`examples/regex/`](examples/regex/). Flagship safety walkthrough: [`docs/killer-demo.md`](docs/killer-demo.md).
+
 ---
 
 ## Installation
@@ -198,6 +204,7 @@ npm run web:dev       # http://localhost:5173
 | `spanda run <file.sd>` | Run with simulated backend |
 | `spanda sim <file.sd>` | Run simulation with detailed output |
 | `spanda fleet run <file.sd>` | Run multi-robot fleet simulation (in-process) |
+| `spanda replay <mission.trace>` | Inspect, verify, or play back a recorded mission trace |
 | `spanda test` | Run project tests |
 | `spanda fmt <file.sd>` | Format source |
 | `spanda lint <file.sd>` | Lint source |
@@ -207,9 +214,11 @@ npm run web:dev       # http://localhost:5173
 
 Verify flags: `--target <Profile>`, `--all-targets`, `--simulate`, `--json`
 
-Run/sim/fleet trace flags: `--trace-scheduler`, `--trace-tasks`, `--trace-triggers`, `--trace-events`, `--replay` (sim)
+Run/sim/fleet trace flags: `--trace-scheduler`, `--trace-tasks`, `--trace-triggers`, `--trace-events`, `--trace-realtime`, `--metrics-json`, `--record`, `--wall-clock`, `--replay` (sim)
 
-Quick start guide: [docs/getting-started.md](docs/getting-started.md)
+Replay flags: `--from T+mm:ss`, `--deterministic` (re-run source and verify frame parity), `--playback` (apply recorded state snapshots)
+
+Quick start guide: [docs/getting-started.md](docs/getting-started.md) · Real-time & replay: [docs/realtime.md](docs/realtime.md), [docs/replay.md](docs/replay.md)
 
 ---
 
@@ -271,7 +280,7 @@ Package guide: [docs/packages.md](docs/packages.md)
 
 ## Roadmap
 
-**v0.1.0-alpha (current):** Stable interpreter, safety gate, hardware verify, simulation, mock AI, package manager, unified triggers, cooperative concurrency, showcase examples.
+**v0.1.0-alpha (current):** Stable interpreter, safety gate, hardware verify, simulation, mock AI, package manager, unified triggers, cooperative concurrency, real-time contracts, mission trace replay, first-class regex, showcase examples.
 
 **Next (v0.5 beta):** LLVM production backend, VS Code marketplace publishing, live AI providers, in-process FFI, distributed multi-robot runtime. See [docs/product-strategy.md](docs/product-strategy.md).
 
@@ -306,6 +315,11 @@ Rust and TypeScript sources use **inline API documentation** (inside function bo
 | Document | Description |
 |----------|-------------|
 | [docs/getting-started.md](docs/getting-started.md) | First robot in 10 minutes |
+| [docs/killer-demo.md](docs/killer-demo.md) | 5-minute safety + verify + sim walkthrough |
+| [docs/realtime.md](docs/realtime.md) | Deadline-aware tasks, wall-clock scheduling |
+| [docs/reliability.md](docs/reliability.md) | Pipelines, watchdogs, recovery, operating modes |
+| [docs/replay.md](docs/replay.md) | Mission trace record, deterministic replay, playback |
+| [docs/regex.md](docs/regex.md) | Regex literals, triggers, subscription filters |
 | [docs/triggers.md](docs/triggers.md) | Trigger-driven execution model |
 | [docs/concurrency.md](docs/concurrency.md) | Tasks, spawn, channels, fleet CLI |
 | [docs/architecture.md](docs/architecture.md) | Compiler pipeline and diagrams |

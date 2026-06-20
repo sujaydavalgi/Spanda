@@ -105,6 +105,24 @@ Spanda orchestrates AI, robotics, safety, verification, and deployment. Keep you
 - `twin { mirror pose; replay true; }`
 - Shadow state and replay buffer
 
+### Real-time and reliability
+
+- Deadline-aware tasks: `deadline`, `jitter <=`, `priority`, `critical isolated`
+- Latency pipelines with budget enforcement
+- Watchdogs, operating `mode` blocks, `recover from`, retry/fallback
+- Wall-clock RTOS scheduling via `--wall-clock`
+
+### Mission trace replay
+
+- `spanda sim --record` writes JSON mission traces (v2 with state snapshots)
+- `spanda replay --deterministic` verifies frame parity against source
+- `spanda replay --playback` applies recorded state without re-running logic
+
+### Regular expressions
+
+- Regex literals, `Regex` / `Match` / `Capture` types
+- String methods, trigger and subscribe filters, `validate` rules
+
 ### Package ecosystem
 
 - `spanda init`, `build`, `test`, `install`
@@ -154,12 +172,17 @@ Link to [architecture.md](https://github.com/sujaydavalgi/Spanda/blob/main/docs/
 | [hardware_compatibility.sd](examples/showcase/hardware_compatibility.sd) | Deploy verification |
 | [communication_demo.sd](examples/showcase/communication_demo.sd) | Message, topic, service, action |
 | [digital_twin_demo.sd](examples/showcase/digital_twin_demo.sd) | Twin + replay |
+| [killer_demo.sd](examples/showcase/killer_demo.sd) | Safety-typed AI + verify + sim (see [killer-demo.md](docs/killer-demo.md)) |
+| [deadline_tasks.sd](examples/realtime/deadline_tasks.sd) | Real-time task contracts |
+| [basic_regex.sd](examples/regex/basic_regex.sd) | First-class regex |
 
 ### Quick commands
 
 ```bash
 spanda run examples/showcase/rover_navigation.sd
 spanda verify examples/showcase/hardware_compatibility.sd --json
+spanda sim examples/realtime/deterministic_replay.sd --record
+spanda replay mission.trace --deterministic
 ```
 
 ---
@@ -173,6 +196,7 @@ spanda verify examples/showcase/hardware_compatibility.sd --json
 - Hardware verification CLI
 - Simulation backend
 - Package manager (local registry)
+- Unified triggers, cooperative concurrency, real-time contracts, mission trace replay, first-class regex
 - Showcase examples and documentation
 
 ### Next

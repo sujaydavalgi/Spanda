@@ -27,13 +27,17 @@ Honest snapshot of Spanda capabilities as of **v0.1.0-alpha**. Use this document
 | **Tooling** | Native CLI (`check`, `verify`, `run`, `sim`, `fleet`, `fmt`, `lint`, `doc`), package manager (`init`, `build`, `test`, `install`) |
 | **Security / audit** | Capabilities, secrets, signed messages, audit records |
 | **Digital twins** | `twin`, mirror fields, replay buffer, `twin sync` telemetry |
+| **Real-time contracts** | `deadline`, `jitter <=`, `priority`, `critical isolated` on tasks; latency `pipeline` budgets |
+| **Reliability runtime** | Watchdogs, operating `mode` blocks, `recover from`, retry/fallback; topic QoS deadline detection |
+| **Mission trace replay** | `spanda sim --record`, `spanda replay`, `--deterministic`, `--playback`, `--wall-clock` |
+| **First-class regex** | Literals, `Regex` type, string methods, trigger/subscribe filters, `validate` rules |
 
 ### Experimental (usable with caveats)
 
 | Area | Capabilities | Caveats |
 |------|--------------|---------|
 | **Digital twins (live sync)** | Twin mirror + replay | External telemetry sync is simulated; no production twin cloud |
-| **Replay** | `replay true`, frame buffer | In-process only |
+| **Replay** | `replay true`, frame buffer, mission traces | In-process only; v2 traces embed state snapshots for `--playback` |
 | **Advanced verification** | Fault injection, compatibility matrix | Matrix may report stub targets |
 | **Multi-agent systems** | Agent-to-agent comm, fleet peer messaging | In-process only; no distributed runtime |
 | **ROS2 adapter** | Native `rclrs` cdylib, rclpy daemon, CLI bridge | Requires ROS Humble; not default transport |
@@ -94,6 +98,10 @@ Honest snapshot of Spanda capabilities as of **v0.1.0-alpha**. Use this document
 | ActionProposal → SafeAction | **Stable** | Compile + runtime |
 | safety zones / emergency stop | **Stable** | |
 | deterministic scheduler | **Stable** | `task every Nms` |
+| deadline / jitter / priority | **Stable** | Compile-time validation; runtime telemetry |
+| pipelines / watchdogs / modes | **Stable** | See `docs/reliability.md`, `docs/watchdogs.md`, `docs/degraded-modes.md` |
+| mission trace replay | **Stable** | `--record`, `spanda replay --deterministic` / `--playback` |
+| regex literals / filters | **Stable** | See `docs/regex.md` |
 | state machine / events | **Stable** | |
 | twin / replay | **Experimental** | Replay buffer; live sync simulated |
 | observe / fusion | **Stable** | |
@@ -104,7 +112,7 @@ Honest snapshot of Spanda capabilities as of **v0.1.0-alpha**. Use this document
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Native CLI (full) | **Stable** | check, verify, run, sim, fleet, fmt, lint, doc, package |
+| Native CLI (full) | **Stable** | check, verify, run, sim, replay, fleet, fmt, lint, doc, package |
 | TypeScript CLI | **Stable** | Delegates to Rust when built |
 | Formatter / linter / docgen | **Stable** | Rust |
 | LSP | **Experimental** | VS Code extension scaffold exists; marketplace publish pending |
@@ -181,6 +189,10 @@ See [architecture.md](./architecture.md) for diagrams.
 - [getting-started.md](./getting-started.md) — first robot in 10 minutes
 - [triggers.md](./triggers.md) — trigger-driven execution
 - [concurrency.md](./concurrency.md) — tasks, spawn, channels, fleet CLI
+- [realtime.md](./realtime.md) — deadline-aware tasks and wall-clock scheduling
+- [reliability.md](./reliability.md) — pipelines, watchdogs, recovery
+- [replay.md](./replay.md) — mission trace record and replay
+- [regex.md](./regex.md) — first-class regex
 - [vision.md](./vision.md) — long-term positioning
 - [product-strategy.md](./product-strategy.md) — v0.5 beta priorities
 - [ffi-and-ecosystem.md](./ffi-and-ecosystem.md) — Python/C++/ROS2 interop

@@ -14,6 +14,10 @@
 - **Unified triggers**: `every`, `when`, `while`, message/safety/state/AI/verification/twin handlers, `TriggerRegistry`, storm limits, metrics
 - **Cooperative concurrency**: `spawn`, `join`, `parallel`, channels, `select`, per-task `budget { }`, runtime telemetry
 - **Fleet CLI**: `spanda fleet run` for in-process multi-robot simulation
+- **Real-time contracts**: deadline/jitter/priority tasks, latency pipelines, wall-clock scheduling (`--wall-clock`)
+- **Reliability runtime**: watchdogs, operating modes, recovery handlers, retry/fallback, topic QoS deadlines
+- **Mission trace replay**: `--record`, `spanda replay --deterministic` / `--playback`, v2 state snapshots
+- **First-class regex**: literals, `Regex` type, trigger/subscribe filters, validation rules
 - Phase 10: `twin` declarations with mirror/replay runtime
 - Phase 11: ROS2-style `topic` / `service` / `action`
 - **Hardware compatibility verification**: `hardware`, `deploy`, `requires_hardware`, `requires_network`, task `budget`, `mission`, `simulate_compatibility`, `spanda verify`, compatibility matrix, fault injection
