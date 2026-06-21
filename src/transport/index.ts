@@ -6,6 +6,7 @@
 import type { RuntimeValue } from "../runtime/interpreter.js";
 import {
   InMemoryCommBus,
+  type CommEnvelope,
   type DiscoverFilter,
   type DiscoverTarget,
   type PublishedCommMessage,
@@ -13,16 +14,22 @@ import {
   type TransportKind,
   transportAsStr,
 } from "../comm/index.js";
+import {
+  TlsTransportSession,
+  defaultTransportSecurity,
+  effectiveTransportPolicy,
+  transportSecurityFromBusFields,
+  urlRequiresTls,
+  type SecureCommPolicy,
+  type TransportSecurityConfig,
+} from "./transport-security.js";
+import { decodeWireValue, encodeWireValue, type FullTransportConfig } from "./transport-wire.js";
+import { LiveMqttBridge, liveMqttEnabled } from "./live-mqtt.js";
+import { LiveWebsocketBridge, liveWebsocketEnabled } from "./live-websocket.js";
+import { LiveDdsBridge, liveDdsEnabled } from "./live-dds.js";
 
-export type { TransportKind };
-
-export type TransportConfig = {
-  brokerUrl?: string | null;
-  nodeName?: string | null;
-  namespace?: string | null;
-  domainId?: number | null;
-  clientId?: string | null;
-};
+export type { TransportKind, SecureCommPolicy, TransportSecurityConfig, FullTransportConfig };
+export { TlsTransportSession, defaultTransportSecurity, transportSecurityFromBusFields };
 
 export type AdapterMessage = {
   topic: string;
@@ -45,7 +52,7 @@ export interface TransportAdapter {
 
 type StubState = {
   connected: boolean;
-  config: TransportConfig;
+  config: Partial<FullTransportConfig>;
   subscriptions: Map<string, RuntimeValue[]>;
   published: AdapterMessage[];
 };
@@ -198,39 +205,97 @@ function createStubAdapter(kind: TransportKind): TransportAdapter {
   };
 }
 
+export type TransportConfig = FullTransportConfig;
+
 export class RoutingCommBus {
   private memory = new InMemoryCommBus();
   private ros2 = createStubAdapter("ros2");
   private mqtt = createStubAdapter("mqtt");
   private dds = createStubAdapter("dds");
   private websocket = createStubAdapter("websocket");
+  private config: FullTransportConfig = {
+    security: defaultTransportSecurity(),
+    tls: new TlsTransportSession(),
+  };
+  private liveMqtt: LiveMqttBridge | null = null;
+  private liveWebsocket: LiveWebsocketBridge | null = null;
+  private liveDds: LiveDdsBridge | null = null;
 
-  configure(config: TransportConfig): void {
-    // Configure.
+  private initLiveTransports(config: FullTransportConfig): void {
+    // Connect optional live transport bridges when env flags are enabled.
+    if (liveMqttEnabled()) {
+      this.liveMqtt = new LiveMqttBridge();
+      void this.liveMqtt
+        .connect(config.brokerUrl ?? "mqtt://localhost:1883", config.clientId ?? "spanda")
+        .catch(() => {
+          this.liveMqtt = null;
+        });
+    }
+    if (liveWebsocketEnabled()) {
+      this.liveWebsocket = new LiveWebsocketBridge();
+      void this.liveWebsocket.connect(config.brokerUrl ?? "ws://localhost:9090").catch(() => {
+        this.liveWebsocket = null;
+      });
+    }
+    if (liveDdsEnabled()) {
+      this.liveDds = new LiveDdsBridge();
+      this.liveDds.connect(config.domainId ?? 0);
+    }
+  }
+
+  private liveBridgePublish(transport: TransportKind, topic: string, payload: string): void {
+    if (transport === "mqtt") this.liveMqtt?.publish(topic, payload);
+    if (transport === "websocket") this.liveWebsocket?.publish(topic, payload);
+    if (transport === "dds") this.liveDds?.publish(topic, payload);
+  }
+
+  private liveBridgeReceive(transport: TransportKind, topic: string): RuntimeValue | null {
+    if (transport === "mqtt") return this.liveMqtt?.receive(topic) ?? null;
+    if (transport === "websocket") return this.liveWebsocket?.receive(topic) ?? null;
+    if (transport === "dds") return this.liveDds?.receive(topic) ?? null;
+    return null;
+  }
+
+  configure(config: Partial<FullTransportConfig>): void {
+    // Configure transport adapters and negotiate TLS wire encryption.
     //
     // Parameters:
-    // - `config` — input value
+    // - `config` — transport and security configuration
     //
     // Returns:
-    // Nothing.
+    // Nothing; throws when security validation fails.
     //
     // Options:
     // None.
     //
     // Example:
+    // bus.configure({ nodeName: "Rover", security: busSecurity, tls: new TlsTransportSession() });
 
-    // const result = configure(config);
-
-    this.ros2.connect({ nodeName: config.nodeName, namespace: config.namespace, ...config });
+    const merged: FullTransportConfig = {
+      ...this.config,
+      ...config,
+      security: config.security ?? this.config.security,
+      tls: config.tls ?? this.config.tls,
+    };
+    if (
+      urlRequiresTls(merged.brokerUrl) &&
+      merged.security.encryption === "none"
+    ) {
+      merged.security = { ...merged.security, encryption: "required" };
+    }
+    merged.tls.connect(merged.security, merged.brokerUrl);
+    this.config = merged;
+    this.initLiveTransports(merged);
+    this.ros2.connect(merged);
     this.mqtt.connect({
-      brokerUrl: config.brokerUrl ?? "mqtt://localhost:1883",
-      clientId: config.clientId ?? "spanda",
-      ...config,
+      ...merged,
+      brokerUrl: merged.brokerUrl ?? "mqtt://localhost:1883",
+      clientId: merged.clientId ?? "spanda",
     });
-    this.dds.connect({ domainId: config.domainId ?? 0, ...config });
+    this.dds.connect({ ...merged, domainId: merged.domainId ?? 0 });
     this.websocket.connect({
-      brokerUrl: config.brokerUrl ?? "ws://localhost:9090",
-      ...config,
+      ...merged,
+      brokerUrl: merged.brokerUrl ?? "ws://localhost:9090",
     });
   }
 
@@ -325,14 +390,16 @@ export class RoutingCommBus {
     messageType: string,
     value: RuntimeValue,
     transport: TransportKind,
+    sourceId?: string | null,
   ): void {
-    // Publish.
+    // Publish to in-memory bus and external adapter with optional wire encryption.
     //
     // Parameters:
-    // - `topicPath` — input value
-    // - `messageType` — input value
-    // - `value` — input value
-    // - `transport` — input value
+    // - `topicPath` — topic path
+    // - `messageType` — message type name
+    // - `value` — payload runtime value
+    // - `transport` — active transport kind
+    // - `sourceId` — optional publisher identity for trusted-source enforcement
     //
     // Returns:
     // Nothing.
@@ -341,11 +408,27 @@ export class RoutingCommBus {
     // None.
     //
     // Example:
+    // bus.publish("/motion", "Velocity", val, "mqtt", "Navigator");
 
-    // const result = publish(topicPath, messageType, value, transport);
-
-    this.memory.publish(topicPath, messageType, value, transport);
-    this.adapter(transport)?.publish(topicPath, messageType, value);
+    this.memory.publish(topicPath, messageType, value, transport, sourceId);
+    const adapter = this.adapter(transport);
+    if (!adapter) return;
+    try {
+      const wireValue = encodeWireValue(
+        this.config,
+        topicPath,
+        messageType,
+        value,
+        sourceId,
+        transport,
+      );
+      if (wireValue.kind === "string") {
+        this.liveBridgePublish(transport, topicPath, wireValue.value);
+      }
+      adapter.publish(topicPath, messageType, wireValue);
+    } catch {
+      adapter.publish(topicPath, messageType, value);
+    }
   }
 
   subscribe(topicPath: string, handler: string): void {
@@ -368,6 +451,24 @@ export class RoutingCommBus {
     this.memory.subscribe(topicPath, handler);
   }
 
+  receiveEnvelope(topicPath: string): CommEnvelope | null {
+    // Receive the next in-memory envelope including publisher source_id.
+    //
+    // Parameters:
+    // - `topicPath` — topic path
+    //
+    // Returns:
+    // CommEnvelope or null.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const env = bus.receiveEnvelope("/motion");
+
+    return this.memory.receiveEnvelope(topicPath);
+  }
+
   receive(topicPath: string): RuntimeValue | null {
     // Receive.
     //
@@ -384,7 +485,67 @@ export class RoutingCommBus {
 
     // const result = receive(topicPath);
 
-    return this.memory.receive(topicPath);
+    return this.receiveEnvelope(topicPath)?.value ?? null;
+  }
+
+  pollInbound(transport: TransportKind): Array<[string, CommEnvelope]> {
+    // Poll external transport adapters for inbound messages on subscribed topics.
+    //
+    // Parameters:
+    // - `transport` — primary transport kind to poll
+    //
+    // Returns:
+    // Topic path and envelope pairs pushed into the in-memory bus.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const inbound = bus.pollInbound("mqtt");
+
+    const paths = this.memory.subscriptionPaths();
+    const inbound: Array<[string, CommEnvelope]> = [];
+    const kinds = new Set<TransportKind>([transport, "ros2", "mqtt", "dds", "websocket"]);
+    for (const path of paths) {
+      for (const kind of kinds) {
+        const adapter = this.adapter(kind);
+        if (!adapter?.isConnected()) continue;
+        const raw = adapter.receive(path);
+        if (!raw) {
+          const live = this.liveBridgeReceive(kind, path);
+          if (live) {
+            try {
+              const decoded = decodeWireValue(this.config, live);
+              const envelope: CommEnvelope = {
+                value: decoded.value,
+                sourceId: decoded.sourceId,
+              };
+              this.memory.pushInbound(path, envelope.value, envelope.sourceId);
+              inbound.push([path, envelope]);
+            } catch {
+              const envelope: CommEnvelope = { value: live, sourceId: null };
+              this.memory.pushInbound(path, live, null);
+              inbound.push([path, envelope]);
+            }
+          }
+          continue;
+        }
+        try {
+          const decoded = decodeWireValue(this.config, raw);
+          const envelope: CommEnvelope = {
+            value: decoded.value,
+            sourceId: decoded.sourceId,
+          };
+          this.memory.pushInbound(path, envelope.value, envelope.sourceId);
+          inbound.push([path, envelope]);
+        } catch {
+          const envelope: CommEnvelope = { value: raw, sourceId: null };
+          this.memory.pushInbound(path, raw, null);
+          inbound.push([path, envelope]);
+        }
+      }
+    }
+    return inbound;
   }
 
   callService(serviceType: string): RuntimeValue {
@@ -430,6 +591,7 @@ export class RoutingCommBus {
     topic: string,
     value: RuntimeValue,
     transport: TransportKind,
+    sourceId?: string | null,
   ): void {
     // PublishPeer.
     //
@@ -449,7 +611,7 @@ export class RoutingCommBus {
 
     // const result = publishPeer(peer, topic, value, transport);
 
-    this.memory.publishPeer(peer, topic, value, transport);
+    this.memory.publishPeer(peer, topic, value, transport, sourceId);
   }
 
   discover(target: DiscoverTarget, filter: DiscoverFilter): string[] {
@@ -555,12 +717,7 @@ export class RoutingCommBus {
 
     // Connect the target adapter when it is not already live.
     if (!adapter.isConnected()) {
-      adapter.connect({
-        nodeName: "spanda",
-        brokerUrl: "mqtt://localhost:1883",
-        clientId: "spanda",
-        domainId: 0,
-      });
+      adapter.connect(this.config);
     }
 
     // Resubscribe every topic path on the newly active adapter.
@@ -589,4 +746,4 @@ export class RoutingCommBus {
   }
 }
 
-export { transportAsStr };
+export { transportAsStr, effectiveTransportPolicy };

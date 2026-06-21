@@ -543,3 +543,53 @@ export function verifyFileViaCli(filePath: string, extraArgs: string[] = []): Ve
   const source = readFileSync(filePath, "utf-8");
   return verifyViaCli(source, extraArgs);
 }
+
+export type SecurityCliReport = {
+  findings: Array<{
+    severity: string;
+    message: string;
+    line: number;
+    column: number;
+  }>;
+};
+
+function securityViaCli(source: string, mode: "check" | "audit"): SecurityCliReport {
+  // Run native spanda security check or audit against source text.
+  const bin = cliPath();
+  if (!bin) {
+    return {
+      findings: [
+        {
+          severity: "error",
+          message: "Rust CLI not built (run: npm run build:rust)",
+          line: 1,
+          column: 1,
+        },
+      ],
+    };
+  }
+  const result = withTempSource(source, `.spanda-security-${mode}-tmp.sd`, (file) =>
+    spawnSync(bin, ["security", mode, "--json", file], { encoding: "utf-8" }),
+  );
+  if (!result.stdout?.trim()) {
+    return {
+      findings: [
+        {
+          severity: "error",
+          message: result.stderr || `security ${mode} failed`,
+          line: 1,
+          column: 1,
+        },
+      ],
+    };
+  }
+  return JSON.parse(result.stdout) as SecurityCliReport;
+}
+
+export function securityCheckViaCli(source: string): SecurityCliReport {
+  return securityViaCli(source, "check");
+}
+
+export function securityAuditViaCli(source: string): SecurityCliReport {
+  return securityViaCli(source, "audit");
+}

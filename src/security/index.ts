@@ -7,6 +7,17 @@ import { sha256 } from "@noble/hashes/sha256";
 import { sha512 } from "@noble/hashes/sha512";
 import * as ed from "@noble/ed25519";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
+import { TrustBoundaryRegistry } from "./trust-boundary.js";
+
+export { TrustBoundaryRegistry, parseTrustBoundary } from "./trust-boundary.js";
+export {
+  securityCheck,
+  securityAudit,
+  analyzeProgram,
+  reportHasErrors,
+  type SecurityReport,
+  type SecurityFinding,
+} from "./validate.js";
 
 ed.etc.sha512Sync = (...m: Uint8Array[]) => sha512(ed.etc.concatBytes(...m));
 
@@ -483,7 +494,11 @@ export class SecurityContext {
   secrets = new SecretStore();
   capabilities = new CapabilitySet();
   secureEndpoints = new SecureEndpointRegistry();
+  trustBoundaries = new TrustBoundaryRegistry();
   strictPermissions = false;
+  wireCertPath: string | null = null;
+  wireKeySecret: string | null = null;
+  securityFaultsActive = new Set<string>();
 
   enableStrictPermissions(): void {
     // EnableStrictPermissions.
@@ -620,7 +635,6 @@ export class SecurityContext {
 
   signOutbound(path: string, payload: string, sourceId?: string): void {
     if (sourceId) this.authorizePublish(path, sourceId);
-    // SignOutbound.
     //
     // Parameters:
     // - `path` — input value
@@ -645,7 +659,83 @@ export class SecurityContext {
       if (!this.identity) throw new Error(`identity required for ${path}`);
       if (policy.signed) this.capabilities.require("identity.sign");
     }
+    if (policy.encryption !== "none") {
+      this.capabilities.require("crypto.encrypt");
+    }
   }
+
+  wireSessionMaterial(): string {
+    // Build session key material from configured cert path and key secret name.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Material string for wire encryption session derivation.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const material = ctx.wireSessionMaterial();
+
+    return `${this.wireCertPath ?? "spanda-local"}:${this.wireKeySecret ?? "spanda-local-key"}`;
+  }
+
+  preparePublish(path: string, payload: string, sourceId: string): void {
+    // Authorize and validate an outbound publish against secure endpoint policy.
+    //
+    // Parameters:
+    // - `path` — topic path
+    // - `payload` — serialized payload
+    // - `sourceId` — publisher identity
+    //
+    // Returns:
+    // Nothing; throws when publish is denied.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // ctx.preparePublish("/motion", payload, "Navigator");
+
+    this.authorizePublish(path, sourceId);
+    this.checkSecurityFaults(path, payload);
+    const policy = this.secureEndpoints.policyOrOpen(path);
+    if (policy.encryption !== "none") {
+      this.capabilities.require("crypto.encrypt");
+    }
+    this.signOutbound(path, payload);
+  }
+
+  checkSecurityFaults(path: string, payload: string): void {
+    // Apply injected security fault simulation when enabled.
+    if (this.securityFaultsActive.has("InvalidSignature")) {
+      throw new Error("signature invalid");
+    }
+    if (this.securityFaultsActive.has("SecureHandshakeDropped")) {
+      throw new Error(`secure handshake dropped on ${path}`);
+    }
+    if (this.securityFaultsActive.has("ManInTheMiddle")) {
+      throw new Error("man-in-the-middle detected");
+    }
+    if (this.securityFaultsActive.has("ExpiredCertificate")) {
+      throw new Error(`certificate expired for ${this.identity?.id ?? "unknown"}`);
+    }
+    if (this.securityFaultsActive.has("ReplayAttack")) {
+      const hash = sha256Hex(`${path}:${payload}`);
+      const key = `replay:${path}`;
+      if (this.replayHashes?.has(key) && this.replayHashes.get(key)!.has(hash)) {
+        throw new Error(`replay detected on ${path}`);
+      }
+      if (!this.replayHashes) this.replayHashes = new Map();
+      const seen = this.replayHashes.get(key) ?? new Set<string>();
+      seen.add(hash);
+      this.replayHashes.set(key, seen);
+    }
+  }
+
+  private replayHashes?: Map<string, Set<string>>;
 }
 
 export const KNOWN_CAPABILITIES = [

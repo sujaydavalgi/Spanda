@@ -27,7 +27,8 @@ import { createAgentRuntime, executeAgentPlan, type AgentRuntime } from "../ai/A
 import { MemoryStore } from "../ai/MemoryStore.js";
 import { mockAnalyzeFrame, mockCameraFrame } from "../ai/MockAIProvider.js";
 import { getSocProfile } from "../soc/index.js";
-import { RoutingCommBus, type TransportKind } from "../transport/index.js";
+import { RoutingCommBus, type TransportKind, TlsTransportSession, effectiveTransportPolicy, transportSecurityFromBusFields, type SecureCommPolicy } from "../transport/index.js";
+import { parseTrustBoundary } from "../security/trust-boundary.js";
 import { SafetyMonitor, createSafetyConfigFromRobot, interpolatePoses } from "../safety/index.js";
 import type { SafetyZoneRuntime } from "../safety/index.js";
 import {
@@ -153,6 +154,8 @@ export type InterpreterOptions = {
   recordTrace?: boolean;
   traceSource?: string;
   schedulerClock?: "sim" | "wall";
+  secure?: boolean;
+  injectSecurityFaults?: boolean;
 };
 
 export class Environment {
@@ -330,6 +333,15 @@ export class Interpreter {
 
     this.currentProgram = program;
     this.loadProgramMetadata(program);
+    if (this.options.secure) {
+      this.security.enableStrictPermissions();
+    }
+    if (this.options.injectSecurityFaults) {
+      for (const fault of ["InvalidSignature", "ExpiredCertificate", "ReplayAttack"]) {
+        this.commBus.injectFault(fault);
+        this.security.securityFaultsActive.add(fault);
+      }
+    }
     for (const robot of program.robots) {
       this.setupRobot(robot);
       if (!entryBehavior && robot.behaviors.length === 0 && robot.tasks.length > 1) {
@@ -580,6 +592,36 @@ export class Interpreter {
 
     this.runGeofenceTriggers();
     this.runConnectivityTriggers();
+    this.pollTransportInbound();
+  }
+
+  private pollTransportInbound(): void {
+    // Poll external transport adapters and verify inbound wire frames.
+    const inbound = this.commBus.pollInbound(this.defaultTransport);
+    for (const [topicPath, envelope] of inbound) {
+      const payload =
+        typeof envelope.value === "object" && envelope.value !== null
+          ? JSON.stringify(envelope.value)
+          : String(envelope.value);
+      try {
+        this.security.verifyInboundMessage(topicPath, payload, envelope.sourceId);
+      } catch (e) {
+        this.options.onLog?.(`security: inbound denied on ${topicPath}: ${e}`);
+        continue;
+      }
+      const topicName =
+        topicPath.replace(/^\//, "").replace(/\//g, ".") || topicPath;
+      this.dispatchMessageTriggers(topicName, topicPath);
+    }
+  }
+
+  private dispatchMessageTriggers(topicName: string, topicPath: string): void {
+    // Dispatch message triggers for an inbound topic path when handlers exist.
+    for (const [eventName, handler] of this.eventHandlers) {
+      if (eventName === `message:${topicName}` || eventName === `message:${topicPath}`) {
+        this.executeBlock(handler);
+      }
+    }
   }
 
   private runConnectivityTriggers(): void {
@@ -1401,28 +1443,6 @@ export class Interpreter {
       this.options.onLog?.(`HAL configured: ${members.length} bus(es)/pin(s)`);
     }
 
-    // Process each buse.
-    for (const bus of robot.buses) {
-      this.defaultTransport = bus.transport;
-      this.commBus.configure({ nodeName: robot.name });
-      this.options.onLog?.(`bus transport: ${bus.transport}`);
-    }
-
-    // Process each peerRobot.
-    for (const peer of robot.peerRobots) {
-      this.commBus.registerRobot(peer.name);
-    }
-
-    // Process each device.
-    for (const device of robot.devices) {
-      this.commBus.registerDevice(device.name);
-      this.env.define(device.name, {
-        kind: "object",
-        typeName: "Device",
-        fields: {},
-      });
-    }
-
     // continue when robot.permissions.
     if (robot.permissions) {
       this.security.enableStrictPermissions();
@@ -1459,6 +1479,71 @@ export class Interpreter {
       this.security.grantIfNotStrict("identity.sign");
       this.security.grantIfNotStrict("identity.verify");
       this.options.onLog?.(`identity: device '${id}' registered`);
+    }
+
+    for (const tb of robot.trustBoundaries ?? []) {
+      try {
+        this.security.trustBoundaries.declare(parseTrustBoundary(tb.name));
+        this.options.onLog?.(`trust boundary: ${tb.name}`);
+      } catch (e) {
+        throw new RuntimeError(String(e), tb.span.start.line);
+      }
+    }
+
+    // Process each bus after secrets, identity, and trust boundaries are registered.
+    for (const bus of robot.buses) {
+      this.defaultTransport = bus.transport;
+      let busSecurity = transportSecurityFromBusFields(
+        bus.encryption,
+        bus.authentication,
+        bus.integrity,
+      );
+      if (robot.secureComm) {
+        const robotPolicy: SecureCommPolicy = {
+          encryption: (robot.secureComm.encryption as SecureCommPolicy["encryption"]) ?? "none",
+          authentication:
+            (robot.secureComm.authentication as SecureCommPolicy["authentication"]) ?? "none",
+          integrity: (robot.secureComm.integrity as SecureCommPolicy["integrity"]) ?? "none",
+        };
+        busSecurity = effectiveTransportPolicy(robotPolicy, busSecurity);
+      }
+      for (const secret of robot.secrets ?? []) {
+        if (secret.name.includes("cert") && secret.source.source === "file") {
+          busSecurity = { ...busSecurity, certPath: secret.source.path };
+          this.security.wireCertPath = secret.source.path;
+        }
+        if (secret.name.includes("key")) {
+          busSecurity = { ...busSecurity, keySecret: secret.name };
+          if (secret.source.source === "file") {
+            busSecurity = { ...busSecurity, keyPath: secret.source.path };
+            this.security.wireKeySecret = secret.name;
+          }
+        }
+      }
+      const tls = new TlsTransportSession();
+      this.commBus.configure({
+        nodeName: robot.name,
+        security: busSecurity,
+        tls,
+      });
+      this.options.onLog?.(
+        `bus transport: ${bus.transport} (encryption: ${busSecurity.encryption})`,
+      );
+    }
+
+    // Process each peerRobot.
+    for (const peer of robot.peerRobots) {
+      this.commBus.registerRobot(peer.name);
+    }
+
+    // Process each device.
+    for (const device of robot.devices) {
+      this.commBus.registerDevice(device.name);
+      this.env.define(device.name, {
+        kind: "object",
+        typeName: "Device",
+        fields: {},
+      });
     }
 
     // Process each topic.
@@ -1886,8 +1971,10 @@ export class Interpreter {
 
         if (topic?.kind === "topic") {
           const sourceId = this.currentAgent ?? this.security.identity?.id ?? "robot";
+          const payload =
+            typeof value === "object" && value !== null ? JSON.stringify(value) : String(value);
           try {
-            this.security.signOutbound(topic.topicPath, JSON.stringify(value), sourceId);
+            this.security.preparePublish(topic.topicPath, payload, sourceId);
           } catch (e) {
             this.options.onLog?.(`security: publish denied on ${topic.topicPath}: ${e}`);
             throw e;
@@ -1897,6 +1984,7 @@ export class Interpreter {
             topic.messageType,
             value,
             this.defaultTransport,
+            sourceId,
           );
           this.options.backend.publishTopic?.(topic.topicPath, topic.messageType, value);
           this.options.onLog?.(`publish ${topic.topicPath}`);
@@ -1960,13 +2048,16 @@ export class Interpreter {
           : this.env.get(stmt.topicName)?.kind === "topic"
             ? (this.env.get(stmt.topicName) as Extract<RuntimeValue, { kind: "topic" }>).topicPath
             : `/${stmt.topicName}`;
-        const val = this.commBus.receive(path);
+        const envelope = this.commBus.receiveEnvelope(path);
 
-        // continue when val.
-        if (val) {
-          const payload = typeof val === "object" && val !== null ? JSON.stringify(val) : String(val);
-          this.security.verifyInboundMessage(path, payload, null);
-          this.env.define(stmt.varName, val);
+        // continue when envelope.
+        if (envelope) {
+          const payload =
+            typeof envelope.value === "object" && envelope.value !== null
+              ? JSON.stringify(envelope.value)
+              : String(envelope.value);
+          this.security.verifyInboundMessage(path, payload, envelope.sourceId);
+          this.env.define(stmt.varName, envelope.value);
           this.options.onLog?.(`receive ${stmt.topicName} to ${stmt.varName}`);
         }
         break;

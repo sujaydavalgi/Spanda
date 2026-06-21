@@ -250,6 +250,8 @@ export type RunOptions = {
   recordTrace?: boolean;
   traceSource?: string;
   schedulerClock?: "sim" | "wall";
+  secure?: boolean;
+  injectSecurityFaults?: boolean;
 };
 
 export function run(program: Program, options: RunOptions): RobotState {
@@ -277,6 +279,8 @@ export function run(program: Program, options: RunOptions): RobotState {
     recordTrace: options.recordTrace,
     traceSource: options.traceSource,
     schedulerClock: options.schedulerClock,
+    secure: options.secure,
+    injectSecurityFaults: options.injectSecurityFaults,
   });
   return interpreter.run(program, options.entryBehavior);
 }

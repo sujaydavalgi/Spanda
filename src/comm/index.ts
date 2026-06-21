@@ -132,11 +132,17 @@ export type DiscoverFilter = {
   capability: string | null;
 };
 
+export type CommEnvelope = {
+  value: RuntimeValue;
+  sourceId: string | null;
+};
+
 export type PublishedCommMessage = {
   topicPath: string;
   messageType: string;
   value: RuntimeValue;
   transport: TransportKind;
+  sourceId?: string | null;
 };
 
 export type SimNetworkConfig = {
@@ -294,7 +300,7 @@ export class MessageRegistry {
 
 export class InMemoryCommBus {
   private subscriptions = new Map<string, string[]>();
-  private buffers = new Map<string, RuntimeValue[]>();
+  private buffers = new Map<string, CommEnvelope[]>();
   private published: PublishedCommMessage[] = [];
   private discoveredRobots = ["RoverA", "RoverB"];
   private discoveredAgents = ["Vision", "Planner", "Navigator"];
@@ -307,6 +313,7 @@ export class InMemoryCommBus {
     messageType: string,
     value: RuntimeValue,
     transport: TransportKind,
+    sourceId?: string | null,
   ): void {
     // Publish.
     //
@@ -331,9 +338,30 @@ export class InMemoryCommBus {
       const hash = topicPath.length + messageType.length;
       if (((hash * 0.13) % 1) < this.network.packetLoss) return;
     }
-    this.published.push({ topicPath, messageType, value, transport });
+    this.published.push({ topicPath, messageType, value, transport, sourceId: sourceId ?? null });
     const buf = this.buffers.get(topicPath);
-    if (buf) buf.push(value);
+    if (buf) buf.push({ value, sourceId: sourceId ?? null });
+  }
+
+  pushInbound(topicPath: string, value: RuntimeValue, sourceId?: string | null): void {
+    // Push an inbound message with optional publisher identity into the topic buffer.
+    //
+    // Parameters:
+    // - `topicPath` — topic path
+    // - `value` — decoded payload
+    // - `sourceId` — optional publisher identity
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // pushInbound("/motion", velocity, "Navigator");
+
+    if (!this.buffers.has(topicPath)) this.buffers.set(topicPath, []);
+    this.buffers.get(topicPath)!.push({ value, sourceId: sourceId ?? null });
   }
 
   subscribe(topicPath: string, handler: string): void {
@@ -359,6 +387,25 @@ export class InMemoryCommBus {
     if (!this.buffers.has(topicPath)) this.buffers.set(topicPath, []);
   }
 
+  receiveEnvelope(topicPath: string): CommEnvelope | null {
+    // Receive the next inbound envelope including publisher source_id when present.
+    //
+    // Parameters:
+    // - `topicPath` — topic path
+    //
+    // Returns:
+    // CommEnvelope or null when the buffer is empty.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const env = receiveEnvelope("/motion");
+
+    const buf = this.buffers.get(topicPath);
+    return buf?.shift() ?? null;
+  }
+
   receive(topicPath: string): RuntimeValue | null {
     // Receive.
     //
@@ -375,8 +422,7 @@ export class InMemoryCommBus {
 
     // const result = receive(topicPath);
 
-    const buf = this.buffers.get(topicPath);
-    return buf?.shift() ?? null;
+    return this.receiveEnvelope(topicPath)?.value ?? null;
   }
 
   callService(serviceType: string): RuntimeValue {
@@ -472,9 +518,10 @@ export class InMemoryCommBus {
     topic: string,
     value: RuntimeValue,
     transport: TransportKind,
+    sourceId?: string | null,
   ): void {
     const path = `/${peer}/${topic}`;
-    this.publish(path, "PeerMessage", value, transport);
+    this.publish(path, "PeerMessage", value, transport, sourceId ?? peer);
   }
 
   publishedMessages(): PublishedCommMessage[] {

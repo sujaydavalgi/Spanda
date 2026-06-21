@@ -21,8 +21,11 @@ import {
   codegenViaCli,
   deployViaCli,
   debugViaCli,
+  securityCheckViaCli,
+  securityAuditViaCli,
   type VerifyResult,
 } from "../rust-bridge.js";
+import { securityCheck, securityAudit, reportHasErrors } from "../security/index.js";
 
 const USAGE = `Spanda Programming Language — the pulse of autonomous intelligence
 
@@ -30,8 +33,10 @@ Usage:
   spanda check [--json] <file.sd>
   spanda verify [--json] [--target <Profile>] [--all-targets] [--simulate] <file.sd>
   spanda compatibility [flags] <file.sd>     Alias for verify
-  spanda run [--json] [--verbose] <file.sd>
-  spanda sim [--json] <file.sd>
+  spanda run [--json] [--verbose] [--secure] [--inject-security-faults] <file.sd>
+  spanda sim [--json] [--inject-security-faults] <file.sd>
+  spanda security check [--json] <file.sd>
+  spanda security audit [--json] <file.sd>
   spanda fmt [--json] <file.sd>
   spanda lint [--json] <file.sd>
   spanda doc [--json] [--out <file.md>] <file.sd>
@@ -226,7 +231,10 @@ function main(): void {
         break;
       case "run":
       case "sim":
-        handleRun(positional[0], command === "sim", json, verbose);
+        handleRun(positional[0], command === "sim", json, verbose, flags);
+        break;
+      case "security":
+        handleSecurity(positional, json);
         break;
       case "fmt":
         handleFmt(positional[0], json);
@@ -441,7 +449,49 @@ function printVerifyHuman(result: VerifyResult, filePath: string): void {
   console.log();
 }
 
-function handleRun(filePath: string | undefined, verbose: boolean, json: boolean, extraVerbose: boolean): void {
+function handleSecurity(positional: string[], json: boolean): void {
+  // Run spanda security check or audit on a source file.
+  const sub = positional[0];
+  const filePath = positional[1];
+  if (!sub || !filePath || (sub !== "check" && sub !== "audit")) {
+    console.error("Usage: spanda security check|audit [--json] <file.sd>");
+    process.exit(1);
+  }
+  const abs = absPath(filePath);
+  const source = readFileSync(abs, "utf8");
+  if (isCliAvailable()) {
+    const result = sub === "audit" ? securityAuditViaCli(source) : securityCheckViaCli(source);
+    if (json) {
+      console.log(JSON.stringify(result));
+    } else if (result.findings.length === 0) {
+      console.log(`✓ ${filePath} — no security ${sub} findings`);
+    } else {
+      for (const f of result.findings) {
+        console.log(`${f.severity}: ${f.message} (${f.line}:${f.column})`);
+      }
+    }
+    process.exit(reportHasErrors(result as import("../security/validate.js").SecurityReport) ? 1 : 0);
+  }
+  const report = sub === "audit" ? securityAudit(source) : securityCheck(source);
+  if (json) {
+    console.log(JSON.stringify(report));
+  } else if (report.findings.length === 0) {
+    console.log(`✓ ${filePath} — no security ${sub} findings`);
+  } else {
+    for (const f of report.findings) {
+      console.log(`${f.severity}: ${f.message} (${f.line}:${f.column})`);
+    }
+  }
+  process.exit(reportHasErrors(report) ? 1 : 0);
+}
+
+function handleRun(
+  filePath: string | undefined,
+  verbose: boolean,
+  json: boolean,
+  extraVerbose: boolean,
+  flags: Map<string, string | boolean>,
+): void {
   // HandleRun.
   //
   // Parameters:
@@ -465,17 +515,22 @@ function handleRun(filePath: string | undefined, verbose: boolean, json: boolean
   // continue when isCliAvailable() && json.
   if (isCliAvailable() && json) {
     const args = ["run", "--json", abs];
-
-    // continue when showVerbose) args.push("--verbose".
     if (showVerbose) args.push("--verbose");
+    if (flags.get("secure")) args.push("--secure");
+    if (flags.get("inject-security-faults")) args.push("--inject-security-faults");
     const result = runNativeCli(args);
     console.log(result.stdout ?? "");
     process.exit(result.status === 0 ? 0 : 1);
   }
-  runSimulation(abs, filePath!, showVerbose);
+  runSimulation(abs, filePath!, showVerbose, flags);
 }
 
-function runSimulation(absPath: string, displayPath: string, verbose: boolean): void {
+function runSimulation(
+  absPath: string,
+  displayPath: string,
+  verbose: boolean,
+  flags: Map<string, string | boolean>,
+): void {
   // RunSimulation.
   //
   // Parameters:
@@ -508,6 +563,8 @@ function runSimulation(absPath: string, displayPath: string, verbose: boolean): 
     maxLoopIterations: verbose ? 20 : 10,
     onLog: (msg) => logs.push(msg),
     onMotionBlocked: (reason) => logs.push(`⚠ BLOCKED: ${reason}`),
+    secure: flags.get("secure") === true,
+    injectSecurityFaults: flags.get("inject-security-faults") === true,
   });
   console.log("── Final State ──");
   console.log(`  Pose:     x=${state.pose.x.toFixed(3)} m, y=${state.pose.y.toFixed(3)} m, θ=${state.pose.theta.toFixed(3)} rad`);
