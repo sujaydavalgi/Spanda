@@ -7,6 +7,7 @@ Runnable `.sd` programs demonstrating the Spanda robotics platform. See [robotic
 | `mission_management.sd` | Named mission steps and lifecycle |
 | `fleet_management.sd` | Program-level `fleet` declarations |
 | `fleet_peer_missions.sd` | Peer mesh fleet orchestration |
+| `swarm_coordination.sd` | Swarm policies (`round_robin`, `broadcast`, `leader_follow`) |
 | `safety_zones.sd` | Program-level `safety_zone` speed caps |
 | `sensor_fusion.sd` | `observe` + `fusion.read()` |
 | `navigation.sd` | Navigation stdlib helpers |

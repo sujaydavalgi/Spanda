@@ -81,7 +81,7 @@ Reuse existing Spanda seams:
 | 10 | **Environmental awareness** | **Standard library** (`std.environment`) + sensors | Weather/IAQ types; hardware via sensor packages |
 | 11 | **Computer vision pipelines** | **AI framework** (`VisionModel`, agents) + **packages** | Overlap with `std.ai` and `vision.*` packages — not a second CV stack |
 | 12 | **Manipulation** | **Standard library** (`std.manipulation`) + **packages** | Pick/place orchestration in language; grasp planning in MoveIt adapters |
-| 13 | **Swarm robotics** | **Experimental / future** | Peer robots + fleet primitives suffice for alpha; swarm policies later |
+| 13 | **Swarm robotics** | **Experimental runtime** | `swarm { fleet Recon; policy round_robin; }` + `spanda swarm coordinate` |
 | 14 | **Autonomous decision framework** | **AI agents** (`agent`, `goal`, `plan`, `Belief`, `Policy`) | Reuse existing agent framework — no parallel decision DSL |
 | 15 | **Safety zones** | **Core language** (`safety_zone` + `safety { zone }`) | Integrates geofencing, triggers, safety validation — core identity |
 | 16 | **Predictive maintenance** | **Standard library** (`std.maintenance`) + **observe/verify** | Health scores as types; ML backends via packages |
@@ -149,6 +149,30 @@ spanda fleet agent register ScoutB http://scout-b.local:8766
 spanda fleet mesh start --bind 0.0.0.0:8767
 spanda fleet orchestrate --remote --mesh-url http://mesh.local:8767 examples/robotics/fleet_peer_missions.sd
 ```
+
+### Swarm coordinator (experimental)
+
+Bind a fleet group to a coordination policy and run one coordination tick per invocation:
+
+```spanda
+fleet Recon {
+  ScoutA;
+  ScoutB;
+  ScoutC;
+}
+
+swarm ReconSwarm {
+  fleet Recon;
+  policy round_robin;
+}
+```
+
+```bash
+spanda swarm coordinate examples/robotics/swarm_coordination.sd
+spanda swarm coordinate examples/robotics/swarm_coordination.sd   # advances next member
+```
+
+Policies: `round_robin` (one member per tick, cursor in `.spanda/swarm-state.json`), `broadcast` (all members advance), `leader_follow` (leader advances and followers receive step handoffs).
 
 Strict certification gates for CI and runtime:
 
@@ -364,7 +388,7 @@ Runnable programs under `examples/robotics/`:
 | Safety zone speed enforcement at runtime | **Done** — `SafetyMonitor.clamp_speed_at_pose()` (Rust + TS) |
 | `certify ISO13849` / IEC 61508 / ISO 26262 | **Partial** — program `certify` metadata (+ optional `level`) + verify reporting; `--strict-certify` / `--enforce-certify`; `spanda certify prove`; deploy `--require-certify` gate |
 | OTA rollout/canary/rollback | **Partial** — local deploy CLI + remote HTTP(S) agents with `program_hash`, optional Ed25519 signed bundles, and certification proof summary on deploy plans |
-| Swarm coordinator runtime | Experimental; build on fleet + peer robots |
+| Swarm coordinator runtime | **Experimental** — `swarm { fleet; policy; }` + `spanda swarm coordinate` with `.spanda/swarm-state.json` cursors |
 | World model runtime | Explicitly deferred in product strategy |
 | Production SLAM/nav package implementations | **Partial** — `slam.localize()` / `slam.map()` stub hooks; `SPANDA_NAV2_CMD` / `SPANDA_SLAM_CMD` subprocess bridges; `spanda verify-adapter` |
 
@@ -386,6 +410,7 @@ Runnable programs under `examples/robotics/`:
 | AST / parser | `crates/spanda-core/src/foundations.rs`, `parser.rs`, `ast.rs` |
 | Platform runtime | `crates/spanda-core/src/robotics_platform.rs` |
 | OTA deploy service | `crates/spanda-core/src/deploy_service.rs` |
+| Swarm coordinator | `crates/spanda-core/src/swarm_coordinator.rs` |
 | Fleet orchestrator | `crates/spanda-core/src/fleet_orchestrator.rs` |
 | Fleet remote agents | `crates/spanda-core/src/fleet_remote.rs`, `fleet_agent.rs` |
 | Fleet mesh coordinator | `crates/spanda-core/src/fleet_mesh.rs` |

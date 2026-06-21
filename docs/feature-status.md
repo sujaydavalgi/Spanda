@@ -24,6 +24,7 @@ Honest snapshot of Spanda capabilities as of **v0.1.0-alpha**. Use this document
 | **Trigger-driven execution** | Unified `on` / `every` / `when` / `while`; event, message, timer, condition, state, safety, hardware, AI, verification, twin |
 | **Cooperative concurrency** | `spawn`, `join`, `parallel`, channels, `select`, per-task `budget { }`; TypeScript mirror parity |
 | **Fleet simulation** | `spanda fleet run` — in-process multi-robot with deploy/peer wiring |
+| **Swarm coordinator (experimental)** | `swarm { fleet; policy; }` + `spanda swarm coordinate` — round-robin cursors in `.spanda/swarm-state.json` |
 | **Robotics platform** | `mission`, `fleet`, `safety_zone`, `certify`; navigation/fusion runtime; Nav2 adapter hook |
 | **OTA deploy CLI** | `spanda deploy plan|rollout|rollback|status` — local rollout state (`.spanda/deploy-state.json`) |
 | **Remote OTA agents** | `spanda deploy agent start|register|list` + `deploy rollout --remote` — HTTP agent on devices; `--require-certify` on agent and rollout |
