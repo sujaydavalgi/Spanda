@@ -56,7 +56,7 @@ export default function App() {
       <header>
         <div>
           <h1>Spanda Playground</h1>
-          <p className="subtitle">AI-native robotics language — Rust core via WASM</p>
+          <p className="subtitle">Flagship killer demo — Check + Run sim via Rust WASM (no local CLI)</p>
         </div>
         <span className={`badge ${backend}`}>
           {backend === "wasm" ? "Rust WASM" : "WASM not built"}
@@ -69,17 +69,15 @@ export default function App() {
             const ex = EXAMPLES.find((x) => x.name === e.target.value);
             if (ex) setSource(ex.source);
           }}
-          defaultValue=""
+          defaultValue="Killer demo (flagship)"
         >
-          <option value="" disabled>
-            Load example…
-          </option>
           {EXAMPLES.map((ex) => (
             <option key={ex.name} value={ex.name}>
               {ex.name}
             </option>
           ))}
         </select>
+        <span className="demo-hint">Check → Run sim (verify needs native CLI)</span>
         <button type="button" onClick={handleCheck} disabled={busy || backend === "unavailable"}>
           Check
         </button>
