@@ -103,6 +103,8 @@ import type {
   TrustDecl,
   PermissionsDecl,
   SecureBlockDecl,
+  SecureCommPolicyDecl,
+  TrustBoundaryDecl,
 } from "../foundations.js";
 
 export class ParseError extends Error {
@@ -1224,6 +1226,8 @@ class Parser {
     const devices: DeviceDecl[] = [];
     const agentChannels: AgentChannelDecl[] = [];
     const twinSync = null;
+    let secureComm: SecureCommPolicyDecl | null = null;
+    const trustBoundaries: TrustBoundaryDecl[] = [];
 
     // Repeat while !this.check("RBRACE") && !this.check("EOF").
     while (!this.check("RBRACE") && !this.check("EOF")) {
@@ -1352,9 +1356,21 @@ class Parser {
       } else if (this.isRobotMemberKeyword("record")) {
         signedRecords.push(this.parseSignedRecord());
 
+      // Otherwise, continue when this.isRobotMemberKeyword("secrets").
+      } else if (this.isRobotMemberKeyword("secrets")) {
+        secrets.push(...this.parseSecretsBlock());
+
       // Otherwise, continue when this.check("SECRET").
       } else if (this.check("SECRET")) {
         secrets.push(this.parseSecret());
+
+      // Otherwise, continue when this.isRobotMemberKeyword("secure_comm").
+      } else if (this.isRobotMemberKeyword("secure_comm")) {
+        secureComm = this.parseSecureCommPolicy();
+
+      // Otherwise, continue when this.isRobotMemberKeyword("trust_boundary").
+      } else if (this.isRobotMemberKeyword("trust_boundary")) {
+        trustBoundaries.push(this.parseTrustBoundary());
 
       // Otherwise, continue when this.check("TRUST").
       } else if (this.check("TRUST")) {
@@ -1442,6 +1458,8 @@ class Parser {
       devices,
       agentChannels,
       twinSync,
+      secureComm,
+      trustBoundaries,
       span: this.spanFrom(start, end),
     };
 }
@@ -1547,27 +1565,53 @@ class Parser {
 }
 
   private parseBus(): BusDecl {
-    // ParseBus.
-    //
-    // Parameters:
-    // None.
-    //
-    // Returns:
-    // BusDecl.
-    //
-    // Options:
-    // None.
-    //
-    // Example:
-
-    // const result = parseBus();
     const start = this.advance();
-    const transportName = this.expect("IDENT", "Expected bus transport name");
+    const busName = this.expect("IDENT", "Expected bus name");
+
+    if (this.check("LBRACE")) {
+      this.advance();
+      let transportName = busName.lexeme;
+      let encryption: string | null = null;
+      let authentication: string | null = null;
+      let integrity: string | null = null;
+
+      while (!this.check("RBRACE") && !this.check("EOF")) {
+        const key = this.parseConfigKeyToken();
+        this.expect("COLON", "Expected ':' in bus field");
+        if (key === "transport") {
+          transportName = this.parseConfigValueString();
+        } else if (key === "encryption") {
+          encryption = this.parseLabel("Expected encryption mode");
+        } else if (key === "authentication") {
+          authentication = this.parseLabel("Expected authentication mode");
+        } else if (key === "integrity") {
+          integrity = this.parseLabel("Expected integrity mode");
+        } else {
+          const t = this.peek();
+          throw new ParseError(`Unknown bus field '${key}'`, t.line, t.column);
+        }
+        this.expect("SEMICOLON", "Expected ';' after bus field");
+      }
+      const end = this.expect("RBRACE", "Expected '}' to close bus block");
+      this.match("SEMICOLON");
+      const transport = transportFromIdent(transportName) ?? "local";
+      return {
+        kind: "BusDecl",
+        name: busName.lexeme,
+        transport,
+        transportName,
+        encryption,
+        authentication,
+        integrity,
+        span: this.spanFrom(start, end),
+      };
+    }
+
     this.expect("SEMICOLON", "Expected ';' after bus declaration");
-    const transport = transportFromIdent(transportName.lexeme) ?? "local";
+    const transport = transportFromIdent(busName.lexeme) ?? "local";
     return {
       kind: "BusDecl",
-      name: transportName.lexeme,
+      name: busName.lexeme,
       transport,
       span: this.spanFrom(start, this.previous()),
     };
@@ -2649,15 +2693,54 @@ class Parser {
     // const result = parseSimulateCompatibility();
     const start = this.advance();
     this.expect("LBRACE", "Expected '{' after simulate_compatibility");
-    const faults: { faultType: string; span: Span }[] = [];
+    const faults: { faultType: string; atOffsetMs?: number; durationMs?: number; span: Span }[] = [];
 
     // Repeat while !this.check("RBRACE") && !this.check("EOF").
     while (!this.check("RBRACE") && !this.check("EOF")) {
       this.expect("FAULT", "Expected fault declaration in simulate_compatibility");
       const faultStart = this.peek();
       const faultType = this.parseLabel("Expected fault type name");
+      let atOffsetMs: number | undefined;
+      let durationMs: number | undefined;
+      if (this.check("AT") || (this.check("IDENT") && this.peek().lexeme === "at")) {
+        this.advance();
+        if (this.check("IDENT") && this.peek().lexeme.startsWith("T+")) {
+          const offset = this.advance().lexeme;
+          const secsStr = offset.slice(2).replace(/s$/, "");
+          const secs = Number.parseFloat(secsStr);
+          if (!Number.isNaN(secs)) {
+            atOffsetMs = secs * 1000;
+          }
+        } else if (this.check("IDENT") && this.peek().lexeme === "T") {
+          this.advance();
+          if (this.match("PLUS")) {
+            if (this.check("UNIT_LITERAL")) {
+              const lex = this.advance().lexeme;
+              const secsStr = lex.replace(/s$/, "");
+              const secs = Number.parseFloat(secsStr);
+              if (!Number.isNaN(secs)) {
+                atOffsetMs = secs * 1000;
+              }
+            } else if (this.check("NUMBER")) {
+              const secs = Number.parseFloat(this.advance().lexeme);
+              if (!Number.isNaN(secs)) {
+                atOffsetMs = secs * 1000;
+              }
+            } else {
+              const num = this.parseLabel("Expected fault offset");
+              const secsStr = num.replace(/s$/, "");
+              const secs = Number.parseFloat(secsStr);
+              if (!Number.isNaN(secs)) {
+                atOffsetMs = secs * 1000;
+              }
+            }
+          }
+        }
+      } else if (this.match("DURATION")) {
+        durationMs = this.parseDuration();
+      }
       this.expect("SEMICOLON", "Expected ';' after fault");
-      faults.push({ faultType, span: this.spanFrom(faultStart, this.previous()) });
+      faults.push({ faultType, atOffsetMs, durationMs, span: this.spanFrom(faultStart, this.previous()) });
     }
     const end = this.expect("RBRACE", "Expected '}' to close simulate_compatibility");
     return { kind: "SimulateCompatibilityDecl", faults, span: this.spanFrom(start, end) };
@@ -2860,6 +2943,11 @@ class Parser {
       this.expect("RPAREN", "Expected ')' after env var");
       source = { source: "env", var: varName };
 
+    // Otherwise, continue when this.check("IDENT") && lexeme === "file".
+    } else if (this.check("IDENT") && this.peek().lexeme === "file") {
+      this.advance();
+      source = { source: "file", path: this.parseConfigValueString() };
+
     // Otherwise, continue when this.check("STRING").
     } else if (this.check("STRING")) {
       source = { source: "literal", value: this.advance().value as string };
@@ -2911,12 +2999,47 @@ class Parser {
     // const result = parseDottedCapability();
     const first = this.parseCapabilityDomain();
 
-    // continue when this.match("DOT").
-    if (this.match("DOT")) {
-      const second = this.parseLabel("Expected capability suffix");
-      return `${first}.${second}`;
+    let cap = first;
+    while (this.match("DOT")) {
+      cap = `${cap}.${this.parseCapabilitySuffix()}`;
     }
-    return first;
+    return cap;
+  }
+
+  private parseCapabilitySuffix(): string {
+    if (this.check("IDENT") && this.peek().lexeme === "scan") {
+      this.advance();
+      return "scan";
+    }
+    if (this.check("IDENT") && this.peek().lexeme === "pair") {
+      this.advance();
+      return "pair";
+    }
+    if (this.check("IDENT") && this.peek().lexeme === "connect") {
+      this.advance();
+      return "connect";
+    }
+    if (this.check("IDENT") && this.peek().lexeme === "status") {
+      this.advance();
+      return "status";
+    }
+    if (this.check("IDENT") && this.peek().lexeme === "failover") {
+      this.advance();
+      return "failover";
+    }
+    if (this.check("IDENT") && this.peek().lexeme === "read") {
+      this.advance();
+      return "read";
+    }
+    if (this.check("PUBLISH")) {
+      this.advance();
+      return "publish";
+    }
+    if (this.check("SUBSCRIBE")) {
+      this.advance();
+      return "subscribe";
+    }
+    return this.parseLabel("Expected capability suffix");
   }
 
   private parseCapabilityDomain(): string {
@@ -2977,67 +3100,155 @@ class Parser {
     return { kind: "PermissionsDecl", capabilities, span: this.spanFrom(start, this.previous()) };
 }
 
-  private parseSecureBlock(): SecureBlockDecl {
-    // ParseSecureBlock.
-    //
-    // Parameters:
-    // None.
-    //
-    // Returns:
-    // SecureBlockDecl.
-    //
-    // Options:
-    // None.
-    //
-    // Example:
+  private parseSecretsBlock(): SecretDecl[] {
+    const start = this.advance();
+    this.expect("LBRACE", "Expected '{' after secrets");
+    const secrets: SecretDecl[] = [];
+    while (!this.check("RBRACE") && !this.check("EOF")) {
+      const name = this.expect("IDENT", "Expected secret name").lexeme;
+      this.expect("FROM", "Expected 'from' after secret name");
+      let source: SecretDecl["source"];
+      if (this.match("ENV")) {
+        const varName = this.parseConfigValueString();
+        source = { source: "env", var: varName };
+      } else if (this.check("IDENT") && this.peek().lexeme === "file") {
+        this.advance();
+        source = { source: "file", path: this.parseConfigValueString() };
+      } else if (this.check("STRING")) {
+        source = { source: "literal", value: this.advance().value as string };
+      } else {
+        const t = this.peek();
+        throw new ParseError("Expected env, file, or string literal for secret source", t.line, t.column);
+      }
+      this.expect("SEMICOLON", "Expected ';' after secret");
+      secrets.push({
+        kind: "SecretDecl",
+        name,
+        source,
+        span: this.spanFrom(start, this.previous()),
+      });
+    }
+    this.expect("RBRACE", "Expected '}' to close secrets block");
+    this.match("SEMICOLON");
+    return secrets;
+  }
 
-    // const result = parseSecureBlock();
+  private parseSecureCommPolicy(): SecureCommPolicyDecl {
+    const start = this.advance();
+    this.expect("LBRACE", "Expected '{' after secure_comm");
+    let encryption: string | null = null;
+    let authentication: string | null = null;
+    let integrity: string | null = null;
+    while (!this.check("RBRACE") && !this.check("EOF")) {
+      const key = this.parseConfigKeyToken();
+      this.expect("COLON", "Expected ':' in secure_comm field");
+      const value = this.parseLabel("Expected secure_comm field value");
+      if (key === "encryption") encryption = value;
+      else if (key === "authentication") authentication = value;
+      else if (key === "integrity") integrity = value;
+      else {
+        const t = this.peek();
+        throw new ParseError(`Unknown secure_comm field '${key}'`, t.line, t.column);
+      }
+      this.expect("SEMICOLON", "Expected ';' after secure_comm field");
+    }
+    const end = this.expect("RBRACE", "Expected '}' to close secure_comm");
+    this.match("SEMICOLON");
+    return {
+      kind: "SecureCommPolicyDecl",
+      encryption,
+      authentication,
+      integrity,
+      span: this.spanFrom(start, end),
+    };
+  }
+
+  private parseTrustBoundary(): TrustBoundaryDecl {
+    const start = this.advance();
+    const name = this.parseLabel("Expected trust boundary name");
+    this.expect("SEMICOLON", "Expected ';' after trust_boundary declaration");
+    return {
+      kind: "TrustBoundaryDecl",
+      name,
+      span: this.spanFrom(start, this.previous()),
+    };
+  }
+
+  private parseSecureBlock(): SecureBlockDecl {
     const start = this.advance();
     this.expect("LBRACE", "Expected '{' after secure");
     let signed = false;
     let minTrust: string | null = null;
     const requires: string[] = [];
+    let encryption: string | null = null;
+    let authentication: string | null = null;
+    let integrity: string | null = null;
+    const trustedSources: string[] = [];
+    let rejectUntrusted = false;
 
-    // Repeat while !this.check("RBRACE") && !this.check("EOF").
     while (!this.check("RBRACE") && !this.check("EOF")) {
       const field = this.parseLabel("Expected secure field name");
-      this.expect("ASSIGN", "Expected '=' in secure field");
 
-      // continue when field equals "signed".
-      if (field === "signed") {
-        signed = this.match("TRUE");
-
-        // continue when expect is falsy.
-        if (!signed) this.expect("FALSE", "Expected true or false for signed");
-
-      // Otherwise, continue when field equals "min trust".
-      } else if (field === "min_trust") {
-        minTrust = this.parseLabel("Expected trust level");
-
-      // Otherwise, continue when field equals "requires".
-      } else if (field === "requires") {
-        this.expect("LBRACKET", "Expected '[' after requires");
-
-        // continue when check is falsy.
+      if (field === "trusted_sources") {
+        this.expect("LBRACKET", "Expected '[' after trusted_sources");
         if (!this.check("RBRACKET")) {
-
-          // Evaluate do.
           do {
-            requires.push(this.parseDottedCapability());
+            trustedSources.push(this.parseLabel("Expected trusted source name"));
           } while (this.match("COMMA"));
         }
-        this.expect("RBRACKET", "Expected ']' after requires");
-
-      // Handle any remaining cases.
+        this.expect("RBRACKET", "Expected ']' after trusted_sources");
+      } else if (this.check("ASSIGN")) {
+        this.advance();
+        if (field === "signed") {
+          signed = this.match("TRUE");
+          if (!signed) this.expect("FALSE", "Expected true or false for signed");
+        } else if (field === "min_trust") {
+          minTrust = this.parseLabel("Expected trust level");
+        } else if (field === "requires") {
+          this.expect("LBRACKET", "Expected '[' after requires");
+          if (!this.check("RBRACKET")) {
+            do {
+              requires.push(this.parseDottedCapability());
+            } while (this.match("COMMA"));
+          }
+          this.expect("RBRACKET", "Expected ']' after requires");
+        } else {
+          const t = this.peek();
+          throw new ParseError(`Unknown secure field '${field}'`, t.line, t.column);
+        }
+      } else if (field === "reject_untrusted") {
+        rejectUntrusted = this.match("TRUE");
+        if (!rejectUntrusted) {
+          this.expect("FALSE", "Expected true or false for reject_untrusted");
+          rejectUntrusted = false;
+        }
       } else {
-        const t = this.peek();
-        throw new ParseError(`Unknown secure field '${field}'`, t.line, t.column);
+        const value = this.parseLabel("Expected secure field value");
+        if (field === "encryption") encryption = value;
+        else if (field === "authentication") authentication = value;
+        else if (field === "integrity") integrity = value;
+        else if (field === "signed") {
+          signed = value === "required" || value === "true";
+        } else {
+          const t = this.peek();
+          throw new ParseError(`Unknown secure field '${field}'`, t.line, t.column);
+        }
       }
       this.expect("SEMICOLON", "Expected ';' after secure field");
     }
     const end = this.expect("RBRACE", "Expected '}' to close secure block");
-    return { signed, minTrust, requires, span: this.spanFrom(start, end) };
-}
+    return {
+      signed,
+      minTrust,
+      requires,
+      encryption,
+      authentication,
+      integrity,
+      trustedSources,
+      rejectUntrusted,
+      span: this.spanFrom(start, end),
+    };
+  }
 
   private parseConfigValueString(): string {
     // ParseConfigValueString.

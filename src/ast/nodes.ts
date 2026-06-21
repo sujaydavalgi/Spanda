@@ -233,6 +233,8 @@ export type RobotDecl = {
   devices: DeviceDecl[];
   agentChannels: AgentChannelDecl[];
   twinSync: TwinSyncDecl | null;
+  secureComm: import("../foundations.js").SecureCommPolicyDecl | null;
+  trustBoundaries: import("../foundations.js").TrustBoundaryDecl[];
   span: Span;
 };
 

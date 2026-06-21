@@ -34,6 +34,7 @@ import {
   SecurityContext,
   createRobotIdentity,
   parseTrustLevel,
+  type SecurePolicy,
 } from "../security/index.js";
 import {
   getNumber,
@@ -1707,6 +1708,11 @@ export class Interpreter {
         signed: topic.secure.signed,
         minTrust: topic.secure.minTrust ? parseTrustLevel(topic.secure.minTrust) : null,
         requires: topic.secure.requires,
+        encryption: (topic.secure.encryption as SecurePolicy["encryption"]) ?? "none",
+        authentication: (topic.secure.authentication as SecurePolicy["authentication"]) ?? "none",
+        integrity: (topic.secure.integrity as SecurePolicy["integrity"]) ?? "none",
+        trustedSources: topic.secure.trustedSources ?? [],
+        rejectUntrusted: topic.secure.rejectUntrusted ?? false,
       });
     }
     this.commBus.subscribe(path, topic.name);
@@ -1878,8 +1884,14 @@ export class Interpreter {
         const topic = this.env.get(stmt.topicName);
         const value = this.evalExpr(stmt.value);
 
-        // continue when kind equals "topic".
         if (topic?.kind === "topic") {
+          const sourceId = this.currentAgent ?? this.security.identity?.id ?? "robot";
+          try {
+            this.security.signOutbound(topic.topicPath, JSON.stringify(value), sourceId);
+          } catch (e) {
+            this.options.onLog?.(`security: publish denied on ${topic.topicPath}: ${e}`);
+            throw e;
+          }
           this.commBus.publish(
             topic.topicPath,
             topic.messageType,
@@ -1920,6 +1932,7 @@ export class Interpreter {
           : this.env.get(stmt.target)?.kind === "topic"
             ? (this.env.get(stmt.target) as Extract<RuntimeValue, { kind: "topic" }>).topicPath
             : `/${stmt.target}`;
+        this.security.authorizeSubscribe(path);
         this.commBus.subscribe(path, stmt.target);
         this.options.onLog?.(`subscribe ${stmt.target}`);
         break;
@@ -1951,6 +1964,8 @@ export class Interpreter {
 
         // continue when val.
         if (val) {
+          const payload = typeof val === "object" && val !== null ? JSON.stringify(val) : String(val);
+          this.security.verifyInboundMessage(path, payload, null);
           this.env.define(stmt.varName, val);
           this.options.onLog?.(`receive ${stmt.topicName} to ${stmt.varName}`);
         }

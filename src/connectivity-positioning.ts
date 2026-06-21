@@ -513,13 +513,13 @@ export function runtimeSimIdentity(link: string, attested: boolean) {
         : "sim-unknown";
   const esim = lower.includes("5g") || lower.includes("fiveg");
   return {
-    kind: "object",
+    kind: "object" as const,
     typeName: "SimIdentity",
     fields: {
-      iccid: { kind: "string", value: iccid },
-      carrier: { kind: "string", value: carrier },
-      esim: { kind: "bool", value: esim },
-      attested: { kind: "bool", value: attested },
+      iccid: { kind: "string" as const, value: iccid },
+      carrier: { kind: "string" as const, value: carrier },
+      esim: { kind: "bool" as const, value: esim },
+      attested: { kind: "bool" as const, value: attested },
     },
   };
 }

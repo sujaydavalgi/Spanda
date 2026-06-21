@@ -283,6 +283,11 @@ export type SecurePolicy = {
   signed: boolean;
   minTrust: TrustLevel | null;
   requires: string[];
+  encryption: "none" | "optional" | "required";
+  authentication: "none" | "signed" | "mutual";
+  integrity: "none" | "required";
+  trustedSources: string[];
+  rejectUntrusted: boolean;
 };
 
 export class CapabilitySet {
@@ -368,7 +373,8 @@ export class CapabilitySet {
 
 export type SecretSource =
   | { source: "env"; var: string }
-  | { source: "literal"; value: string };
+  | { source: "literal"; value: string }
+  | { source: "file"; path: string };
 
 export class SecretStore {
   private secrets = new Map<string, SecretSource>();
@@ -412,6 +418,7 @@ export class SecretStore {
     const src = this.secrets.get(name);
     if (!src) throw new Error(`secret not found: ${name}`);
     if (src.source === "literal") return src.value;
+    if (src.source === "file") return src.path;
     const val = process.env[src.var];
     if (val === undefined) throw new Error(`environment variable '${src.var}' not set`);
     return val;
@@ -457,7 +464,16 @@ export class SecureEndpointRegistry {
 
     // const result = policyOrOpen(path);
 
-    return this.policies.get(path) ?? { signed: false, minTrust: null, requires: [] };
+    return this.policies.get(path) ?? {
+      signed: false,
+      minTrust: null,
+      requires: [],
+      encryption: "none",
+      authentication: "none",
+      integrity: "none",
+      trustedSources: [],
+      rejectUntrusted: false,
+    };
   }
 }
 
@@ -536,7 +552,74 @@ export class SecurityContext {
     if (cap) this.capabilities.require(cap);
   }
 
-  signOutbound(path: string, payload: string): void {
+  authorizePublish(path: string, sourceId: string): void {
+    const policy = this.secureEndpoints.policyOrOpen(path);
+    if (policy.trustedSources.length > 0) {
+      if (!policy.trustedSources.includes(sourceId)) {
+        if (policy.rejectUntrusted) {
+          throw new Error(`untrusted source rejected: ${sourceId}`);
+        }
+        throw new Error(`untrusted source '${sourceId}' on ${path}`);
+      }
+      this.capabilities.require("secure_topic.publish");
+    } else if (
+      policy.encryption !== "none" ||
+      policy.signed ||
+      policy.authentication !== "none"
+    ) {
+      this.capabilities.require("secure_topic.publish");
+    }
+  }
+
+  authorizeSubscribe(path: string): void {
+    const policy = this.secureEndpoints.policyOrOpen(path);
+    if (
+      policy.encryption !== "none" ||
+      policy.signed ||
+      policy.authentication !== "none" ||
+      policy.trustedSources.length > 0
+    ) {
+      this.capabilities.require("secure_topic.subscribe");
+    }
+  }
+
+  verifyInbound(path: string, sourceId?: string | null): void {
+    const policy = this.secureEndpoints.policyOrOpen(path);
+    if (policy.trustedSources.length > 0) {
+      const sid = sourceId ?? "unknown";
+      if (!policy.trustedSources.includes(sid)) {
+        if (policy.rejectUntrusted) {
+          throw new Error(`untrusted source rejected: ${sid}`);
+        }
+        throw new Error(`untrusted source '${sid}' on ${path}`);
+      }
+    }
+    const secured =
+      policy.signed ||
+      policy.minTrust ||
+      policy.requires.length > 0 ||
+      policy.encryption !== "none" ||
+      policy.authentication !== "none" ||
+      policy.integrity !== "none";
+    if (!secured) return;
+    for (const cap of policy.requires) this.capabilities.require(cap);
+    if (!this.identity) throw new Error(`identity required for ${path}`);
+    if (policy.minTrust && !trustSatisfies(this.trust, policy.minTrust)) {
+      throw new Error(`trust level insufficient: required ${policy.minTrust}, have ${this.trust}`);
+    }
+    if (policy.encryption === "required") this.capabilities.require("crypto.decrypt");
+    if (policy.signed || policy.integrity === "required") {
+      this.capabilities.require("identity.verify");
+    }
+  }
+
+  verifyInboundMessage(path: string, _payload: string, sourceId?: string | null): void {
+    this.authorizeSubscribe(path);
+    this.verifyInbound(path, sourceId);
+  }
+
+  signOutbound(path: string, payload: string, sourceId?: string): void {
+    if (sourceId) this.authorizePublish(path, sourceId);
     // SignOutbound.
     //
     // Parameters:
@@ -570,9 +653,17 @@ export const KNOWN_CAPABILITIES = [
   "audit.read",
   "identity.sign",
   "identity.verify",
+  "identity.read",
   "ledger.anchor",
   "network.outbound",
   "actuator.execute",
+  "crypto.encrypt",
+  "crypto.decrypt",
+  "crypto.sign",
+  "crypto.verify",
+  "secret.read",
+  "secure_topic.publish",
+  "secure_topic.subscribe",
 ] as const;
 
 export function isKnownCapability(cap: string): boolean {

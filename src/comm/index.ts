@@ -89,6 +89,10 @@ export type BusDecl = {
   kind: "BusDecl";
   name: string;
   transport: TransportKind;
+  transportName?: string | null;
+  encryption?: string | null;
+  authentication?: string | null;
+  integrity?: string | null;
   span: Span;
 };
 

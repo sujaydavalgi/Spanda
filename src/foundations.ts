@@ -314,7 +314,7 @@ export type DeployDecl = {
 
 export type SimulateCompatibilityDecl = {
   kind: "SimulateCompatibilityDecl";
-  faults: { faultType: string; span: Span }[];
+  faults: { faultType: string; atOffsetMs?: number; durationMs?: number; span: Span }[];
   span: Span;
 };
 
@@ -389,7 +389,22 @@ export type SignedRecordDecl = {
 
 export type SecretSourceDecl =
   | { source: "env"; var: string }
-  | { source: "literal"; value: string };
+  | { source: "literal"; value: string }
+  | { source: "file"; path: string };
+
+export type SecureCommPolicyDecl = {
+  kind: "SecureCommPolicyDecl";
+  encryption: string | null;
+  authentication: string | null;
+  integrity: string | null;
+  span: Span;
+};
+
+export type TrustBoundaryDecl = {
+  kind: "TrustBoundaryDecl";
+  name: string;
+  span: Span;
+};
 
 export type SecretDecl = {
   kind: "SecretDecl";
@@ -414,6 +429,11 @@ export type SecureBlockDecl = {
   signed: boolean;
   minTrust: string | null;
   requires: string[];
+  encryption: string | null;
+  authentication: string | null;
+  integrity: string | null;
+  trustedSources: string[];
+  rejectUntrusted: boolean;
   span: Span;
 };
 
