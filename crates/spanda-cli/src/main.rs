@@ -92,12 +92,13 @@ fn usage() {
            spanda check [--json] [<file.sd> | --project]\n\
            spanda verify [--json] [--target <HardwareProfile>] [--all-targets] [--simulate] [--strict-certify] <file.sd>\n\
            spanda compatibility [--json] [--target <HardwareProfile>] [--all-targets] [--simulate] [--strict-certify] <file.sd>\n\
-           spanda run [--json] [--verbose] [--twin-export <replay.json>] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] [--trace-realtime] [--metrics-json] [--record] <file.sd>\n\
-           spanda sim [--json] [--replay] [--twin-export <replay.json>] [--trace-realtime] [--metrics-json] [--record] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] <file.sd>\n\
+           spanda run [--json] [--verbose] [--twin-export <replay.json>] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] [--trace-realtime] [--metrics-json] [--record] [--enforce-certify] <file.sd>\n\
+           spanda sim [--json] [--replay] [--twin-export <replay.json>] [--trace-realtime] [--metrics-json] [--record] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] [--enforce-certify] <file.sd>\n\
            spanda replay <mission.trace> [--from T+mm:ss] [--deterministic] [--playback]\n\
            spanda twin export <file.sd> --out <replay.json>\n\
            spanda fleet run [--json] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] <file.sd>\n\
-           spanda fleet orchestrate [--json] [--remote] <file.sd>\n\
+           spanda fleet orchestrate [--json] [--remote] [--mesh-url <http(s)://host:port>] [--mesh-token <t>] <file.sd>\n\
+           spanda fleet mesh start [--bind <addr>] [--token <t>] [--tls-cert <pem>] [--tls-key <pem>]\n\
            spanda fleet agent start [--bind <addr>] [--robot <name>] [--token <t>] [--tls-cert <pem>] [--tls-key <pem>]\n\
            spanda fleet agent register <RobotName> <http(s)://host:port> [--token <t>]\n\
            spanda fleet agent list [--json]\n\
@@ -119,6 +120,7 @@ fn usage() {
            spanda remove <package>\n\
            spanda install [--project <dir>]\n\
            spanda publish [--project <dir>]\n\
+           spanda verify-adapter [--project <dir>] [--import <path>] [--package <name>]\n\
            spanda registry search <query>\n\
            spanda registry info <package>\n\n\
          Security commands:\n\
@@ -718,6 +720,7 @@ fn is_package_command(cmd: &str) -> bool {
     matches!(
         cmd,
         "init" | "build" | "test" | "add" | "remove" | "publish" | "install" | "registry"
+            | "verify-adapter"
     )
 }
 
@@ -836,10 +839,15 @@ fn fleet_dispatch(args: &[String]) {
         deploy_ota::fleet_agent_dispatch(&args[1..]);
         return;
     }
+    if args.first().map(String::as_str) == Some("mesh") {
+        deploy_ota::fleet_mesh_dispatch(args);
+        return;
+    }
     if args.first().map(String::as_str) != Some("run") {
         eprintln!("Usage: spanda fleet run [--json] [--trace-*] <file.sd>");
-        eprintln!("       spanda fleet orchestrate [--json] [--remote] <file.sd>");
+        eprintln!("       spanda fleet orchestrate [--json] [--remote] [--mesh-url <url>] <file.sd>");
         eprintln!("       spanda fleet agent start|register|list");
+        eprintln!("       spanda fleet mesh start [--bind <addr>]");
         process::exit(1);
     }
     let mut json = false;
@@ -1200,6 +1208,7 @@ fn dispatch_package(command: &str, rest: &[String]) {
         "remove" => package::cmd_remove(rest),
         "install" => package::cmd_install(rest),
         "publish" => package::cmd_publish(rest),
+        "verify-adapter" => package::cmd_verify_adapter(rest),
         "registry" => match rest.first().map(String::as_str) {
             Some("search") => package::cmd_registry_search(&rest[1..]),
             Some("info") => package::cmd_registry_info(&rest[1..]),
@@ -1310,6 +1319,7 @@ fn main() {
     let mut wall_clock = false;
     let mut secure_mode = false;
     let mut inject_security_faults = false;
+    let mut enforce_certify = false;
     let mut i = 2;
 
     // Repeat while i < args.len().
@@ -1331,6 +1341,7 @@ fn main() {
             "--record" => record_trace = true,
             "--secure" => secure_mode = true,
             "--inject-security-faults" => inject_security_faults = true,
+            "--enforce-certify" => enforce_certify = true,
             "--twin-export" => {
                 i += 1;
                 if i >= args.len() {
@@ -1544,6 +1555,7 @@ fn main() {
                 twin_export_path,
                 secure_mode,
                 inject_security_faults,
+                enforce_certify,
                 ..Default::default()
             };
 

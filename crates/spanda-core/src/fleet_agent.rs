@@ -83,6 +83,44 @@ pub fn handle_fleet_agent_request(state: &mut FleetAgentState, request: HttpRequ
                     body: r#"{"ok":false,"error":"invalid peer payload"}"#.into(),
                 };
             };
+
+            // Forward peer deliveries destined for another registered robot agent.
+            if !payload.to_robot.is_empty()
+                && !state.robot_name.is_empty()
+                && payload.to_robot != state.robot_name
+            {
+                let registry =
+                    crate::fleet_remote::load_fleet_agent_registry(&crate::fleet_remote::default_fleet_agents_path());
+                if let Some(entry) =
+                    crate::fleet_remote::lookup_fleet_agent(&registry, &payload.to_robot)
+                {
+                    let delivery = crate::fleet_orchestrator::PeerDelivery {
+                        from_robot: payload.from_robot.clone(),
+                        to_robot: payload.to_robot.clone(),
+                        topic: payload.topic.clone(),
+                        step: payload.step.clone(),
+                        delivered: false,
+                    };
+                    return match crate::fleet_remote::relay_peer_delivery(entry, &delivery) {
+                        Ok(resp) => HttpResponse {
+                            status: if resp.ok { 200 } else { 502 },
+                            body: serde_json::to_string(&resp).unwrap_or_else(|_| "{}".into()),
+                        },
+                        Err(err) => HttpResponse {
+                            status: 502,
+                            body: serde_json::to_string(&PeerRelayResponse {
+                                ok: false,
+                                to_robot: payload.to_robot,
+                                topic: payload.topic,
+                                step: payload.step,
+                                error: Some(err),
+                            })
+                            .unwrap_or_else(|_| "{}".into()),
+                        },
+                    };
+                }
+            }
+
             if !state.robot_name.is_empty() && payload.to_robot != state.robot_name {
                 return HttpResponse {
                     status: 400,

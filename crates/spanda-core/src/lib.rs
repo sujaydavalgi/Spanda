@@ -5,7 +5,9 @@ pub mod ast;
 pub mod audit;
 pub mod bridge;
 pub mod codegen;
+pub mod adapter_bridge;
 pub mod certify_verify;
+pub mod certify_runtime;
 pub mod comm;
 pub mod concurrency;
 pub mod connectivity_positioning;
@@ -24,6 +26,7 @@ pub mod ffi_registry;
 pub mod fleet_orchestrator;
 pub mod fleet_remote;
 pub mod fleet_agent;
+pub mod fleet_mesh;
 pub mod format;
 pub mod foundations;
 pub mod hal;
@@ -101,20 +104,29 @@ pub use deploy_agent::{
 };
 pub use deploy_http::{parse_http_url, DeployAgentTls};
 pub use fleet_orchestrator::{
-    fleet_registry_from_program, orchestrate_fleets, orchestrate_fleets_remote,
-    FleetMemberState, FleetOrchestrationReport, FleetOrchestrationResult, PeerDelivery,
+    fleet_registry_from_program, orchestrate_fleets, orchestrate_fleets_mesh,
+    orchestrate_fleets_remote, FleetMemberState, FleetOrchestrationReport,
+    FleetOrchestrationResult, PeerDelivery,
 };
 pub use fleet_remote::{
     agent_health as fleet_agent_health, default_fleet_agents_path, load_fleet_agent_registry,
-    lookup_fleet_agent, register_fleet_agent, relay_peer_deliveries, save_fleet_agent_registry,
-    FleetAgentEntry, FleetAgentRegistry, PeerRelayResponse,
+    lookup_fleet_agent, register_fleet_agent, relay_peer_delivery, relay_peer_deliveries,
+    save_fleet_agent_registry, FleetAgentEntry, FleetAgentRegistry, PeerRelayResponse,
 };
 pub use fleet_agent::{
     default_fleet_agent_state_path, fleet_entry_for_port, handle_fleet_agent_request,
     load_fleet_agent_state, run_fleet_agent_server, save_fleet_agent_state, spawn_test_fleet_agent,
     FleetAgentState,
 };
+pub use fleet_mesh::{
+    default_fleet_mesh_state_path, mesh_registry_path, relay_deliveries_via_mesh,
+    run_fleet_mesh_coordinator, spawn_test_fleet_mesh, FleetMeshState, MeshRelayResponse,
+};
 pub use certify_verify::verify_certification_proof;
+pub use certify_runtime::{
+    certification_runtime_enabled_from_env, enforce_certification_runtime,
+};
+pub use adapter_bridge::{invoke_nav2_bridge, invoke_slam_bridge};
 pub use debug_session::{DebugMachine, DebugStackFrame, DebugStepKind};
 pub use docs::generate_markdown;
 pub use error::*;
@@ -450,6 +462,10 @@ pub fn run_program(program: &Program, options: RunOptions) -> Result<RunResult, 
     //
     // Example:
     // let result = spanda_core::run_program(program, options);
+
+    if options.enforce_certify || certification_runtime_enabled_from_env() {
+        enforce_certification_runtime(program, true)?;
+    }
 
     // Compute obstacles for the following logic.
     let obstacles: Vec<Obstacle> = options

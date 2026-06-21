@@ -23,7 +23,7 @@ pub struct FleetMemberState {
 }
 
 /// One peer message delivered over the in-process fleet mesh bus.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PeerDelivery {
     pub from_robot: String,
     pub to_robot: String,
@@ -284,6 +284,61 @@ pub fn orchestrate_fleets_remote(
         }
         if failed > 0 {
             success = false;
+        }
+    }
+    result.success = success;
+    result
+}
+
+/// Orchestrate fleets and relay peer deliveries through a mesh coordinator.
+pub fn orchestrate_fleets_mesh(
+    program: &Program,
+    program_path: &str,
+    mesh_url: &str,
+    token: Option<&str>,
+) -> FleetOrchestrationResult {
+    // Coordinate locally, then push peer mission steps to a fleet mesh coordinator.
+    //
+    // Parameters:
+    // - `program` — parsed Spanda program
+    // - `program_path` — source path for reporting
+    // - `mesh_url` — mesh coordinator base URL
+    // - `token` — optional bearer token for the mesh coordinator
+    //
+    // Returns:
+    // Orchestration report with remote relay counters.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // let result = orchestrate_fleets_mesh(&program, "fleet.sd", "http://mesh:8767", None);
+
+    let mut result = orchestrate_fleets(program, program_path);
+    let mut success = result.success;
+    for fleet in &mut result.fleets {
+        if fleet.peer_deliveries.is_empty() {
+            continue;
+        }
+        match crate::fleet_mesh::relay_deliveries_via_mesh(
+            mesh_url,
+            &fleet.peer_deliveries,
+            token,
+        ) {
+            Ok(resp) => {
+                fleet.remote_relayed = resp.relayed;
+                fleet.remote_failed = resp.failed;
+                if resp.relayed > 0 {
+                    fleet.coordination_mode = "distributed_peer_mesh".into();
+                }
+                if resp.failed > 0 {
+                    success = false;
+                }
+            }
+            Err(_) => {
+                fleet.remote_failed = fleet.peer_deliveries.len() as u32;
+                success = false;
+            }
         }
     }
     result.success = success;

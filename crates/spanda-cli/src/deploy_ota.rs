@@ -5,9 +5,9 @@ use spanda_core::{
     default_agent_state_path, default_agents_path, default_fleet_agent_state_path,
     default_fleet_agents_path, default_state_path, execute_remote_rollout,
     execute_remote_rollback, fleet_agent_health, load_agent_registry, load_deploy_state,
-    load_fleet_agent_registry, orchestrate_fleets, orchestrate_fleets_remote, plan_rollout,
-    register_agent, register_fleet_agent, rollback_targets, run_deploy_agent_server,
-    run_fleet_agent_server, save_agent_registry, save_deploy_state, save_fleet_agent_registry,
+    load_fleet_agent_registry, mesh_registry_path, orchestrate_fleets, orchestrate_fleets_mesh,
+    orchestrate_fleets_remote, plan_rollout, register_agent, register_fleet_agent, rollback_targets,
+    run_deploy_agent_server, run_fleet_agent_server, run_fleet_mesh_coordinator, save_agent_registry, save_deploy_state, save_fleet_agent_registry,
     sign_deploy_bundle, DeployAgentTls, DeployState, RolloutOptions, RolloutStrategy,
 };
 use std::env;
@@ -479,17 +479,30 @@ fn print_rollout(result: &spanda_core::RolloutResult, json: bool) {
 pub fn fleet_orchestrate_dispatch(args: &[String]) {
     let mut json = false;
     let mut remote = false;
+    let mut mesh_url: Option<String> = None;
+    let mut mesh_token: Option<String> = None;
     let mut file: Option<String> = None;
-    for arg in args {
-        match arg.as_str() {
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
             "--json" => json = true,
             "--remote" => remote = true,
+            "--mesh-url" if i + 1 < args.len() => {
+                mesh_url = Some(args[i + 1].clone());
+                remote = true;
+                i += 1;
+            }
+            "--mesh-token" if i + 1 < args.len() => {
+                mesh_token = Some(args[i + 1].clone());
+                i += 1;
+            }
             other if !other.starts_with('-') && file.is_none() => file = Some(other.to_string()),
             other => {
                 eprintln!("Unknown argument: {other}");
                 process::exit(1);
             }
         }
+        i += 1;
     }
     let file = file.unwrap_or_else(|| {
         eprintln!("Missing file path");
@@ -497,7 +510,14 @@ pub fn fleet_orchestrate_dispatch(args: &[String]) {
     });
     let source = read_source(&file);
     let program = parse_program(&source, &file);
-    let result = if remote {
+    let result = if let Some(ref url) = mesh_url {
+        orchestrate_fleets_mesh(
+            &program,
+            &file,
+            url,
+            mesh_token.as_deref(),
+        )
+    } else if remote {
         let registry = load_fleet_agent_registry(&fleet_agents_path());
         orchestrate_fleets_remote(&program, &file, &registry)
     } else {
@@ -535,13 +555,65 @@ pub fn fleet_orchestrate_dispatch(args: &[String]) {
                     delivery.delivered
                 );
             }
-            if remote {
+            if remote || mesh_url.is_some() {
                 println!(
                     "    remote: relayed={} failed={}",
                     fleet.remote_relayed, fleet.remote_failed
                 );
             }
         }
+    }
+}
+
+pub fn fleet_mesh_dispatch(args: &[String]) {
+    if args.first().map(String::as_str) != Some("start") {
+        eprintln!("Usage: spanda fleet mesh start [--bind <addr>] [--token <t>] [--tls-cert <pem>] [--tls-key <pem>]");
+        process::exit(1);
+    }
+    let mut bind = "127.0.0.1:8767".to_string();
+    let mut token = None;
+    let mut tls_cert = None;
+    let mut tls_key = None;
+    let mut i = 1;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--bind" if i + 1 < args.len() => {
+                bind = args[i + 1].clone();
+                i += 1;
+            }
+            "--token" if i + 1 < args.len() => {
+                token = Some(args[i + 1].clone());
+                i += 1;
+            }
+            "--tls-cert" if i + 1 < args.len() => {
+                tls_cert = Some(args[i + 1].clone());
+                i += 1;
+            }
+            "--tls-key" if i + 1 < args.len() => {
+                tls_key = Some(args[i + 1].clone());
+                i += 1;
+            }
+            other => {
+                eprintln!("Unknown argument: {other}");
+                process::exit(1);
+            }
+        }
+        i += 1;
+    }
+    let tls = match (tls_cert, tls_key) {
+        (Some(cert_path), Some(key_path)) => Some(DeployAgentTls {
+            cert_path,
+            key_path,
+        }),
+        (None, None) => None,
+        _ => {
+            eprintln!("Both --tls-cert and --tls-key are required for HTTPS fleet mesh");
+            process::exit(1);
+        }
+    };
+    if let Err(err) = run_fleet_mesh_coordinator(&bind, &mesh_registry_path(), token, tls) {
+        eprintln!("Fleet mesh failed: {err}");
+        process::exit(1);
     }
 }
 
