@@ -1,5 +1,6 @@
 //! main support for Spanda.
 //!
+mod deploy_ota;
 mod package;
 
 use serde::Serialize;
@@ -96,12 +97,13 @@ fn usage() {
            spanda replay <mission.trace> [--from T+mm:ss] [--deterministic] [--playback]\n\
            spanda twin export <file.sd> --out <replay.json>\n\
            spanda fleet run [--json] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] <file.sd>\n\
+           spanda fleet orchestrate [--json] <file.sd>\n\
            spanda fmt [--json] <file.sd>\n\
            spanda lint [--json] <file.sd>\n\
            spanda doc [--json] [--out <file.md>] <file.sd>\n\
            spanda reference [--json] [--out <file.md>] [--man-dir <dir>]\n\
            spanda codegen [--target native|wasm|esp32] [--out <file>] <file.sd>\n\
-           spanda deploy --target wasm [--out <file.json>] <file.sd>\n\
+           {}\n\
            spanda debug [--break <line>] <file.sd>\n\
            spanda ir [--json] <file.sd>\n\
            spanda llvm-ir [--out <file.ll>] [--target-triple <triple>] [--hal-profile <name>] <file.sd>\n\
@@ -118,7 +120,8 @@ fn usage() {
            spanda registry info <package>\n\n\
          Security commands:\n\
            spanda security check [--json] <file.sd>\n\
-           spanda security audit [--json] <file.sd>\n"
+           spanda security audit [--json] <file.sd>\n",
+        deploy_ota::deploy_usage_lines()
     );
 }
 
@@ -822,8 +825,13 @@ fn fleet_dispatch(args: &[String]) {
     // let result = spanda_cli::main::fleet_dispatch(args);
 
     // take the branch when as str) differs from Some.
+    if args.first().map(String::as_str) == Some("orchestrate") {
+        deploy_ota::fleet_orchestrate_dispatch(&args[1..]);
+        return;
+    }
     if args.first().map(String::as_str) != Some("run") {
-        eprintln!("Usage: spanda fleet run [--json] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] <file.sd>");
+        eprintln!("Usage: spanda fleet run [--json] [--trace-*] <file.sd>");
+        eprintln!("       spanda fleet orchestrate [--json] <file.sd>");
         process::exit(1);
     }
     let mut json = false;
@@ -1230,6 +1238,19 @@ fn main() {
         fleet_dispatch(&args[2..]);
         let _ = io::stdout().flush();
         return;
+    }
+
+    if command == "deploy" {
+        if args.len() > 2 {
+            match args[2].as_str() {
+                "plan" | "rollout" | "rollback" | "status" => {
+                    deploy_ota::deploy_dispatch(&args[2..]);
+                    let _ = io::stdout().flush();
+                    return;
+                }
+                _ => {}
+            }
+        }
     }
 
     // Take the branch when command equals "twin".
