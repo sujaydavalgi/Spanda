@@ -17,6 +17,10 @@ Spanda is an AI-native autonomous systems programming language. Source files use
 | [spanda-101/README.md](./spanda-101/README.md) | **Spanda 101 — 10-lesson tutorial series (basics → end-to-end)** |
 | [installation.md](./installation.md) | **Prebuilt packages for Linux, macOS, and Windows** |
 | [architecture.md](./architecture.md) | **Compiler pipeline with diagrams** |
+| [lean-core.md](./lean-core.md) | **Lean-core, package-first architecture** |
+| [provider-interfaces.md](./provider-interfaces.md) | **Provider trait contracts for packages** |
+| [official-packages.md](./official-packages.md) | **Official package catalog** |
+| [security-architecture.md](./security-architecture.md) | **Security contracts vs package backends** |
 | [triggers.md](./triggers.md) | **Unified trigger-driven execution** (`on`, `every`, `when`, safety, state, AI) |
 | [concurrency.md](./concurrency.md) | **Tasks, spawn, channels, fleet CLI, and runtime telemetry** |
 | [realtime.md](./realtime.md) | **Deadline-aware tasks, jitter bounds, wall-clock scheduling** |
@@ -76,6 +80,7 @@ packages/
   native/                   @spanda/native — Node wrapper for N-API
   web/                      @spanda/web — React playground
   lsp/                      @spanda/lsp — Language Server (check + verify diagnostics)
+  registry/                 Official .sd packages (spanda-gps, spanda-ros2, spanda-mqtt, …)
 src/                        TypeScript interpreter, CLI wrapper, rust-bridge, and tests
 editor/vscode/              First-party VS Code extension scaffold
 scripts/                    Inline doc tooling, ROS2 daemon, Python bridge helpers

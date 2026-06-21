@@ -2,6 +2,8 @@
 
 Spanda projects are organized as **packages** — self-contained units with a manifest (`spanda.toml`), source files, dependencies, and declared capabilities.
 
+Spanda uses a **lean-core** architecture: the language core defines types, safety, and [provider interfaces](./provider-interfaces.md). Domain features (ROS2, MQTT, GPS, SLAM, vision, simulation, fleet, cloud) ship as [official packages](./official-packages.md) under `packages/registry/`.
+
 ## Quick start
 
 ```bash

@@ -2,7 +2,22 @@
 
 Technical architecture of the Spanda compiler, runtime, and tooling stack.
 
-For a shorter overview, see [spanda-architecture.md](./spanda-architecture.md).
+For a shorter overview, see [spanda-architecture.md](./spanda-architecture.md). For the lean-core model, see [lean-core.md](./lean-core.md).
+
+---
+
+## Lean-core model
+
+Spanda Core defines **contracts** (types, safety, verification, provider traits). **Official packages** under `packages/registry/` supply domain implementations (ROS2, MQTT, GPS, SLAM, vision, simulation, fleet, OTA, cloud). Legacy core modules remain as compatibility shims — see [migration.md](./migration.md#lean-core-package-first-refactor).
+
+```mermaid
+flowchart LR
+  CORE["spanda-core\nlexer · parser · types · safety · providers"]
+  PKG["Official packages\nspanda-ros2 · spanda-mqtt · spanda-gps · …"]
+  CLI["spanda-cli"]
+  CORE --> CLI
+  PKG --> CORE
+```
 
 ---
 

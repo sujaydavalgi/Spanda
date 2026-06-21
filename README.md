@@ -74,6 +74,8 @@ Spanda exists to be that coordination layer: one typed language where perception
 
 ## Architecture overview
 
+Spanda uses a **lean-core, package-first** architecture. Core provides safety, verification, the type system, runtime hooks, and extension contracts. Robotics, AI, connectivity, simulation, and cloud integrations are added through [official packages](docs/official-packages.md).
+
 ```
 .sd source → lexer → parser → AST → type checker
                                       ↓
@@ -81,17 +83,20 @@ Spanda exists to be that coordination layer: one typed language where perception
                                       ↓
                             interpreter + simulator
                                       ↓
+                     optional packages (ROS2, MQTT, GPS, …)
+                                      ↓
                             SIR → LLVM (experimental)
 ```
 
 | Layer | Technology | Responsibility |
 |-------|------------|----------------|
-| Language core | Rust (`spanda-core`) | Parser, types, interpreter, safety, AI, simulator, hardware verifier |
+| Language core | Rust (`spanda-core`) | Parser, types, interpreter, safety, provider traits, default simulator |
+| Official packages | `.sd` + `spanda.toml` | ROS2, MQTT, GPS, SLAM, vision, fleet, OTA, cloud |
 | Native CLI | Rust (`spanda-cli`) | `check`, `verify`, `run`, `sim`, package manager |
 | Bindings | N-API, WASM | Node and browser integration |
 | Developer UX | TypeScript + React | CLI wrapper, LSP, web playground, tests, VS Code extension scaffold (`editor/vscode`) |
 
-Deep dive: [docs/architecture.md](docs/architecture.md)
+Deep dive: [docs/lean-core.md](docs/lean-core.md) · [docs/architecture.md](docs/architecture.md)
 
 ---
 

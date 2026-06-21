@@ -51,3 +51,47 @@ TypeScript `verifyViaCli()` prefers the native Rust CLI when available. When the
 4. Optionally add `requires_hardware { }` for minimum platform requirements and `mission { duration: N h; }` for power checks.
 
 See [hardware-compatibility.md](./hardware-compatibility.md).
+
+## Lean-core package-first refactor
+
+Spanda is moving to a **lean-core** architecture. Core keeps language semantics, safety contracts, and provider traits; domain implementations move to official packages under `packages/registry/`.
+
+### What does not change
+
+- All existing CLI commands (`check`, `verify`, `run`, `sim`, `fleet`, `deploy`, etc.)
+- Existing `.sd` examples and tests
+- Import paths like `robotics.ros2`, `communication.mqtt`, `positioning.gps`
+- Parser, type checker, and runtime behavior
+
+### Compatibility shims
+
+Legacy core modules remain until packages fully own implementations:
+
+| Core shim | Target package |
+|-----------|----------------|
+| `transport_mqtt` | `spanda-mqtt` |
+| `transport_rclrs` | `spanda-ros2` |
+| `transport_dds` | `spanda-dds` |
+| `connectivity_positioning` | `spanda-gps`, `spanda-wifi`, `spanda-ble`, `spanda-cellular` |
+| `nav2_adapter` | `spanda-nav` |
+| `slam_adapter` | `spanda-slam` |
+| `fleet_orchestrator` | `spanda-fleet` |
+| `deploy_service` | `spanda-ota` |
+
+No action required for existing programs. New projects should add package dependencies explicitly:
+
+```toml
+[dependencies]
+spanda-ros2 = "0.1"
+spanda-mqtt = "0.1"
+```
+
+### Provider traits
+
+Packages implement traits in `spanda_core::providers` (`TransportProvider`, `SensorProvider`, etc.). See [provider-interfaces.md](./provider-interfaces.md).
+
+### Further reading
+
+- [lean-core.md](./lean-core.md)
+- [official-packages.md](./official-packages.md)
+- [security-architecture.md](./security-architecture.md)
