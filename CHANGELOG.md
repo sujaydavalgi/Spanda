@@ -34,7 +34,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Language reference:** `spanda reference`, `docs/spanda-reference.md` (JavaDoc-style `std.*`, builtins, types), `docs/man/` (man-page CLI docs)
 - **Compiler API index:** `docs/api-reference.md` (Rust/TypeScript modules and public functions)
 - Examples under `examples/realtime/` and `examples/regex/`
-- **GPS/GNSS positioning and wireless connectivity:** `requires_connectivity`, hardware `connectivity [ … ]`, WGS84 `geofence`, `connectivity_policy`, Bluetooth/BLE blocks, connectivity triggers (`on gps.lost`, `on network.disconnected`), `std.positioning` / `std.connectivity` namespaces; TypeScript parser/runtime mirror with TS verify fallback and transport rebinding on failover; u-blox NEO-M8N UART GNSS stub in `lib_registry`; docs in `docs/positioning.md`, `docs/connectivity.md`, `docs/geofencing.md`, `docs/bluetooth.md`, `docs/cellular.md`; examples in `examples/connectivity/`
+- **GPS/GNSS positioning and wireless connectivity:** `requires_connectivity`, hardware `connectivity [ … ]`, WGS84 `geofence`, `connectivity_policy`, Bluetooth/BLE blocks, connectivity triggers (`on gps.lost`, `on network.disconnected`, `on gps.spoofed`), `std.positioning` / `std.connectivity` namespaces; TypeScript parser/runtime mirror with TS verify fallback and transport rebinding on failover; u-blox NEO-M8N UART GNSS stub in `lib_registry`; docs in `docs/positioning.md`, `docs/connectivity.md`, `docs/geofencing.md`, `docs/bluetooth.md`, `docs/cellular.md`; examples in `examples/connectivity/`
+- **GPS fault simulation at runtime:** `GpsSpoofing` offsets coordinates and degrades fix quality; `GpsDrift` accumulates positional drift over sim time; applied to GPS sensor reads and geofence checks in Rust and TypeScript
+- **TypeScript hardware verify parity:** builtin profile registry, sensor/actuator/network/connectivity checks, timing and mission validation, resource budget, deploy resolution, and `simulate_compatibility` fault injection when Rust CLI is unavailable
 
 ### Changed
 

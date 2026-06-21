@@ -43,8 +43,8 @@ Inject positioning faults during compatibility simulation:
 ```spanda
 simulate_compatibility {
   fault GPSLost;
-  fault GpsDrift;
-  fault GpsSpoofing;  // placeholder scenario
+  fault GpsDrift;     // accumulates ~5 cm/s coordinate drift over sim time
+  fault GpsSpoofing;  // offsets lat/lon and lowers fix quality; fires `on gps.spoofed`
 }
 ```
 

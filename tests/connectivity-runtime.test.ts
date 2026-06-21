@@ -5,6 +5,7 @@ import { tokenize } from "../src/lexer/index.js";
 import { parse } from "../src/parser/index.js";
 import { run } from "../src/compile.js";
 import { createDefaultSimulator } from "../src/simulator/index.js";
+import { applyGpsPositionFaults } from "../src/connectivity-positioning.js";
 
 describe("connectivity runtime", () => {
   it("failovers link and transport on network outage", () => {
@@ -39,5 +40,34 @@ robot R {
       onLog: (msg) => logs.push(msg),
     });
     expect(logs.some((l) => l.includes("emit gps.lost"))).toBe(true);
+  });
+
+  it("offsets GPS fix under GpsSpoofing and fires gps.spoofed", () => {
+    const program = parse(
+      tokenize(`
+simulate_compatibility { fault GpsSpoofing; }
+robot R {
+  sensor gps: GPS;
+  on gps.spoofed { }
+  behavior idle() {
+    let fix = gps.read();
+    let _ = fix;
+  }
+}
+`),
+    );
+    const logs: string[] = [];
+    run(program, {
+      backend: createDefaultSimulator(),
+      onLog: (msg) => logs.push(msg),
+    });
+    expect(logs.some((l) => l.includes("emit gps.spoofed"))).toBe(true);
+  });
+
+  it("applyGpsPositionFaults drifts coordinates over time", () => {
+    const faults = new Set(["GpsDrift"]);
+    const a = applyGpsPositionFaults(faults, 30.0, -97.0, 0);
+    const b = applyGpsPositionFaults(faults, 30.0, -97.0, 60_000);
+    expect(b.lat).toBeGreaterThan(a.lat);
   });
 });
