@@ -503,6 +503,14 @@ pub enum Program {
         deployments: Vec<crate::foundations::DeployDecl>,
         requires_hardware: Option<crate::foundations::RequiresHardwareDecl>,
         requires_network: Option<crate::foundations::RequiresNetworkDecl>,
+        #[serde(default)]
+        requires_connectivity: Option<crate::foundations::RequiresConnectivityDecl>,
+        #[serde(default)]
+        geofences: Vec<crate::foundations::GeofenceDecl>,
+        #[serde(default)]
+        connectivity_policies: Vec<crate::foundations::ConnectivityPolicyDecl>,
+        #[serde(default)]
+        ble_services: Vec<crate::foundations::BleServiceDecl>,
         simulate_compatibility: Option<crate::foundations::SimulateCompatibilityDecl>,
         messages: Vec<crate::comm::MessageDecl>,
         #[serde(default)]
@@ -565,6 +573,10 @@ pub enum RobotDecl {
         permissions: Option<crate::foundations::PermissionsDecl>,
         requires_hardware: Option<crate::foundations::RequiresHardwareDecl>,
         requires_network: Option<crate::foundations::RequiresNetworkDecl>,
+        #[serde(default)]
+        requires_connectivity: Option<crate::foundations::RequiresConnectivityDecl>,
+        #[serde(default)]
+        bluetooth: Option<crate::foundations::BluetoothConfigDecl>,
         mission: Option<crate::foundations::MissionDecl>,
         trait_impls: Vec<crate::foundations::TraitImplDecl>,
         buses: Vec<crate::comm::BusDecl>,

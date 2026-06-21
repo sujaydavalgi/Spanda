@@ -760,23 +760,26 @@ fn twin_dispatch(args: &[String]) {
         process::exit(1);
     });
     let source = read_source(&file);
-    let entry_behavior = spanda_core::compile(&source)
-        .ok()
-        .and_then(|compiled| {
-            let spanda_core::Program::Program { robots, .. } = compiled.program;
-            robots.first().and_then(|robot| {
-                let spanda_core::RobotDecl::RobotDecl { behaviors, tasks, .. } = robot;
-                behaviors.first().map(|behavior| {
+    let entry_behavior = spanda_core::compile(&source).ok().and_then(|compiled| {
+        let spanda_core::Program::Program { robots, .. } = compiled.program;
+        robots.first().and_then(|robot| {
+            let spanda_core::RobotDecl::RobotDecl {
+                behaviors, tasks, ..
+            } = robot;
+            behaviors
+                .first()
+                .map(|behavior| {
                     let spanda_core::BehaviorDecl::BehaviorDecl { name, .. } = behavior;
                     name.clone()
-                }).or_else(|| {
+                })
+                .or_else(|| {
                     tasks.first().map(|task| {
                         let spanda_core::foundations::TaskDecl::TaskDecl { name, .. } = task;
                         name.clone()
                     })
                 })
-            })
-        });
+        })
+    });
     let opts = RunOptions {
         max_loop_iterations: 50,
         entry_behavior,

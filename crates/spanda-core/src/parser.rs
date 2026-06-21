@@ -591,6 +591,10 @@ impl Parser {
         let mut deployments = Vec::new();
         let mut requires_hardware = None;
         let mut requires_network = None;
+        let mut requires_connectivity = None;
+        let mut geofences = Vec::new();
+        let mut connectivity_policies = Vec::new();
+        let mut ble_services = Vec::new();
         let mut simulate_compatibility = None;
         let mut messages = Vec::new();
         let mut validate_rules = Vec::new();
@@ -624,6 +628,14 @@ impl Parser {
                 requires_hardware = Some(self.parse_requires_hardware()?);
             } else if self.check(TokenType::RequiresNetwork) {
                 requires_network = Some(self.parse_requires_network()?);
+            } else if self.check(TokenType::RequiresConnectivity) {
+                requires_connectivity = Some(self.parse_requires_connectivity()?);
+            } else if self.check(TokenType::Geofence) {
+                geofences.push(self.parse_geofence()?);
+            } else if self.check(TokenType::ConnectivityPolicy) {
+                connectivity_policies.push(self.parse_connectivity_policy()?);
+            } else if self.check(TokenType::BleService) {
+                ble_services.push(self.parse_ble_service()?);
             } else if self.check(TokenType::SimulateCompatibility) {
                 simulate_compatibility = Some(self.parse_simulate_compatibility()?);
             } else if self.check(TokenType::Message) {
@@ -655,6 +667,10 @@ impl Parser {
             deployments,
             requires_hardware,
             requires_network,
+            requires_connectivity,
+            geofences,
+            connectivity_policies,
+            ble_services,
             simulate_compatibility,
             messages,
             validate_rules,
@@ -690,6 +706,7 @@ impl Parser {
         let mut gpu_required = false;
         let mut sensors = Vec::new();
         let mut actuators = Vec::new();
+        let mut connectivity = Vec::new();
         let mut battery_wh = None;
         let mut network_bandwidth_mbps = None;
         let mut network_latency_ms = None;
@@ -731,6 +748,8 @@ impl Parser {
                 sensors = self.parse_hardware_type_list("sensors")?;
             } else if self.match_types(&[TokenType::Actuators]) {
                 actuators = self.parse_hardware_type_list("actuators")?;
+            } else if self.match_types(&[TokenType::Connectivity]) {
+                connectivity = self.parse_hardware_type_list("connectivity")?;
             } else if self.match_types(&[TokenType::Battery]) {
                 self.expect(TokenType::Lbrace, "Expected '{' after battery")?;
 
@@ -823,6 +842,7 @@ impl Parser {
             gpu_required,
             sensors,
             actuators,
+            connectivity,
             battery_wh,
             network_bandwidth_mbps,
             network_latency_ms,
@@ -921,6 +941,41 @@ impl Parser {
             return Ok(mb);
         }
         Ok(value)
+    }
+
+    fn parse_signed_number_value(&mut self) -> Result<f64, SpandaError> {
+        let mut sign = 1.0;
+        if self.match_types(&[TokenType::Minus]) {
+            sign = -1.0;
+        }
+        Ok(sign * self.parse_number_value()?)
+    }
+
+    fn parse_connectivity_link(&mut self, message: &str) -> Result<String, SpandaError> {
+        let t = self.peek();
+        let name = match t.token_type {
+            TokenType::Ident => self.advance().lexeme.clone(),
+            TokenType::Bluetooth => {
+                self.advance();
+                "bluetooth".into()
+            }
+            TokenType::Network => {
+                self.advance();
+                "network".into()
+            }
+            _ => {
+                return Err(SpandaError::Parse {
+                    message: message.into(),
+                    line: t.line,
+                    column: t.column,
+                });
+            }
+        };
+        Ok(name)
+    }
+
+    fn parse_trigger_domain(&mut self) -> Result<String, SpandaError> {
+        self.parse_connectivity_link("Expected trigger domain name")
     }
 
     fn parse_number_value(&mut self) -> Result<f64, SpandaError> {
@@ -1198,6 +1253,278 @@ impl Parser {
         })
     }
 
+    fn parse_requires_connectivity(
+        &mut self,
+    ) -> Result<crate::foundations::RequiresConnectivityDecl, SpandaError> {
+        use crate::connectivity_positioning::ConnectivityRequirement;
+        use crate::foundations::RequiresConnectivityDecl;
+        let start = self.advance();
+        self.expect(
+            TokenType::Lbrace,
+            "Expected '{' after requires_connectivity",
+        )?;
+        let mut channels = Vec::new();
+        let mut latency_ms_max = None;
+        let mut bandwidth_mbps_min = None;
+        let mut packet_loss_pct_max = None;
+
+        while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+            if self.match_types(&[TokenType::Latency]) {
+                self.expect(TokenType::Lte, "Expected '<=' after latency")?;
+                latency_ms_max = Some(self.parse_duration()?);
+                self.expect(TokenType::Semicolon, "Expected ';' after latency")?;
+            } else if self.match_types(&[TokenType::Bandwidth]) {
+                self.expect(TokenType::Gte, "Expected '>=' after bandwidth")?;
+                bandwidth_mbps_min = Some(self.parse_network_amount()?);
+                self.expect(TokenType::Semicolon, "Expected ';' after bandwidth")?;
+            } else if self.match_types(&[TokenType::PacketLoss]) {
+                self.expect(TokenType::Lte, "Expected '<=' after packet_loss")?;
+                packet_loss_pct_max = Some(self.parse_number_value()?);
+                if self.check(TokenType::Percent) {
+                    self.advance();
+                }
+                self.expect(TokenType::Semicolon, "Expected ';' after packet_loss")?;
+            } else if self.check(TokenType::Ident) {
+                let key = self.advance().lexeme.clone();
+                self.expect(TokenType::Colon, "Expected ':' after connectivity key")?;
+                let level = if self.check(TokenType::Ident) && self.peek().lexeme == "required" {
+                    self.advance();
+                    ConnectivityRequirement::Required
+                } else if self.check(TokenType::Ident) && self.peek().lexeme == "optional" {
+                    self.advance();
+                    ConnectivityRequirement::Optional
+                } else {
+                    let t = self.peek();
+                    return Err(SpandaError::Parse {
+                        message: "Expected required or optional after connectivity key".into(),
+                        line: t.line,
+                        column: t.column,
+                    });
+                };
+                self.expect(
+                    TokenType::Semicolon,
+                    "Expected ';' after connectivity requirement",
+                )?;
+                channels.push((key, level));
+            } else {
+                let t = self.peek();
+                return Err(SpandaError::Parse {
+                    message: "Expected connectivity channel or metric in requires_connectivity"
+                        .into(),
+                    line: t.line,
+                    column: t.column,
+                });
+            }
+        }
+        let end = self.expect(
+            TokenType::Rbrace,
+            "Expected '}' to close requires_connectivity",
+        )?;
+        Ok(RequiresConnectivityDecl::RequiresConnectivityDecl {
+            channels,
+            latency_ms_max,
+            bandwidth_mbps_min,
+            packet_loss_pct_max,
+            span: self.span_from(&start, &end),
+        })
+    }
+
+    fn parse_geofence(&mut self) -> Result<crate::foundations::GeofenceDecl, SpandaError> {
+        use crate::foundations::GeofenceDecl;
+        let start = self.advance();
+        let name = self
+            .expect(TokenType::Ident, "Expected geofence name")?
+            .lexeme;
+        self.expect(TokenType::Lbrace, "Expected '{' after geofence name")?;
+        let mut center_lat = None;
+        let mut center_lon = None;
+        let mut radius_m = None;
+
+        while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+            if self.check(TokenType::Ident) && self.peek().lexeme == "center" {
+                self.advance();
+                self.expect(TokenType::Colon, "Expected ':' after center")?;
+                self.expect(TokenType::Ident, "Expected geo")?;
+                self.expect(TokenType::Lparen, "Expected '(' after geo")?;
+                center_lat = Some(self.parse_signed_number_value()?);
+                self.expect(TokenType::Comma, "Expected ',' in geo()")?;
+                center_lon = Some(self.parse_signed_number_value()?);
+                self.expect(TokenType::Rparen, "Expected ')' after geo coordinates")?;
+                self.expect(TokenType::Semicolon, "Expected ';' after center")?;
+            } else if self.match_types(&[TokenType::Radius]) {
+                self.expect(TokenType::Colon, "Expected ':' after radius")?;
+                radius_m = Some(self.parse_number_value()?);
+                if self.check(TokenType::Ident) && self.peek().lexeme == "m" {
+                    self.advance();
+                }
+                self.expect(TokenType::Semicolon, "Expected ';' after radius")?;
+            } else {
+                let t = self.peek();
+                return Err(SpandaError::Parse {
+                    message: "Expected center or radius in geofence block".into(),
+                    line: t.line,
+                    column: t.column,
+                });
+            }
+        }
+        let end = self.expect(TokenType::Rbrace, "Expected '}' to close geofence")?;
+        Ok(GeofenceDecl::GeofenceDecl {
+            name,
+            center_lat: center_lat.unwrap_or(0.0),
+            center_lon: center_lon.unwrap_or(0.0),
+            radius_m: radius_m.unwrap_or(0.0),
+            span: self.span_from(&start, &end),
+        })
+    }
+
+    fn parse_connectivity_policy(
+        &mut self,
+    ) -> Result<crate::foundations::ConnectivityPolicyDecl, SpandaError> {
+        use crate::foundations::ConnectivityPolicyDecl;
+        let start = self.advance();
+        let name = self
+            .expect(TokenType::Ident, "Expected connectivity policy name")?
+            .lexeme;
+        self.expect(TokenType::Lbrace, "Expected '{' after policy name")?;
+        let mut preferred = None;
+        let mut fallback = None;
+        let mut emergency = None;
+        let mut switch_if_latency_ms = None;
+        let mut switch_if_packet_loss_pct = None;
+
+        while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+            if self.check(TokenType::Ident) && self.peek().lexeme == "preferred" {
+                self.advance();
+                self.expect(TokenType::Colon, "Expected ':' after preferred")?;
+                preferred = Some(self.parse_connectivity_link("Expected link name")?);
+                self.expect(TokenType::Semicolon, "Expected ';' after preferred")?;
+            } else if self.match_types(&[TokenType::Fallback]) {
+                self.expect(TokenType::Colon, "Expected ':' after fallback")?;
+                fallback = Some(self.parse_connectivity_link("Expected link name")?);
+                self.expect(TokenType::Semicolon, "Expected ';' after fallback")?;
+            } else if self.check(TokenType::Ident) && self.peek().lexeme == "emergency" {
+                self.advance();
+                self.expect(TokenType::Colon, "Expected ':' after emergency")?;
+                emergency = Some(self.parse_connectivity_link("Expected link name")?);
+                self.expect(TokenType::Semicolon, "Expected ';' after emergency")?;
+            } else if self.match_types(&[TokenType::SwitchIf]) {
+                if self.match_types(&[TokenType::Latency]) {
+                    self.expect(TokenType::Gt, "Expected '>' after latency")?;
+                    switch_if_latency_ms = Some(self.parse_duration()?);
+                } else if self.match_types(&[TokenType::PacketLoss]) {
+                    self.expect(TokenType::Gt, "Expected '>' after packet_loss")?;
+                    switch_if_packet_loss_pct = Some(self.parse_number_value()?);
+                    if self.check(TokenType::Percent) {
+                        self.advance();
+                    }
+                } else {
+                    let t = self.peek();
+                    return Err(SpandaError::Parse {
+                        message: "Expected latency or packet_loss after switch_if".into(),
+                        line: t.line,
+                        column: t.column,
+                    });
+                }
+                self.expect(TokenType::Semicolon, "Expected ';' after switch_if")?;
+            } else {
+                let t = self.peek();
+                return Err(SpandaError::Parse {
+                    message: "Expected policy member in connectivity_policy".into(),
+                    line: t.line,
+                    column: t.column,
+                });
+            }
+        }
+        let end = self.expect(
+            TokenType::Rbrace,
+            "Expected '}' to close connectivity_policy",
+        )?;
+        Ok(ConnectivityPolicyDecl::ConnectivityPolicyDecl {
+            name,
+            preferred: preferred.unwrap_or_default(),
+            fallback: fallback.unwrap_or_default(),
+            emergency,
+            switch_if_latency_ms,
+            switch_if_packet_loss_pct,
+            span: self.span_from(&start, &end),
+        })
+    }
+
+    fn parse_ble_service(&mut self) -> Result<crate::foundations::BleServiceDecl, SpandaError> {
+        use crate::foundations::BleServiceDecl;
+        let start = self.advance();
+        let name = self
+            .expect(TokenType::Ident, "Expected BLE service name")?
+            .lexeme;
+        self.expect(TokenType::Lbrace, "Expected '{' after ble_service name")?;
+        let mut uuid = None;
+        while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+            if self.check(TokenType::Ident) && self.peek().lexeme == "uuid" {
+                self.advance();
+                self.expect(TokenType::Colon, "Expected ':' after uuid")?;
+                let u = self.expect(TokenType::String, "Expected UUID string")?;
+                uuid = Some(u.lexeme.trim_matches('"').to_string());
+                self.expect(TokenType::Semicolon, "Expected ';' after uuid")?;
+            } else {
+                let t = self.peek();
+                return Err(SpandaError::Parse {
+                    message: "Expected uuid in ble_service block".into(),
+                    line: t.line,
+                    column: t.column,
+                });
+            }
+        }
+        let end = self.expect(TokenType::Rbrace, "Expected '}' to close ble_service")?;
+        Ok(BleServiceDecl::BleServiceDecl {
+            name,
+            uuid: uuid.unwrap_or_default(),
+            span: self.span_from(&start, &end),
+        })
+    }
+
+    fn parse_bluetooth_config(
+        &mut self,
+    ) -> Result<crate::foundations::BluetoothConfigDecl, SpandaError> {
+        use crate::foundations::BluetoothConfigDecl;
+        let start = self.advance();
+        self.expect(TokenType::Lbrace, "Expected '{' after bluetooth")?;
+        let mut scan_pattern = None;
+        let mut pair_mode = None;
+        while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+            if self.check(TokenType::Ident) && self.peek().lexeme == "scan" {
+                self.advance();
+                self.expect(TokenType::For, "Expected 'for' after scan")?;
+                self.expect(TokenType::Ident, "Expected 'devices'")?;
+                self.expect(TokenType::Where, "Expected 'where' in bluetooth scan")?;
+                self.expect(TokenType::Ident, "Expected 'name'")?;
+                self.expect(TokenType::Matches, "Expected 'matches' in bluetooth scan")?;
+                scan_pattern = Some(self.parse_regex_literal()?);
+                self.expect(TokenType::Semicolon, "Expected ';' after scan")?;
+            } else if self.check(TokenType::Ident) && self.peek().lexeme == "pair" {
+                self.advance();
+                pair_mode = Some(if self.match_types(&[TokenType::TrustedOnly]) {
+                    "trusted_only".into()
+                } else {
+                    self.parse_label("Expected pair mode")?
+                });
+                self.expect(TokenType::Semicolon, "Expected ';' after pair")?;
+            } else {
+                let t = self.peek();
+                return Err(SpandaError::Parse {
+                    message: "Expected scan or pair in bluetooth block".into(),
+                    line: t.line,
+                    column: t.column,
+                });
+            }
+        }
+        let end = self.expect(TokenType::Rbrace, "Expected '}' to close bluetooth")?;
+        Ok(BluetoothConfigDecl::BluetoothConfigDecl {
+            scan_pattern,
+            pair_mode,
+            span: self.span_from(&start, &end),
+        })
+    }
+
     fn parse_simulate_compatibility(
         &mut self,
     ) -> Result<crate::foundations::SimulateCompatibilityDecl, SpandaError> {
@@ -1230,9 +1557,26 @@ impl Parser {
             if self.match_types(&[TokenType::Fault]) {
                 let fault_start = self.peek().clone();
                 let fault_type = self.parse_label("Expected fault type name")?;
+                let mut at_offset_ms = None;
+                let mut duration_ms = None;
+                if self.check(TokenType::At) || (self.check(TokenType::Ident) && self.peek().lexeme == "at") {
+                    self.advance();
+                    if self.check(TokenType::Ident) && self.peek().lexeme.starts_with("T+") {
+                        let offset = self.advance().lexeme.clone();
+                        if let Some(secs_str) =
+                            offset.strip_prefix("T+").and_then(|s| s.strip_suffix('s'))
+                        {
+                            at_offset_ms = secs_str.parse::<f64>().ok().map(|s| s * 1000.0);
+                        }
+                    }
+                } else if self.match_types(&[TokenType::Duration]) {
+                    duration_ms = Some(self.parse_duration()?);
+                }
                 self.expect(TokenType::Semicolon, "Expected ';' after fault")?;
                 faults.push(SimFaultDecl {
                     fault_type,
+                    at_offset_ms,
+                    duration_ms,
                     span: self.span_from(&fault_start, self.previous()),
                 });
             } else {
@@ -2150,6 +2494,8 @@ impl Parser {
         let mut trait_impls = Vec::new();
         let mut requires_hardware = None;
         let mut requires_network = None;
+        let mut requires_connectivity = None;
+        let mut bluetooth = None;
         let mut mission = None;
         let mut buses = Vec::new();
         let mut peer_robots = Vec::new();
@@ -2257,6 +2603,10 @@ impl Parser {
                 requires_hardware = Some(self.parse_requires_hardware()?);
             } else if self.check(TokenType::RequiresNetwork) {
                 requires_network = Some(self.parse_requires_network()?);
+            } else if self.check(TokenType::RequiresConnectivity) {
+                requires_connectivity = Some(self.parse_requires_connectivity()?);
+            } else if self.check(TokenType::Bluetooth) {
+                bluetooth = Some(self.parse_bluetooth_config()?);
             } else if self.check(TokenType::Mission) {
                 mission = Some(self.parse_mission()?);
             } else if self.check(TokenType::Impl) {
@@ -2314,6 +2664,8 @@ impl Parser {
             permissions,
             requires_hardware,
             requires_network,
+            requires_connectivity,
+            bluetooth,
             mission,
             trait_impls,
             buses,
@@ -3861,11 +4213,39 @@ impl Parser {
         // let result = instance.parse_dotted_capability();
 
         // Compute first for the following logic.
-        let first = self.parse_label("Expected capability name")?;
+        let first = if self.check(TokenType::Network) {
+            self.advance();
+            "network".to_string()
+        } else if self.check(TokenType::Bluetooth) {
+            self.advance();
+            "bluetooth".to_string()
+        } else {
+            self.parse_label("Expected capability name")?
+        };
 
         // Take this path when self.match types(&[TokenType::Dot]).
         if self.match_types(&[TokenType::Dot]) {
-            let second = self.parse_label("Expected capability suffix")?;
+            let second = if self.check(TokenType::Ident) && self.peek().lexeme == "scan" {
+                self.advance();
+                "scan".to_string()
+            } else if self.check(TokenType::Ident) && self.peek().lexeme == "pair" {
+                self.advance();
+                "pair".to_string()
+            } else if self.check(TokenType::Ident) && self.peek().lexeme == "connect" {
+                self.advance();
+                "connect".to_string()
+            } else if self.check(TokenType::Ident) && self.peek().lexeme == "status" {
+                self.advance();
+                "status".to_string()
+            } else if self.check(TokenType::Ident) && self.peek().lexeme == "failover" {
+                self.advance();
+                "failover".to_string()
+            } else if self.check(TokenType::Ident) && self.peek().lexeme == "read" {
+                self.advance();
+                "read".to_string()
+            } else {
+                self.parse_label("Expected capability suffix")?
+            };
             Ok(format!("{first}.{second}"))
         } else {
             Ok(first)
@@ -4991,9 +5371,62 @@ impl Parser {
                 .expect(TokenType::Ident, "Expected twin event name")?
                 .lexeme;
             TriggerKind::Twin { event }
+        } else if self.match_types(&[TokenType::Geofence]) {
+            let name = self
+                .expect(TokenType::Ident, "Expected geofence name")?
+                .lexeme;
+            let phase = if self.match_types(&[TokenType::Exited]) {
+                "exited".to_string()
+            } else if self.match_types(&[TokenType::Entered]) {
+                "entered".to_string()
+            } else {
+                self.expect(TokenType::Ident, "Expected entered or exited")?
+                    .lexeme
+                    .to_ascii_lowercase()
+            };
+            TriggerKind::Geofence { name, phase }
+        } else if self.check(TokenType::Ident)
+            || self.check(TokenType::Bluetooth)
+            || self.check(TokenType::Network)
+        {
+            let first = self.parse_trigger_domain()?;
+            if self.match_types(&[TokenType::Dot]) {
+                let event = self
+                    .expect(TokenType::Ident, "Expected event after '.'")?
+                    .lexeme;
+                let domain = first.to_ascii_lowercase();
+                let event_lower = event.to_ascii_lowercase();
+                if matches!(
+                    domain.as_str(),
+                    "network" | "cellular" | "bluetooth" | "wifi"
+                ) || (matches!(domain.as_str(), "gps" | "gnss")
+                    && matches!(event_lower.as_str(), "lost" | "acquired"))
+                {
+                    TriggerKind::Connectivity {
+                        domain,
+                        event: event_lower,
+                    }
+                } else if matches!(event_lower.as_str(), "fix" | "reading" | "update") {
+                    TriggerKind::SensorEvent {
+                        sensor: first,
+                        event: event_lower,
+                    }
+                } else {
+                    TriggerKind::Connectivity {
+                        domain,
+                        event: event_lower,
+                    }
+                }
+            } else {
+                TriggerKind::Event { name: first }
+            }
         } else {
-            let name = self.expect(TokenType::Ident, "Expected trigger target name")?;
-            TriggerKind::Event { name: name.lexeme }
+            let t = self.peek();
+            return Err(SpandaError::Parse {
+                message: "Expected trigger target name".into(),
+                line: t.line,
+                column: t.column,
+            });
         };
         let priority = self.parse_optional_trigger_priority()?;
         self.expect(TokenType::Lbrace, "Expected '{' after trigger signature")?;
@@ -5829,6 +6262,9 @@ impl Parser {
             // Take the branch when lexeme equals "ms".
             if self.check(TokenType::Ident) && self.peek().lexeme == "ms" {
                 self.advance();
+            } else if self.check(TokenType::Ident) && self.peek().lexeme == "s" {
+                self.advance();
+                return Ok(num(&tok) * 1000.0);
             }
             return Ok(num(&tok));
         }

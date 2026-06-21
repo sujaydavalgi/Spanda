@@ -7,6 +7,7 @@ pub mod bridge;
 pub mod codegen;
 pub mod comm;
 pub mod concurrency;
+pub mod connectivity_positioning;
 pub mod debug;
 pub mod debug_session;
 pub mod docs;

@@ -2107,7 +2107,10 @@ impl TypeChecker {
                 | TriggerKind::Hardware { event: _ }
                 | TriggerKind::Ai { event: _ }
                 | TriggerKind::Verification { event: _ }
-                | TriggerKind::Twin { event: _ } => {}
+                | TriggerKind::Twin { event: _ }
+                | TriggerKind::Connectivity { .. }
+                | TriggerKind::Geofence { .. }
+                | TriggerKind::SensorEvent { .. } => {}
                 TriggerKind::LogMatch { pattern } | TriggerKind::MessageMatch { pattern, .. } => {
                     if let Err(crate::error::SpandaError::Parse {
                         message,
@@ -4318,6 +4321,22 @@ impl TypeChecker {
                 return SpandaType::Void;
             }
 
+            if name == "geo" {
+                if args.len() != 2 {
+                    self.error(
+                        "geo requires (latitude, longitude)".into(),
+                        span.start.line,
+                        span.start.column,
+                    );
+                } else {
+                    self.check_expr(&args[0]);
+                    self.check_expr(&args[1]);
+                }
+                return SpandaType::Named {
+                    name: "GeoPoint".into(),
+                };
+            }
+
             // Take the branch when name equals "join".
             if name == "join" {
                 // Skip further work when args is empty.
@@ -5455,7 +5474,7 @@ fn sensor_type_for(name: &str) -> Option<SpandaType> {
 
     // Compute base for the following logic.
     let base = match name {
-        "Lidar" | "IMU" | "GPS" | "Camera" | "AltitudeSensor" | "ForceTorque" => {
+        "Lidar" | "IMU" | "GPS" | "GNSS" | "Camera" | "AltitudeSensor" | "ForceTorque" => {
             Some(SpandaType::Named { name: name.into() })
         }
         _ => None,
@@ -5597,6 +5616,17 @@ fn object_property(type_name: &str, property: &str) -> Option<SpandaType> {
             unit: UnitKind::None,
         }),
         ("GPSReading", "lat" | "lon") => Some(SpandaType::Number {
+            unit: UnitKind::None,
+        }),
+        ("GpsFix", "lat" | "lon" | "altitude" | "heading" | "speed") => Some(SpandaType::Number {
+            unit: UnitKind::None,
+        }),
+        ("GnssFix", "lat" | "lon" | "altitude" | "fix_quality" | "satellites") => {
+            Some(SpandaType::Number {
+                unit: UnitKind::None,
+            })
+        }
+        ("GeoPoint", "lat" | "lon") => Some(SpandaType::Number {
             unit: UnitKind::None,
         }),
         ("ActionProposal" | "SafeAction" | "NavigationPolicy", "linear") => {
@@ -6585,6 +6615,12 @@ pub fn SENSOR_TYPES() -> HashMap<String, SpandaType> {
         ),
         ("IMU".into(), SpandaType::Named { name: "IMU".into() }),
         ("GPS".into(), SpandaType::Named { name: "GPS".into() }),
+        (
+            "GNSS".into(),
+            SpandaType::Named {
+                name: "GNSS".into(),
+            },
+        ),
         (
             "Camera".into(),
             SpandaType::Named {

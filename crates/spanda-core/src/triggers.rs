@@ -489,6 +489,9 @@ pub fn trigger_display_name(kind: &TriggerKind, agent: Option<&str>) -> String {
         TriggerKind::MessageMatch { field, pattern } => {
             format!("message_match:{field}:/{}/", pattern.source)
         }
+        TriggerKind::Connectivity { domain, event } => format!("connectivity:{domain}.{event}"),
+        TriggerKind::Geofence { name, phase } => format!("geofence:{name}:{phase}"),
+        TriggerKind::SensorEvent { sensor, event } => format!("sensor:{sensor}.{event}"),
     };
 
     // Emit output when agent provides a agent.

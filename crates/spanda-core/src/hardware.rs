@@ -4,9 +4,12 @@ use crate::ast::{
     AiModelDecl, BehaviorDecl, ConfigValue, Program, RobotDecl, SensorDecl, Stmt, TopicDecl,
 };
 use crate::comm::{default_message_size, estimate_topic_bandwidth_mbps, TopicRole};
+use crate::connectivity_positioning::{
+    validate_connectivity_policy, validate_geofence, verify_requires_connectivity,
+};
 use crate::foundations::{
-    DeployDecl, HardwareDecl, MissionDecl, RequiresHardwareDecl, RequiresNetworkDecl,
-    ResourceBudgetDecl, SimulateCompatibilityDecl, TaskDecl, TraitDecl,
+    DeployDecl, HardwareDecl, MissionDecl, RequiresConnectivityDecl, RequiresHardwareDecl,
+    RequiresNetworkDecl, ResourceBudgetDecl, SimulateCompatibilityDecl, TaskDecl, TraitDecl,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
@@ -88,9 +91,11 @@ pub struct HardwareProfile {
     pub gpu_required: bool,
     pub sensors: Vec<String>,
     pub actuators: Vec<String>,
+    pub connectivity: Vec<String>,
     pub battery_wh: Option<f64>,
     pub network_bandwidth_mbps: Option<f64>,
     pub network_latency_ms: Option<f64>,
+    pub packet_loss_pct: Option<f64>,
     pub min_control_period_ms: f64,
     pub power_draw_w: f64,
 }
@@ -123,6 +128,7 @@ fn builtin_profiles() -> HashMap<String, HardwareProfile> {
             false,
             vec!["Camera", "Lidar", "IMU"],
             vec!["DifferentialDrive"],
+            vec!["WiFi", "Ethernet"],
             Some(100.0),
             Some(50.0),
             Some(20.0),
@@ -138,6 +144,7 @@ fn builtin_profiles() -> HashMap<String, HardwareProfile> {
             false,
             vec!["Camera", "Lidar", "IMU", "GPS"],
             vec!["DifferentialDrive", "RoboticArm"],
+            vec!["WiFi6", "Bluetooth5", "LTE", "GPS"],
             Some(150.0),
             Some(100.0),
             Some(15.0),
@@ -153,6 +160,7 @@ fn builtin_profiles() -> HashMap<String, HardwareProfile> {
             true,
             vec!["Camera", "Lidar", "IMU"],
             vec!["DifferentialDrive"],
+            vec!["Ethernet", "WiFi6", "FiveG"],
             None,
             Some(1000.0),
             Some(5.0),
@@ -168,6 +176,7 @@ fn builtin_profiles() -> HashMap<String, HardwareProfile> {
             false,
             vec!["Camera", "IMU"],
             vec!["DifferentialDrive"],
+            vec!["WiFi", "Bluetooth", "Ethernet"],
             None,
             Some(100.0),
             Some(30.0),
@@ -183,6 +192,7 @@ fn builtin_profiles() -> HashMap<String, HardwareProfile> {
             false,
             vec!["IMU"],
             vec!["DifferentialDrive"],
+            vec!["WiFi", "BLE"],
             Some(5.0),
             Some(10.0),
             Some(100.0),
@@ -202,6 +212,7 @@ fn profile(
     gpu_required: bool,
     sensors: Vec<&str>,
     actuators: Vec<&str>,
+    connectivity: Vec<&str>,
     battery_wh: Option<f64>,
     network_bandwidth_mbps: Option<f64>,
     network_latency_ms: Option<f64>,
@@ -246,9 +257,11 @@ fn profile(
             gpu_required,
             sensors: sensors.into_iter().map(str::to_string).collect(),
             actuators: actuators.into_iter().map(str::to_string).collect(),
+            connectivity: connectivity.into_iter().map(str::to_string).collect(),
             battery_wh,
             network_bandwidth_mbps,
             network_latency_ms,
+            packet_loss_pct: None,
             min_control_period_ms,
             power_draw_w,
         },
@@ -301,6 +314,7 @@ pub fn hardware_profile_from_decl(decl: &HardwareDecl) -> HardwareProfile {
         gpu_required,
         sensors,
         actuators,
+        connectivity,
         battery_wh,
         network_bandwidth_mbps,
         network_latency_ms,
@@ -317,9 +331,11 @@ pub fn hardware_profile_from_decl(decl: &HardwareDecl) -> HardwareProfile {
         gpu_required: *gpu_required,
         sensors: sensors.clone(),
         actuators: actuators.clone(),
+        connectivity: connectivity.clone(),
         battery_wh: *battery_wh,
         network_bandwidth_mbps: *network_bandwidth_mbps,
         network_latency_ms: *network_latency_ms,
+        packet_loss_pct: None,
         min_control_period_ms: min_control_period_ms.unwrap_or(20.0),
         power_draw_w: power_draw_w.unwrap_or(10.0),
     }
@@ -459,6 +475,7 @@ fn sensor_adapter(sensor_type: &str) -> Option<&'static str> {
         "Lidar" => Some("LidarAdapter"),
         "IMU" => Some("ImuAdapter"),
         "GPS" => Some("GpsAdapter"),
+        "GNSS" => Some("GpsAdapter"),
         _ => None,
     }
 }
@@ -524,6 +541,36 @@ fn apply_fault(mut profile: HardwareProfile, fault_type: &str) -> HardwareProfil
         }
         "ImuFailure" => {
             profile.sensors.retain(|s| s != "IMU");
+        }
+        "GpsFailure" | "GPSLost" => {
+            profile.sensors.retain(|s| s != "GPS" && s != "GNSS");
+            profile.connectivity.retain(|c| c != "GPS" && c != "GNSS");
+        }
+        "GpsDrift" | "GpsSpoofing" => {}
+        "WeakWifi" => {
+            profile.network_bandwidth_mbps = Some(1.0);
+            profile.network_latency_ms = Some(500.0);
+        }
+        "LteOutage" => {
+            profile.network_bandwidth_mbps = Some(0.0);
+            profile.network_latency_ms = Some(10_000.0);
+            profile
+                .connectivity
+                .retain(|c| !matches!(c.as_str(), "LTE" | "FourG" | "4G" | "FiveG" | "5G"));
+        }
+        "NetworkLatencySpike" | "LatencySpike" => {
+            profile.network_latency_ms = Some(2000.0);
+        }
+        "FiveGHandoff" => {
+            profile.network_latency_ms = Some(150.0);
+        }
+        "BluetoothDisconnect" => {
+            profile
+                .connectivity
+                .retain(|c| !matches!(c.as_str(), "Bluetooth" | "Bluetooth5" | "BLE"));
+        }
+        "PacketLoss" => {
+            profile.packet_loss_pct = Some(10.0);
         }
         _ => {}
     }
@@ -1534,12 +1581,14 @@ fn verify_topic_bandwidth(topics: &[TopicDecl], profile: &HardwareProfile) -> Ve
     items
 }
 
+#[allow(clippy::too_many_arguments)]
 fn verify_robot_against_profile(
     robot: &RobotDecl,
     profile: &HardwareProfile,
     program_traits: &HashSet<String>,
     program_requires_hw: Option<&RequiresHardwareDecl>,
     program_requires_net: Option<&RequiresNetworkDecl>,
+    program_requires_conn: Option<&RequiresConnectivityDecl>,
     span_line: u32,
     span_column: u32,
 ) -> Vec<CompatItem> {
@@ -1572,6 +1621,7 @@ fn verify_robot_against_profile(
         observe,
         requires_hardware,
         requires_network,
+        requires_connectivity,
         mission,
         tasks,
         ..
@@ -1697,6 +1747,10 @@ fn verify_robot_against_profile(
     // Emit output when or provides a req.
     if let Some(req) = requires_network.as_ref().or(program_requires_net) {
         items.extend(verify_requires_network(req, profile));
+    }
+
+    if let Some(req) = requires_connectivity.as_ref().or(program_requires_conn) {
+        items.extend(verify_requires_connectivity(req, profile));
     }
 
     // Process each task.
@@ -1862,10 +1916,21 @@ pub fn verify_program_compatibility(
         robots,
         requires_hardware,
         requires_network,
+        requires_connectivity,
+        geofences,
+        connectivity_policies,
         simulate_compatibility,
         ..
     } = program;
     let mut items = Vec::new();
+
+    for geofence in geofences {
+        items.extend(validate_geofence(geofence));
+    }
+    for policy in connectivity_policies {
+        items.extend(validate_connectivity_policy(policy));
+    }
+
     let program_traits = trait_names(program);
     let targets_to_check = resolve_targets(program, options, &registry);
     let run_simulation = options.simulate || simulate_compatibility.is_some();
@@ -1971,6 +2036,7 @@ pub fn verify_program_compatibility(
             &program_traits,
             requires_hardware.as_ref(),
             requires_network.as_ref(),
+            requires_connectivity.as_ref(),
             *line,
             *column,
         );

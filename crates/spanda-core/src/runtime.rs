@@ -6330,6 +6330,37 @@ impl<B: RobotBackend> Interpreter<B> {
 
         // Match on name and handle each case.
         match name {
+            "geo" => {
+                let lat = if !args.is_empty() {
+                    get_number(&self.eval_expr(&args[0])?, 0.0)
+                } else {
+                    0.0
+                };
+                let lon = if args.len() >= 2 {
+                    get_number(&self.eval_expr(&args[1])?, 0.0)
+                } else {
+                    0.0
+                };
+                Ok(RuntimeValue::Object {
+                    type_name: "GeoPoint".into(),
+                    fields: HashMap::from([
+                        (
+                            "lat".into(),
+                            RuntimeValue::Number {
+                                value: lat,
+                                unit: UnitKind::None,
+                            },
+                        ),
+                        (
+                            "lon".into(),
+                            RuntimeValue::Number {
+                                value: lon,
+                                unit: UnitKind::None,
+                            },
+                        ),
+                    ]),
+                })
+            }
             "pose" => Ok(runtime_pose(
                 get_number(&self.get_named_arg_value(named_args, "x")?, 0.0),
                 get_number(&self.get_named_arg_value(named_args, "y")?, 0.0),
@@ -8143,6 +8174,9 @@ fn trigger_category_label(kind: &TriggerKind) -> &'static str {
         TriggerKind::Twin { .. } => "twin",
         TriggerKind::LogMatch { .. } => "log_match",
         TriggerKind::MessageMatch { .. } => "message_match",
+        TriggerKind::Connectivity { .. } => "connectivity",
+        TriggerKind::Geofence { .. } => "geofence",
+        TriggerKind::SensorEvent { .. } => "sensor_event",
     }
 }
 

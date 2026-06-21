@@ -38,8 +38,7 @@ pub fn registry_base_url() -> Option<String> {
     // Example:
     // let result = spanda_package::registry_remote::registry_base_url();
 
-    const DEFAULT_REGISTRY: &str =
-        "https://raw.githubusercontent.com/Davalgi/Spanda/main/registry";
+    const DEFAULT_REGISTRY: &str = "https://raw.githubusercontent.com/Davalgi/Spanda/main/registry";
 
     // Produce var as the result.
     match std::env::var("SPANDA_REGISTRY_URL") {

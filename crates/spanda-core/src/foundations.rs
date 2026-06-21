@@ -341,6 +341,21 @@ pub enum TriggerKind {
         field: String,
         pattern: RegexPattern,
     },
+    /// Connectivity trigger: `on gps.lost`, `on network.disconnected`, etc.
+    Connectivity {
+        domain: String,
+        event: String,
+    },
+    /// Geofence trigger: `on geofence SafeZone exited`.
+    Geofence {
+        name: String,
+        phase: String,
+    },
+    /// Sensor event trigger: `on gps.fix`.
+    SensorEvent {
+        sensor: String,
+        event: String,
+    },
 }
 
 /// Unified trigger handler (`on`, `every`, `when` at robot or agent scope).
@@ -368,6 +383,8 @@ pub enum HardwareDecl {
         gpu_required: bool,
         sensors: Vec<String>,
         actuators: Vec<String>,
+        #[serde(default)]
+        connectivity: Vec<String>,
         battery_wh: Option<f64>,
         network_bandwidth_mbps: Option<f64>,
         network_latency_ms: Option<f64>,
@@ -410,6 +427,72 @@ pub enum RequiresNetworkDecl {
     RequiresNetworkDecl {
         bandwidth_mbps_min: Option<f64>,
         latency_ms_max: Option<f64>,
+        span: Span,
+    },
+}
+
+/// Positioning and wireless connectivity requirements.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "kind")]
+pub enum RequiresConnectivityDecl {
+    RequiresConnectivityDecl {
+        channels: Vec<(
+            String,
+            crate::connectivity_positioning::ConnectivityRequirement,
+        )>,
+        latency_ms_max: Option<f64>,
+        bandwidth_mbps_min: Option<f64>,
+        packet_loss_pct_max: Option<f64>,
+        span: Span,
+    },
+}
+
+/// WGS84 geofence zone for safety verification.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "kind")]
+pub enum GeofenceDecl {
+    GeofenceDecl {
+        name: String,
+        center_lat: f64,
+        center_lon: f64,
+        radius_m: f64,
+        span: Span,
+    },
+}
+
+/// Multi-link network failover policy.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "kind")]
+pub enum ConnectivityPolicyDecl {
+    ConnectivityPolicyDecl {
+        name: String,
+        preferred: String,
+        fallback: String,
+        emergency: Option<String>,
+        switch_if_latency_ms: Option<f64>,
+        switch_if_packet_loss_pct: Option<f64>,
+        span: Span,
+    },
+}
+
+/// Bluetooth discovery and pairing configuration.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "kind")]
+pub enum BluetoothConfigDecl {
+    BluetoothConfigDecl {
+        scan_pattern: Option<RegexPattern>,
+        pair_mode: Option<String>,
+        span: Span,
+    },
+}
+
+/// BLE GATT service declaration.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "kind")]
+pub enum BleServiceDecl {
+    BleServiceDecl {
+        name: String,
+        uuid: String,
         span: Span,
     },
 }
@@ -532,6 +615,10 @@ pub enum MissionDecl {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SimFaultDecl {
     pub fault_type: String,
+    #[serde(default)]
+    pub at_offset_ms: Option<f64>,
+    #[serde(default)]
+    pub duration_ms: Option<f64>,
     pub span: Span,
 }
 
@@ -777,6 +864,12 @@ pub fn resolve_module_import(path: &str) -> bool {
             | "std.audit"
             | "std.crypto"
             | "std.network"
+            | "std.positioning"
+            | "std.connectivity"
+            | "std.wifi"
+            | "std.bluetooth"
+            | "std.cellular"
+            | "std.geofence"
     )
 }
 

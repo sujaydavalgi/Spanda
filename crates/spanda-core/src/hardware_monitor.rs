@@ -119,6 +119,7 @@ impl HardwareMonitor {
             "Camera" | "VisionCamera" | "RGBCamera" => Some("CameraFailure"),
             "IMU" | "BoschBNO055" => Some("ImuFailure"),
             "GPS" => Some("GpsFailure"),
+            "GNSS" => Some("GpsFailure"),
             _ => None,
         }
     }

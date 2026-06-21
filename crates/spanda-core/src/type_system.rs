@@ -79,7 +79,24 @@ pub fn resolve_type_name(name: &str) -> Result<SpandaType, String> {
             name: name.to_string(),
         }),
         "CameraFrame" | "Image" | "DepthImage" | "PointCloud" | "LidarScan" => Ok(SpandaType::Scan),
-        "GpsFix" | "ImuData" | "AudioFrame" => Ok(SpandaType::Named {
+        "GpsFix" | "ImuData" | "AudioFrame" | "GnssFix" | "GeoPoint" | "GeoFence" | "Altitude"
+        | "Heading" | "SpeedOverGround" | "SatelliteInfo" | "PositionAccuracy"
+        | "NavigationStatus" => Ok(SpandaType::Named {
+            name: name.to_string(),
+        }),
+        "WifiConnection"
+        | "BluetoothConnection"
+        | "BleConnection"
+        | "CellularConnection"
+        | "LTEConnection"
+        | "FourGConnection"
+        | "FiveGConnection"
+        | "EthernetConnection"
+        | "MeshConnection"
+        | "NetworkStatus"
+        | "SignalStrength"
+        | "PacketLoss"
+        | "RoamingStatus" => Ok(SpandaType::Named {
             name: name.to_string(),
         }),
         "LLM" | "VisionModel" | "EmbeddingModel" | "Prompt" | "Completion" | "Embedding"
@@ -781,6 +798,60 @@ pub fn std_namespaces() -> HashMap<&'static str, &'static [&'static str]> {
         ][..],
     );
     m.insert("std.crypto", &["Hash", "Signature"][..]);
+    m.insert(
+        "std.positioning",
+        &[
+            "GpsFix",
+            "GnssFix",
+            "GeoPoint",
+            "GeoFence",
+            "Altitude",
+            "Heading",
+            "SpeedOverGround",
+            "SatelliteInfo",
+            "PositionAccuracy",
+            "NavigationStatus",
+        ][..],
+    );
+    m.insert(
+        "std.connectivity",
+        &[
+            "WifiConnection",
+            "BluetoothConnection",
+            "BleConnection",
+            "CellularConnection",
+            "LTEConnection",
+            "FourGConnection",
+            "FiveGConnection",
+            "EthernetConnection",
+            "MeshConnection",
+            "NetworkStatus",
+            "SignalStrength",
+            "Bandwidth",
+            "Latency",
+            "PacketLoss",
+            "RoamingStatus",
+        ][..],
+    );
+    m.insert(
+        "std.wifi",
+        &["WifiConnection", "SignalStrength", "NetworkStatus"][..],
+    );
+    m.insert(
+        "std.bluetooth",
+        &["BluetoothConnection", "BleConnection", "BleService"][..],
+    );
+    m.insert(
+        "std.cellular",
+        &[
+            "CellularConnection",
+            "LTEConnection",
+            "FourGConnection",
+            "FiveGConnection",
+            "RoamingStatus",
+        ][..],
+    );
+    m.insert("std.geofence", &["GeoFence", "GeoPoint"][..]);
     m.insert(
         "std.robotics",
         &[
