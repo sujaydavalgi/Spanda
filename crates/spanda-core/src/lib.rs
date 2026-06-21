@@ -45,6 +45,10 @@ pub mod stdlib;
 pub mod telemetry;
 pub mod transport;
 pub mod transport_live;
+mod transport_tls;
+pub mod transport_mqtt;
+pub mod transport_websocket;
+pub mod transport_dds;
 pub mod transport_rclrs;
 mod transport_rclrs_daemon;
 #[cfg(not(target_arch = "wasm32"))]

@@ -95,8 +95,9 @@ mod tests {
             integrity: IntegrityMode::None,
             cert_path: Some("certs/a.pem".into()),
             key_secret: Some("k1".into()),
+            key_path: None,
         };
-        tls.connect(&security).unwrap();
+        tls.connect(&security, None).unwrap();
         let config = TransportConfig {
             security,
             tls,

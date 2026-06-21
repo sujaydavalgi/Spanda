@@ -211,6 +211,7 @@ impl StubTransportState {
     }
 }
 
+#[allow(unused_macros)]
 macro_rules! stub_adapter {
     ($name:ident, $kind:expr) => {
         #[derive(Debug, Default)]
@@ -701,9 +702,267 @@ impl TransportAdapter for Ros2TransportAdapter {
     }
 }
 
-stub_adapter!(MqttTransportAdapter, TransportKind::Mqtt);
-stub_adapter!(DdsTransportAdapter, TransportKind::Dds);
-stub_adapter!(WebsocketTransportAdapter, TransportKind::Websocket);
+#[derive(Debug, Default)]
+pub struct DdsTransportAdapterLive {
+    state: StubTransportState,
+    live: Option<crate::transport_dds::LiveDdsBridge>,
+}
+
+impl TransportAdapter for DdsTransportAdapterLive {
+    fn kind(&self) -> TransportKind {
+        TransportKind::Dds
+    }
+
+    fn connect(&mut self, config: &TransportConfig) -> Result<(), String> {
+        config.security.validate(self.kind().as_str())?;
+        if config.security.encryption != EncryptionMode::None && !config.tls.negotiated {
+            return Err("dds adapter requires negotiated TLS session".into());
+        }
+        self.state.connected = true;
+        self.state.config = config.clone();
+        if std::env::var("SPANDA_LIVE_DDS").ok().as_deref() == Some("1") {
+            let domain = config.domain_id.unwrap_or(0);
+            self.live = crate::transport_dds::LiveDdsBridge::connect(domain).ok();
+        }
+        Ok(())
+    }
+
+    fn disconnect(&mut self) {
+        self.state.connected = false;
+        self.live = None;
+    }
+
+    fn is_connected(&self) -> bool {
+        self.state.connected
+    }
+
+    fn publish(&mut self, topic: &str, message_type: &str, value: RuntimeValue) {
+        if !self.state.connected {
+            return;
+        }
+        if let RuntimeValue::String { value: payload } = &value {
+            if let Some(live) = &self.live {
+                let _ = live.publish(topic, payload);
+            }
+        }
+        self.state.publish(topic, message_type, value);
+    }
+
+    fn subscribe(&mut self, topic: &str) {
+        if self.state.connected {
+            if let Some(live) = &self.live {
+                let _ = live.subscribe(topic);
+            }
+            self.state.subscribe(topic);
+        }
+    }
+
+    fn receive(&mut self, topic: &str) -> Option<RuntimeValue> {
+        if !self.state.connected {
+            return None;
+        }
+        if let Some(live) = &self.live {
+            if let Some(val) = live.receive(topic) {
+                return Some(val);
+            }
+        }
+        self.state.receive(topic)
+    }
+
+    fn call_service(
+        &mut self,
+        _service: &str,
+        service_type: &str,
+        _request: Option<RuntimeValue>,
+    ) -> RuntimeValue {
+        StubTransportState::service_result(service_type)
+    }
+
+    fn send_action(&mut self, _action: &str, action_type: &str, _goal: RuntimeValue) -> RuntimeValue {
+        StubTransportState::action_result(action_type)
+    }
+
+    fn published(&self) -> Vec<AdapterMessage> {
+        self.state.published.clone()
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct WebsocketTransportAdapterLive {
+    state: StubTransportState,
+    live: Option<crate::transport_websocket::LiveWebsocketBridge>,
+}
+
+impl TransportAdapter for WebsocketTransportAdapterLive {
+    fn kind(&self) -> TransportKind {
+        TransportKind::Websocket
+    }
+
+    fn connect(&mut self, config: &TransportConfig) -> Result<(), String> {
+        config.security.validate(self.kind().as_str())?;
+        if config.security.encryption != EncryptionMode::None && !config.tls.negotiated {
+            return Err("websocket adapter requires negotiated TLS session".into());
+        }
+        self.state.connected = true;
+        self.state.config = config.clone();
+        if std::env::var("SPANDA_LIVE_WEBSOCKET").ok().as_deref() == Some("1") {
+            if let Some(url) = config.broker_url.as_deref() {
+                self.live = crate::transport_websocket::LiveWebsocketBridge::connect(url).ok();
+            }
+        }
+        Ok(())
+    }
+
+    fn disconnect(&mut self) {
+        self.state.connected = false;
+        self.live = None;
+    }
+
+    fn is_connected(&self) -> bool {
+        self.state.connected
+    }
+
+    fn publish(&mut self, topic: &str, message_type: &str, value: RuntimeValue) {
+        if !self.state.connected {
+            return;
+        }
+        if let RuntimeValue::String { value: payload } = &value {
+            if let Some(live) = &self.live {
+                let _ = live.publish(topic, payload);
+            }
+        }
+        self.state.publish(topic, message_type, value);
+    }
+
+    fn subscribe(&mut self, topic: &str) {
+        if self.state.connected {
+            if let Some(live) = &self.live {
+                let _ = live.subscribe(topic);
+            }
+            self.state.subscribe(topic);
+        }
+    }
+
+    fn receive(&mut self, topic: &str) -> Option<RuntimeValue> {
+        if !self.state.connected {
+            return None;
+        }
+        if let Some(live) = &self.live {
+            if let Some(val) = live.receive(topic) {
+                return Some(val);
+            }
+        }
+        self.state.receive(topic)
+    }
+
+    fn call_service(
+        &mut self,
+        _service: &str,
+        service_type: &str,
+        _request: Option<RuntimeValue>,
+    ) -> RuntimeValue {
+        StubTransportState::service_result(service_type)
+    }
+
+    fn send_action(&mut self, _action: &str, action_type: &str, _goal: RuntimeValue) -> RuntimeValue {
+        StubTransportState::action_result(action_type)
+    }
+
+    fn published(&self) -> Vec<AdapterMessage> {
+        self.state.published.clone()
+    }
+}
+
+type DdsTransportAdapter = DdsTransportAdapterLive;
+type WebsocketTransportAdapter = WebsocketTransportAdapterLive;
+
+#[derive(Debug, Default)]
+pub struct MqttTransportAdapter {
+    state: StubTransportState,
+    live: Option<crate::transport_mqtt::LiveMqttBridge>,
+}
+
+impl TransportAdapter for MqttTransportAdapter {
+    fn kind(&self) -> TransportKind {
+        TransportKind::Mqtt
+    }
+
+    fn connect(&mut self, config: &TransportConfig) -> Result<(), String> {
+        config.security.validate(self.kind().as_str())?;
+        if config.security.encryption != EncryptionMode::None && !config.tls.negotiated {
+            return Err("mqtt adapter requires negotiated TLS session".into());
+        }
+        self.state.connected = true;
+        self.state.config = config.clone();
+        if std::env::var("SPANDA_LIVE_MQTT").ok().as_deref() == Some("1") {
+            if let Some(url) = config.broker_url.as_deref() {
+                let client_id = config.client_id.as_deref().unwrap_or("spanda");
+                self.live = crate::transport_mqtt::LiveMqttBridge::connect(url, client_id).ok();
+            }
+        }
+        Ok(())
+    }
+
+    fn disconnect(&mut self) {
+        self.state.connected = false;
+        self.live = None;
+    }
+
+    fn is_connected(&self) -> bool {
+        self.state.connected
+    }
+
+    fn publish(&mut self, topic: &str, message_type: &str, value: RuntimeValue) {
+        if !self.state.connected {
+            return;
+        }
+        if let RuntimeValue::String { value: payload } = &value {
+            if let Some(live) = &self.live {
+                let _ = live.publish(topic, payload);
+            }
+        }
+        self.state.publish(topic, message_type, value);
+    }
+
+    fn subscribe(&mut self, topic: &str) {
+        if self.state.connected {
+            if let Some(live) = &self.live {
+                let _ = live.subscribe(topic);
+            }
+            self.state.subscribe(topic);
+        }
+    }
+
+    fn receive(&mut self, topic: &str) -> Option<RuntimeValue> {
+        if !self.state.connected {
+            return None;
+        }
+        if let Some(live) = &self.live {
+            if let Some(val) = live.receive(topic) {
+                return Some(val);
+            }
+        }
+        self.state.receive(topic)
+    }
+
+    fn call_service(
+        &mut self,
+        _service: &str,
+        service_type: &str,
+        _request: Option<RuntimeValue>,
+    ) -> RuntimeValue {
+        StubTransportState::service_result(service_type)
+    }
+
+    fn send_action(&mut self, _action: &str, action_type: &str, _goal: RuntimeValue) -> RuntimeValue {
+        StubTransportState::action_result(action_type)
+    }
+
+    fn published(&self) -> Vec<AdapterMessage> {
+        self.state.published.clone()
+    }
+}
+
 // ── Routing comm bus ──────────────────────────────────────────────────────────
 /// Routes publish/subscribe/service/action calls to transport-specific adapters
 /// while preserving in-memory semantics for simulation and discovery.
@@ -788,7 +1047,7 @@ impl RoutingCommBus {
             config.security.encryption = EncryptionMode::Required;
         }
         config.security.validate("transport")?;
-        config.tls.connect(&config.security)?;
+        config.tls.connect(&config.security, config.broker_url.as_deref())?;
         self.config = config.clone();
         self.ros2.connect(&config)?;
         self.mqtt.connect(&TransportConfig {

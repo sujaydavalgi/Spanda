@@ -14,6 +14,7 @@ pub struct TransportSecurityConfig {
     pub integrity: IntegrityMode,
     pub cert_path: Option<String>,
     pub key_secret: Option<String>,
+    pub key_path: Option<String>,
 }
 
 impl TransportSecurityConfig {
@@ -28,6 +29,7 @@ impl TransportSecurityConfig {
             integrity: parse_integrity(integrity)?,
             cert_path: None,
             key_secret: None,
+            key_path: None,
         })
     }
 
@@ -83,7 +85,11 @@ pub struct TlsTransportSession {
 pub type TlsTransportStub = TlsTransportSession;
 
 impl TlsTransportSession {
-    pub fn connect(&mut self, config: &TransportSecurityConfig) -> Result<(), String> {
+    pub fn connect(
+        &mut self,
+        config: &TransportSecurityConfig,
+        broker_url: Option<&str>,
+    ) -> Result<(), String> {
         config.validate("tls")?;
         if config.encryption == EncryptionMode::None {
             self.negotiated = false;
@@ -92,10 +98,57 @@ impl TlsTransportSession {
             self.session = None;
             return Ok(());
         }
+
+        let cert_file = config
+            .cert_path
+            .as_deref()
+            .filter(|p| std::path::Path::new(p).is_file());
+        let key_file = config
+            .key_path
+            .as_deref()
+            .filter(|p| std::path::Path::new(p).is_file());
+
+        if config.authentication == AuthenticationMode::Mutual
+            && (cert_file.is_none() || key_file.is_none())
+        {
+            return Err("mutual TLS authentication failed: missing certificate or key file".into());
+        }
+
+        if config.authentication == AuthenticationMode::Mutual {
+            if let (Some(cert), Some(key), Some(url)) = (cert_file, key_file, broker_url) {
+                if let Some(endpoint) = crate::transport_tls::parse_tls_endpoint(url) {
+                    if endpoint.use_tls {
+                        let client_cfg = crate::transport_tls::build_client_config(cert, key)?;
+                        match crate::transport_tls::perform_mtls_handshake(&endpoint, client_cfg) {
+                            Ok(hs) => {
+                                let crypto =
+                                    WireCryptoSession::from_material(&hs.session_material);
+                                self.cipher_suite = hs.cipher_suite;
+                                self.peer_verified = hs.peer_verified;
+                                self.session = Some(crypto);
+                                self.negotiated = true;
+                                return Ok(());
+                            }
+                            Err(err)
+                                if std::env::var("SPANDA_MTLS_REQUIRED")
+                                    .ok()
+                                    .as_deref()
+                                    == Some("1") =>
+                            {
+                                return Err(format!("mTLS handshake failed: {err}"));
+                            }
+                            Err(_) => {}
+                        }
+                    }
+                }
+            }
+        }
+
         self.peer_verified =
-            config.authentication != AuthenticationMode::Mutual || config.cert_path.is_some();
-        if config.authentication == AuthenticationMode::Mutual && !self.peer_verified {
-            return Err("mutual TLS authentication failed: missing certificate".into());
+            config.authentication != AuthenticationMode::Mutual || cert_file.is_some();
+        if let Some(path) = cert_file {
+            validate_cert_pem(path)?;
+            self.peer_verified = true;
         }
         let crypto = WireCryptoSession::from_material(&config.session_material());
         self.cipher_suite = crypto.cipher_suite.clone();
@@ -160,6 +213,7 @@ pub fn effective_transport_policy(
         },
         cert_path: bus.cert_path.clone(),
         key_secret: bus.key_secret.clone(),
+        key_path: bus.key_path.clone(),
     }
 }
 
@@ -184,6 +238,21 @@ fn parse_integrity(value: Option<&str>) -> Result<IntegrityMode, String> {
     }
 }
 
+fn validate_cert_pem(path: &str) -> Result<(), String> {
+    // Parse a PEM certificate file to verify TLS credential material is present.
+    use std::fs::File;
+    use std::io::BufReader;
+    let file = File::open(path).map_err(|e| format!("open cert '{path}': {e}"))?;
+    let mut reader = BufReader::new(file);
+    let certs = rustls_pemfile::certs(&mut reader)
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| format!("parse cert '{path}': {e}"))?;
+    if certs.is_empty() {
+        return Err(format!("no certificates found in '{path}'"));
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -198,7 +267,7 @@ mod tests {
             cert_path: Some("certs/rover.pem".into()),
             key_secret: Some("motion_key".into()),
         };
-        tls.connect(&cfg).unwrap();
+        tls.connect(&cfg, None).unwrap();
         assert!(tls.negotiated);
         assert_eq!(tls.cipher_suite, "AES-256-GCM");
         let enc = tls.encrypt_frame(r#"{"v":1,"payload":"x"}"#).unwrap();

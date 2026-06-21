@@ -14,6 +14,12 @@ thiserror = "2"
 spanda-audit = { path = "../spanda-audit" }
 spanda-security = { path = "../spanda-security" }
 hex = "0.4"
+rustls-pemfile = "2"
+rustls = { version = "0.23", default-features = false, features = ["ring", "std"] }
+webpki-roots = "0.26"
+sha2 = "0.10"
+rumqttc = { version = "0.24", optional = true }
+tungstenite = { version = "0.24", optional = true, default-features = false, features = ["rustls-tls-webpki-roots"] }
 pyo3 = { version = "0.23", optional = true, features = ["auto-initialize", "abi3-py310"] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
@@ -21,6 +27,10 @@ libloading = "0.8"
 
 [features]
 default = []
+live-mqtt = ["dep:rumqttc"]
+live-websocket = ["dep:tungstenite"]
+live-dds = []
+live-transport = ["live-mqtt", "live-websocket", "live-dds"]
 python-native = ["dep:pyo3"]
 cpp-native = []
 

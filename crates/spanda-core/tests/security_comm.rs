@@ -2,7 +2,7 @@
 
 use spanda_core::{check, lexer::tokenize, parser::parse, security_check};
 use spanda_security::{
-    EncryptedMessage, EncryptionMode, SecurePolicy, SessionKey, TrustBoundaryKind,
+    EncryptedMessage, EncryptionMode, SecurePolicy, TrustBoundaryKind,
     TrustBoundaryRegistry,
 };
 
@@ -121,10 +121,8 @@ robot R {
 
 #[test]
 fn encrypted_message_type_requires_decrypt() {
-    let session = SessionKey {
-        id: "test-session".into(),
-    };
-    let mut msg = EncryptedMessage::<String>::encrypt(&"payload".to_string(), &session).unwrap();
+    let mut msg =
+        EncryptedMessage::<String>::encrypt(&"payload".to_string(), "test-session").unwrap();
     assert_eq!(msg.decrypt().unwrap(), "payload");
 }
 
@@ -266,8 +264,9 @@ fn transport_wire_frame_with_source_id() {
         integrity: IntegrityMode::None,
         cert_path: Some("certs/test.pem".into()),
         key_secret: Some("test_key".into()),
+        key_path: None,
     };
-    tls.connect(&security).unwrap();
+        tls.connect(&security, None).unwrap();
     let mut bus = RoutingCommBus::new();
     bus.configure(TransportConfig {
         security,

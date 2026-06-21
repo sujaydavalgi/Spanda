@@ -1867,11 +1867,18 @@ impl<B: RobotBackend> Interpreter<B> {
                 }
                 if name.contains("key") {
                     bus_security.key_secret = Some(name.clone());
+                    if let crate::foundations::SecretSourceDecl::File { path } = source {
+                        bus_security.key_path = Some(path.clone());
+                    }
                 }
             }
             if let Err(e) = bus_security.validate(transport.as_str()) {
                 return Err(RuntimeError::new(format!("bus security: {e}"), 1).into_spanda());
             }
+            self.security.configure_wire_session(
+                bus_security.cert_path.clone(),
+                bus_security.key_secret.clone(),
+            );
             self.comm_bus
                 .configure(TransportConfig {
                     node_name: Some(robot_name.clone()),
