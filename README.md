@@ -157,6 +157,8 @@ spanda verify rover.sd --json
 
 ### Examples library
 
+**Tutorial series:** [Spanda 101](docs/spanda-101/README.md) — ten lessons with exercises, from hello-world to end-to-end patrol.
+
 Start with the progressive ladder in [`examples/basics/`](examples/basics/README.md), then integration slices and end-to-end packages:
 
 | Tier | Path | Highlights |

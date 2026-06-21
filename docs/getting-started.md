@@ -76,7 +76,9 @@ robot MyRover {
 
 ## Learn by example (basics → end-to-end)
 
-Progressive tutorials live under [`examples/basics/`](examples/basics/README.md):
+**New to Spanda?** Start with the [Spanda 101 tutorial series](./spanda-101/README.md) — ten lessons from your first robot through deploy and replay.
+
+Progressive code examples live under [`examples/basics/`](examples/basics/README.md):
 
 ```bash
 spanda check examples/basics/01_minimal_robot.sd
