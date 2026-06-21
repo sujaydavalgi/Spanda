@@ -141,7 +141,19 @@ behavior coordinate() {
 
 Use `spanda fleet run program.sd` for in-process multi-robot simulation.
 
-Use `spanda fleet orchestrate program.sd` for distributed-style mission coordination (round-robin mission advance across fleet members).
+Use `spanda fleet orchestrate program.sd` for distributed-style mission coordination (round-robin mission advance across fleet members). With registered fleet agents, add `--remote` to relay peer mission steps over HTTP:
+
+```bash
+spanda fleet agent start --robot ScoutB --bind 0.0.0.0:8766
+spanda fleet agent register ScoutB http://scout-b.local:8766
+spanda fleet orchestrate --remote examples/robotics/fleet_peer_missions.sd
+```
+
+Strict certification gates for CI:
+
+```bash
+spanda verify examples/robotics/certified_deployment.sd --strict-certify
+```
 
 ### Safety zones
 
@@ -318,10 +330,10 @@ Runnable programs under `examples/robotics/`:
 
 | Item | Target |
 |------|--------|
-| Distributed fleet orchestrator | **Partial** — `spanda fleet orchestrate` with peer mesh delivery (`peer_mesh_mission`) |
+| Distributed fleet orchestrator | **Partial** — `spanda fleet orchestrate` with peer mesh delivery (`peer_mesh_mission`) and remote HTTP relay (`distributed_peer_mesh`) |
 | `navigate { … }` statement sugar | **Done** — parser sugar over `navigation.goal()` + Nav2 `/cmd_vel` publish |
 | Safety zone speed enforcement at runtime | **Done** — `SafetyMonitor.clamp_speed_at_pose()` (Rust + TS) |
-| `certify ISO13849` / IEC 61508 / ISO 26262 | **Partial** — program `certify` metadata (+ optional `level`) + verify reporting |
+| `certify ISO13849` / IEC 61508 / ISO 26262 | **Partial** — program `certify` metadata (+ optional `level`) + verify reporting; `--strict-certify` for CI gates |
 | OTA rollout/canary/rollback | **Partial** — local deploy CLI + remote HTTP(S) agents with `program_hash` and optional Ed25519 signed bundles |
 | Swarm coordinator runtime | Experimental; build on fleet + peer robots |
 | World model runtime | Explicitly deferred in product strategy |
@@ -346,6 +358,8 @@ Runnable programs under `examples/robotics/`:
 | Platform runtime | `crates/spanda-core/src/robotics_platform.rs` |
 | OTA deploy service | `crates/spanda-core/src/deploy_service.rs` |
 | Fleet orchestrator | `crates/spanda-core/src/fleet_orchestrator.rs` |
+| Fleet remote agents | `crates/spanda-core/src/fleet_remote.rs`, `fleet_agent.rs` |
+| Certification verify | `crates/spanda-core/src/certify_verify.rs` |
 | Nav2 adapter hooks | `crates/spanda-core/src/nav2_adapter.rs` |
 | Type checker | `crates/spanda-core/src/types.rs` (`builtin_methods`) |
 | Interpreter | `crates/spanda-core/src/runtime.rs` |

@@ -27,7 +27,8 @@ Honest snapshot of Spanda capabilities as of **v0.1.0-alpha**. Use this document
 | **Robotics platform** | `mission`, `fleet`, `safety_zone`, `certify`; navigation/fusion runtime; Nav2 adapter hook |
 | **OTA deploy CLI** | `spanda deploy plan|rollout|rollback|status` — local rollout state (`.spanda/deploy-state.json`) |
 | **Remote OTA agents** | `spanda deploy agent start|register|list` + `deploy rollout --remote` — HTTP agent on devices |
-| **Fleet orchestration** | `spanda fleet orchestrate` — round-robin mission coordination report |
+| **Fleet orchestration** | `spanda fleet orchestrate` — round-robin mission coordination report; `--remote` relays peer steps via HTTP fleet agents |
+| **Fleet peer agents** | `spanda fleet agent start|register|list` — on-device peer relay server (`.spanda/fleet-agents.json`) |
 | **Tooling** | Native CLI (`check`, `verify`, `run`, `sim`, `fleet`, `deploy`, `fmt`, `lint`, `doc`), package manager (`init`, `build`, `test`, `install`), **prebuilt installable packages** (Linux/macOS/Windows via GitHub Releases) |
 | **Security / audit** | Capabilities, secrets, signed messages, audit records |
 | **Secure communication** | `secure_comm`, encrypted buses, trusted-source publish/receive enforcement, AES-GCM wire frames, TLS session + rustls PEM validation, `spanda security check|audit`, TS runtime parity |
@@ -44,9 +45,9 @@ Honest snapshot of Spanda capabilities as of **v0.1.0-alpha**. Use this document
 | **Digital twins (live sync)** | Twin mirror + replay | External telemetry sync is simulated; no production twin cloud |
 | **Replay** | `replay true`, frame buffer, mission traces | In-process only; v2 traces embed state snapshots for `--playback` |
 | **Advanced verification** | Fault injection, compatibility matrix | Matrix may report stub targets |
-| **Multi-agent systems** | Agent-to-agent comm, fleet peer messaging | In-process only; no distributed runtime |
+| **Multi-agent systems** | Agent-to-agent comm, fleet peer messaging | In-process mesh + HTTP fleet agent relay (`fleet orchestrate --remote`) |
 | **OTA rollout** | Deploy plan/rollout/rollback/status | Local state file + HTTP deploy agents on devices |
-| **Certification metadata** | `certify ISO13849 { level PLd; }` | Verify-only metadata; not a compliance proof |
+| **Certification metadata** | `certify ISO13849 { level PLd; }` | Verify-only metadata; `--strict-certify` elevates gaps to errors |
 | **Nav2 / SLAM packages** | Registry adapter stubs | External Nav2/Gazebo/OpenCV not bundled |
 | **ROS2 adapter** | Native `rclrs` cdylib, rclpy daemon, CLI bridge | Requires ROS Humble; not default transport |
 | **LLVM / native codegen** | `spanda ir`, `llvm-ir`, `compile-native` | Early stage; not primary execution path |

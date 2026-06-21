@@ -24,6 +24,7 @@ import {
 } from "./hardware-profile.js";
 import { defaultMessageSize, estimateTopicBandwidthMbps } from "./comm/index.js";
 import { verifyFrameworkImports } from "./adapter-verify.js";
+import { verifyCertificationProof } from "./certify-verify.js";
 
 const ESTIMATED_TASK_COST_MS = 5;
 
@@ -31,6 +32,7 @@ export type VerifyHardwareTsOptions = {
   target?: string;
   allTargets?: boolean;
   simulate?: boolean;
+  strictCertify?: boolean;
 };
 
 function compat(
@@ -522,22 +524,10 @@ export function verifyHardwareProgram(
     );
   }
   items.push(...verifyFrameworkImports(program.imports));
+  items.push(...verifyCertificationProof(program, options.strictCertify ?? false));
 
   const targets = resolveTargets(program, options, registry);
   const runSimulation = options.simulate || program.simulateCompatibility != null;
-
-  // Warn when deploy targets exist but the program omits certification metadata.
-  if (targets.length > 0 && (program.certifications ?? []).length === 0) {
-    items.push(
-      compat(
-        "certify",
-        "Deploy targets declared without certification metadata — add certify ISO13849 (or IEC61508 / ISO26262)",
-        "warning",
-        1,
-        1,
-      ),
-    );
-  }
 
   if (targets.length === 0 && !options.target && !options.allTargets) {
     items.push(

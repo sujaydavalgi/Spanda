@@ -35,6 +35,8 @@ export type FleetOrchestrationReport = {
   stepsAdvanced: number;
   peerMessages?: string[];
   peerDeliveries?: PeerDelivery[];
+  remoteRelayed?: number;
+  remoteFailed?: number;
 };
 
 export type FleetOrchestrationResult = {
@@ -133,4 +135,27 @@ export function orchestrateFleets(program: Program, programPath: string): FleetO
   );
 
   return { program: programPath, fleets: reports, success };
+}
+
+export async function orchestrateFleetsRemote(
+  program: Program,
+  programPath: string,
+  registry: import("./fleet-remote.js").FleetAgentRegistry,
+): Promise<FleetOrchestrationResult> {
+  // Coordinate locally, then push peer mission steps to remote fleet agents.
+  const { relayPeerDeliveries } = await import("./fleet-remote.js");
+  const result = orchestrateFleets(program, programPath);
+  let success = result.success;
+  for (const fleet of result.fleets) {
+    const { relayed, failed } = await relayPeerDeliveries(fleet.peerDeliveries ?? [], registry);
+    fleet.remoteRelayed = relayed;
+    fleet.remoteFailed = failed;
+    if (relayed > 0) {
+      fleet.coordinationMode = "distributed_peer_mesh";
+    }
+    if (failed > 0) {
+      success = false;
+    }
+  }
+  return { ...result, success };
 }

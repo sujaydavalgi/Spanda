@@ -54,13 +54,21 @@ import {
   writeAgentRegistryToDisk,
 } from "../deploy-remote.js";
 import { startDeployAgentServer } from "../deploy-agent.js";
-import { orchestrateFleets } from "../fleet-orchestrator.js";
+import { orchestrateFleets, orchestrateFleetsRemote } from "../fleet-orchestrator.js";
+import {
+  defaultFleetAgentsPath,
+  fleetAgentHealth,
+  readFleetAgentRegistryFromDisk,
+  registerFleetAgent,
+  writeFleetAgentRegistryToDisk,
+} from "../fleet-remote.js";
+import { startFleetAgentServer } from "../fleet-agent.js";
 
 const USAGE = `Spanda Programming Language — the pulse of autonomous intelligence
 
 Usage:
   spanda check [--json] <file.sd>
-  spanda verify [--json] [--target <Profile>] [--all-targets] [--simulate] <file.sd>
+  spanda verify [--json] [--target <Profile>] [--all-targets] [--simulate] [--strict-certify] <file.sd>
   spanda compatibility [flags] <file.sd>     Alias for verify
   spanda run [--json] [--verbose] [--secure] [--inject-security-faults] <file.sd>
   spanda sim [--json] [--inject-security-faults] <file.sd>
@@ -79,7 +87,10 @@ Usage:
   spanda deploy agent list [--json]
   spanda deploy --target wasm [--out <file.json>] <file.sd>
   spanda fleet run [--json] [--trace-*] <file.sd>
-  spanda fleet orchestrate [--json] <file.sd>
+  spanda fleet orchestrate [--json] [--remote] <file.sd>
+  spanda fleet agent start [--bind <addr>] [--robot <name>] [--token <t>] [--tls-cert <pem>] [--tls-key <pem>]
+  spanda fleet agent register <RobotName> <http(s)://host:port> [--token <t>]
+  spanda fleet agent list [--json]
   spanda debug [--break <line>] <file.sd>
   spanda ir [--json] <file.sd>
   spanda llvm-ir [--out <file.ll>] [--target-triple <triple>] <file.sd>
@@ -433,6 +444,9 @@ function handleVerify(filePath: string | undefined, json: boolean, flags: Map<st
 
   // continue when flagBool(flags, "simulate")) extra.push("--simulate".
   if (flagBool(flags, "simulate")) extra.push("--simulate");
+
+  // continue when flagBool(flags, "strict-certify")) extra.push("--strict-certify".
+  if (flagBool(flags, "strict-certify")) extra.push("--strict-certify");
 
   // continue when json) extra.push("--json".
   if (json) extra.push("--json");
@@ -1141,34 +1155,127 @@ async function handleDeploy(
   handleDeployWasm(positional[0], flagStr(flags, "out"));
 }
 
-function handleFleetOrchestrate(filePath: string | undefined, json: boolean): void {
+function handleFleetOrchestrate(
+  filePath: string | undefined,
+  json: boolean,
+  remote: boolean,
+): void | Promise<void> {
   // Coordinate fleet missions declared in a Spanda program.
   const { abs, program } = compileProgramOrExit(filePath ?? "");
-  const result = orchestrateFleets(program, abs);
-  if (json) {
-    console.log(JSON.stringify(result, null, 2));
-    return;
-  }
-  console.log(`Fleet orchestration for ${abs}`);
-  for (const fleet of result.fleets) {
-    console.log(`  fleet ${fleet.fleetName} (${fleet.coordinationMode})`);
-    for (const member of fleet.members) {
-      console.log(
-        `    ${member.robotName} mission=${member.missionName ?? "null"} state=${member.missionState} step='${member.currentStep}' peer=${member.hasPeerLink}`,
-      );
-      for (const handoff of member.peerHandoffs ?? []) {
-        console.log(`      handoff: ${handoff}`);
+  const printResult = (result: Awaited<ReturnType<typeof orchestrateFleets>>) => {
+    if (json) {
+      console.log(JSON.stringify(result, null, 2));
+      return;
+    }
+    console.log(`Fleet orchestration for ${abs}`);
+    for (const fleet of result.fleets) {
+      console.log(`  fleet ${fleet.fleetName} (${fleet.coordinationMode})`);
+      for (const member of fleet.members) {
+        console.log(
+          `    ${member.robotName} mission=${member.missionName ?? "null"} state=${member.missionState} step='${member.currentStep}' peer=${member.hasPeerLink}`,
+        );
+        for (const handoff of member.peerHandoffs ?? []) {
+          console.log(`      handoff: ${handoff}`);
+        }
+      }
+      for (const message of fleet.peerMessages ?? []) {
+        console.log(`    peer: ${message}`);
+      }
+      for (const delivery of fleet.peerDeliveries ?? []) {
+        console.log(
+          `    mesh: ${delivery.fromRobot} -> ${delivery.toRobot} topic=${delivery.topic} step=${delivery.step} delivered=${delivery.delivered}`,
+        );
+      }
+      if (remote) {
+        console.log(`    remote: relayed=${fleet.remoteRelayed ?? 0} failed=${fleet.remoteFailed ?? 0}`);
       }
     }
-    for (const message of fleet.peerMessages ?? []) {
-      console.log(`    peer: ${message}`);
-    }
-    for (const delivery of fleet.peerDeliveries ?? []) {
-      console.log(
-        `    mesh: ${delivery.fromRobot} -> ${delivery.toRobot} topic=${delivery.topic} step=${delivery.step} delivered=${delivery.delivered}`,
-      );
-    }
+  };
+
+  if (remote) {
+    const registry = readFleetAgentRegistryFromDisk(defaultFleetAgentsPath());
+    return orchestrateFleetsRemote(program, abs, registry).then(printResult);
   }
+  printResult(orchestrateFleets(program, abs));
+}
+
+function handleFleetAgent(subcommand: string | undefined, args: string[], json: boolean): void | Promise<void> {
+  if (subcommand === "start") {
+    let bind = "127.0.0.1:8766";
+    let robotName = "";
+    let token: string | undefined;
+    let tlsCert: string | undefined;
+    let tlsKey: string | undefined;
+    for (let i = 0; i < args.length; i++) {
+      if (args[i] === "--bind" && args[i + 1]) {
+        bind = args[++i]!;
+      } else if (args[i] === "--robot" && args[i + 1]) {
+        robotName = args[++i]!;
+      } else if (args[i] === "--token" && args[i + 1]) {
+        token = args[++i];
+      } else if (args[i] === "--tls-cert" && args[i + 1]) {
+        tlsCert = args[++i];
+      } else if (args[i] === "--tls-key" && args[i + 1]) {
+        tlsKey = args[++i];
+      }
+    }
+    if (!robotName) {
+      console.error("Missing --robot <RobotName>");
+      process.exit(1);
+    }
+    if ((tlsCert && !tlsKey) || (!tlsCert && tlsKey)) {
+      console.error("Both --tls-cert and --tls-key are required for HTTPS fleet agents");
+      process.exit(1);
+    }
+    startFleetAgentServer({ bind, robotName, token, tlsCert, tlsKey });
+    return;
+  }
+
+  if (subcommand === "register") {
+    const positional = args.filter((arg) => !arg.startsWith("-") && arg !== args[args.indexOf("--token") + 1]);
+    const robotName = positional[0];
+    const url = positional[1];
+    const tokenIdx = args.indexOf("--token");
+    const token = tokenIdx >= 0 ? args[tokenIdx + 1] : undefined;
+    if (!robotName || !url) {
+      console.error("Usage: spanda fleet agent register <RobotName> <http(s)://host:port> [--token <t>]");
+      process.exit(1);
+    }
+    const registry = readFleetAgentRegistryFromDisk(defaultFleetAgentsPath());
+    try {
+      writeFleetAgentRegistryToDisk(
+        registerFleetAgent(registry, robotName, url, token),
+        defaultFleetAgentsPath(),
+      );
+      console.log(`Registered fleet agent in ${defaultFleetAgentsPath()}`);
+    } catch (err) {
+      console.error(`Register failed: ${String(err)}`);
+      process.exit(1);
+    }
+    return;
+  }
+
+  if (subcommand === "list") {
+    const registry = readFleetAgentRegistryFromDisk(defaultFleetAgentsPath());
+    if (json) {
+      console.log(JSON.stringify(registry, null, 2));
+      return;
+    }
+    console.log(`Fleet agents (${defaultFleetAgentsPath()})`);
+    if (registry.agents.length === 0) {
+      console.log("  (no agents registered)");
+      return;
+    }
+    return (async () => {
+      for (const entry of registry.agents) {
+        const healthy = await fleetAgentHealth(entry);
+        console.log(`  ${entry.robotName} -> ${entry.url} (healthy=${healthy})`);
+      }
+    })();
+  }
+
+  console.error("Usage: spanda fleet agent start|register|list");
+  process.exit(1);
 }
 
 function handleFleet(
@@ -1194,7 +1301,11 @@ function handleFleet(
 
   const sub = positional[0];
   if (sub === "orchestrate") {
-    handleFleetOrchestrate(positional[1], json);
+    void handleFleetOrchestrate(positional[1], json, flagBool(flags, "remote"));
+    return;
+  }
+  if (sub === "agent") {
+    void handleFleetAgent(positional[1], positional.slice(2), json);
     return;
   }
 
@@ -1225,7 +1336,8 @@ function handleFleet(
 
   console.error(`Unknown fleet subcommand '${sub ?? ""}'`);
   console.error("Usage: spanda fleet run [--json] [--trace-*] <file.sd>");
-  console.error("       spanda fleet orchestrate [--json] <file.sd>");
+  console.error("       spanda fleet orchestrate [--json] [--remote] <file.sd>");
+  console.error("       spanda fleet agent start|register|list");
   process.exit(1);
 }
 
