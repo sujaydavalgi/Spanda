@@ -836,6 +836,9 @@ pub struct InterpreterOptions {
 
     /// Optional domain provider registry; defaults to bootstrap shims when unset.
     pub provider_registry: Option<crate::providers::ProviderRegistry>,
+
+    /// Official package dependency names from the enclosing project manifest/lockfile.
+    pub official_packages: Vec<String>,
 }
 
 impl Default for InterpreterOptions {
@@ -874,6 +877,7 @@ impl Default for InterpreterOptions {
             secure_mode: false,
             inject_security_faults: false,
             provider_registry: None,
+            official_packages: Vec::new(),
         }
     }
 }
@@ -967,7 +971,15 @@ impl<B: RobotBackend> Interpreter<B> {
         let provider_registry = options
             .provider_registry
             .take()
-            .unwrap_or_else(crate::providers::bootstrap_default_providers);
+            .unwrap_or_else(|| {
+                crate::providers::bootstrap_providers_for_packages(
+                    &options
+                        .official_packages
+                        .iter()
+                        .map(String::as_str)
+                        .collect::<Vec<_>>(),
+                )
+            });
         Self {
             backend,
             options,
@@ -1490,6 +1502,16 @@ impl<B: RobotBackend> Interpreter<B> {
             sim_faults = faults.iter().map(|f| f.fault_type.clone()).collect();
         }
         self.load_program_metadata(program);
+        if !self.provider_registry.official_packages().is_empty() {
+            crate::providers::sync_comm_bus_for_official_packages(
+                &mut self.comm_bus,
+                self.provider_registry.official_packages(),
+            );
+            self.log(format!(
+                "providers: {} official package(s) active",
+                self.provider_registry.official_packages().len()
+            ));
+        }
         self.load_connectivity_metadata(geofences, connectivity_policies);
         self.load_robotics_platform_metadata(fleets, program_safety_zones, certifications);
 

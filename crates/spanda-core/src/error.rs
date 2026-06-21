@@ -200,6 +200,10 @@ pub struct RunOptions {
     /// Enforce certification metadata before run/sim (also via SPANDA_ENFORCE_CERTIFY=1).
     #[serde(default)]
     pub enforce_certify: bool,
+
+    /// Official package names from project `spanda.toml` / `spanda.lock` (runtime provider wiring).
+    #[serde(default)]
+    pub official_packages: Vec<String>,
 }
 
 fn default_max_loop_iterations() -> usize {

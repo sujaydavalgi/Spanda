@@ -515,6 +515,17 @@ pub fn run_program(program: &Program, options: RunOptions) -> Result<RunResult, 
     } else {
         options.scheduler_clock
     };
+    let provider_registry = if options.official_packages.is_empty() {
+        None
+    } else {
+        Some(crate::providers::bootstrap_providers_for_packages(
+            &options
+                .official_packages
+                .iter()
+                .map(String::as_str)
+                .collect::<Vec<_>>(),
+        ))
+    };
     let mut interp = Interpreter::new(
         sim,
         InterpreterOptions {
@@ -533,6 +544,8 @@ pub fn run_program(program: &Program, options: RunOptions) -> Result<RunResult, 
             replay_deterministic: options.replay_deterministic,
             secure_mode: options.secure_mode,
             inject_security_faults: options.inject_security_faults,
+            official_packages: options.official_packages.clone(),
+            provider_registry,
             ..Default::default()
         },
     );

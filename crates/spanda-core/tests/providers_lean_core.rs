@@ -29,7 +29,7 @@ fn module_classifications_include_core_and_shims() {
 fn transport_adapter_provider_wraps_legacy_adapter() {
     let mut registry = ProviderRegistry::new();
     let adapter =
-        TransportAdapterProvider::new("spanda-ros2", "stub", Ros2TransportAdapter::default());
+        TransportAdapterProvider::new("spanda-ros2", "project", Ros2TransportAdapter::default());
     registry.register_transport(Box::new(adapter));
 
     let ids = registry.list_transports();
@@ -37,7 +37,7 @@ fn transport_adapter_provider_wraps_legacy_adapter() {
     assert_eq!(ids[0].package, "spanda-ros2");
 
     let connected = registry
-        .with_transport("spanda-ros2::stub", |transport| {
+        .with_transport("spanda-ros2::project", |transport| {
             transport
                 .connect(&TransportConfig::default())
                 .expect("connect");
@@ -55,6 +55,14 @@ fn bootstrap_registers_default_transports() {
     assert!(ids.iter().any(|id| id.package == "spanda-mqtt"));
     assert!(ids.iter().any(|id| id.package == "spanda-ros2"));
 }
+#[test]
+fn bootstrap_providers_for_ros2_only() {
+    let registry = spanda_core::providers::bootstrap_providers_for_packages(&["spanda-ros2"]);
+    assert_eq!(registry.transport_count(), 1);
+    assert!(registry.has_official_package("spanda-ros2"));
+    assert!(!registry.has_official_package("spanda-mqtt"));
+}
+
 #[test]
 fn provider_id_key_format() {
     let id = ProviderId::new("spanda-gps", "nmea");

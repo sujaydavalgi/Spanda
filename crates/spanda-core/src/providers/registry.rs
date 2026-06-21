@@ -29,6 +29,7 @@ pub struct ProviderRegistry {
     ros: HashMap<String, Box<dyn RosProvider>>,
     hal: HashMap<String, Box<dyn HalProvider>>,
     granted_capabilities: ProviderCapabilitySet,
+    official_packages: Vec<String>,
 }
 
 fn registry_key(id: &ProviderId) -> String {
@@ -46,6 +47,18 @@ impl ProviderRegistry {
 
     pub fn has_capability(&self, cap: &str) -> bool {
         self.granted_capabilities.contains(cap)
+    }
+
+    pub fn set_official_packages(&mut self, names: Vec<String>) {
+        self.official_packages = names;
+    }
+
+    pub fn official_packages(&self) -> &[String] {
+        &self.official_packages
+    }
+
+    pub fn has_official_package(&self, name: &str) -> bool {
+        self.official_packages.iter().any(|pkg| pkg == name)
     }
 
     pub fn register_sensor(&mut self, provider: Box<dyn SensorProvider>) {
