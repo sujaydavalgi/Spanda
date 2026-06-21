@@ -53,6 +53,13 @@ import type { ModuleRegistry } from "../modules/index.js";
 import type { ExternFnDecl, ModuleFnDecl, ResourceBudgetDecl, TaskDecl, TaskPriority } from "../foundations.js";
 import type { CaptureResult, RegexPattern } from "../regex.js";
 import {
+  connectivityPolicyFromDecl,
+  geofenceContains,
+  geofenceFromDecl,
+  type ConnectivityPolicyRuntime,
+  type GeofenceRuntime,
+} from "../connectivity-positioning.js";
+import {
   regexCapture,
   regexFind,
   regexMatches,
@@ -287,6 +294,10 @@ export class Interpreter {
   private returning = false;
   private returnValue: RuntimeValue = { kind: "void" };
   private reliability = new ReliabilityRuntime();
+  private geofences: GeofenceRuntime[] = [];
+  private geofenceActive = new Set<string>();
+  private connectivityPolicies: ConnectivityPolicyRuntime[] = [];
+  private activeConnectivityLink = "wifi";
 
   constructor(private options: InterpreterOptions) {}
 
@@ -433,7 +444,115 @@ export class Interpreter {
         structDecl.fields.map((f) => ({ name: f.name, typeName: f.typeName })),
       );
     }
-}
+    this.loadConnectivityMetadata(program);
+  }
+
+  private loadConnectivityMetadata(program: Program): void {
+    // Load geofence zones and connectivity policies from the program AST.
+    //
+    // Parameters:
+    // - `program` — parsed program
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // loadConnectivityMetadata(program);
+
+    this.geofences = program.geofences.map(geofenceFromDecl);
+    this.connectivityPolicies = program.connectivityPolicies.map(connectivityPolicyFromDecl);
+    this.geofenceActive.clear();
+    const policy = this.connectivityPolicies[0];
+    if (policy) {
+      this.activeConnectivityLink = policy.preferred || "wifi";
+    } else {
+      this.activeConnectivityLink = "wifi";
+    }
+  }
+
+  private currentGpsLatLon(): [number, number] {
+    // Read simulated GPS coordinates from robot pose (x=lat, y=lon).
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Tuple of latitude and longitude in degrees.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const [lat, lon] = currentGpsLatLon();
+
+    const state = this.options.backend.getState();
+    return [state.pose.x, state.pose.y];
+  }
+
+  private runGeofenceTriggers(): void {
+    // Dispatch geofence entered/exited handlers when pose crosses a fence boundary.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // runGeofenceTriggers();
+
+    if (this.geofences.length === 0) {
+      return;
+    }
+    const [lat, lon] = this.currentGpsLatLon();
+    const entered: string[] = [];
+    const exited: string[] = [];
+
+    for (const fence of this.geofences) {
+      const inside = geofenceContains(fence, lat, lon);
+      const wasInside = this.geofenceActive.has(fence.name);
+      if (inside && !wasInside) {
+        this.geofenceActive.add(fence.name);
+        entered.push(fence.name);
+      } else if (!inside && wasInside) {
+        this.geofenceActive.delete(fence.name);
+        exited.push(fence.name);
+      } else if (inside) {
+        this.geofenceActive.add(fence.name);
+      }
+    }
+
+    for (const name of entered) {
+      this.dispatchEvent(`geofence:${name}:entered`);
+    }
+    for (const name of exited) {
+      this.dispatchEvent(`geofence:${name}:exited`);
+    }
+  }
+
+  private runConnectivityMaintenance(): void {
+    // Run periodic geofence and failover maintenance during simulation ticks.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // runConnectivityMaintenance();
+
+    this.runGeofenceTriggers();
+  }
 
   private evalContract(expr: Expr): boolean {
     // EvalContract.
@@ -562,6 +681,7 @@ export class Interpreter {
       }
       this.runVerifyRules();
       this.updateTwinSnapshot();
+      this.runConnectivityMaintenance();
     }
 }
 
@@ -809,6 +929,7 @@ export class Interpreter {
       this.runVerifyRules();
       this.updateTwinSnapshot();
       this.reliability.checkWatchdogs(this.reliabilityHost());
+      this.runConnectivityMaintenance();
       this.reliability.recordEvent(this.reliabilityHost(), "scheduler_tick", {
         simTimeMs: simTime,
         iteration: i + 1,
@@ -1407,6 +1528,7 @@ export class Interpreter {
     if (this.reliability.modes.has("normal")) {
       this.reliability.enterMode("normal", this.reliabilityHost());
     }
+    this.runConnectivityMaintenance();
 }
 
   private reliabilityHost() {
@@ -3002,10 +3124,15 @@ export class Interpreter {
         return { kind: "bool", value: inZone };
       }
       case "in_geofence": {
-        return { kind: "bool", value: false };
+        const fenceName = expr.args[0] ? getString(this.evalExpr(expr.args[0])) : "";
+        const [lat, lon] = this.currentGpsLatLon();
+        const inside = this.geofences.some(
+          (f) => f.name === fenceName && geofenceContains(f, lat, lon),
+        );
+        return { kind: "bool", value: inside };
       }
       case "connectivity_link": {
-        return { kind: "string", value: "wifi" };
+        return { kind: "string", value: this.activeConnectivityLink };
       }
       default:
         return { kind: "void" };
