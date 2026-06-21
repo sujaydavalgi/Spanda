@@ -1,0 +1,16 @@
+[package]
+name = "spanda-transport-mqtt"
+version.workspace = true
+edition.workspace = true
+description = "MQTT transport backend for Spanda (optional live broker via rumqttc)"
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+
+[dependencies]
+rumqttc = { version = "0.24", optional = true }
+
+[features]
+default = []
+live = ["dep:rumqttc"]

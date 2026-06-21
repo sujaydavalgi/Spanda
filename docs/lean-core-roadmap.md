@@ -22,7 +22,15 @@ Phased plan to complete the package-first architecture after the initial scaffol
 | Package-scoped provider bootstrap | Done | `bootstrap_providers_for_packages()` |
 | Install reports official packages | Done | `spanda install` verbose output |
 
-## Phase 3 — Crate extraction (next)
+## Phase 3 — Crate extraction (in progress)
+
+| Crate | Status | Notes |
+|-------|--------|-------|
+| `spanda-transport-mqtt` | Done | Live MQTT bridge extracted; core shim retained |
+| `spanda-transport-ros2` | Planned | rclrs native optional crate |
+| `spanda-connectivity` | Planned | GPS, WiFi, BLE, cellular sim |
+| `spanda-fleet` | Planned | Orchestrator, agents, mesh |
+| `spanda-ota` | Planned | Deploy service, agents |
 
 Extract optional backends from `spanda-core` into workspace members:
 
