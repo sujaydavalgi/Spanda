@@ -11,6 +11,10 @@ import type { ModuleRegistry } from "./modules/index.js";
 import { Interpreter, type RobotBackend, type RobotState } from "./runtime/index.js";
 import { createDefaultSimulator } from "./simulator/index.js";
 import type { Program } from "./ast/nodes.js";
+import {
+  certificationRuntimeEnabledFromEnv,
+  enforceCertificationRuntime,
+} from "./certify-runtime.js";
 
 export type CompileBackend = "typescript" | "rust-native" | "rust-cli";
 
@@ -255,6 +259,7 @@ export type RunOptions = {
   schedulerClock?: "sim" | "wall";
   secure?: boolean;
   injectSecurityFaults?: boolean;
+  enforceCertify?: boolean;
 };
 
 export function run(program: Program, options: RunOptions): RobotState {
@@ -273,6 +278,9 @@ export function run(program: Program, options: RunOptions): RobotState {
   // Example:
 
   // const result = run(program, options);
+  if (options.enforceCertify || certificationRuntimeEnabledFromEnv()) {
+    enforceCertificationRuntime(program, true);
+  }
   const interpreter = new Interpreter({
     backend: options.backend,
     maxLoopIterations: options.maxLoopIterations,

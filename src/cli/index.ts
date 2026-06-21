@@ -54,7 +54,7 @@ import {
   writeAgentRegistryToDisk,
 } from "../deploy-remote.js";
 import { startDeployAgentServer } from "../deploy-agent.js";
-import { orchestrateFleets, orchestrateFleetsMesh, orchestrateFleetsRemote } from "../fleet-orchestrator.js";
+import { buildCertificationProof } from "../certify-prover.js";
 import { defaultFleetMeshUrl } from "../fleet-mesh.js";
 import {
   defaultFleetAgentsPath,
@@ -70,6 +70,7 @@ const USAGE = `Spanda Programming Language — the pulse of autonomous intellige
 Usage:
   spanda check [--json] <file.sd>
   spanda verify [--json] [--target <Profile>] [--all-targets] [--simulate] [--strict-certify] <file.sd>
+  spanda certify prove [--json] [--strict] [--out <file.json>] <file.sd>
   spanda compatibility [flags] <file.sd>     Alias for verify
   spanda run [--json] [--verbose] [--secure] [--inject-security-faults] [--enforce-certify] <file.sd>
   spanda sim [--json] [--inject-security-faults] [--enforce-certify] <file.sd>
@@ -281,6 +282,9 @@ async function main(): Promise<void> {
       case "compatibility":
         handleVerify(positional[0], json, flags);
         break;
+      case "certify":
+        handleCertify(positional, flags, json);
+        break;
       case "run":
       case "sim":
         handleRun(positional[0], command === "sim", json, verbose, flags);
@@ -416,6 +420,40 @@ function handleCheck(filePath: string | undefined, json: boolean): void {
   } else {
     console.log(`✓ ${filePath} — no type errors`);
   }
+}
+
+function handleCertify(
+  positional: string[],
+  flags: Map<string, string | boolean>,
+  json: boolean,
+): void {
+  // Emit structured certification proof artifacts for audit workflows.
+  const sub = positional[0];
+  if (sub !== "prove") {
+    console.error("Usage: spanda certify prove [--json] [--strict] [--out <file.json>] <file.sd>");
+    process.exit(1);
+  }
+  const { abs, program } = compileProgramOrExit(positional[1] ?? "");
+  const strict = flagBool(flags, "strict");
+  const report = buildCertificationProof(program, abs, strict);
+  const payload = JSON.stringify(report, null, 2);
+  const out = flagStr(flags, "out");
+  if (out) {
+    writeFileSync(resolve(out), payload);
+    if (!json) console.log(`✓ Wrote certification proof to ${out}`);
+  }
+  if (json) {
+    console.log(payload);
+  } else if (!out) {
+    console.log(`Certification proof for ${abs}`);
+    console.log(`  Status: ${report.passed ? "PASSED" : "FAILED"}`);
+    console.log(`  ${report.summary}`);
+    for (const item of report.checklist) {
+      const icon = item.severity === "pass" ? "✓" : item.severity === "warning" ? "⚠" : "✗";
+      console.log(`  ${icon} [${item.category}] ${item.message}`);
+    }
+  }
+  if (!report.passed) process.exit(1);
 }
 
 function handleVerify(filePath: string | undefined, json: boolean, flags: Map<string, string | boolean>): void {
@@ -625,6 +663,7 @@ function runSimulation(
     onMotionBlocked: (reason) => logs.push(`⚠ BLOCKED: ${reason}`),
     secure: flags.get("secure") === true,
     injectSecurityFaults: flags.get("inject-security-faults") === true,
+    enforceCertify: flags.get("enforce-certify") === true,
   });
   console.log("── Final State ──");
   console.log(`  Pose:     x=${state.pose.x.toFixed(3)} m, y=${state.pose.y.toFixed(3)} m, θ=${state.pose.theta.toFixed(3)} rad`);

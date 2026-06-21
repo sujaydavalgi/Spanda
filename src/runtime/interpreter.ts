@@ -89,6 +89,7 @@ import {
   type MissionRuntime,
 } from "../robotics-platform.js";
 import { tryPublishNav2CmdVel } from "../navigation/index.js";
+import { invokeNav2Bridge, invokeSlamBridge } from "../adapter-bridge.js";
 
 export type PoseValue = { x: number; y: number; theta: number; z: number };
 
@@ -3138,6 +3139,10 @@ export class Interpreter {
       angularVal?.kind === "number" ? angularVal.value : 0.0;
 
     this.options.onLog?.(`navigation: executing goal '${goalText}'`);
+    const bridgeOutput = invokeNav2Bridge(goalText);
+    if (bridgeOutput) {
+      this.options.onLog?.(`navigation: Nav2 bridge output: ${bridgeOutput}`);
+    }
     tryPublishNav2CmdVel({
       backend: this.options.backend,
       topicPathToMessageType: this.topicPathToMessageType,
@@ -3152,7 +3157,12 @@ export class Interpreter {
     // Dispatch SLAM adapter helpers for map and localization stubs.
     if (method === "localize") {
       const state = this.options.backend.getState();
-      this.options.onLog?.("slam: localize (stub adapter)");
+      const bridgeOutput = invokeSlamBridge("localize");
+      if (bridgeOutput) {
+        this.options.onLog?.(`slam: bridge localize output: ${bridgeOutput}`);
+      } else {
+        this.options.onLog?.("slam: localize (stub adapter)");
+      }
       return {
         kind: "object",
         typeName: "LocalizationEstimate",
@@ -3163,7 +3173,12 @@ export class Interpreter {
       };
     }
     if (method === "map") {
-      this.options.onLog?.("slam: map snapshot (stub adapter)");
+      const bridgeOutput = invokeSlamBridge("map");
+      if (bridgeOutput) {
+        this.options.onLog?.(`slam: bridge map output: ${bridgeOutput}`);
+      } else {
+        this.options.onLog?.("slam: map snapshot (stub adapter)");
+      }
       return {
         kind: "object",
         typeName: "OccupancyGrid",
@@ -3226,6 +3241,10 @@ export class Interpreter {
         this.options.onLog?.(
           `navigation: executing goal '${target.goal ?? "none"}'`,
         );
+        const bridgeOutput = invokeNav2Bridge(target.goal ?? "none");
+        if (bridgeOutput) {
+          this.options.onLog?.(`navigation: Nav2 bridge output: ${bridgeOutput}`);
+        }
         tryPublishNav2CmdVel({
           backend: this.options.backend,
           topicPathToMessageType: this.topicPathToMessageType,
