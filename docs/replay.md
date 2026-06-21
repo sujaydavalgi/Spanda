@@ -35,4 +35,11 @@ Playback uses wall-clock pacing between frames by default. Offsets accept millis
 
 Twin replay integrates with existing `twin { replay true; }` blocks.
 
+## Golden traces in git
+
+Runtime `--record` output is ignored by default (`*.trace` in `.gitignore`). Committed reference traces are allowed under:
+
+- `examples/**/*.trace` — demo or walkthrough replays
+- `tests/golden/**/*.trace` — CI golden fixtures paired with `tests/golden/manifest.json`
+
 See [realtime](realtime.md).

@@ -19,7 +19,6 @@ packages/web/wasm/spanda_wasm_bg.wasm.d.ts
 packages/native/*.node
 packages/native/native.js
 packages/native/native.d.ts
-packages/native/dist/
 packages/native/index.js
 packages/native/index.js.map
 packages/native/index.d.ts
@@ -44,6 +43,8 @@ crates/spanda-ros2-rclrs-native/Cargo.lock
 .spanda-*.sd
 .spanda/
 *.trace
+!examples/**/*.trace
+!tests/golden/**/*.trace
 
 # python
 __pycache__/
