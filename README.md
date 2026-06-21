@@ -52,18 +52,6 @@ Spanda exists to be that coordination layer: one typed language where perception
 
 ---
 
-## Spanda is NOT trying to replace Python, C++, or Rust
-
-| Ecosystem | Role |
-|-----------|------|
-| **Python** | Model training, data science, rapid prototyping |
-| **C++** | Real-time drivers, vendor SDKs, embedded firmware |
-| **Rust** | Systems programming, performance-critical components |
-
-**Spanda orchestrates** AI, robotics, safety, verification, and deployment. It calls into Python and C++ via `extern fn` bridges and planned import paths — it does not ask teams to rewrite existing libraries.
-
----
-
 ## Key differentiators
 
 | Differentiator | What it means |
