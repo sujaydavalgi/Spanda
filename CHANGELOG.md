@@ -22,6 +22,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Swarm coordinator (experimental):** program-level `swarm` declarations with `round_robin`, `broadcast`, and `leader_follow` policies; `spanda swarm coordinate` runtime with persistent round-robin cursors in `.spanda/swarm-state.json`; TypeScript parser/checker/coordinator parity
 - **Robotics golden path script:** `examples/robotics/golden_path_deploy.sh` now covers certify, deploy, verify-adapter, fleet orchestrate, and swarm coordinate
 - **Swarm mesh relay:** `spanda swarm coordinate --mesh-url` relays leader-follow peer deliveries through the fleet mesh coordinator; CI `robotics-golden-path` job runs the golden-path script against the release CLI
+- **Swarm peer mesh parity:** round_robin and broadcast policies collect peer-link deliveries for mesh relay; golden path covers mesh fleet/swarm, remote OTA dry-run, and Nav2/SLAM adapter bridge fixtures
+
+### Fixed
+
+- **Fleet mesh CLI routing:** `spanda fleet mesh start` now receives the correct subcommand args (was treating `mesh` as the subcommand and exiting with usage)
+- **Fleet mesh registry reload:** mesh coordinator reloads `SPANDA_FLEET_AGENTS` on each relay request instead of snapshotting at startup; fleet agents honor the same env for downstream forwarding
+- **Swarm mesh peer delivery:** round_robin/broadcast include peer-link deliveries; leader_follow avoids duplicate peer/member handoffs
 - **Secure communication:** optional encrypted communication across buses, topics, services, and actions — `secure_comm` policy, `trust_boundary` declarations, `secrets` blocks (env/file), extended `secure { }` blocks with encryption/authentication/trusted sources, `EncryptedMessage`/`VerifiedMessage` types (AES-256-GCM), production transport wire frames with `source_id`, `spanda security check|audit`, `--secure` and `--inject-security-faults` CLI flags; docs in `docs/secure-communication.md`, `docs/identity.md`, `docs/secrets.md`, `docs/trust-boundaries.md`; examples in `examples/security/`
 - **Secure comm TS parity:** TypeScript `RoutingCommBus` wire encryption, `secure_comm` configure fail-fast, inbound `source_id`, trust-boundary registry, static `security check|audit`, and integration tests in `tests/security-comm.test.ts`
 - **Live MQTT (optional):** `live-mqtt` Cargo feature with rumqttc bridge; enable with `SPANDA_LIVE_MQTT=1`

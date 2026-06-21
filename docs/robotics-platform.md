@@ -172,7 +172,7 @@ spanda swarm coordinate examples/robotics/swarm_coordination.sd
 spanda swarm coordinate examples/robotics/swarm_coordination.sd   # advances next member
 ```
 
-Policies: `round_robin` (one member per tick, cursor in `.spanda/swarm-state.json`), `broadcast` (all members advance), `leader_follow` (leader advances and followers receive step handoffs). Relay leader-follow handoffs through a fleet mesh with `--mesh-url`:
+Policies: `round_robin` (one member per tick, cursor in `.spanda/swarm-state.json`), `broadcast` (all members advance), `leader_follow` (leader advances and followers receive step handoffs). Peer-link robots emit mesh-ready deliveries under `round_robin` and `broadcast`; relay handoffs through a fleet mesh with `--mesh-url`:
 
 ```bash
 spanda fleet mesh start --bind 0.0.0.0:8767
@@ -393,7 +393,7 @@ Runnable programs under `examples/robotics/`:
 | Safety zone speed enforcement at runtime | **Done** — `SafetyMonitor.clamp_speed_at_pose()` (Rust + TS) |
 | `certify ISO13849` / IEC 61508 / ISO 26262 | **Partial** — program `certify` metadata (+ optional `level`) + verify reporting; `--strict-certify` / `--enforce-certify`; `spanda certify prove`; deploy `--require-certify` gate |
 | OTA rollout/canary/rollback | **Partial** — local deploy CLI + remote HTTP(S) agents with `program_hash`, optional Ed25519 signed bundles, and certification proof summary on deploy plans |
-| Swarm coordinator runtime | **Experimental** — `swarm { fleet; policy; }` + `spanda swarm coordinate` with `.spanda/swarm-state.json` cursors; `--mesh-url` relays leader-follow steps via fleet mesh |
+| Swarm coordinator runtime | **Experimental** — `swarm { fleet; policy; }` + `spanda swarm coordinate` with `.spanda/swarm-state.json` cursors; `--mesh-url` relays peer and leader-follow steps via fleet mesh |
 | World model runtime | Explicitly deferred in product strategy |
 | Production SLAM/nav package implementations | **Partial** — `slam.localize()` / `slam.map()` stub hooks; `SPANDA_NAV2_CMD` / `SPANDA_SLAM_CMD` subprocess bridges; `spanda verify-adapter` |
 

@@ -24,7 +24,7 @@ Honest snapshot of Spanda capabilities as of **v0.1.0-alpha**. Use this document
 | **Trigger-driven execution** | Unified `on` / `every` / `when` / `while`; event, message, timer, condition, state, safety, hardware, AI, verification, twin |
 | **Cooperative concurrency** | `spawn`, `join`, `parallel`, channels, `select`, per-task `budget { }`; TypeScript mirror parity |
 | **Fleet simulation** | `spanda fleet run` — in-process multi-robot with deploy/peer wiring |
-| **Swarm coordinator (experimental)** | `swarm { fleet; policy; }` + `spanda swarm coordinate` — round-robin cursors in `.spanda/swarm-state.json` |
+| **Swarm coordinator (experimental)** | `swarm { fleet; policy; }` + `spanda swarm coordinate` — round-robin cursors in `.spanda/swarm-state.json`; `--mesh-url` relays peer/leader-follow steps via fleet mesh |
 | **Robotics platform** | `mission`, `fleet`, `safety_zone`, `certify`; navigation/fusion runtime; Nav2 adapter hook |
 | **OTA deploy CLI** | `spanda deploy plan|rollout|rollback|status` — local rollout state (`.spanda/deploy-state.json`) |
 | **Remote OTA agents** | `spanda deploy agent start|register|list` + `deploy rollout --remote` — HTTP agent on devices; `--require-certify` on agent and rollout |
@@ -48,7 +48,7 @@ Honest snapshot of Spanda capabilities as of **v0.1.0-alpha**. Use this document
 | **Digital twins (live sync)** | Twin mirror + replay | External telemetry sync is simulated; no production twin cloud |
 | **Replay** | `replay true`, frame buffer, mission traces | In-process only; v2 traces embed state snapshots for `--playback` |
 | **Advanced verification** | Fault injection, compatibility matrix | Matrix may report stub targets |
-| **Multi-agent systems** | Agent-to-agent comm, fleet peer messaging | In-process mesh + HTTP fleet agent relay (`fleet orchestrate --remote`) |
+| **Multi-agent systems** | Agent-to-agent comm, fleet peer messaging | In-process mesh + HTTP fleet agent relay (`fleet orchestrate --remote` / `--mesh-url`) |
 | **OTA rollout** | Deploy plan/rollout/rollback/status | Local state file + HTTP deploy agents; `--require-certify` blocks uncertified rollouts |
 | **Certification metadata** | `certify ISO13849 { level PLd; }` | Verify-only metadata; `--strict-certify` / `--enforce-certify`; `spanda certify prove`; deploy plan proof summary |
 | **Nav2 / SLAM packages** | Registry adapter stubs + example packages | External Nav2/Gazebo/OpenCV not bundled; optional `SPANDA_NAV2_CMD` / `SPANDA_SLAM_CMD` bridges |
@@ -69,7 +69,7 @@ Honest snapshot of Spanda capabilities as of **v0.1.0-alpha**. Use this document
 | **Live AI providers** | OpenAI, local models, ONNX inference plugins |
 | **VS Code extension** | Publishable extension package with LSP wiring (`editor/vscode`) |
 | **In-process FFI** | PyO3 / cxx linking for Python and C++ |
-| **Distributed multi-robot** | Fleet coordination runtime |
+| **Distributed multi-robot** | Fleet coordination runtime | Partial — in-process mesh, HTTP fleet agents, fleet mesh coordinator, swarm mesh relay; not full fleet planning |
 
 ### Deprecated
 
@@ -152,7 +152,7 @@ Honest snapshot of Spanda capabilities as of **v0.1.0-alpha**. Use this document
 - Native compilation via LLVM is **experimental**; the tree-walking interpreter is the primary runtime.
 - Package publishing targets a **local stub registry**, not crates.io or npm-style global registry.
 - VS Code extension is currently repo-hosted (`editor/vscode`), not marketplace-published yet.
-- Multi-robot fleet examples run in a single process; no distributed orchestration.
+- Multi-robot fleet examples run in a single process by default; distributed orchestration uses HTTP fleet agents and an optional fleet mesh coordinator (`spanda fleet mesh start`, `--mesh-url` on orchestrate/swarm).
 
 ---
 
