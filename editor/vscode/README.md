@@ -1,45 +1,74 @@
-# Spanda VS Code Extension (Experimental)
+# Spanda VS Code Extension
 
-This extension provides:
+Language support for Spanda (`.sd`) with bundled LSP diagnostics and debug adapter wiring.
 
-- `.sd` language registration
-- baseline syntax highlighting
-- LSP client wiring to `spanda-lsp`
-- VSIX packaging for local install
+## Install from Marketplace
 
-## Build
+Search **Spanda** in the VS Code Extensions view (`spanda-lang.spanda-vscode`), or:
 
 ```bash
-cd editor/vscode
-npm install
-npm run build
+code --install-extension spanda-lang.spanda-vscode
 ```
-
-## Package a VSIX
-
-```bash
-cd editor/vscode
-npm install
-npm run package
-```
-
-Install with:
-
-```bash
-code --install-extension spanda-vscode-0.1.0.vsix
-```
-
-## Run in Extension Development Host
-
-1. Open this repository in VS Code
-2. Open `editor/vscode`
-3. Press `F5` to launch Extension Development Host
-4. Set `spanda.languageServerPath` if needed (defaults to `packages/lsp/dist/server.js`)
 
 ## Prerequisites
 
-- Build LSP server first:
+Install the native Spanda CLI so `check` and `verify` diagnostics work:
+
+```bash
+curl --proto '=https' --tlsv1.2 -LsSf \
+  https://github.com/Davalgi/Spanda/releases/download/v0.1.0/spanda-cli-installer.sh | sh
+```
+
+Or build from source: `cargo build -p spanda-cli -p spanda-dap --release`
+
+## Features
+
+| Feature | How |
+|---------|-----|
+| Syntax highlighting | Automatic for `.sd` files |
+| Type diagnostics | LSP → `spanda check` |
+| Verify diagnostics | LSP → `spanda verify` (warnings/errors in Problems panel) |
+| Deploy target autocomplete | Type `deploy Robot to ` — suggests `RoverV1`, `JetsonOrin`, … |
+| Verify with picker | Command Palette → **Spanda: Verify Deploy Target…** |
+| Debug | F5 with Spanda debug configuration — steps through `task every` loops via `spanda-dap` |
+
+## Settings
+
+| Setting | Description |
+|---------|-------------|
+| `spanda.cliPath` | Path to `spanda` binary (default: `spanda` on PATH) |
+| `spanda.languageServerPath` | Override bundled LSP server (monorepo dev only) |
+
+## Debug workflow
+
+1. Open a `.sd` file with `behavior` or `task every` blocks
+2. Set breakpoints in the gutter
+3. Run **Debug: Start Debugging** (Spanda configuration)
+4. Use Step Over to advance through periodic tasks
+
+See [docs/debugging.md](../../docs/debugging.md) and [docs/killer-demo.md](../../docs/killer-demo.md).
+
+## Build VSIX locally
+
+```bash
+./scripts/bundle-vscode-extension.sh
+cd editor/vscode && npm run package
+code --install-extension spanda-vscode-0.1.0.vsix
+```
+
+## Publish to Marketplace (maintainers)
+
+1. Create publisher `spanda-lang` on [Visual Studio Marketplace](https://marketplace.visualstudio.com/manage)
+2. Generate a Personal Access Token with **Marketplace → Manage**
+3. `npx vsce login spanda-lang`
+4. From `editor/vscode`: `npm run publish:marketplace`
+
+CI builds the VSIX on every release (`release.yml`). Add `VSCE_PAT` as a repository secret to automate `vsce publish` in the release workflow.
+
+## Monorepo development
 
 ```bash
 npm run build --workspace=@spanda/lsp
+cd editor/vscode && npm run build
+# Press F5 in editor/vscode for Extension Development Host
 ```

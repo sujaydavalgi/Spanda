@@ -1,7 +1,7 @@
 {
   "name": "spanda-vscode",
   "displayName": "Spanda",
-  "description": "VS Code support for Spanda (.sd) with LSP diagnostics",
+  "description": "VS Code support for Spanda (.sd) — syntax, LSP check/verify diagnostics, debug",
   "version": "0.1.0",
   "publisher": "spanda-lang",
   "license": "Apache-2.0",
@@ -11,6 +11,7 @@
   },
   "files": [
     "dist/**",
+    "server/**",
     "syntaxes/**",
     "language-configuration.json",
     "LICENSE",
@@ -21,7 +22,14 @@
     "vscode": "^1.90.0"
   },
   "categories": [
-    "Programming Languages"
+    "Programming Languages",
+    "Debuggers"
+  ],
+  "keywords": [
+    "spanda",
+    "robotics",
+    "autonomous systems",
+    "sd"
   ],
   "activationEvents": [
     "onLanguage:spanda"
@@ -34,10 +42,62 @@
         "spanda.languageServerPath": {
           "type": "string",
           "default": "",
-          "description": "Absolute path to the Spanda LSP server entrypoint (server.js). Defaults to <workspace>/packages/lsp/dist/server.js."
+          "description": "Override path to the Spanda LSP server (server.js). The bundled server is used by default."
+        },
+        "spanda.cliPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the native `spanda` CLI for check/verify diagnostics and debug. Defaults to `spanda` on PATH."
         }
       }
     },
+    "commands": [
+      {
+        "command": "spanda.verifyWithTarget",
+        "title": "Spanda: Verify Deploy Target…"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "spanda.verifyWithTarget",
+          "when": "resourceLangId == spanda",
+          "group": "navigation"
+        }
+      ]
+    },
+    "debuggers": [
+      {
+        "type": "spanda",
+        "label": "Spanda",
+        "languages": ["spanda"],
+        "configurationAttributes": {
+          "launch": {
+            "required": ["program"],
+            "properties": {
+              "program": {
+                "type": "string",
+                "description": "Path to a .sd file",
+                "default": "${file}"
+              }
+            }
+          }
+        },
+        "initialConfigurations": [
+          {
+            "type": "spanda",
+            "request": "launch",
+            "name": "Spanda: Debug current file",
+            "program": "${file}"
+          }
+        ]
+      }
+    ],
+    "breakpoints": [
+      {
+        "language": "spanda"
+      }
+    ],
     "languages": [
       {
         "id": "spanda",
@@ -61,8 +121,11 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "bundle": "bash ../../scripts/bundle-vscode-extension.sh",
+    "prepackage": "npm run bundle",
     "package": "npx @vscode/vsce package --allow-star-activation",
-    "package:ci": "npm run build && npm run package"
+    "package:ci": "npm run build && npm run bundle && npm run package",
+    "publish:marketplace": "npx @vscode/vsce publish --allow-star-activation"
   },
   "dependencies": {
     "vscode-languageclient": "^9.0.1"

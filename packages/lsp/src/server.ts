@@ -33,7 +33,12 @@ import { existsSync, unlinkSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../../..");
+function repoRoot(): string {
+  if (process.env.SPANDA_EXTENSION_ROOT?.trim()) {
+    return process.env.SPANDA_EXTENSION_ROOT;
+  }
+  return join(dirname(fileURLToPath(import.meta.url)), "../../..");
+}
 
 type Span = { start: { line: number; column: number }; end: { line: number; column: number } };
 
@@ -60,14 +65,20 @@ function cliPath(): string | null {
   // Example:
 
   // const result = cliPath();
-  const release = join(repoRoot, "target/release/spanda");
-  const debug = join(repoRoot, "target/debug/spanda");
+  const release = join(repoRoot(), "target/release/spanda");
+  const debug = join(repoRoot(), "target/debug/spanda");
 
   // continue when existsSync(release).
   if (existsSync(release)) return release;
 
   // continue when existsSync(debug).
   if (existsSync(debug)) return debug;
+
+  const configured = process.env.SPANDA_CLI_PATH?.trim();
+  if (configured && existsSync(configured)) return configured;
+
+  const which = spawnSync("which", ["spanda"], { encoding: "utf-8" });
+  if (which.status === 0 && which.stdout.trim()) return which.stdout.trim();
   return null;
 }
 
@@ -108,7 +119,15 @@ const COMM_KEYWORDS = [
 
 const TRANSPORTS = ["local", "ros2", "mqtt", "dds", "websocket", "sim"] as const;
 
-const symbolScript = join(repoRoot, "scripts/lsp-symbols.mts");
+const HARDWARE_PROFILES = [
+  "RoverV1",
+  "RoverV2",
+  "JetsonOrin",
+  "RaspberryPi5",
+  "ESP32",
+] as const;
+
+const symbolScript = join(repoRoot(), "scripts/lsp-symbols.mts");
 const symbolCache = new Map<string, SpandaSymbol[]>();
 
 function runSymbols(args: string[]): unknown {
@@ -128,7 +147,7 @@ function runSymbols(args: string[]): unknown {
   // const result = runSymbols(args);
   const result = spawnSync(process.execPath, ["--import", "tsx", symbolScript, ...args], {
     encoding: "utf-8",
-    cwd: repoRoot,
+    cwd: repoRoot(),
   });
 
   // continue when trim is falsy.
@@ -160,7 +179,7 @@ function refreshSymbolCache(uri: string, source: string): void {
   // Example:
 
   // const result = refreshSymbolCache(uri, source);
-  const tmp = join(repoRoot, ".spanda-lsp-symbols.sd");
+  const tmp = join(repoRoot(), ".spanda-lsp-symbols.sd");
   writeFileSync(tmp, source);
   const parsed = runSymbols(["index", tmp]) as { symbols?: SpandaSymbol[] } | null;
 
@@ -191,7 +210,7 @@ function lookupDefinition(uri: string, source: string, line: number, column: num
   // Example:
 
   // const result = lookupDefinition(uri, source, line, column);
-  const tmp = join(repoRoot, ".spanda-lsp-define.sd");
+  const tmp = join(repoRoot(), ".spanda-lsp-define.sd");
   writeFileSync(tmp, source);
   const parsed = runSymbols(["define", tmp, String(line), String(column)]) as {
     symbol?: SpandaSymbol | null;
@@ -223,7 +242,7 @@ function lookupHover(source: string, line: number, column: number): string | nul
   // Example:
 
   // const result = lookupHover(source, line, column);
-  const tmp = join(repoRoot, ".spanda-lsp-hover.sd");
+  const tmp = join(repoRoot(), ".spanda-lsp-hover.sd");
   writeFileSync(tmp, source);
   const parsed = runSymbols(["hover", tmp, String(line), String(column)]) as {
     markdown?: string | null;
@@ -281,7 +300,7 @@ function runCliJson(args: string[], source: string): unknown {
   if (!bin) {
     return null;
   }
-  const tmp = join(repoRoot, ".spanda-lsp-check.sd");
+  const tmp = join(repoRoot(), ".spanda-lsp-check.sd");
   writeFileSync(tmp, source);
   const result = spawnSync(bin, [...args, "--json", tmp], { encoding: "utf-8" });
 
@@ -317,12 +336,12 @@ function checkSourceTs(source: string): CliDiagnostic[] {
   // Example:
 
   // const result = checkSourceTs(source);
-  const tmp = join(repoRoot, ".spanda-lsp-ts-check.sd");
+  const tmp = join(repoRoot(), ".spanda-lsp-ts-check.sd");
   writeFileSync(tmp, source);
-  const script = join(repoRoot, "scripts/lsp-ts-check.mts");
+  const script = join(repoRoot(), "scripts/lsp-ts-check.mts");
   const result = spawnSync(process.execPath, ["--import", "tsx", script, tmp], {
     encoding: "utf-8",
-    cwd: repoRoot,
+    cwd: repoRoot(),
   });
 
   // Try the operation and handle failures below.
@@ -586,8 +605,31 @@ function commCompletions(): CompletionItem[] {
   return [...kwItems, ...transportItems];
 }
 
+function hardwareProfileCompletions(doc: TextDocument, position: { line: number; character: number }): CompletionItem[] {
+  const linePrefix = doc.getText({
+    start: { line: position.line, character: 0 },
+    end: { line: position.line, character: position.character },
+  });
+  if (!/\bdeploy\b[\s\S]*\bto\s+[\w]*$/i.test(linePrefix)) {
+    return [];
+  }
+  return HARDWARE_PROFILES.map(
+    (label): CompletionItem => ({
+      label,
+      kind: CompletionItemKind.EnumMember,
+      detail: "Hardware deploy target (spanda verify)",
+      insertText: label,
+    }),
+  );
+}
+
 connection.onCompletion((params: TextDocumentPositionParams): CompletionItem[] => {
   const doc = documents.get(params.textDocument.uri);
+  if (!doc) return commCompletions();
+  const profileItems = hardwareProfileCompletions(doc, params.position);
+  if (profileItems.length > 0) {
+    return profileItems;
+  }
   const cached = symbolCache.get(params.textDocument.uri) ?? [];
   const symbolItems = cached.map(
     (sym): CompletionItem => ({
