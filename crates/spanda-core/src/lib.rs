@@ -11,6 +11,9 @@ pub mod connectivity_positioning;
 pub mod debug;
 pub mod debug_session;
 pub mod deploy_service;
+pub mod deploy_http;
+pub mod deploy_remote;
+pub mod deploy_agent;
 pub mod docs;
 mod error;
 pub mod events;
@@ -28,6 +31,8 @@ pub mod lib_registry;
 pub mod lint;
 pub mod modules;
 pub mod nav2_adapter;
+pub mod slam_adapter;
+pub mod adapter_verify;
 pub mod parser;
 pub mod pretty;
 pub mod regex_lang;
@@ -72,9 +77,18 @@ pub use ast::*;
 pub use codegen::{generate as codegen, wasm_deploy_manifest, CodegenTarget};
 pub use debug::{DebugCommand, DebugController, DebugOptions, DebugPause, DebugSession};
 pub use deploy_service::{
-    apply_rollout, build_deploy_plan, default_state_path, load_deploy_state, plan_rollout,
-    rollback_targets, save_deploy_state, DeployAssignment, DeployPlan, DeployState, RolloutOptions,
-    RolloutResult, RolloutStep, RolloutStepStatus, RolloutStrategy,
+    apply_rollout, build_deploy_plan, default_state_path, deploy_target_key, load_deploy_state,
+    plan_rollout, rollback_targets, save_deploy_state, DeployAssignment, DeployPlan, DeployState,
+    RolloutOptions, RolloutResult, RolloutStep, RolloutStepStatus, RolloutStrategy,
+};
+pub use deploy_remote::{
+    agent_health, agent_rollout, agent_status, default_agents_path, execute_remote_rollout,
+    execute_remote_rollback, load_agent_registry, lookup_agent, missing_remote_targets,
+    register_agent, save_agent_registry, AgentStatusResponse, DeployAgentEntry, DeployAgentRegistry,
+};
+pub use deploy_agent::{
+    default_agent_state_path, handle_agent_request, load_agent_state, run_deploy_agent_server,
+    save_agent_state, spawn_test_agent, agent_entry_for_port, AgentState,
 };
 pub use fleet_orchestrator::{
     fleet_registry_from_program, orchestrate_fleets, FleetMemberState, FleetOrchestrationReport,

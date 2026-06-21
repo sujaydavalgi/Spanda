@@ -6227,6 +6227,61 @@ impl Parser {
             });
         }
 
+        // Parse navigate { goal: "..."; } statement sugar over navigation.navigate().
+        if self.check(TokenType::Ident) && self.peek().lexeme == "navigate" {
+            self.advance();
+            self.expect(TokenType::Lbrace, "Expected '{' after navigate")?;
+            let mut goal = None;
+            let mut linear = None;
+            let mut angular = None;
+            while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+                let field_name = if self.check(TokenType::Goal) {
+                    self.advance();
+                    "goal".to_string()
+                } else if self.check(TokenType::Ident) {
+                    self.advance().lexeme
+                } else {
+                    let t = self.peek();
+                    return Err(SpandaError::Parse {
+                        message: "Expected field name in navigate block".into(),
+                        line: t.line,
+                        column: t.column,
+                    });
+                };
+                self.expect(TokenType::Colon, "Expected ':' after navigate field")?;
+                match field_name.as_str() {
+                    "goal" => goal = Some(self.parse_expr()?),
+                    "linear" => linear = Some(self.parse_expr()?),
+                    "angular" => angular = Some(self.parse_expr()?),
+                    other => {
+                        return Err(SpandaError::Parse {
+                            message: format!("Unknown navigate field '{other}'"),
+                            line: self.previous().line,
+                            column: self.previous().column,
+                        });
+                    }
+                }
+                self.expect(
+                    TokenType::Semicolon,
+                    "Expected ';' after navigate field",
+                )?;
+            }
+            let end = self.expect(TokenType::Rbrace, "Expected '}' to close navigate block")?;
+            let Some(goal_expr) = goal else {
+                return Err(SpandaError::Parse {
+                    message: "navigate block requires goal: ...".into(),
+                    line: start.line,
+                    column: start.column,
+                });
+            };
+            return Ok(Stmt::NavigateStmt {
+                goal: Box::new(goal_expr),
+                linear: linear.map(Box::new),
+                angular: angular.map(Box::new),
+                span: self.span_from(&start, &end),
+            });
+        }
+
         // Parse fallback resource selection statements.
         if self.match_types(&[TokenType::Use]) {
             let resource = self.expect(TokenType::Ident, "Expected fallback resource name")?;

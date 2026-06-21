@@ -1,9 +1,11 @@
-//! OTA deploy CLI handlers (`spanda deploy plan|rollout|rollback|status`).
+//! OTA deploy CLI handlers (`spanda deploy plan|rollout|rollback|status|agent`).
 
 use spanda_core::{
-    apply_rollout, build_deploy_plan, compile, default_state_path, load_deploy_state,
-    orchestrate_fleets, plan_rollout, rollback_targets, save_deploy_state, DeployState,
-    RolloutOptions, RolloutStrategy,
+    agent_health, apply_rollout, build_deploy_plan, compile, default_agent_state_path,
+    default_agents_path, default_state_path, execute_remote_rollout, execute_remote_rollback,
+    load_agent_registry, load_deploy_state, orchestrate_fleets, plan_rollout, register_agent,
+    rollback_targets, run_deploy_agent_server, save_agent_registry, save_deploy_state,
+    DeployState, RolloutOptions, RolloutStrategy,
 };
 use std::env;
 use std::fs;
@@ -30,6 +32,12 @@ fn state_path() -> std::path::PathBuf {
         .unwrap_or_else(|_| default_state_path())
 }
 
+fn agents_path() -> std::path::PathBuf {
+    env::var("SPANDA_DEPLOY_AGENTS")
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|_| default_agents_path())
+}
+
 pub fn deploy_dispatch(args: &[String]) {
     if args.is_empty() {
         usage();
@@ -40,6 +48,7 @@ pub fn deploy_dispatch(args: &[String]) {
         "rollout" => cmd_rollout(&args[1..]),
         "rollback" => cmd_rollback(&args[1..]),
         "status" => cmd_status(&args[1..]),
+        "agent" => cmd_agent(&args[1..]),
         other if !other.starts_with('-') => {
             eprintln!("Unknown deploy subcommand '{other}'");
             usage();
@@ -54,9 +63,12 @@ pub fn deploy_dispatch(args: &[String]) {
 
 pub fn deploy_usage_lines() -> &'static str {
     "           spanda deploy plan [--json] [--version <ver>] <file.sd>\n\
-     spanda deploy rollout [--json] [--strategy all|canary|staged] [--canary-percent N] [--version <ver>] [--dry-run] <file.sd>\n\
-     spanda deploy rollback [--json] <file.sd>\n\
+     spanda deploy rollout [--json] [--remote] [--strategy all|canary|staged] [--canary-percent N] [--version <ver>] [--dry-run] <file.sd>\n\
+     spanda deploy rollback [--json] [--remote] <file.sd>\n\
      spanda deploy status [--json]\n\
+     spanda deploy agent start [--bind <addr>] [--target <Robot@Hardware>] [--token <t>]\n\
+     spanda deploy agent register <Robot@Hardware> <http://host:port> [--token <t>]\n\
+     spanda deploy agent list [--json]\n\
      spanda deploy --target wasm [--out <file.json>] <file.sd>"
 }
 
@@ -107,6 +119,7 @@ fn cmd_plan(args: &[String]) {
 fn cmd_rollout(args: &[String]) {
     let mut json = false;
     let mut dry_run = false;
+    let mut remote = false;
     let mut version = "1.0.0".to_string();
     let mut strategy = RolloutStrategy::All;
     let mut canary_percent = 10u8;
@@ -116,6 +129,7 @@ fn cmd_rollout(args: &[String]) {
         match args[i].as_str() {
             "--json" => json = true,
             "--dry-run" => dry_run = true,
+            "--remote" => remote = true,
             "--version" if i + 1 < args.len() => {
                 version = args[i + 1].clone();
                 i += 1;
@@ -158,7 +172,12 @@ fn cmd_rollout(args: &[String]) {
         dry_run,
         ..Default::default()
     };
-    let result = plan_rollout(&plan, &options);
+    let result = if remote {
+        let registry = load_agent_registry(&agents_path());
+        execute_remote_rollout(&plan, &options, &registry)
+    } else {
+        plan_rollout(&plan, &options)
+    };
     if !dry_run {
         let path = state_path();
         let mut state = load_deploy_state(&path);
@@ -172,10 +191,12 @@ fn cmd_rollout(args: &[String]) {
 
 fn cmd_rollback(args: &[String]) {
     let mut json = false;
+    let mut remote = false;
     let mut file: Option<String> = None;
     for arg in args {
         match arg.as_str() {
             "--json" => json = true,
+            "--remote" => remote = true,
             other if !other.starts_with('-') && file.is_none() => file = Some(other.to_string()),
             other => {
                 eprintln!("Unknown argument: {other}");
@@ -192,11 +213,127 @@ fn cmd_rollback(args: &[String]) {
     let plan = build_deploy_plan(&program, &file, "rollback");
     let path = state_path();
     let mut state = load_deploy_state(&path);
-    let result = rollback_targets(&mut state, &plan, true);
+    let result = if remote {
+        let registry = load_agent_registry(&agents_path());
+        let remote_result = execute_remote_rollback(&plan, &registry);
+        rollback_targets(&mut state, &plan, true);
+        remote_result
+    } else {
+        rollback_targets(&mut state, &plan, true)
+    };
     if let Err(e) = save_deploy_state(&path, &state) {
         eprintln!("Warning: could not save deploy state: {e}");
     }
     print_rollout(&result, json);
+}
+
+fn cmd_agent(args: &[String]) {
+    if args.is_empty() {
+        eprintln!("Usage: spanda deploy agent start|register|list");
+        process::exit(1);
+    }
+    match args[0].as_str() {
+        "start" => cmd_agent_start(&args[1..]),
+        "register" => cmd_agent_register(&args[1..]),
+        "list" => cmd_agent_list(&args[1..]),
+        other => {
+            eprintln!("Unknown deploy agent subcommand '{other}'");
+            process::exit(1);
+        }
+    }
+}
+
+fn cmd_agent_start(args: &[String]) {
+    let mut bind = "127.0.0.1:8765".to_string();
+    let mut target = String::new();
+    let mut token = None;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--bind" if i + 1 < args.len() => {
+                bind = args[i + 1].clone();
+                i += 1;
+            }
+            "--target" if i + 1 < args.len() => {
+                target = args[i + 1].clone();
+                i += 1;
+            }
+            "--token" if i + 1 < args.len() => {
+                token = Some(args[i + 1].clone());
+                i += 1;
+            }
+            other => {
+                eprintln!("Unknown argument: {other}");
+                process::exit(1);
+            }
+        }
+        i += 1;
+    }
+    if target.is_empty() {
+        eprintln!("Missing --target Robot@Hardware");
+        process::exit(1);
+    }
+    if let Err(err) = run_deploy_agent_server(&bind, &target, token, &default_agent_state_path()) {
+        eprintln!("Deploy agent failed: {err}");
+        process::exit(1);
+    }
+}
+
+fn cmd_agent_register(args: &[String]) {
+    let mut target = None;
+    let mut url = None;
+    let mut token = None;
+    for (idx, arg) in args.iter().enumerate() {
+        match arg.as_str() {
+            "--token" if idx + 1 < args.len() => {
+                token = Some(args[idx + 1].clone());
+            }
+            other if !other.starts_with('-') && target.is_none() => target = Some(other.to_string()),
+            other if !other.starts_with('-') && url.is_none() => url = Some(other.to_string()),
+            other if other.starts_with('-') => {
+                eprintln!("Unknown argument: {other}");
+                process::exit(1);
+            }
+            _ => {}
+        }
+    }
+    let target = target.unwrap_or_else(|| {
+        eprintln!("Missing target Robot@Hardware");
+        process::exit(1);
+    });
+    let url = url.unwrap_or_else(|| {
+        eprintln!("Missing agent URL (http://host:port)");
+        process::exit(1);
+    });
+    let path = agents_path();
+    let mut registry = load_agent_registry(&path);
+    if let Err(err) = register_agent(&mut registry, target, url, token) {
+        eprintln!("Register failed: {err}");
+        process::exit(1);
+    }
+    if let Err(err) = save_agent_registry(&path, &registry) {
+        eprintln!("Warning: could not save agent registry: {err}");
+        process::exit(1);
+    }
+    println!("Registered deploy agent in {}", path.display());
+}
+
+fn cmd_agent_list(args: &[String]) {
+    let json = args.iter().any(|a| a == "--json");
+    let registry = load_agent_registry(&agents_path());
+    if json {
+        println!("{}", serde_json::to_string_pretty(&registry).unwrap());
+        return;
+    }
+    println!("Deploy agents ({})", agents_path().display());
+    if registry.agents.is_empty() {
+        println!("  (no agents registered)");
+        return;
+    }
+    for entry in &registry.agents {
+        let health = agent_health(entry).unwrap_or(false);
+        println!("  {} -> {} (healthy={health})", entry.target, entry.url);
+    }
 }
 
 fn cmd_status(args: &[String]) {

@@ -976,6 +976,12 @@ pub enum Stmt {
         name: String,
         span: Span,
     },
+    NavigateStmt {
+        goal: Box<Expr>,
+        linear: Option<Box<Expr>>,
+        angular: Option<Box<Expr>>,
+        span: Span,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

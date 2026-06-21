@@ -1,0 +1,40 @@
+// Robotics — remote OTA rollout via deploy agents
+//
+// Terminal A (on device or edge node):
+//   spanda deploy agent start --target RoverProgram@JetsonOrin --bind 0.0.0.0:8765
+//
+// Terminal B (CI / operator workstation):
+//   spanda deploy agent register RoverProgram@JetsonOrin http://192.168.1.50:8765
+//   spanda deploy rollout examples/robotics/remote_ota_deployment.sd --remote --version 1.3.0
+//   spanda deploy rollback examples/robotics/remote_ota_deployment.sd --remote
+//   spanda deploy agent list
+
+import navigation.slam;
+
+hardware JetsonOrin {
+  cpu: CortexA78;
+  memory: 8 GB;
+  sensors [ Lidar, Camera ];
+  actuators [ DifferentialDrive ];
+}
+
+robot RoverProgram {
+  sensor lidar: Lidar on "/scan";
+  actuator wheels: DifferentialDrive;
+
+  safety { max_speed = 1.0 m/s; }
+
+  mission Patrol {
+    duration: 1 h;
+    navigate;
+    inspect;
+  }
+
+  behavior run() {
+    let pose = slam.localize();
+    let _ = pose;
+    wheels.stop();
+  }
+}
+
+deploy RoverProgram to JetsonOrin;

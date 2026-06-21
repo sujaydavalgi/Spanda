@@ -223,6 +223,7 @@ pub fn stmt_line(stmt: &crate::ast::Stmt) -> u32 {
         | Stmt::EnterModeStmt { span, .. }
         | Stmt::UseFallbackStmt { span, .. }
         | Stmt::StopAllActuatorsStmt { span, .. }
-        | Stmt::RunPipelineStmt { span, .. } => span.start.line,
+        | Stmt::RunPipelineStmt { span, .. }
+        | Stmt::NavigateStmt { span, .. } => span.start.line,
     }
 }

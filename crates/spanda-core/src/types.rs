@@ -3594,7 +3594,8 @@ impl TypeChecker {
             Stmt::EnterModeStmt { .. }
             | Stmt::UseFallbackStmt { .. }
             | Stmt::StopAllActuatorsStmt { .. }
-            | Stmt::RunPipelineStmt { .. } => {}
+            | Stmt::RunPipelineStmt { .. }
+            | Stmt::NavigateStmt { .. } => {}
         }
     }
 

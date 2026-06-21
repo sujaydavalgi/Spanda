@@ -26,8 +26,11 @@ robot Nav2Rover {
 
   behavior go_to_charger() {
     navigation.goal("Return to charger");
-    let traj = navigation.navigate();
-    let _ = traj;
+    navigate {
+      goal: "Return to charger";
+      linear: 0.2 m/s;
+      angular: 0.0 rad/s;
+    }
     wheels.stop();
   }
 }

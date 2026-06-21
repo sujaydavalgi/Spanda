@@ -101,6 +101,11 @@ fn assignment_key(robot: &str, hardware: &str) -> String {
     format!("{robot}@{hardware}")
 }
 
+/// Stable deploy target key for robot/hardware pairs (`Robot@Hardware`).
+pub fn deploy_target_key(robot: &str, hardware: &str) -> String {
+    assignment_key(robot, hardware)
+}
+
 /// Build a deployment plan from a parsed program.
 pub fn build_deploy_plan(program: &Program, program_path: &str, version: &str) -> DeployPlan {
     // Extract deploy targets and certification metadata from the program AST.

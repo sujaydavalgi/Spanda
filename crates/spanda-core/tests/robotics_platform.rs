@@ -223,3 +223,63 @@ robot R {
 "#;
     assert!(check(source).is_err());
 }
+
+#[test]
+fn navigate_statement_sugar_runs() {
+    let source = r#"
+robot NavBot {
+  topic cmd_vel: Velocity publish on "/cmd_vel";
+  actuator wheels: DifferentialDrive;
+
+  safety { max_speed = 1.0 m/s; }
+
+  mission Dock {
+    navigate;
+    charge;
+  }
+
+  behavior go() {
+    navigate {
+      goal: "Return to charger";
+      linear: 0.2 m/s;
+    }
+    wheels.stop();
+  }
+}
+"#;
+    check(source).expect("navigate statement should type-check");
+    let result = run(source, RunOptions::default()).expect("navigate program should run");
+    assert!(
+        result
+            .logs
+            .iter()
+            .any(|l| l.contains("navigation: executing goal 'Return to charger'")),
+        "expected navigate log, got: {:?}",
+        result.logs
+    );
+}
+
+#[test]
+fn framework_import_verify_reports_adapter() {
+    let source = r#"
+import navigation.nav2;
+
+robot R {
+  actuator wheels: DifferentialDrive;
+  behavior run() { wheels.stop(); }
+}
+"#;
+    let program = compile(source).expect("compile").program;
+    let report = spanda_core::hardware::verify_program_compatibility(
+        &program,
+        &spanda_core::VerifyOptions::default(),
+    );
+    assert!(
+        report
+            .items
+            .iter()
+            .any(|i| i.category == "adapter" && i.message.contains("spanda-nav2")),
+        "expected adapter verify item, got: {:?}",
+        report.items
+    );
+}

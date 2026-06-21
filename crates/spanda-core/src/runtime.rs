@@ -210,6 +210,7 @@ pub enum RuntimeValue {
     NavigationControl {
         goal: Option<String>,
     },
+    SlamControl,
     FleetControl {
         registry: crate::robotics_platform::FleetRegistry,
     },
@@ -937,6 +938,7 @@ pub struct Interpreter<B: RobotBackend> {
     fleets: crate::robotics_platform::FleetRegistry,
     program_safety_zones: crate::robotics_platform::ProgramSafetyZoneRegistry,
     nav2_enabled: bool,
+    slam_enabled: bool,
 }
 
 impl<B: RobotBackend> Interpreter<B> {
@@ -1021,6 +1023,7 @@ impl<B: RobotBackend> Interpreter<B> {
             fleets: crate::robotics_platform::FleetRegistry::default(),
             program_safety_zones: crate::robotics_platform::ProgramSafetyZoneRegistry::default(),
             nav2_enabled: false,
+            slam_enabled: false,
         }
     }
 
@@ -1706,6 +1709,7 @@ impl<B: RobotBackend> Interpreter<B> {
             let _ = name;
         }
         self.nav2_enabled = crate::nav2_adapter::program_uses_nav2(imports);
+        self.slam_enabled = crate::slam_adapter::program_uses_slam(imports);
     }
 
     fn load_connectivity_metadata(
@@ -2260,6 +2264,11 @@ impl<B: RobotBackend> Interpreter<B> {
             ));
         }
 
+        if self.slam_enabled {
+            self.env.define("slam", RuntimeValue::SlamControl);
+            self.log("slam: adapter enabled (stub localize/map hooks)".into());
+        }
+
         // Emit output when permissions provides a perm decl.
         if let Some(perm_decl) = permissions {
             let crate::foundations::PermissionsDecl::PermissionsDecl { capabilities, .. } =
@@ -2743,6 +2752,81 @@ impl<B: RobotBackend> Interpreter<B> {
                 "watchdog '{name}': timeout after {elapsed:.1}ms (limit {timeout_ms:.1}ms)"
             ));
             self.execute_block(&body)?;
+        }
+        Ok(())
+    }
+
+    fn execute_navigate_stmt(
+        &mut self,
+        goal: &Expr,
+        linear: Option<&Expr>,
+        angular: Option<&Expr>,
+        line: u32,
+    ) -> Result<(), SpandaError> {
+        // Execute navigate { goal: ... } sugar over navigation.goal/navigate.
+        let goal_text = match self.eval_expr(goal)? {
+            RuntimeValue::String { value } => value,
+            RuntimeValue::Number { value, .. } => value.to_string(),
+            _ => {
+                return Err(RuntimeError::new(
+                    "navigate.goal requires a text or numeric expression",
+                    line,
+                )
+                .into_spanda());
+            }
+        };
+
+        // Require a mission-scoped navigation controller in the active robot env.
+        match self.env.get("navigation") {
+            Some(RuntimeValue::NavigationControl { goal: _ }) => {
+                self.env.set(
+                    "navigation",
+                    RuntimeValue::NavigationControl {
+                        goal: Some(goal_text.clone()),
+                    },
+                );
+            }
+            _ => {
+                return Err(RuntimeError::new(
+                    "navigate statement requires a robot with a declared mission",
+                    line,
+                )
+                .into_spanda());
+            }
+        }
+
+        let linear_mps = if let Some(expr) = linear {
+            match self.eval_expr(expr)? {
+                RuntimeValue::Number { value, .. } => value,
+                _ => 0.2,
+            }
+        } else {
+            0.2
+        };
+        let angular_rad = if let Some(expr) = angular {
+            match self.eval_expr(expr)? {
+                RuntimeValue::Number { value, .. } => value,
+                _ => 0.0,
+            }
+        } else {
+            0.0
+        };
+
+        self.log(format!("navigation: executing goal '{goal_text}'"));
+        if self.nav2_enabled || self.topic_path_to_message_type.contains_key("/cmd_vel") {
+            if let Some(message_type) = self.topic_path_to_message_type.get("/cmd_vel").cloned() {
+                let velocity = runtime_velocity(linear_mps, angular_rad);
+                self.backend
+                    .publish_topic("/cmd_vel", &message_type, velocity);
+                let prefix = if self.nav2_enabled {
+                    "Nav2Adapter"
+                } else {
+                    "Nav2 bridge"
+                };
+                self.log(format!(
+                    "navigation: {prefix} publish /cmd_vel goal='{goal_text}'"
+                ));
+            }
         }
         Ok(())
     }
@@ -5562,6 +5646,14 @@ impl<B: RobotBackend> Interpreter<B> {
             Stmt::RunPipelineStmt { name, .. } => {
                 self.execute_pipeline(name)?;
             }
+            Stmt::NavigateStmt {
+                goal,
+                linear,
+                angular,
+                span,
+            } => {
+                self.execute_navigate_stmt(goal, linear.as_deref(), angular.as_deref(), span.start.line)?;
+            }
         }
         Ok(())
     }
@@ -6529,6 +6621,10 @@ impl<B: RobotBackend> Interpreter<B> {
             return Ok(result);
         }
 
+        if matches!(target, RuntimeValue::SlamControl) {
+            return self.eval_slam_method(property, line);
+        }
+
         if let RuntimeValue::FleetControl { registry } = target {
             return self.eval_fleet_method(&registry, property, args, line);
         }
@@ -6999,6 +7095,61 @@ impl<B: RobotBackend> Interpreter<B> {
             _ => Err(
                 RuntimeError::new(format!("Unknown navigation method '{property}'"), line)
                     .into_spanda(),
+            ),
+        }
+    }
+
+    fn eval_slam_method(
+        &mut self,
+        property: &str,
+        line: u32,
+    ) -> Result<RuntimeValue, SpandaError> {
+        // Dispatch SLAM adapter helpers for map and localization stubs.
+        match property {
+            "localize" => {
+                let state = self.backend.get_state();
+                self.log("slam: localize (stub adapter)".into());
+                Ok(RuntimeValue::Object {
+                    type_name: "LocalizationEstimate".into(),
+                    fields: HashMap::from([
+                        (
+                            "pose".into(),
+                            runtime_pose(state.pose.x, state.pose.y, state.pose.theta, 0.0),
+                        ),
+                        (
+                            "confidence".into(),
+                            RuntimeValue::Number {
+                                value: 0.85,
+                                unit: UnitKind::None,
+                            },
+                        ),
+                    ]),
+                })
+            }
+            "map" => {
+                self.log("slam: map snapshot (stub adapter)".into());
+                Ok(RuntimeValue::Object {
+                    type_name: "OccupancyGrid".into(),
+                    fields: HashMap::from([
+                        (
+                            "resolution".into(),
+                            RuntimeValue::Number {
+                                value: 0.05,
+                                unit: UnitKind::M,
+                            },
+                        ),
+                        (
+                            "width".into(),
+                            RuntimeValue::Number {
+                                value: 100.0,
+                                unit: UnitKind::None,
+                            },
+                        ),
+                    ]),
+                })
+            }
+            _ => Err(
+                RuntimeError::new(format!("Unknown slam method '{property}'"), line).into_spanda(),
             ),
         }
     }

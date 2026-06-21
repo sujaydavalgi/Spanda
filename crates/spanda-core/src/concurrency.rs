@@ -575,6 +575,7 @@ fn runtime_type_tag(value: &RuntimeValue) -> String {
         RuntimeValue::SensorFusion { .. } => "sensor_fusion".into(),
         RuntimeValue::MissionControl { .. } => "mission_control".into(),
         RuntimeValue::NavigationControl { .. } => "navigation_control".into(),
+        RuntimeValue::SlamControl => "slam_control".into(),
         RuntimeValue::FleetControl { .. } => "fleet_control".into(),
         RuntimeValue::AuditCtx => "audit_ctx".into(),
         RuntimeValue::LedgerCtx => "ledger_ctx".into(),

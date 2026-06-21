@@ -1188,6 +1188,27 @@ impl PrettyPrinter {
             Stmt::RunPipelineStmt { name, .. } => {
                 self.write_line(&format!("run_pipeline {name};"));
             }
+            Stmt::NavigateStmt {
+                goal,
+                linear,
+                angular,
+                ..
+            } => {
+                self.write("navigate { goal: ");
+                self.print_expr(goal);
+                self.write(";");
+                if let Some(linear_expr) = linear {
+                    self.write(" linear: ");
+                    self.print_expr(linear_expr);
+                    self.write(";");
+                }
+                if let Some(angular_expr) = angular {
+                    self.write(" angular: ");
+                    self.print_expr(angular_expr);
+                    self.write(";");
+                }
+                self.write_line(" }");
+            }
         }
     }
 

@@ -1936,6 +1936,7 @@ pub fn verify_program_compatibility(
         connectivity_policies,
         certifications,
         simulate_compatibility,
+        imports,
         ..
     } = program;
     let mut items = Vec::new();
@@ -1946,6 +1947,7 @@ pub fn verify_program_compatibility(
     for policy in connectivity_policies {
         items.extend(validate_connectivity_policy(policy));
     }
+    items.extend(crate::adapter_verify::verify_framework_imports(imports));
     for cert in certifications {
         use crate::robotics_platform::CertifyDecl;
         let CertifyDecl::CertifyDecl {
@@ -1981,15 +1983,16 @@ pub fn verify_program_compatibility(
 
     // Skip further work when targets to check is empty.
     if targets_to_check.is_empty() && options.target.is_none() && !options.all_targets {
+        items.push(pass(
+            "deploy",
+            "No deployment targets declared — hardware compatibility not required",
+            1,
+            1,
+        ));
         return CompatibilityReport {
             compatible: true,
             target: None,
-            items: vec![pass(
-                "deploy",
-                "No deployment targets declared — hardware compatibility not required",
-                1,
-                1,
-            )],
+            items,
             matrix: None,
         };
     }

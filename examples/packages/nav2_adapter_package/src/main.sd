@@ -1,0 +1,26 @@
+module nav2_adapter;
+
+import navigation.nav2;
+import std.navigation;
+
+robot Nav2WarehouseBot {
+  topic cmd_vel: Velocity publish on "/cmd_vel";
+  sensor lidar: Lidar on "/scan";
+  actuator drive: DifferentialDrive;
+
+  safety {
+    max_speed = 0.6 m/s;
+  }
+
+  mission Patrol {
+    navigate;
+    inspect;
+  }
+
+  behavior patrol() {
+    navigate {
+      goal: "Warehouse aisle 3";
+    }
+    drive.stop();
+  }
+}

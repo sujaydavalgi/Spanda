@@ -700,6 +700,7 @@ fn runtime_value_kind(value: &RuntimeValue) -> &'static str {
         RuntimeValue::SensorFusion { .. } => "sensor_fusion",
         RuntimeValue::MissionControl { .. } => "mission_control",
         RuntimeValue::NavigationControl { .. } => "navigation_control",
+        RuntimeValue::SlamControl => "slam_control",
         RuntimeValue::FleetControl { .. } => "fleet_control",
         RuntimeValue::AuditCtx => "audit_ctx",
         RuntimeValue::LedgerCtx => "ledger_ctx",

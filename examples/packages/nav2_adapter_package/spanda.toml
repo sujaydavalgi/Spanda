@@ -1,0 +1,12 @@
+[package]
+name = "nav2_adapter_package"
+version = "0.1.0"
+description = "Nav2 golden-path adapter example for Spanda robotics platform"
+authors = ["Spanda Contributors"]
+license = "Apache-2.0"
+
+[dependencies]
+
+[adapter]
+provides = ["Nav2Adapter", "NavigationGoal", "CostMap"]
+requires = ["topic.publish", "safety.validate"]

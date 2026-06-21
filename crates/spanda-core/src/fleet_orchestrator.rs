@@ -130,10 +130,15 @@ pub fn orchestrate_fleets(program: &Program, program_path: &str) -> FleetOrchest
             });
         }
 
+        let coordination_mode = if member_states.iter().any(|m| m.has_peer_link) {
+            "peer_round_robin_mission".into()
+        } else {
+            "round_robin_mission".into()
+        };
         reports.push(FleetOrchestrationReport {
             fleet_name: name.clone(),
             members: member_states,
-            coordination_mode: "round_robin_mission".into(),
+            coordination_mode,
             steps_advanced,
         });
     }
