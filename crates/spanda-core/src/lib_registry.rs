@@ -154,6 +154,83 @@ fn imu_reading(yaw: f64) -> RuntimeValue {
     }
 }
 
+fn gps_fix_reading(lat: f64, lon: f64, alt: f64) -> RuntimeValue {
+    // Build a GpsFix object from WGS84 coordinates.
+    //
+    // Parameters:
+    // - `lat`, `lon` — degrees
+    // - `alt` — altitude in meters
+    //
+    // Returns:
+    // GpsFix runtime object.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // let fix = gps_fix_reading(30.0, -97.0, 150.0);
+
+    use crate::ast::UnitKind;
+    RuntimeValue::Object {
+        type_name: "GpsFix".into(),
+        fields: HashMap::from([
+            (
+                "lat".into(),
+                RuntimeValue::Number {
+                    value: lat,
+                    unit: UnitKind::None,
+                },
+            ),
+            (
+                "lon".into(),
+                RuntimeValue::Number {
+                    value: lon,
+                    unit: UnitKind::None,
+                },
+            ),
+            (
+                "altitude".into(),
+                RuntimeValue::Number {
+                    value: alt,
+                    unit: UnitKind::M,
+                },
+            ),
+            (
+                "fix_quality".into(),
+                RuntimeValue::Number {
+                    value: 1.0,
+                    unit: UnitKind::None,
+                },
+            ),
+        ]),
+    }
+}
+
+fn read_ublox_neo_m8n(ctx: &DriverContext) -> RuntimeValue {
+    // Read u-blox NEO-M8N GNSS fix via UART NMEA stub.
+    //
+    // Parameters:
+    // - `ctx` — driver context with optional HAL and simulation pose
+    //
+    // Returns:
+    // GpsFix runtime object.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // let fix = read_ublox_neo_m8n(&ctx);
+
+    let lat = ctx.sim_state.as_ref().map(|s| s.pose.x).unwrap_or(0.0);
+    let lon = ctx.sim_state.as_ref().map(|s| s.pose.y).unwrap_or(0.0);
+    let alt = ctx.sim_state.as_ref().and_then(|s| s.pose.z).unwrap_or(0.0);
+    if let (Some(hal), Some(binding)) = (ctx.hal, ctx.hal_binding) {
+        let _nmea = hal.read_uart(binding);
+        return gps_fix_reading(lat, lon, alt);
+    }
+    gps_fix_reading(lat, lon, alt)
+}
+
 fn read_velodyne_vlp16(ctx: &DriverContext) -> RuntimeValue {
     // Read velodyne vlp16.
     //
@@ -1288,6 +1365,27 @@ fn build_registry() -> HashMap<String, LibModule> {
                 )]),
             ),
         ),
+        (
+            "ublox.neo_m8n".to_string(),
+            lib(
+                "ublox.neo_m8n",
+                "u-blox",
+                "neo_m8n",
+                "u-blox NEO-M8N multi-GNSS receiver (UART NMEA)",
+                HashMap::from([(
+                    "UbloxNEOM8N".to_string(),
+                    sensor(
+                        "UbloxNEOM8N",
+                        "u-blox",
+                        "NEO-M8N",
+                        &[SensorInterface::Uart],
+                        Some(SensorInterface::Uart),
+                        &["read"],
+                        read_ublox_neo_m8n,
+                    ),
+                )]),
+            ),
+        ),
     ])
 }
 
@@ -1491,6 +1589,7 @@ mod tests {
         // let result = spanda_core::lib_registry::resolves_vendor_libraries();
 
         assert_eq!(resolve_import("bosch.bno055").unwrap().vendor, "Bosch");
+        assert_eq!(resolve_import("ublox.neo_m8n").unwrap().vendor, "u-blox");
         assert!(resolve_import("velodyne.vlp16")
             .unwrap()
             .sensors
