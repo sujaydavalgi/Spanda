@@ -335,6 +335,8 @@ mod tests {
         // let result = spanda_package::registry_fetch::tarball_url_requires_registry_env();
 
         std::env::remove_var("SPANDA_REGISTRY_URL");
+        assert!(registry_tarball_url("demo", "0.1.0").is_some());
+        std::env::set_var("SPANDA_REGISTRY_URL", "");
         assert!(registry_tarball_url("demo", "0.1.0").is_none());
     }
 

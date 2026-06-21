@@ -1,0 +1,18 @@
+[
+  {
+    "name": "spanda-openai",
+    "description": "OpenAI provider adapter via Python bridge (ai.openai)",
+    "versions": ["0.1.0"],
+    "category": "ai",
+    "license": "Apache-2.0",
+    "import_paths": ["ai.openai"]
+  },
+  {
+    "name": "spanda-ros2",
+    "description": "ROS 2 integration framework (robotics.ros2)",
+    "versions": ["0.1.0"],
+    "category": "ros2",
+    "license": "Apache-2.0",
+    "import_paths": ["robotics.ros2"]
+  }
+]

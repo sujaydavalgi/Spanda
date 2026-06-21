@@ -38,11 +38,15 @@ pub fn registry_base_url() -> Option<String> {
     // Example:
     // let result = spanda_package::registry_remote::registry_base_url();
 
+    const DEFAULT_REGISTRY: &str =
+        "https://raw.githubusercontent.com/Davalgi/Spanda/main/registry";
+
     // Produce var as the result.
-    std::env::var("SPANDA_REGISTRY_URL")
-        .ok()
-        .map(|url| url.trim_end_matches('/').to_string())
-        .filter(|url| !url.is_empty())
+    match std::env::var("SPANDA_REGISTRY_URL") {
+        Ok(url) if url.trim().is_empty() => None,
+        Ok(url) => Some(url.trim_end_matches('/').to_string()),
+        Err(_) => Some(DEFAULT_REGISTRY.to_string()),
+    }
 }
 
 pub fn fetch_index_json(url: &str) -> Result<String, String> {
@@ -401,6 +405,8 @@ mod tests {
         // let result = spanda_package::registry_remote::remote_disabled_without_env();
 
         std::env::remove_var("SPANDA_REGISTRY_URL");
-        assert!(load_remote_registry().is_empty());
+        assert!(registry_base_url().is_some());
+        std::env::set_var("SPANDA_REGISTRY_URL", "");
+        assert!(registry_base_url().is_none());
     }
 }
