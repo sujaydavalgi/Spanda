@@ -1,10 +1,20 @@
 # Spanda
 
-**The Autonomous Systems Language.**
+**The Autonomous Systems Language.** *The pulse of autonomous intelligence.*
 
 Spanda is an AI-native programming language for robotics, autonomous agents, digital twins, and edge systems. Source files use the **`.sd`** extension.
 
 Repository: [github.com/Davalgi/Spanda](https://github.com/Davalgi/Spanda)
+
+---
+
+## Philosophy
+
+Hardware is the body.  
+Sensors are the senses.  
+AI models are the mind.  
+Actuators are the muscles.  
+Spanda is the intelligent pulse that transforms perception into action.
 
 ---
 

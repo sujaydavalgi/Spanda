@@ -1,6 +1,16 @@
 # Spanda Vision
 
-**Spanda is the Autonomous Systems Language.**
+**Spanda is the Autonomous Systems Language.** *The pulse of autonomous intelligence.*
+
+---
+
+## Philosophy
+
+Hardware is the body.  
+Sensors are the senses.  
+AI models are the mind.  
+Actuators are the muscles.  
+Spanda is the intelligent pulse that transforms perception into action.
 
 ---
 

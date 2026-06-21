@@ -14,9 +14,17 @@ Spanda should not compete as a general-purpose language, Python replacement, Rus
 2. Hardware fit is **checked before deploy** (`spanda verify`)
 3. Safety is **mandatory in the language**, not bolted on
 
-**Official positioning:** *Spanda is the Autonomous Systems Language.*
+**Official positioning:** *Spanda is the Autonomous Systems Language.* *The pulse of autonomous intelligence.*
 
 **Sharpened tagline:** *Design autonomous systems. Verify they fit the hardware. Block unsafe AI before it reaches actuators.*
+
+### Philosophy
+
+Hardware is the body.  
+Sensors are the senses.  
+AI models are the mind.  
+Actuators are the muscles.  
+Spanda is the intelligent pulse that transforms perception into action.
 
 ---
 

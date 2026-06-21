@@ -24,6 +24,14 @@ spanda run examples/showcase/rover_navigation.sd
 
 The pulse of autonomous intelligence.
 
+### Philosophy
+
+Hardware is the body.  
+Sensors are the senses.  
+AI models are the mind.  
+Actuators are the muscles.  
+Spanda is the intelligent pulse that transforms perception into action.
+
 ### Value proposition (3 columns)
 
 **Safety-first AI**  
