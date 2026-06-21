@@ -7,6 +7,7 @@ use crate::deploy_http::{
 };
 use crate::deploy_remote::DeployAgentEntry;
 use crate::deploy_service::DeployAssignment;
+use crate::certify_prover::CertificationProofSummary;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io::Write;
@@ -30,6 +31,8 @@ pub struct AgentState {
     pub require_hash: bool,
     #[serde(default)]
     pub require_signature: bool,
+    #[serde(default)]
+    pub require_certify: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub trusted_public_key: Option<String>,
 }
@@ -44,6 +47,8 @@ struct RolloutRequest {
     assignments: Vec<DeployAssignment>,
     #[serde(default)]
     certifications: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    certification_proof: Option<CertificationProofSummary>,
     artifact_signature: Option<String>,
     artifact_public_key: Option<String>,
 }
@@ -157,6 +162,18 @@ pub fn handle_agent_request(state: &mut AgentState, request: HttpRequest) -> Htt
                     };
                 }
             }
+            if state.require_certify {
+                let proof_ok = payload
+                    .certification_proof
+                    .as_ref()
+                    .is_some_and(|proof| proof.passed_strict);
+                if !proof_ok {
+                    return HttpResponse {
+                        status: 400,
+                        body: r#"{"ok":false,"error":"strict certification proof required"}"#.into(),
+                    };
+                }
+            }
             if state.target.is_empty() {
                 state.target = payload.target.clone();
             }
@@ -261,6 +278,7 @@ pub fn run_deploy_agent_server(
     tls: Option<DeployAgentTls>,
     require_hash: bool,
     require_signature: bool,
+    require_certify: bool,
     trusted_public_key: Option<String>,
 ) -> Result<(), String> {
     // Run the deploy agent until the listener is interrupted.
@@ -271,6 +289,7 @@ pub fn run_deploy_agent_server(
     state.token = token.or(state.token);
     state.require_hash = require_hash || state.require_hash;
     state.require_signature = require_signature || state.require_signature;
+    state.require_certify = require_certify || state.require_certify;
     state.trusted_public_key = trusted_public_key.or(state.trusted_public_key);
     save_agent_state(state_path, &state)?;
     let listener = TcpListener::bind(bind).map_err(|e| format!("bind {bind} failed: {e}"))?;
@@ -295,6 +314,14 @@ pub fn spawn_test_agent(
     target: &str,
     token: Option<String>,
 ) -> Result<(u16, thread::JoinHandle<()>), String> {
+    spawn_test_agent_with_options(target, token, false)
+}
+
+pub fn spawn_test_agent_with_options(
+    target: &str,
+    token: Option<String>,
+    require_certify: bool,
+) -> Result<(u16, thread::JoinHandle<()>), String> {
     // Start a background deploy agent for integration tests.
     let listener = TcpListener::bind("127.0.0.1:0").map_err(|e| e.to_string())?;
     let port = listener.local_addr().map_err(|e| e.to_string())?.port();
@@ -303,6 +330,7 @@ pub fn spawn_test_agent(
         current_version: "0.0.0".into(),
         previous_version: None,
         token,
+        require_certify,
         ..AgentState::default()
     };
     let shared = Arc::new(Mutex::new(state));

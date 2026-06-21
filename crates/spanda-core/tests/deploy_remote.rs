@@ -53,7 +53,7 @@ fn remote_rollout_updates_agent_state() {
 
     bundle.version = "2.1.0".into();
     sign_deploy_bundle(&mut bundle, "test-signing-key").expect("resign bundle");
-    let rollout = agent_rollout(&entry, &bundle).expect("agent rollout");
+    let rollout = agent_rollout(&entry, &bundle, plan.certification_proof.as_ref()).expect("agent rollout");
     assert!(rollout.ok);
     assert_eq!(rollout.version, "2.1.0");
 }

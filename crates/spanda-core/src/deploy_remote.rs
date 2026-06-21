@@ -2,6 +2,7 @@
 
 use crate::deploy_bundle::DeployArtifactBundle;
 use crate::deploy_http::{http_request, parse_http_url, HttpResponse};
+use crate::certify_prover::CertificationProofSummary;
 use crate::deploy_service::{
     deploy_target_key, DeployAssignment, DeployPlan, RolloutOptions, RolloutResult, RolloutStep,
     RolloutStepStatus, RolloutStrategy,
@@ -43,6 +44,8 @@ struct RolloutRequest {
     assignments: Vec<DeployAssignment>,
     #[serde(default)]
     certifications: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    certification_proof: Option<CertificationProofSummary>,
     artifact_signature: Option<String>,
     artifact_public_key: Option<String>,
 }
@@ -131,6 +134,7 @@ pub fn agent_status(entry: &DeployAgentEntry) -> Result<AgentStatusResponse, Str
 pub fn agent_rollout(
     entry: &DeployAgentEntry,
     bundle: &DeployArtifactBundle,
+    certification_proof: Option<&CertificationProofSummary>,
 ) -> Result<AgentRolloutResponse, String> {
     let url = agent_endpoint(&entry.url, "/v1/rollout")?;
     let payload = serde_json::to_string(&RolloutRequest {
@@ -140,6 +144,7 @@ pub fn agent_rollout(
         program_hash: bundle.program_hash.clone(),
         assignments: bundle.assignments.clone(),
         certifications: bundle.certifications.clone(),
+        certification_proof: certification_proof.cloned(),
         artifact_signature: bundle.signature.clone(),
         artifact_public_key: bundle.public_key.clone(),
     })
@@ -186,7 +191,7 @@ pub fn execute_remote_rollout(
             success = false;
             continue;
         };
-        match agent_rollout(agent, bundle) {
+        match agent_rollout(agent, bundle, plan.certification_proof.as_ref()) {
             Ok(resp) if resp.ok => steps.push(RolloutStep {
                 status: RolloutStepStatus::Deployed,
                 ..step.clone()

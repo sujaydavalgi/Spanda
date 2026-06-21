@@ -76,7 +76,7 @@ pub fn deploy_usage_lines() -> &'static str {
      spanda deploy rollout [--json] [--remote] [--require-certify] [--sign-key <material>] [--strategy all|canary|staged] [--canary-percent N] [--version <ver>] [--dry-run] <file.sd>\n\
      spanda deploy rollback [--json] [--remote] <file.sd>\n\
      spanda deploy status [--json]\n\
-     spanda deploy agent start [--bind <addr>] [--target <Robot@Hardware>] [--token <t>] [--tls-cert <pem>] [--tls-key <pem>] [--require-hash] [--require-signature] [--trust-key <material>]\n\
+     spanda deploy agent start [--bind <addr>] [--target <Robot@Hardware>] [--token <t>] [--tls-cert <pem>] [--tls-key <pem>] [--require-hash] [--require-signature] [--require-certify] [--trust-key <material>]\n\
      spanda deploy agent register <Robot@Hardware> <http(s)://host:port> [--token <t>]\n\
      spanda deploy agent list [--json]\n\
      spanda deploy --target wasm [--out <file.json>] <file.sd>"
@@ -324,6 +324,7 @@ fn cmd_agent_start(args: &[String]) {
     let mut tls_key = None;
     let mut require_hash = false;
     let mut require_signature = false;
+    let mut require_certify = false;
     let mut trusted_public_key = None;
     let mut i = 0;
     while i < args.len() {
@@ -350,6 +351,7 @@ fn cmd_agent_start(args: &[String]) {
             }
             "--require-hash" => require_hash = true,
             "--require-signature" => require_signature = true,
+            "--require-certify" => require_certify = true,
             "--trust-key" if i + 1 < args.len() => {
                 trusted_public_key = Some(args[i + 1].clone());
                 i += 1;
@@ -388,6 +390,7 @@ fn cmd_agent_start(args: &[String]) {
         tls,
         require_hash,
         require_signature,
+        require_certify,
         trusted_public_key,
     ) {
         eprintln!("Deploy agent failed: {err}");

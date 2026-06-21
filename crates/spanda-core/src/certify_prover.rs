@@ -20,7 +20,7 @@ pub struct DeployTargetEntry {
     pub hardware: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CertificationProofSummary {
     pub passed: bool,
     pub passed_strict: bool,

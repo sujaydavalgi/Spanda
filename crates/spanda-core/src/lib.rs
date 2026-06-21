@@ -101,7 +101,7 @@ pub use deploy_remote::{
 };
 pub use deploy_agent::{
     default_agent_state_path, handle_agent_request, load_agent_state, run_deploy_agent_server,
-    save_agent_state, spawn_test_agent, agent_entry_for_port, AgentState,
+    save_agent_state, spawn_test_agent, spawn_test_agent_with_options, agent_entry_for_port, AgentState,
 };
 pub use deploy_http::{parse_http_url, DeployAgentTls};
 pub use fleet_orchestrator::{
