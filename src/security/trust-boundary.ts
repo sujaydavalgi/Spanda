@@ -11,6 +11,27 @@ export type TrustBoundaryKind =
   | "robot_to_cloud"
   | "operator_to_robot";
 
+export function boundaryForTransportName(transport: string): TrustBoundaryKind | null {
+  // Map a transport name to the trust boundary it typically crosses.
+  switch (transport) {
+    case "local":
+    case "sim":
+    case "ble":
+      return "robot_internal";
+    case "ros2":
+    case "dds":
+    case "mqtt":
+      return "robot_to_robot";
+    case "websocket":
+      return "operator_to_robot";
+    case "wifi":
+    case "cellular":
+      return "robot_to_cloud";
+    default:
+      return null;
+  }
+}
+
 export function parseTrustBoundary(name: string): TrustBoundaryKind {
   // Parse a trust boundary declaration name into a known kind.
   //

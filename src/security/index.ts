@@ -7,9 +7,10 @@ import { sha256 } from "@noble/hashes/sha256";
 import { sha512 } from "@noble/hashes/sha512";
 import * as ed from "@noble/ed25519";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
-import { TrustBoundaryRegistry } from "./trust-boundary.js";
+import { TrustBoundaryRegistry, parseTrustBoundary, boundaryForTransportName } from "./trust-boundary.js";
+import type { AuthenticationMode, EncryptionMode, IntegrityMode } from "../transport/transport-security.js";
 
-export { TrustBoundaryRegistry, parseTrustBoundary } from "./trust-boundary.js";
+export { TrustBoundaryRegistry, parseTrustBoundary, boundaryForTransportName } from "./trust-boundary.js";
 export {
   securityCheck,
   securityAudit,
@@ -495,6 +496,10 @@ export class SecurityContext {
   capabilities = new CapabilitySet();
   secureEndpoints = new SecureEndpointRegistry();
   trustBoundaries = new TrustBoundaryRegistry();
+  transportBoundary: import("./trust-boundary.js").TrustBoundaryKind | null = null;
+  busEncryption: EncryptionMode = "none";
+  busAuthentication: AuthenticationMode = "none";
+  busIntegrity: IntegrityMode = "none";
   strictPermissions = false;
   wireCertPath: string | null = null;
   wireKeySecret: string | null = null;
@@ -628,7 +633,38 @@ export class SecurityContext {
     }
   }
 
-  verifyInboundMessage(path: string, _payload: string, sourceId?: string | null): void {
+  setTransportContext(
+    boundary: import("./trust-boundary.js").TrustBoundaryKind | null,
+    encryption: EncryptionMode,
+    authentication: AuthenticationMode,
+    integrity: IntegrityMode,
+  ): void {
+    this.transportBoundary = boundary;
+    this.busEncryption = encryption;
+    this.busAuthentication = authentication;
+    this.busIntegrity = integrity;
+  }
+
+  enforceTrustBoundary(messageType: string, endpoint: SecurePolicy): void {
+    if (!this.transportBoundary) return;
+    if (!this.trustBoundaries.contains(this.transportBoundary)) return;
+    const encryption =
+      endpoint.encryption !== "none" ? endpoint.encryption : this.busEncryption;
+    const authentication =
+      endpoint.authentication !== "none" ? endpoint.authentication : this.busAuthentication;
+    const integrity = endpoint.integrity !== "none" ? endpoint.integrity : this.busIntegrity;
+    this.trustBoundaries.validateChannel(
+      this.transportBoundary,
+      encryption,
+      authentication,
+      integrity,
+      messageType,
+    );
+  }
+
+  verifyInboundMessage(path: string, _payload: string, sourceId?: string | null, messageType = "Unknown"): void {
+    const policy = this.secureEndpoints.policyOrOpen(path);
+    this.enforceTrustBoundary(messageType, policy);
     this.authorizeSubscribe(path);
     this.verifyInbound(path, sourceId);
   }
@@ -682,26 +718,12 @@ export class SecurityContext {
     return `${this.wireCertPath ?? "spanda-local"}:${this.wireKeySecret ?? "spanda-local-key"}`;
   }
 
-  preparePublish(path: string, payload: string, sourceId: string): void {
+  preparePublish(path: string, payload: string, sourceId: string, messageType = "Unknown"): void {
     // Authorize and validate an outbound publish against secure endpoint policy.
-    //
-    // Parameters:
-    // - `path` — topic path
-    // - `payload` — serialized payload
-    // - `sourceId` — publisher identity
-    //
-    // Returns:
-    // Nothing; throws when publish is denied.
-    //
-    // Options:
-    // None.
-    //
-    // Example:
-    // ctx.preparePublish("/motion", payload, "Navigator");
-
+    const policy = this.secureEndpoints.policyOrOpen(path);
+    this.enforceTrustBoundary(messageType, policy);
     this.authorizePublish(path, sourceId);
     this.checkSecurityFaults(path, payload);
-    const policy = this.secureEndpoints.policyOrOpen(path);
     if (policy.encryption !== "none") {
       this.capabilities.require("crypto.encrypt");
     }

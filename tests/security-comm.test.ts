@@ -97,3 +97,42 @@ robot R {
     expect(report.findings.some((f) => f.message.includes("encrypted bus"))).toBe(true);
   });
 });
+
+describe("runtime trust boundaries", () => {
+  it("rejects unencrypted publish crossing robot_to_robot on mqtt", () => {
+    const source = `
+robot R {
+  trust trusted;
+  trust_boundary robot_to_robot;
+  topic motion_cmd: Velocity publish on "/motion";
+  bus mesh { transport: "mqtt"; };
+  behavior run() {
+    publish motion_cmd with velocity(linear: 0.5 m/s, angular: 0.0 rad/s);
+  }
+}
+`;
+    expect(() =>
+      run(compile(source).program, {
+        backend: createDefaultSimulator(),
+        maxLoopIterations: 1,
+        onLog: () => {},
+      }),
+    ).toThrow(/encryption/i);
+  });
+});
+
+describe("broker url", () => {
+  it("parses bus url field", () => {
+    const source = `
+robot R {
+  bus mesh {
+    transport: "mqtt";
+    url: "mqtts://broker.example.com:8883";
+  };
+  behavior run() {}
+}
+`;
+    const program = compile(source).program;
+    expect(program.robots[0]!.buses[0]!.brokerUrl).toBe("mqtts://broker.example.com:8883");
+  });
+});

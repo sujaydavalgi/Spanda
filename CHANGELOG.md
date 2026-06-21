@@ -14,7 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Live MQTT (optional):** `live-mqtt` Cargo feature with rumqttc bridge; enable with `SPANDA_LIVE_MQTT=1`
 - **Live WebSocket + DDS (optional):** `live-websocket` / `live-dds` Cargo features (or `live-transport` bundle); enable with `SPANDA_LIVE_WEBSOCKET=1` / `SPANDA_LIVE_DDS=1`
 - **mTLS handshake (optional):** rustls client handshake when mutual auth + cert/key files + TLS broker URL; `SPANDA_MTLS_REQUIRED=1` fails hard; TypeScript mirror with `SPANDA_MTLS_HANDSHAKE=1`
-- **TS live transport mirror:** `LiveMqttBridge`, `LiveWebsocketBridge`, `LiveDdsBridge` wired from `RoutingCommBus` when env flags are set
+- **Runtime trust-boundary enforcement:** publish/receive validates declared boundaries against transport-mapped crossing rules
+- **Bus broker URL:** `url:` field on `bus { }` blocks and `SPANDA_BROKER_URL` env fallback for live transport and mTLS
 
 ### Fixed
 

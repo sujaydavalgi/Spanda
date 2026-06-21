@@ -20,6 +20,7 @@ import {
   effectiveTransportPolicy,
   transportSecurityFromBusFields,
   urlRequiresTls,
+  resolveBrokerUrl,
   type SecureCommPolicy,
   type TransportSecurityConfig,
 } from "./transport-security.js";
@@ -29,7 +30,7 @@ import { LiveWebsocketBridge, liveWebsocketEnabled } from "./live-websocket.js";
 import { LiveDdsBridge, liveDdsEnabled } from "./live-dds.js";
 
 export type { TransportKind, SecureCommPolicy, TransportSecurityConfig, FullTransportConfig };
-export { TlsTransportSession, defaultTransportSecurity, transportSecurityFromBusFields };
+export { TlsTransportSession, defaultTransportSecurity, transportSecurityFromBusFields, resolveBrokerUrl };
 
 export type AdapterMessage = {
   topic: string;

@@ -54,10 +54,13 @@ Modes:
 ```spanda
 bus robot_mesh {
     transport: "dds";
+    url: "dds+sec://fleet.local:7400";
     encryption: required;
     authentication: mutual;
 }
 ```
+
+Broker URLs can also come from the `SPANDA_BROKER_URL` environment variable when the bus block omits `url`.
 
 Legacy shorthand remains supported: `bus ros2;`
 

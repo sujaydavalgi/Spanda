@@ -224,6 +224,13 @@ function tryMtlsHandshake(
   }
 }
 
+export function resolveBrokerUrl(busUrl?: string | null): string | null {
+  // Resolve broker URL from bus declaration or SPANDA_BROKER_URL env.
+  if (busUrl && busUrl.length > 0) return busUrl;
+  const env = process.env.SPANDA_BROKER_URL;
+  return env && env.length > 0 ? env : null;
+}
+
 export function urlRequiresTls(brokerUrl?: string | null): boolean {
   // Detect TLS broker URL schemes that require encrypted transport.
   //

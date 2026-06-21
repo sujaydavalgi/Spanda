@@ -27,8 +27,8 @@ import { createAgentRuntime, executeAgentPlan, type AgentRuntime } from "../ai/A
 import { MemoryStore } from "../ai/MemoryStore.js";
 import { mockAnalyzeFrame, mockCameraFrame } from "../ai/MockAIProvider.js";
 import { getSocProfile } from "../soc/index.js";
-import { RoutingCommBus, type TransportKind, TlsTransportSession, effectiveTransportPolicy, transportSecurityFromBusFields, type SecureCommPolicy } from "../transport/index.js";
-import { parseTrustBoundary } from "../security/trust-boundary.js";
+import { RoutingCommBus, type TransportKind, TlsTransportSession, effectiveTransportPolicy, transportSecurityFromBusFields, resolveBrokerUrl, type SecureCommPolicy } from "../transport/index.js";
+import { parseTrustBoundary, boundaryForTransportName } from "../security/trust-boundary.js";
 import { SafetyMonitor, createSafetyConfigFromRobot, interpolatePoses } from "../safety/index.js";
 import type { SafetyZoneRuntime } from "../safety/index.js";
 import {
@@ -296,6 +296,7 @@ export class Interpreter {
   private security = new SecurityContext();
   private commBus = new RoutingCommBus();
   private defaultTransport: TransportKind = "local";
+  private topicPathToMessageType = new Map<string, string>();
   private moduleFunctions = new Map<string, ModuleFnDecl>();
   private importedFunctions = new Map<string, ModuleFnDecl>();
   private externFunctions = new Map<string, ExternFnDecl>();
@@ -604,7 +605,12 @@ export class Interpreter {
           ? JSON.stringify(envelope.value)
           : String(envelope.value);
       try {
-        this.security.verifyInboundMessage(topicPath, payload, envelope.sourceId);
+        this.security.verifyInboundMessage(
+          topicPath,
+          payload,
+          envelope.sourceId,
+          this.topicPathToMessageType.get(topicPath) ?? "Unknown",
+        );
       } catch (e) {
         this.options.onLog?.(`security: inbound denied on ${topicPath}: ${e}`);
         continue;
@@ -1413,6 +1419,7 @@ export class Interpreter {
     // const result = setupRobot(robot);
     this.currentRobot = robot;
     this.env = new Environment();
+    this.topicPathToMessageType.clear();
     this.zones = [];
     this.eventHandlers.clear();
     this.stateMachines.clear();
@@ -1521,10 +1528,19 @@ export class Interpreter {
         }
       }
       const tls = new TlsTransportSession();
+      const transportBoundary = boundaryForTransportName(bus.transport);
+      this.security.setTransportContext(
+        transportBoundary,
+        busSecurity.encryption,
+        busSecurity.authentication,
+        busSecurity.integrity,
+      );
+      const resolvedBroker = resolveBrokerUrl(bus.brokerUrl);
       this.commBus.configure({
         nodeName: robot.name,
         security: busSecurity,
         tls,
+        brokerUrl: resolvedBroker,
       });
       this.options.onLog?.(
         `bus transport: ${bus.transport} (encryption: ${busSecurity.encryption})`,
@@ -1801,6 +1817,7 @@ export class Interpreter {
       });
     }
     this.commBus.subscribe(path, topic.name);
+    this.topicPathToMessageType.set(path, topic.messageType);
     this.env.define(topic.name, {
       kind: "topic",
       name: topic.name,
@@ -1974,7 +1991,7 @@ export class Interpreter {
           const payload =
             typeof value === "object" && value !== null ? JSON.stringify(value) : String(value);
           try {
-            this.security.preparePublish(topic.topicPath, payload, sourceId);
+            this.security.preparePublish(topic.topicPath, payload, sourceId, topic.messageType);
           } catch (e) {
             this.options.onLog?.(`security: publish denied on ${topic.topicPath}: ${e}`);
             throw e;
@@ -2056,7 +2073,12 @@ export class Interpreter {
             typeof envelope.value === "object" && envelope.value !== null
               ? JSON.stringify(envelope.value)
               : String(envelope.value);
-          this.security.verifyInboundMessage(path, payload, envelope.sourceId);
+          this.security.verifyInboundMessage(
+            path,
+            payload,
+            envelope.sourceId,
+            this.topicPathToMessageType.get(path) ?? "Unknown",
+          );
           this.env.define(stmt.varName, envelope.value);
           this.options.onLog?.(`receive ${stmt.topicName} to ${stmt.varName}`);
         }

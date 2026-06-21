@@ -1571,6 +1571,7 @@ class Parser {
     if (this.check("LBRACE")) {
       this.advance();
       let transportName = busName.lexeme;
+      let brokerUrl: string | null = null;
       let encryption: string | null = null;
       let authentication: string | null = null;
       let integrity: string | null = null;
@@ -1580,6 +1581,8 @@ class Parser {
         this.expect("COLON", "Expected ':' in bus field");
         if (key === "transport") {
           transportName = this.parseConfigValueString();
+        } else if (key === "url") {
+          brokerUrl = this.parseConfigValueString();
         } else if (key === "encryption") {
           encryption = this.parseLabel("Expected encryption mode");
         } else if (key === "authentication") {
@@ -1600,6 +1603,7 @@ class Parser {
         name: busName.lexeme,
         transport,
         transportName,
+        brokerUrl,
         encryption,
         authentication,
         integrity,

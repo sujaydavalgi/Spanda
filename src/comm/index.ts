@@ -90,6 +90,7 @@ export type BusDecl = {
   name: string;
   transport: TransportKind;
   transportName?: string | null;
+  brokerUrl?: string | null;
   encryption?: string | null;
   authentication?: string | null;
   integrity?: string | null;

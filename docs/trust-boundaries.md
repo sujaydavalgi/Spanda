@@ -29,7 +29,7 @@ trust_boundary operator_to_robot;
 3. Pass `trusted_sources` / `reject_untrusted` when actuators are involved
 4. Resolve to `VerifiedMessage<SafeAction>` at runtime trust gates
 
-The compiler reports violations via `spanda security check`.
+The compiler reports violations via `spanda security check`. At runtime, declared boundaries are enforced when publishing or receiving over the mapped transport (for example `mqtt`/`dds`/`ros2` → `robot_to_robot`, `websocket` → `operator_to_robot`, `wifi`/`cellular` → `robot_to_cloud`).
 
 ## Simulation
 
