@@ -233,7 +233,7 @@ Run a lightweight HTTP deploy agent on each device (or edge gateway):
 
 ```bash
 # On device / edge node
-spanda deploy agent start --target RoverProgram@JetsonOrin --bind 0.0.0.0:8765
+spanda deploy agent start --target RoverProgram@JetsonOrin --require-certify --bind 0.0.0.0:8765
 
 # On CI / operator workstation
 spanda deploy agent register RoverProgram@JetsonOrin http://192.168.1.50:8765
@@ -241,6 +241,8 @@ spanda deploy rollout examples/robotics/remote_ota_deployment.sd --remote --requ
 spanda deploy rollback examples/robotics/remote_ota_deployment.sd --remote
 spanda deploy agent list
 ```
+
+Agents with `--require-certify` reject rollouts unless the payload includes a strict certification proof summary (`passed_strict: true`), matching the operator-side `--require-certify` gate.
 
 Agent registry: `.spanda/deploy-agents.json` (`SPANDA_DEPLOY_AGENTS` override).  
 Agent state on device: `.spanda/agent-state.json` (`SPANDA_AGENT_STATE` override).

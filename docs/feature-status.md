@@ -26,7 +26,7 @@ Honest snapshot of Spanda capabilities as of **v0.1.0-alpha**. Use this document
 | **Fleet simulation** | `spanda fleet run` — in-process multi-robot with deploy/peer wiring |
 | **Robotics platform** | `mission`, `fleet`, `safety_zone`, `certify`; navigation/fusion runtime; Nav2 adapter hook |
 | **OTA deploy CLI** | `spanda deploy plan|rollout|rollback|status` — local rollout state (`.spanda/deploy-state.json`) |
-| **Remote OTA agents** | `spanda deploy agent start|register|list` + `deploy rollout --remote` — HTTP agent on devices |
+| **Remote OTA agents** | `spanda deploy agent start|register|list` + `deploy rollout --remote` — HTTP agent on devices; `--require-certify` on agent and rollout |
 | **Fleet orchestration** | `spanda fleet orchestrate` — round-robin mission coordination report; `--remote` relays peer steps via HTTP fleet agents |
 | **Fleet peer agents** | `spanda fleet agent start|register|list` — on-device peer relay server (`.spanda/fleet-agents.json`) |
 | **Fleet mesh coordinator** | `spanda fleet mesh start` + `fleet orchestrate --mesh-url` — centralized multi-host peer relay |

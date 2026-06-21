@@ -1,7 +1,7 @@
 // Robotics — remote OTA rollout via deploy agents
 //
 // Terminal A (on device or edge node):
-//   spanda deploy agent start --target RoverProgram@JetsonOrin --bind 0.0.0.0:8765
+//   spanda deploy agent start --target RoverProgram@JetsonOrin --require-certify --bind 0.0.0.0:8765
 //
 // Terminal B (CI / operator workstation):
 //   spanda deploy agent register RoverProgram@JetsonOrin http://192.168.1.50:8765
