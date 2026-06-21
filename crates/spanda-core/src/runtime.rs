@@ -910,6 +910,12 @@ pub struct Interpreter<B: RobotBackend> {
     topic_last_publish_ms: HashMap<String, f64>,
     topic_deadline_misses: HashMap<String, u64>,
     mission_trace: Option<MissionTrace>,
+    geofences: Vec<crate::connectivity_positioning::GeofenceRuntime>,
+    geofence_active: std::collections::HashSet<String>,
+    connectivity_policies: Vec<crate::connectivity_positioning::ConnectivityPolicyRuntime>,
+    active_connectivity_link: String,
+    connectivity_events_seen: std::collections::HashSet<String>,
+    gps_available: bool,
 }
 
 impl<B: RobotBackend> Interpreter<B> {
@@ -984,6 +990,12 @@ impl<B: RobotBackend> Interpreter<B> {
             topic_last_publish_ms: HashMap::new(),
             topic_deadline_misses: HashMap::new(),
             mission_trace: None,
+            geofences: Vec::new(),
+            geofence_active: std::collections::HashSet::new(),
+            connectivity_policies: Vec::new(),
+            active_connectivity_link: "wifi".into(),
+            connectivity_events_seen: std::collections::HashSet::new(),
+            gps_available: true,
         }
     }
 
@@ -1405,6 +1417,8 @@ impl<B: RobotBackend> Interpreter<B> {
         // Destructure the program into its top-level sections.
         let Program::Program {
             robots,
+            geofences,
+            connectivity_policies,
             simulate_compatibility,
             ..
         } = program;
@@ -1417,6 +1431,7 @@ impl<B: RobotBackend> Interpreter<B> {
             sim_faults = faults.iter().map(|f| f.fault_type.clone()).collect();
         }
         self.load_program_metadata(program);
+        self.load_connectivity_metadata(geofences, connectivity_policies);
 
         // Handle each robot declared in the program.
         for robot in robots {
@@ -1638,6 +1653,19 @@ impl<B: RobotBackend> Interpreter<B> {
         }
     }
 
+    fn load_connectivity_metadata(
+        &mut self,
+        geofences: &[crate::foundations::GeofenceDecl],
+        policies: &[crate::foundations::ConnectivityPolicyDecl],
+    ) {
+        use crate::connectivity_positioning::{connectivity_policy_from_decl, geofence_from_decl};
+        self.geofences = geofences.iter().map(geofence_from_decl).collect();
+        self.connectivity_policies = policies.iter().map(connectivity_policy_from_decl).collect();
+        if let Some(policy) = self.connectivity_policies.first() {
+            self.active_connectivity_link = policy.preferred.clone();
+        }
+    }
+
     fn setup_robot(&mut self, robot: &RobotDecl) -> Result<(), SpandaError> {
         // Setup robot.
         //
@@ -1717,9 +1745,10 @@ impl<B: RobotBackend> Interpreter<B> {
         self.audit_runtime = None;
         self.mock_ledger = MockLedgerBackend::new();
         self.security = SecurityContext::new();
-        self.current_agent = None;
-
-        // Emit output when soc provides a soc decl.
+        self.geofences.clear();
+        self.geofence_active.clear();
+        self.connectivity_events_seen.clear();
+        self.gps_available = true;
         if let Some(soc_decl) = soc {
             let profile_name = soc_decl.profile();
 
@@ -4158,6 +4187,8 @@ impl<B: RobotBackend> Interpreter<B> {
 
         // Call run hardware triggers on the current instance.
         self.run_hardware_triggers()?;
+        self.run_connectivity_triggers()?;
+        self.run_geofence_triggers()?;
         self.poll_transport_inbound_triggers()?;
         self.run_twin_fault_triggers()?;
         Ok(())
@@ -4181,7 +4212,147 @@ impl<B: RobotBackend> Interpreter<B> {
         // Process each poll new event.
         for event in self.hardware_monitor.poll_new_events() {
             self.dispatch_system_trigger(SystemTriggerCategory::Hardware, &event)?;
+            if let Some((domain, evt)) =
+                crate::connectivity_positioning::hardware_event_to_connectivity(&event)
+            {
+                self.dispatch_connectivity_trigger(domain, evt)?;
+            }
             self.invoke_recovery_for_event(&event)?;
+        }
+        Ok(())
+    }
+
+    fn dispatch_connectivity_trigger(
+        &mut self,
+        domain: &str,
+        event: &str,
+    ) -> Result<(), SpandaError> {
+        let key = format!("{domain}.{event}");
+        let ids: Vec<usize> = self
+            .trigger_registry
+            .handlers_for_connectivity(domain, event)
+            .iter()
+            .map(|h| h.id)
+            .collect();
+        if ids.is_empty() {
+            return Ok(());
+        }
+        self.log(format!("connectivity trigger: {key}"));
+        self.execute_trigger_handlers(ids)
+    }
+
+    fn dispatch_geofence_trigger(&mut self, name: &str, phase: &str) -> Result<(), SpandaError> {
+        let ids: Vec<usize> = self
+            .trigger_registry
+            .handlers_for_geofence(name, phase)
+            .iter()
+            .map(|h| h.id)
+            .collect();
+        if ids.is_empty() {
+            return Ok(());
+        }
+        self.log(format!("geofence trigger: {name} {phase}"));
+        self.execute_trigger_handlers(ids)
+    }
+
+    fn dispatch_sensor_event_trigger(
+        &mut self,
+        sensor: &str,
+        event: &str,
+    ) -> Result<(), SpandaError> {
+        let ids: Vec<usize> = self
+            .trigger_registry
+            .handlers_for_sensor_event(sensor, event)
+            .iter()
+            .map(|h| h.id)
+            .collect();
+        if ids.is_empty() {
+            return Ok(());
+        }
+        self.log(format!("sensor trigger: {sensor}.{event}"));
+        self.execute_trigger_handlers(ids)
+    }
+
+    fn run_connectivity_triggers(&mut self) -> Result<(), SpandaError> {
+        for fault in self.comm_bus.active_faults() {
+            if let Some((domain, event)) =
+                crate::connectivity_positioning::fault_to_connectivity(&fault)
+            {
+                let key = format!("fault:{domain}.{event}");
+                if self.connectivity_events_seen.insert(key) {
+                    self.apply_connectivity_failover(domain, event);
+                    self.dispatch_connectivity_trigger(domain, event)?;
+                }
+            }
+        }
+        let gps_ok = !self
+            .hardware_monitor
+            .injected_faults()
+            .iter()
+            .any(|f| f == "GpsFailure" || f == "GPSLost");
+        if self.gps_available && !gps_ok {
+            self.gps_available = false;
+            self.dispatch_connectivity_trigger("gps", "lost")?;
+        } else if !self.gps_available && gps_ok {
+            self.gps_available = true;
+            self.dispatch_connectivity_trigger("gps", "acquired")?;
+            self.dispatch_sensor_event_trigger("gps", "fix")?;
+        }
+        Ok(())
+    }
+
+    fn apply_connectivity_failover(&mut self, domain: &str, event: &str) {
+        for policy in &self.connectivity_policies {
+            if domain == "network" && event == "disconnected" {
+                if self.active_connectivity_link == policy.preferred {
+                    self.active_connectivity_link = policy.fallback.clone();
+                    self.log(format!(
+                        "connectivity_policy '{}': failover {} -> {}",
+                        policy.name, policy.preferred, policy.fallback
+                    ));
+                } else if Some(&self.active_connectivity_link) == policy.emergency.as_ref() {
+                    continue;
+                } else if let Some(em) = &policy.emergency {
+                    self.active_connectivity_link = em.clone();
+                    self.log(format!(
+                        "connectivity_policy '{}': emergency link {}",
+                        policy.name, em
+                    ));
+                }
+            }
+        }
+    }
+
+    fn current_gps_lat_lon(&self) -> (f64, f64) {
+        let state = self.backend.get_state();
+        (state.pose.x, state.pose.y)
+    }
+
+    fn run_geofence_triggers(&mut self) -> Result<(), SpandaError> {
+        if self.geofences.is_empty() {
+            return Ok(());
+        }
+        let (lat, lon) = self.current_gps_lat_lon();
+        let mut entered = Vec::new();
+        let mut exited = Vec::new();
+        for fence in &self.geofences {
+            let inside = crate::connectivity_positioning::geofence_contains(fence, lat, lon);
+            let was_inside = self.geofence_active.contains(&fence.name);
+            if inside && !was_inside {
+                self.geofence_active.insert(fence.name.clone());
+                entered.push(fence.name.clone());
+            } else if !inside && was_inside {
+                self.geofence_active.remove(&fence.name);
+                exited.push(fence.name.clone());
+            } else if inside {
+                self.geofence_active.insert(fence.name.clone());
+            }
+        }
+        for name in entered {
+            self.dispatch_geofence_trigger(&name, "entered")?;
+        }
+        for name in exited {
+            self.dispatch_geofence_trigger(&name, "exited")?;
         }
         Ok(())
     }
@@ -7257,6 +7428,23 @@ impl<B: RobotBackend> Interpreter<B> {
                     .unwrap_or(false);
                 Ok(RuntimeValue::Bool { value: in_zone })
             }
+            "in_geofence" => {
+                let name = args
+                    .first()
+                    .map(|e| self.eval_expr(e))
+                    .transpose()?
+                    .map(|v| get_string(&v, ""))
+                    .unwrap_or_default();
+                let (lat, lon) = self.current_gps_lat_lon();
+                let inside = self.geofences.iter().any(|f| {
+                    f.name == name
+                        && crate::connectivity_positioning::geofence_contains(f, lat, lon)
+                });
+                Ok(RuntimeValue::Bool { value: inside })
+            }
+            "connectivity_link" => Ok(RuntimeValue::String {
+                value: self.active_connectivity_link.clone(),
+            }),
             "identity" => self
                 .env
                 .get("identity")

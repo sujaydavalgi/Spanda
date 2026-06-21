@@ -262,6 +262,47 @@ simulate_compatibility {
 }
 
 #[test]
+fn geofence_runtime_in_geofence() {
+    let source = r#"
+geofence Home {
+  center: geo(30.0, -97.0);
+  radius: 500.0;
+}
+
+robot Rover {
+  sensor gps: GPS on "/fix";
+  actuator wheels: DifferentialDrive;
+  behavior run() {
+    let inside = robot.in_geofence("Home");
+    let _ = inside;
+    wheels.stop();
+  }
+}
+"#;
+    check(source).expect("in_geofence should type-check");
+}
+
+#[test]
+fn robot_connectivity_link_method() {
+    let source = r#"
+connectivity_policy Net {
+  preferred: wifi;
+  fallback: cellular;
+}
+
+robot Rover {
+  actuator wheels: DifferentialDrive;
+  behavior run() {
+    let link = robot.connectivity_link();
+    let _ = link;
+    wheels.stop();
+  }
+}
+"#;
+    check(source).expect("connectivity_link should type-check");
+}
+
+#[test]
 fn security_connectivity_capabilities() {
     let source = r#"
 robot Rover {

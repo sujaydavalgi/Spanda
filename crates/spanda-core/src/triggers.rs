@@ -401,6 +401,45 @@ impl TriggerRegistry {
             .collect()
     }
 
+    pub fn handlers_for_connectivity(&self, domain: &str, event: &str) -> Vec<&RegisteredTrigger> {
+        self.handlers
+            .iter()
+            .filter(|h| {
+                matches!(
+                    &h.kind,
+                    TriggerKind::Connectivity { domain: d, event: e }
+                        if d == domain && e == event
+                )
+            })
+            .collect()
+    }
+
+    pub fn handlers_for_geofence(&self, name: &str, phase: &str) -> Vec<&RegisteredTrigger> {
+        self.handlers
+            .iter()
+            .filter(|h| {
+                matches!(
+                    &h.kind,
+                    TriggerKind::Geofence { name: n, phase: p }
+                        if n == name && p == phase
+                )
+            })
+            .collect()
+    }
+
+    pub fn handlers_for_sensor_event(&self, sensor: &str, event: &str) -> Vec<&RegisteredTrigger> {
+        self.handlers
+            .iter()
+            .filter(|h| {
+                matches!(
+                    &h.kind,
+                    TriggerKind::SensorEvent { sensor: s, event: e }
+                        if s == sensor && e == event
+                )
+            })
+            .collect()
+    }
+
     pub fn sorted_by_priority(handlers: Vec<&RegisteredTrigger>) -> Vec<&RegisteredTrigger> {
         // Sorted by priority.
         //

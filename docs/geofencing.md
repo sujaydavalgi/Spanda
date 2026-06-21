@@ -26,12 +26,20 @@ Supported phases: `entered`, `exited` (also available as keywords).
 
 ## Verification
 
-Combine geofences with runtime `verify` rules and safety stops:
+Combine geofences with runtime checks via `robot.in_geofence(name)`:
 
 ```spanda
-verify {
-  not robot.exits_geofence("SafeZone");
+behavior patrol() {
+  if not robot.in_geofence("SafeZone") {
+    stop_all_actuators();
+  }
 }
+```
+
+Triggers fire on boundary transitions:
+
+```spanda
+on geofence SafeZone exited { stop_all_actuators(); }
 ```
 
 > Note: `robot.in_zone()` remains for local metric safety zones inside `safety { }`. Geofences operate in WGS84 coordinates via GPS/GNSS sensors.

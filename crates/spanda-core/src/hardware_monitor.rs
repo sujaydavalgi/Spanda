@@ -79,23 +79,11 @@ impl HardwareMonitor {
     }
 
     pub fn inject_fault(&mut self, fault: impl Into<String>) {
-        // Inject fault.
-        //
-        // Parameters:
-        // - `self` — method receiver
-        // - `fault` — input value
-        //
-        // Returns:
-        // Nothing.
-        //
-        // Options:
-        // None.
-        //
-        // Example:
-        // let result = instance.inject_fault(fault);
-
-        // Append into self.
         self.injected_faults.insert(fault.into());
+    }
+
+    pub fn injected_faults(&self) -> &HashSet<String> {
+        &self.injected_faults
     }
 
     pub fn sensor_event_for_type(sensor_type: &str) -> Option<&'static str> {

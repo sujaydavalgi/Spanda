@@ -37,6 +37,11 @@ Spanda is an AI-native autonomous systems programming language. Source files use
 | [feature-status.md](./feature-status.md) | **v0.1.0-alpha support matrix** |
 | [release-announcement-v0.1.0-alpha.md](./release-announcement-v0.1.0-alpha.md) | Announcement copy for launch channels |
 | [hardware-compatibility.md](./hardware-compatibility.md) | **Hardware profiles, deploy targets, and compile-time verification** |
+| [positioning.md](./positioning.md) | **GPS/GNSS types, sensors, and simulation faults** |
+| [connectivity.md](./connectivity.md) | **Wi-Fi, LTE, failover policies, and offline modes** |
+| [geofencing.md](./geofencing.md) | **WGS84 geofences and safety triggers** |
+| [bluetooth.md](./bluetooth.md) | **Bluetooth discovery, pairing, and BLE services** |
+| [cellular.md](./cellular.md) | **LTE/4G/5G hardware and roaming** |
 | [spanda-architecture.md](./spanda-architecture.md) | Architecture diagram, compiler pipeline, safety model |
 | [spanda-language.md](./spanda-language.md) | Language reference for modules, traits, tasks, twins, hardware |
 | [spanda-reference.md](./spanda-reference.md) | **Full language API reference** (keywords, `std.*`, builtins, man-style CLI) |

@@ -5618,9 +5618,11 @@ fn object_property(type_name: &str, property: &str) -> Option<SpandaType> {
         ("GPSReading", "lat" | "lon") => Some(SpandaType::Number {
             unit: UnitKind::None,
         }),
-        ("GpsFix", "lat" | "lon" | "altitude" | "heading" | "speed") => Some(SpandaType::Number {
-            unit: UnitKind::None,
-        }),
+        ("GpsFix", "lat" | "lon" | "altitude" | "heading" | "speed" | "fix_quality") => {
+            Some(SpandaType::Number {
+                unit: UnitKind::None,
+            })
+        }
         ("GnssFix", "lat" | "lon" | "altitude" | "fix_quality" | "satellites") => {
             Some(SpandaType::Number {
                 unit: UnitKind::None,
@@ -5873,6 +5875,22 @@ fn robot_methods() -> HashMap<&'static str, MethodSig> {
                 params: vec![SpandaType::String],
                 named_params: HashMap::new(),
                 returns: SpandaType::Bool,
+            },
+        ),
+        (
+            "in_geofence",
+            MethodSig {
+                params: vec![SpandaType::String],
+                named_params: HashMap::new(),
+                returns: SpandaType::Bool,
+            },
+        ),
+        (
+            "connectivity_link",
+            MethodSig {
+                params: vec![],
+                named_params: HashMap::new(),
+                returns: SpandaType::String,
             },
         ),
         (

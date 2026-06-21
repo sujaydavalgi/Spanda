@@ -119,6 +119,142 @@ pub fn connectivity_capabilities() -> &'static [&'static str] {
     ]
 }
 
+/// Runtime geofence circle loaded from a program declaration.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct GeofenceRuntime {
+    pub name: String,
+    pub center_lat: f64,
+    pub center_lon: f64,
+    pub radius_m: f64,
+}
+
+/// Runtime connectivity failover policy.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ConnectivityPolicyRuntime {
+    pub name: String,
+    pub preferred: String,
+    pub fallback: String,
+    pub emergency: Option<String>,
+    pub switch_if_latency_ms: Option<f64>,
+    pub switch_if_packet_loss_pct: Option<f64>,
+}
+
+/// Haversine distance in meters between two WGS84 points.
+pub fn haversine_m(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
+    const R: f64 = 6_371_000.0;
+    let d_lat = (lat2 - lat1).to_radians();
+    let d_lon = (lon2 - lon1).to_radians();
+    let a = (d_lat / 2.0).sin().powi(2)
+        + lat1.to_radians().cos() * lat2.to_radians().cos() * (d_lon / 2.0).sin().powi(2);
+    2.0 * R * a.sqrt().asin()
+}
+
+/// Return true when `(lat, lon)` is inside the geofence circle.
+pub fn geofence_contains(fence: &GeofenceRuntime, lat: f64, lon: f64) -> bool {
+    haversine_m(lat, lon, fence.center_lat, fence.center_lon) <= fence.radius_m
+}
+
+/// Build runtime geofence from AST declaration.
+pub fn geofence_from_decl(decl: &GeofenceDecl) -> GeofenceRuntime {
+    let GeofenceDecl::GeofenceDecl {
+        name,
+        center_lat,
+        center_lon,
+        radius_m,
+        ..
+    } = decl;
+    GeofenceRuntime {
+        name: name.clone(),
+        center_lat: *center_lat,
+        center_lon: *center_lon,
+        radius_m: *radius_m,
+    }
+}
+
+/// Build runtime connectivity policy from AST declaration.
+pub fn connectivity_policy_from_decl(decl: &ConnectivityPolicyDecl) -> ConnectivityPolicyRuntime {
+    let ConnectivityPolicyDecl::ConnectivityPolicyDecl {
+        name,
+        preferred,
+        fallback,
+        emergency,
+        switch_if_latency_ms,
+        switch_if_packet_loss_pct,
+        ..
+    } = decl;
+    ConnectivityPolicyRuntime {
+        name: name.clone(),
+        preferred: preferred.clone(),
+        fallback: fallback.clone(),
+        emergency: emergency.clone(),
+        switch_if_latency_ms: *switch_if_latency_ms,
+        switch_if_packet_loss_pct: *switch_if_packet_loss_pct,
+    }
+}
+
+/// Map hardware monitor events to connectivity trigger `(domain, event)` pairs.
+pub fn hardware_event_to_connectivity(event: &str) -> Option<(&'static str, &'static str)> {
+    match event {
+        "GpsFailure" => Some(("gps", "lost")),
+        _ => None,
+    }
+}
+
+/// Map comm bus fault names to connectivity trigger pairs.
+pub fn fault_to_connectivity(fault: &str) -> Option<(&'static str, &'static str)> {
+    match fault {
+        "NetworkOutage" | "LteOutage" | "WeakWifi" => Some(("network", "disconnected")),
+        "BluetoothDisconnect" => Some(("bluetooth", "device_disconnected")),
+        "FiveGHandoff" => Some(("cellular", "roaming")),
+        _ => None,
+    }
+}
+
+/// Produce a [`GpsFix`]-shaped runtime object from lat/lon and optional metadata.
+pub fn runtime_gps_fix(
+    lat: f64,
+    lon: f64,
+    altitude: f64,
+    fix_quality: f64,
+) -> crate::runtime::RuntimeValue {
+    use crate::ast::UnitKind;
+    use crate::runtime::RuntimeValue;
+    use std::collections::HashMap;
+    RuntimeValue::Object {
+        type_name: "GpsFix".into(),
+        fields: HashMap::from([
+            (
+                "lat".into(),
+                RuntimeValue::Number {
+                    value: lat,
+                    unit: UnitKind::None,
+                },
+            ),
+            (
+                "lon".into(),
+                RuntimeValue::Number {
+                    value: lon,
+                    unit: UnitKind::None,
+                },
+            ),
+            (
+                "altitude".into(),
+                RuntimeValue::Number {
+                    value: altitude,
+                    unit: UnitKind::M,
+                },
+            ),
+            (
+                "fix_quality".into(),
+                RuntimeValue::Number {
+                    value: fix_quality,
+                    unit: UnitKind::None,
+                },
+            ),
+        ]),
+    }
+}
+
 fn pass(category: &str, message: impl Into<String>, line: u32, column: u32) -> CompatItem {
     CompatItem {
         category: category.into(),
@@ -415,4 +551,35 @@ pub fn validate_connectivity_policy(policy: &ConnectivityPolicyDecl) -> Vec<Comp
         }
     }
     items
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn haversine_zero_distance() {
+        let d = haversine_m(30.0, -97.0, 30.0, -97.0);
+        assert!(d.abs() < 0.01);
+    }
+
+    #[test]
+    fn geofence_contains_center() {
+        let fence = GeofenceRuntime {
+            name: "Home".into(),
+            center_lat: 30.2672,
+            center_lon: -97.7431,
+            radius_m: 100.0,
+        };
+        assert!(geofence_contains(&fence, 30.2672, -97.7431));
+    }
+
+    #[test]
+    fn runtime_gps_fix_has_gpsfix_type() {
+        let fix = runtime_gps_fix(30.0, -97.0, 150.0, 1.0);
+        assert!(matches!(
+            fix,
+            crate::runtime::RuntimeValue::Object { type_name, .. } if type_name == "GpsFix"
+        ));
+    }
 }

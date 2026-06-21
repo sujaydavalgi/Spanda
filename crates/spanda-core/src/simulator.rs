@@ -312,25 +312,16 @@ impl RobotBackend for Simulator {
                 value: self.pose.z.unwrap_or(0.0),
                 unit: UnitKind::M,
             },
-            "GPS" => RuntimeValue::Object {
-                type_name: "GPSReading".into(),
-                fields: HashMap::from([
-                    (
-                        "lat".into(),
-                        RuntimeValue::Number {
-                            value: self.pose.x,
-                            unit: UnitKind::None,
-                        },
-                    ),
-                    (
-                        "lon".into(),
-                        RuntimeValue::Number {
-                            value: self.pose.y,
-                            unit: UnitKind::None,
-                        },
-                    ),
-                ]),
-            },
+            "GPS" | "GNSS" => {
+                let alt = self.pose.z.unwrap_or(0.0);
+                let fix_quality = if self.emergency_stop { 0.0 } else { 1.0 };
+                crate::connectivity_positioning::runtime_gps_fix(
+                    self.pose.x,
+                    self.pose.y,
+                    alt,
+                    fix_quality,
+                )
+            }
             "ForceTorque" => RuntimeValue::Object {
                 type_name: "ForceTorqueReading".into(),
                 fields: HashMap::from([(
