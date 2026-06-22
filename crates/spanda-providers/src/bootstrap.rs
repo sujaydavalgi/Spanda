@@ -170,6 +170,23 @@ pub fn bootstrap_providers_for_packages(package_names: &[&str]) -> ProviderRegis
     }
     if names.contains("spanda-opcua") {
         registry.grant_capability("iot.opcua");
+        crate::iot_hub::seed_protocol_demos();
+    }
+    if names.contains("spanda-zigbee") {
+        registry.grant_capability("iot.zigbee");
+        crate::iot_hub::seed_protocol_demos();
+    }
+    if names.contains("spanda-lora") {
+        registry.grant_capability("iot.lora");
+        crate::iot_hub::seed_protocol_demos();
+    }
+    if names.contains("spanda-matter") {
+        registry.grant_capability("iot.matter");
+        crate::iot_hub::seed_protocol_demos();
+    }
+    if names.contains("spanda-canbus") {
+        registry.grant_capability("iot.canbus");
+        crate::iot_hub::seed_protocol_demos();
     }
     if names.contains("spanda-zigbee")
         || names.contains("spanda-lora")

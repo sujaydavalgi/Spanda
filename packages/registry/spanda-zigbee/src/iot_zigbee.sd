@@ -1,0 +1,5 @@
+module iot.zigbee;
+
+export fn read_attribute(device: String, cluster: String) -> String {
+  return "zigbee-stub";
+}

@@ -1,0 +1,5 @@
+module iot.opcua;
+
+export fn read_node(node_id: String) -> String {
+  return "opcua-stub";
+}

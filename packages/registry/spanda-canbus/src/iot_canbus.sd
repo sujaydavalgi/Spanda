@@ -1,0 +1,5 @@
+module iot.canbus;
+
+export fn read_frame(can_id: Int) -> Int {
+  return 0;
+}

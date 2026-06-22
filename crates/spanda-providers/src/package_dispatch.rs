@@ -1,7 +1,8 @@
 //! Runtime dispatch from official package module exports to provider registry backends.
 //!
 use crate::iot_hub::{
-    number_arg, publish_telemetry, read_modbus_register, read_opcua_node, register_device,
+    number_arg, publish_telemetry, read_canbus_frame, read_lora_payload, read_matter_cluster,
+    read_modbus_register, read_opcua_node, read_zigbee_attribute, register_device,
     send_command, string_arg, update_shadow,
 };
 use spanda_runtime::providers::{Command, DeviceShadow, IoTDevice, Telemetry};
@@ -44,6 +45,10 @@ pub fn official_package_for_module(module_path: &str) -> Option<&'static str> {
         "iot.shadow" => Some("spanda-iot-core"),
         "iot.modbus" => Some("spanda-modbus"),
         "iot.opcua" => Some("spanda-opcua"),
+        "iot.zigbee" => Some("spanda-zigbee"),
+        "iot.lora" => Some("spanda-lora"),
+        "iot.matter" => Some("spanda-matter"),
+        "iot.canbus" => Some("spanda-canbus"),
         _ => None,
     }
 }
@@ -429,6 +434,78 @@ pub fn dispatch_official_package_call(
                 false,
             );
             Some(RuntimeValue::String { value })
+        }
+        ("iot.zigbee", "read_attribute") if registry.has_capability("iot.zigbee") => {
+            let device = string_arg(args, 0);
+            let cluster = string_arg(args, 1);
+            let value = read_zigbee_attribute(&device, &cluster);
+            record_call(
+                telemetry,
+                mission_trace,
+                sim_time_ms,
+                &key,
+                "iot",
+                module_path,
+                function_name,
+                started,
+                false,
+            );
+            Some(RuntimeValue::String { value })
+        }
+        ("iot.lora", "read_payload") if registry.has_capability("iot.lora") => {
+            let device_id = string_arg(args, 0);
+            let value = read_lora_payload(&device_id);
+            record_call(
+                telemetry,
+                mission_trace,
+                sim_time_ms,
+                &key,
+                "iot",
+                module_path,
+                function_name,
+                started,
+                false,
+            );
+            Some(RuntimeValue::String { value })
+        }
+        ("iot.matter", "read_cluster") if registry.has_capability("iot.matter") => {
+            let node = string_arg(args, 0);
+            let cluster = string_arg(args, 1);
+            let value = read_matter_cluster(&node, &cluster);
+            record_call(
+                telemetry,
+                mission_trace,
+                sim_time_ms,
+                &key,
+                "iot",
+                module_path,
+                function_name,
+                started,
+                false,
+            );
+            Some(RuntimeValue::Number {
+                value,
+                unit: spanda_ast::nodes::UnitKind::None,
+            })
+        }
+        ("iot.canbus", "read_frame") if registry.has_capability("iot.canbus") => {
+            let can_id = number_arg(args, 0) as u32;
+            let value = read_canbus_frame(can_id);
+            record_call(
+                telemetry,
+                mission_trace,
+                sim_time_ms,
+                &key,
+                "iot",
+                module_path,
+                function_name,
+                started,
+                false,
+            );
+            Some(RuntimeValue::Number {
+                value,
+                unit: spanda_ast::nodes::UnitKind::None,
+            })
         }
         _ => None,
     };

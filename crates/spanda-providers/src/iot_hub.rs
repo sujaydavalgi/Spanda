@@ -21,6 +21,10 @@ pub struct IotHub {
     shadows: HashMap<String, DeviceShadow>,
     modbus_registers: HashMap<u16, f64>,
     opcua_nodes: HashMap<String, String>,
+    zigbee_attributes: HashMap<String, String>,
+    lora_payloads: HashMap<String, String>,
+    matter_clusters: HashMap<String, f64>,
+    canbus_frames: HashMap<u32, f64>,
 }
 
 impl IotHub {
@@ -57,6 +61,41 @@ impl IotHub {
 
     pub fn read_opcua_node(&self, node: &str) -> Option<String> {
         self.opcua_nodes.get(node).cloned()
+    }
+
+    pub fn read_zigbee_attribute(&self, device: &str, cluster: &str) -> String {
+        let key = format!("{device}:{cluster}");
+        self.zigbee_attributes
+            .get(&key)
+            .cloned()
+            .unwrap_or_else(|| format!("zigbee:{device}:{cluster}"))
+    }
+
+    pub fn read_lora_payload(&self, device_id: &str) -> String {
+        self.lora_payloads
+            .get(device_id)
+            .cloned()
+            .unwrap_or_else(|| format!("lora:{device_id}"))
+    }
+
+    pub fn read_matter_cluster(&self, node: &str, cluster: &str) -> f64 {
+        let key = format!("{node}:{cluster}");
+        self.matter_clusters.get(&key).copied().unwrap_or(1.0)
+    }
+
+    pub fn read_canbus_frame(&self, can_id: u32) -> f64 {
+        self.canbus_frames.get(&can_id).copied().unwrap_or(0.0)
+    }
+
+    pub fn seed_protocol_demo(&mut self) {
+        self.opcua_nodes
+            .insert("ns=2;s=Temperature".into(), "22.5".into());
+        self.zigbee_attributes
+            .insert("sensor-1:temp".into(), "21.0".into());
+        self.lora_payloads
+            .insert("node-a".into(), "payload:ok".into());
+        self.matter_clusters.insert("light:onoff".into(), 1.0);
+        self.canbus_frames.insert(0x100, 42.0);
     }
 
     pub fn device_count(&self) -> usize {
@@ -102,6 +141,31 @@ pub fn read_opcua_node(node: &str) -> Option<String> {
         return Some(value);
     }
     hub().lock().unwrap().read_opcua_node(node)
+}
+
+/// Read a CAN bus frame value from the in-memory IoT hub.
+pub fn read_canbus_frame(can_id: u32) -> f64 {
+    hub().lock().unwrap().read_canbus_frame(can_id)
+}
+
+/// Read a Zigbee attribute from the in-memory IoT hub.
+pub fn read_zigbee_attribute(device: &str, cluster: &str) -> String {
+    hub().lock().unwrap().read_zigbee_attribute(device, cluster)
+}
+
+/// Read a LoRa payload from the in-memory IoT hub.
+pub fn read_lora_payload(device_id: &str) -> String {
+    hub().lock().unwrap().read_lora_payload(device_id)
+}
+
+/// Read a Matter cluster value from the in-memory IoT hub.
+pub fn read_matter_cluster(node: &str, cluster: &str) -> f64 {
+    hub().lock().unwrap().read_matter_cluster(node, cluster)
+}
+
+/// Seed demo protocol values for golden-path tests.
+pub fn seed_protocol_demos() {
+    hub().lock().unwrap().seed_protocol_demo();
 }
 
 /// Snapshot hub metrics for tests and diagnostics.

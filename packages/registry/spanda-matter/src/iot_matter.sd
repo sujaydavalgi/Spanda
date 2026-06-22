@@ -1,0 +1,5 @@
+module iot.matter;
+
+export fn read_cluster(node: String, cluster: String) -> Int {
+  return 0;
+}

@@ -1,0 +1,5 @@
+module iot.modbus;
+
+export fn read_register(address: Int) -> Int {
+  return 0;
+}

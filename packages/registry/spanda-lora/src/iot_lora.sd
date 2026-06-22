@@ -1,0 +1,5 @@
+module iot.lora;
+
+export fn read_payload(device_id: String) -> String {
+  return "lora-stub";
+}
