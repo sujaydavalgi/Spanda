@@ -1,0 +1,29 @@
+# Spanda example check manifest for scripts/check_all_examples.sh
+#
+# Lines starting with # are comments.
+# expect-fail: must fail spanda check (negative tests)
+# skip: known broken examples tracked for repair (see docs/lean-core-roadmap.md)
+
+expect-fail examples/ai_safety_violation.sd
+expect-fail examples/showcase/ai_safety_violation.sd
+
+skip examples/hardware/full_compat.sd
+skip examples/modules/navigation.sd
+skip examples/modules/path_planning.sd
+skip examples/packages/basic_project/src/main.sd
+skip examples/packages/local_dependency/src/main.sd
+skip examples/packages/robot_driver_package/src/driver.sd
+skip examples/packages/ros2_adapter_package/src/main.sd
+skip examples/realtime/deadline_tasks.sd
+skip examples/realtime/deterministic_replay.sd
+skip examples/regex/basic_regex.sd
+skip examples/regex/message_filter.sd
+skip examples/robotics/edge_cloud.sd
+skip examples/robotics/mission_management.sd
+skip examples/robotics/predictive_maintenance.sd
+skip examples/robotics/safety_zones.sd
+skip examples/security/encrypted_motion_command.sd
+skip examples/security/encrypted_topic.sd
+skip examples/security/secure_operator_command.sd
+skip examples/types/ai.sd
+skip examples/types/digital_twin.sd
