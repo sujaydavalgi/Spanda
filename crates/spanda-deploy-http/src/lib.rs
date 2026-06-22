@@ -274,3 +274,79 @@ pub fn serve_tls_connection(
     tls.write_all(encoded.as_bytes())
         .map_err(|e| format!("write response failed: {e}"))
 }
+
+/// Return true when the bind address listens on a non-loopback interface.
+pub fn bind_requires_agent_token(bind: &str) -> bool {
+    // Decide whether an HTTP agent must require a bearer token.
+    //
+    // Parameters:
+    // - `bind` — `host:port` listen address
+    //
+    // Returns:
+    // true for public interfaces (`0.0.0.0`, LAN IPs, etc.).
+    //
+    // Options:
+    // Loopback hosts (`127.0.0.1`, `localhost`, `::1`) return false.
+    //
+    // Example:
+    // if bind_requires_agent_token(&bind) && token.is_none() { ... }
+
+    !is_loopback_host(bind_host(bind))
+}
+
+/// Validate agent startup options for public bind addresses.
+pub fn ensure_agent_auth(
+    bind: &str,
+    token: &Option<String>,
+    allow_unauthenticated: bool,
+) -> Result<(), String> {
+    // Enforce `--token` (or explicit lab opt-out) on public binds.
+    //
+    // Parameters:
+    // - `bind` — listen address
+    // - `token` — optional bearer token
+    // - `allow_unauthenticated` — explicit insecure override
+    //
+    // Returns:
+    // Ok when auth policy is satisfied, otherwise an error message.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // ensure_agent_auth(&bind, &token, allow_unauthenticated)?;
+
+    if bind_requires_agent_token(bind) && token.is_none() && !allow_unauthenticated {
+        return Err(format!(
+            "binding to {bind} requires --token (or pass --allow-unauthenticated for lab use only)"
+        ));
+    }
+    Ok(())
+}
+
+fn bind_host(bind: &str) -> &str {
+    let host = bind.rsplit_once(':').map(|(h, _)| h).unwrap_or(bind);
+    host.trim_matches(|c| c == '[' || c == ']')
+}
+
+fn is_loopback_host(host: &str) -> bool {
+    matches!(host, "127.0.0.1" | "localhost" | "::1")
+}
+
+#[cfg(test)]
+mod agent_bind_tests {
+    use super::*;
+
+    #[test]
+    fn loopback_bind_allows_missing_token() {
+        assert!(!bind_requires_agent_token("127.0.0.1:8765"));
+        assert!(ensure_agent_auth("127.0.0.1:8765", &None, false).is_ok());
+    }
+
+    #[test]
+    fn public_bind_requires_token() {
+        assert!(bind_requires_agent_token("0.0.0.0:8765"));
+        assert!(ensure_agent_auth("0.0.0.0:8765", &None, false).is_err());
+        assert!(ensure_agent_auth("0.0.0.0:8765", &None, true).is_ok());
+    }
+}

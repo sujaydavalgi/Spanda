@@ -1,7 +1,7 @@
 //! OTA deploy CLI handlers (`spanda deploy plan|rollout|rollback|status|agent`).
 
 use spanda_ast::nodes::Program;
-use spanda_deploy_http::DeployAgentTls;
+use spanda_deploy_http::{ensure_agent_auth, DeployAgentTls};
 use spanda_driver::{build_deploy_plan, compile};
 use spanda_fleet::{
     agent_health as fleet_agent_health, default_fleet_agent_state_path,
@@ -333,6 +333,7 @@ fn cmd_agent_start(args: &[String]) {
     let mut require_signature = false;
     let mut require_certify = false;
     let mut trusted_public_key = None;
+    let mut allow_unauthenticated = false;
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
@@ -363,6 +364,7 @@ fn cmd_agent_start(args: &[String]) {
                 trusted_public_key = Some(args[i + 1].clone());
                 i += 1;
             }
+            "--allow-unauthenticated" => allow_unauthenticated = true,
             other => {
                 eprintln!("Unknown argument: {other}");
                 process::exit(1);
@@ -387,6 +389,10 @@ fn cmd_agent_start(args: &[String]) {
     };
     if require_signature && trusted_public_key.is_none() {
         eprintln!("Missing --trust-key when --require-signature is set");
+        process::exit(1);
+    }
+    if let Err(err) = ensure_agent_auth(&bind, &token, allow_unauthenticated) {
+        eprintln!("{err}");
         process::exit(1);
     }
     if let Err(err) = run_deploy_agent_server(&DeployAgentServerOptions {
@@ -602,6 +608,7 @@ pub fn fleet_mesh_dispatch(args: &[String]) {
     let mut token = None;
     let mut tls_cert = None;
     let mut tls_key = None;
+    let mut allow_unauthenticated = false;
     let mut i = 1;
     while i < args.len() {
         match args[i].as_str() {
@@ -621,6 +628,7 @@ pub fn fleet_mesh_dispatch(args: &[String]) {
                 tls_key = Some(args[i + 1].clone());
                 i += 1;
             }
+            "--allow-unauthenticated" => allow_unauthenticated = true,
             other => {
                 eprintln!("Unknown argument: {other}");
                 process::exit(1);
@@ -639,6 +647,10 @@ pub fn fleet_mesh_dispatch(args: &[String]) {
             process::exit(1);
         }
     };
+    if let Err(err) = ensure_agent_auth(&bind, &token, allow_unauthenticated) {
+        eprintln!("{err}");
+        process::exit(1);
+    }
     if let Err(err) = run_fleet_mesh_coordinator(&bind, &mesh_registry_path(), token, tls) {
         eprintln!("Fleet mesh failed: {err}");
         process::exit(1);
@@ -667,6 +679,7 @@ fn cmd_fleet_agent_start(args: &[String]) {
     let mut token = None;
     let mut tls_cert = None;
     let mut tls_key = None;
+    let mut allow_unauthenticated = false;
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
@@ -690,6 +703,7 @@ fn cmd_fleet_agent_start(args: &[String]) {
                 tls_key = Some(args[i + 1].clone());
                 i += 1;
             }
+            "--allow-unauthenticated" => allow_unauthenticated = true,
             other => {
                 eprintln!("Unknown argument: {other}");
                 process::exit(1);
@@ -712,6 +726,10 @@ fn cmd_fleet_agent_start(args: &[String]) {
             process::exit(1);
         }
     };
+    if let Err(err) = ensure_agent_auth(&bind, &token, allow_unauthenticated) {
+        eprintln!("{err}");
+        process::exit(1);
+    }
     if let Err(err) = run_fleet_agent_server(
         &bind,
         &robot_name,

@@ -10,7 +10,9 @@ use spanda_runtime::value::RuntimeValue;
 use serde::{Deserialize, Serialize};
 use std::io::Write;
 use std::path::Path;
-use std::process::{Command, Stdio};
+use std::process::{Command, Child, Stdio};
+use std::sync::mpsc;
+use std::time::Duration;
 
 /// JSON request envelope sent to a bridge subprocess on stdin.
 #[derive(Serialize)]
@@ -163,10 +165,7 @@ pub fn call_subprocess_bridge(
             })?;
         stdin.write_all(b"\n").ok();
     }
-    let output = child.wait_with_output().map_err(|e| SpandaError::Runtime {
-        message: format!("{bridge_label} bridge process failed: {e}"),
-        line,
-    })?;
+    let output = wait_child_with_timeout(child, bridge_label, line)?;
 
     // Handle output when the subprocess succeeds.
     if !output.status.success() {
@@ -203,4 +202,72 @@ pub fn call_subprocess_bridge(
         &resp.result.unwrap_or(serde_json::Value::Null),
         &decl.return_type,
     ))
+}
+
+fn bridge_timeout() -> Duration {
+    // Resolve subprocess bridge timeout from the environment.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Duration capped at one hour.
+    //
+    // Options:
+    // `SPANDA_BRIDGE_TIMEOUT_SECS` (default 30).
+    //
+    // Example:
+    // let timeout = bridge_timeout();
+
+    let secs = std::env::var("SPANDA_BRIDGE_TIMEOUT_SECS")
+        .ok()
+        .and_then(|value| value.parse::<u64>().ok())
+        .unwrap_or(30)
+        .min(3600);
+    Duration::from_secs(secs)
+}
+
+fn wait_child_with_timeout(
+    child: Child,
+    bridge_label: &str,
+    line: u32,
+) -> Result<std::process::Output, SpandaError> {
+    // Wait for a bridge child process, killing it on timeout.
+    //
+    // Parameters:
+    // - `child` — spawned bridge process
+    // - `bridge_label` — `"Python"` or `"C++"` for diagnostics
+    // - `line` — source line for error reporting
+    //
+    // Returns:
+    // Captured stdout/stderr on success.
+    //
+    // Options:
+    // Uses `bridge_timeout()`.
+    //
+    // Example:
+    // let output = wait_child_with_timeout(child, "Python", line)?;
+
+    let (tx, rx) = mpsc::channel();
+    std::thread::spawn(move || {
+        let _ = tx.send(child.wait_with_output());
+    });
+    match rx.recv_timeout(bridge_timeout()) {
+        Ok(Ok(output)) => Ok(output),
+        Ok(Err(err)) => Err(SpandaError::Runtime {
+            message: format!("{bridge_label} bridge process failed: {err}"),
+            line,
+        }),
+        Err(mpsc::RecvTimeoutError::Timeout) => Err(SpandaError::Runtime {
+            message: format!(
+                "{bridge_label} bridge timed out after {}s",
+                bridge_timeout().as_secs()
+            ),
+            line,
+        }),
+        Err(mpsc::RecvTimeoutError::Disconnected) => Err(SpandaError::Runtime {
+            message: format!("{bridge_label} bridge worker exited unexpectedly"),
+            line,
+        }),
+    }
 }
