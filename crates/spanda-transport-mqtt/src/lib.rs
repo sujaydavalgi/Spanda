@@ -12,10 +12,16 @@ mod live;
 pub use adapter::MqttTransportAdapter;
 
 /// Live MQTT bridge handle; inactive unless built with the `live` feature.
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub struct LiveMqttBridge {
     #[cfg(feature = "live")]
     inner: Option<live::LiveMqttBridge>,
+}
+
+impl std::fmt::Debug for LiveMqttBridge {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("LiveMqttBridge").finish_non_exhaustive()
+    }
 }
 
 impl LiveMqttBridge {
@@ -37,9 +43,9 @@ impl LiveMqttBridge {
 
         #[cfg(feature = "live")]
         {
-            return Ok(Self {
+            Ok(Self {
                 inner: Some(live::LiveMqttBridge::connect(broker_url, client_id)?),
-            });
+            })
         }
         #[cfg(not(feature = "live"))]
         {

@@ -117,8 +117,6 @@ pub fn try_rclrs_service_call(service: &str, service_type: &str, request: &str) 
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[test]
     fn rclrs_off_by_default() {
         std::env::remove_var("SPANDA_ROS2_RCLRS");
