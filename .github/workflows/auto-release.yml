@@ -1,0 +1,84 @@
+# Auto-release after CI passes on main when the merged PR carries a release label.
+#
+# Label a PR before merge:
+#   release:major — breaking changes / major features
+#   release:minor — new features (default for substantial updates)
+#   release:patch — fixes and small updates
+#
+# The bump commits to main and pushes vX.Y.Z, which triggers release.yml (cargo-dist).
+
+name: Auto release
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  detect:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    outputs:
+      bump: ${{ steps.label.outputs.bump }}
+      skip: ${{ steps.skip.outputs.skip }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Skip release bump commits
+        id: skip
+        run: |
+          MSG=$(git log -1 --format=%s)
+          if [[ "$MSG" == chore:\ release\ v* ]]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Already a release bump commit; skipping auto-release."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Resolve bump from merged PR labels
+        if: steps.skip.outputs.skip != 'true'
+        id: label
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          SHA="${{ github.event.workflow_run.head_sha }}"
+          PR_JSON=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${SHA}/pulls" --jq '.[0] // empty')
+          if [ -z "$PR_JSON" ]; then
+            echo "No associated pull request; skipping auto-release."
+            echo "bump=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          LABELS=$(echo "$PR_JSON" | jq -r '.labels[].name' | tr '\n' ' ')
+          echo "Merged PR labels:${LABELS}"
+          bump=""
+          if [[ " $LABELS " == *" release:major "* ]]; then
+            bump=major
+          elif [[ " $LABELS " == *" release:minor "* ]]; then
+            bump=minor
+          elif [[ " $LABELS " == *" release:patch "* ]]; then
+            bump=patch
+          fi
+          echo "bump=$bump" >> "$GITHUB_OUTPUT"
+
+  release:
+    needs: detect
+    if: >-
+      needs.detect.result == 'success' &&
+      needs.detect.outputs.skip != 'true' &&
+      needs.detect.outputs.bump != ''
+    uses: ./.github/workflows/release-bump.yml
+    with:
+      bump: ${{ needs.detect.outputs.bump }}
+      push_tag: true
+      ref: ${{ github.event.workflow_run.head_sha }}

@@ -215,6 +215,34 @@ spanda verify examples/your_example.sd     # if it has deploy targets
 
 ---
 
+## Releases
+
+Spanda uses [Semantic Versioning](https://semver.org/). User-facing changes belong in `CHANGELOG.md` under `## [Unreleased]` in the same PR as the feature or fix.
+
+### Automatic releases (preferred)
+
+After CI passes on `main`, the **Auto release** workflow bumps the workspace version and pushes a `vX.Y.Z` tag when the **merged** pull request has one of these labels:
+
+| Label | When to use |
+|-------|-------------|
+| `release:major` | Breaking changes or large milestone releases |
+| `release:minor` | New features and substantial updates (most feature PRs) |
+| `release:patch` | Bug fixes and small, non-breaking updates |
+
+Create the labels in the GitHub repo if they do not exist yet (`release:major`, `release:minor`, `release:patch`). Apply **one** release label before merging. The tag triggers **Release** (cargo-dist), which builds installers and publishes a GitHub Release.
+
+### Manual release
+
+Use **Actions → Bump version** when you need an ad-hoc semver bump without a labeled PR. Choose patch, minor, or major; leave **Push release tag** enabled to publish.
+
+### Local dry run
+
+```bash
+python3 scripts/bump_version.py minor --dry-run
+```
+
+---
+
 ## Pull request process
 
 1. Fork the repository and create a feature branch

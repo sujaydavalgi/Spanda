@@ -71,15 +71,32 @@ def write_workspace_version(new_version: str) -> None:
     CARGO_TOML.write_text(updated, encoding="utf-8")
 
 
-def bump_changelog(new_version: str, release_date: str) -> None:
+def read_unreleased_section(text: str) -> str:
+    pattern = re.compile(r"## \[Unreleased\]\s*\n(.*?)(?=\n## \[|\Z)", re.DOTALL)
+    match = pattern.search(text)
+    if not match:
+        raise SystemExit("CHANGELOG.md: missing ## [Unreleased] section")
+    return match.group(1)
+
+
+def unreleased_has_content(text: str) -> bool:
+    body = read_unreleased_section(text).strip()
+    return bool(body)
+
+
+def bump_changelog(new_version: str, release_date: str, *, allow_empty: bool) -> None:
     text = CHANGELOG.read_text(encoding="utf-8")
+    unreleased = read_unreleased_section(text).rstrip()
+    if not unreleased.strip() and not allow_empty:
+        raise SystemExit(
+            "CHANGELOG.md: ## [Unreleased] is empty; add release notes or pass --allow-empty-changelog"
+        )
+    if not unreleased:
+        unreleased = "\n"
     pattern = re.compile(r"(## \[Unreleased\]\s*\n)(.*?)(?=\n## \[|\Z)", re.DOTALL)
     match = pattern.search(text)
     if not match:
         raise SystemExit("CHANGELOG.md: missing ## [Unreleased] section")
-    unreleased = match.group(2).rstrip()
-    if not unreleased:
-        unreleased = "\n"
     replacement = f"## [Unreleased]\n\n## [{new_version}] - {release_date}\n{unreleased}\n"
     CHANGELOG.write_text(text[: match.start()] + replacement + text[match.end() :], encoding="utf-8")
 
@@ -131,6 +148,11 @@ def parse_args() -> argparse.Namespace:
         metavar="FILE",
         help="append version=… to a GitHub Actions output file",
     )
+    parser.add_argument(
+        "--allow-empty-changelog",
+        action="store_true",
+        help="allow releasing when ## [Unreleased] has no entries",
+    )
     return parser.parse_args()
 
 
@@ -139,6 +161,12 @@ def main() -> None:
     current = read_workspace_version()
     new_version = bump_semver(current, args.component)
     release_date = date.today().isoformat()
+
+    changelog_text = CHANGELOG.read_text(encoding="utf-8")
+    if not unreleased_has_content(changelog_text) and not args.allow_empty_changelog:
+        raise SystemExit(
+            "CHANGELOG.md: ## [Unreleased] is empty; add release notes or pass --allow-empty-changelog"
+        )
 
     if args.dry_run:
         print(f"{current} -> {new_version} ({args.component})")
@@ -151,7 +179,7 @@ def main() -> None:
 
     write_workspace_version(new_version)
     refresh_npm_versions(new_version, dry_run=False)
-    bump_changelog(new_version, release_date)
+    bump_changelog(new_version, release_date, allow_empty=args.allow_empty_changelog)
     write_github_output(args.github_output, "version", new_version)
     print(f"✓ bumped {current} -> {new_version}")
     print(f"  tag: v{new_version}")
