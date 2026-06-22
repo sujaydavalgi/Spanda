@@ -8,7 +8,7 @@ use spanda_ast::nodes::{
     RobotDecl, SafetyRule, SafetyZoneDecl,
     Stmt,
 };
-use crate::audit::{AuditRuntime, MockLedgerBackend};
+use spanda_audit::{AuditRuntime, MockLedgerBackend};
 use crate::comm::CommBus;
 use spanda_ast::comm_decl::{QosDecl, TransportKind};
 use crate::error::{PoseState, RobotState, SpandaError, VelocityState};
@@ -257,7 +257,7 @@ pub struct InterpreterOptions {
     pub inject_security_faults: bool,
 
     /// Optional domain provider registry; defaults to bootstrap shims when unset.
-    pub provider_registry: Option<crate::providers::ProviderRegistry>,
+    pub provider_registry: Option<spanda_runtime::providers::ProviderRegistry>,
 
     /// Official package dependency names from the enclosing project manifest/lockfile.
     pub official_packages: Vec<String>,
@@ -373,7 +373,7 @@ pub struct Interpreter<B: RobotBackend> {
     program_safety_zones: spanda_runtime::robotics::ProgramSafetyZoneRegistry,
     nav2_enabled: bool,
     slam_enabled: bool,
-    provider_registry: Rc<RefCell<crate::providers::ProviderRegistry>>,
+    provider_registry: Rc<RefCell<spanda_runtime::providers::ProviderRegistry>>,
     host: &'static dyn RuntimeHost,
 }
 
@@ -507,7 +507,7 @@ impl<B: RobotBackend> Interpreter<B> {
         &self.telemetry
     }
 
-    pub fn provider_registry(&self) -> std::cell::Ref<'_, crate::providers::ProviderRegistry> {
+    pub fn provider_registry(&self) -> std::cell::Ref<'_, spanda_runtime::providers::ProviderRegistry> {
         // Return the domain provider registry active for this interpreter session.
         //
         // Parameters:

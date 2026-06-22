@@ -120,15 +120,15 @@ impl<B: RobotBackend> Interpreter<B> {
                             .get("id")
                             .and_then(|v| match v {
                                 RuntimeValue::String { value } => {
-                                    Some(crate::audit::RecordId(value.clone()))
+                                    Some(spanda_audit::RecordId(value.clone()))
                                 }
                                 _ => None,
                             })
-                            .unwrap_or_else(|| crate::audit::RecordId("audit-1".into())),
-                        _ => crate::audit::RecordId("audit-1".into()),
+                            .unwrap_or_else(|| spanda_audit::RecordId("audit-1".into())),
+                        _ => spanda_audit::RecordId("audit-1".into()),
                     }
                 } else {
-                    crate::audit::RecordId("audit-1".into())
+                    spanda_audit::RecordId("audit-1".into())
                 };
                 let rt = self.audit_runtime.as_ref().ok_or_else(|| {
                     RuntimeError::new(
@@ -201,7 +201,7 @@ impl<B: RobotBackend> Interpreter<B> {
         // let result = instance.eval_ledger_method(method, args, _named_args, line);
 
         // Import the items needed by the logic below.
-        use crate::audit::LedgerBackend;
+        use spanda_audit::LedgerBackend;
 
         // Match on method and handle each case.
         match method {
@@ -225,7 +225,7 @@ impl<B: RobotBackend> Interpreter<B> {
                 } else {
                     String::new()
                 };
-                let hash = crate::audit::Hash(hash_hex);
+                let hash = spanda_audit::Hash(hash_hex);
                 let tx = self.mock_ledger.anchor_hash(&hash).map_err(|e| {
                     RuntimeError::new(format!("mock_ledger.anchor failed: {e}"), line).into_spanda()
                 })?;
@@ -252,7 +252,7 @@ impl<B: RobotBackend> Interpreter<B> {
                 } else {
                     String::new()
                 };
-                let hash = crate::audit::Hash(hash_hex);
+                let hash = spanda_audit::Hash(hash_hex);
                 let ok = self.mock_ledger.verify_anchor(&hash).map_err(|e| {
                     RuntimeError::new(format!("mock_ledger.verify failed: {e}"), line).into_spanda()
                 })?;

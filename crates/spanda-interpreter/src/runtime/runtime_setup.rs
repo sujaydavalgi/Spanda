@@ -10,7 +10,7 @@ use spanda_ast::nodes::{
     AgentDecl, RobotDecl, SafetyRule, TopicDecl,
 };
 use spanda_ast::foundations::{StateMachineDecl, TwinDecl};
-use crate::audit::{AuditRuntime, DeviceIdentity, MockLedgerBackend};
+use spanda_audit::{AuditRuntime, DeviceIdentity, MockLedgerBackend};
 use crate::error::SpandaError;
 use crate::events::EventBus;
 use crate::hal::{hal_member_from_decl, HalBackend};
@@ -33,7 +33,7 @@ impl<B: RobotBackend> Interpreter<B> {
         certifications: &[spanda_ast::robotics_decl::CertifyDecl],
     ) {
         // Load fleet groupings, safety zone policies, and certification metadata.
-        use crate::robotics_platform::{CertifyDecl, FleetDecl, ProgramSafetyZoneDecl};
+        use spanda_ast::robotics_decl::{CertifyDecl, FleetDecl, ProgramSafetyZoneDecl};
         self.fleets = spanda_runtime::robotics::FleetRegistry::default();
         self.program_safety_zones = spanda_runtime::robotics::ProgramSafetyZoneRegistry::default();
 

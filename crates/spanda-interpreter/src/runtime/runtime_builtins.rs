@@ -7,7 +7,7 @@ use super::{
     RuntimeError, RuntimeValue,
 };
 use spanda_ast::nodes::{Expr, UnitKind};
-use crate::audit::{sha256 as audit_sha256, sign as audit_sign, verify_signature};
+use spanda_audit::{sha256 as audit_sha256, sign as audit_sign, verify_signature};
 use crate::error::SpandaError;
 use crate::safety::interpolate_poses;
 use std::collections::HashMap;
