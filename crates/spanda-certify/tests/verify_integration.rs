@@ -1,8 +1,8 @@
 //! Certification proof checklist tests for strict verify.
 
-use spanda_core::{
-    compile, verify_certification_proof, verify_compatibility, CompatSeverity, VerifyOptions,
-};
+use spanda_certify::verify_certification_proof;
+use spanda_driver::{compile, verify_compatibility};
+use spanda_hardware::{CompatSeverity, VerifyOptions};
 
 #[test]
 fn deploy_without_certify_warns_by_default() {

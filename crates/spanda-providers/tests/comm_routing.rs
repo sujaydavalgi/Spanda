@@ -1,7 +1,7 @@
 //! Provider registry comm-bus routing tests.
 //!
-use spanda_core::comm::TransportKind;
-use spanda_core::providers::{
+use spanda_comm::TransportKind;
+use spanda_providers::{
     bootstrap_providers_for_packages, sync_comm_bus_for_official_packages,
 };
 use spanda_transport_routing::RoutingCommBus;

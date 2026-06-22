@@ -1,9 +1,10 @@
 //! Fleet mesh coordinator integration tests.
 
-use spanda_core::{
-    compile, default_fleet_agents_path, fleet_entry_for_port, orchestrate_fleets_mesh,
+use spanda_driver::compile;
+use spanda_fleet::{
+    default_fleet_agents_path, fleet_entry_for_port, orchestrate_fleets_mesh,
     register_fleet_agent, relay_deliveries_via_mesh, relay_peer_delivery, save_fleet_agent_registry,
-    spawn_test_fleet_agent, spawn_test_fleet_mesh, FleetAgentRegistry,
+    spawn_test_fleet_agent, spawn_test_fleet_mesh, FleetAgentRegistry, PeerDelivery,
 };
 use std::thread;
 use std::time::Duration;
@@ -23,7 +24,7 @@ fn mesh_coordinator_relays_to_registered_agents() {
     thread::sleep(Duration::from_millis(30));
     let resp = relay_deliveries_via_mesh(
         &format!("http://127.0.0.1:{mesh_port}"),
-        &[spanda_core::PeerDelivery {
+        &[PeerDelivery {
             from_robot: "ScoutA".into(),
             to_robot: "ScoutB".into(),
             topic: "mission_step".into(),
@@ -90,7 +91,7 @@ fn fleet_agent_forwards_to_downstream_peer() {
     .expect("register B");
     save_fleet_agent_registry(&path, &registry).expect("save registry");
     thread::sleep(Duration::from_millis(30));
-    let delivery = spanda_core::PeerDelivery {
+    let delivery = PeerDelivery {
         from_robot: "ScoutA".into(),
         to_robot: "ScoutB".into(),
         topic: "mission_step".into(),

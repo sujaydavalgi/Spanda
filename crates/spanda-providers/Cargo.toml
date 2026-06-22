@@ -18,3 +18,7 @@ spanda-transport-dds = { path = "../spanda-transport-dds" }
 spanda-transport-mqtt = { path = "../spanda-transport-mqtt" }
 spanda-transport-ros2 = { path = "../spanda-transport-ros2" }
 spanda-transport-websocket = { path = "../spanda-transport-websocket" }
+
+[dev-dependencies]
+spanda-transport-routing = { path = "../spanda-transport-routing" }
+spanda-transport-ros2 = { path = "../spanda-transport-ros2" }

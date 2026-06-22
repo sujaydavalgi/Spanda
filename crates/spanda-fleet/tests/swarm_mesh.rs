@@ -1,8 +1,9 @@
 //! Swarm coordinator mesh relay integration tests.
 
-use spanda_core::{
-    compile, coordinate_swarms_mesh, register_fleet_agent, spawn_test_fleet_agent,
-    spawn_test_fleet_mesh, SwarmState, FleetAgentRegistry,
+use spanda_driver::compile;
+use spanda_fleet::{
+    coordinate_swarms_mesh, register_fleet_agent, spawn_test_fleet_agent, spawn_test_fleet_mesh,
+    FleetAgentRegistry, SwarmState,
 };
 use std::thread;
 use std::time::Duration;

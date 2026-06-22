@@ -1,10 +1,12 @@
 //! Integration tests for lean-core provider contracts and registry.
 //!
-use spanda_core::providers::{
-    module_classifications, official_package_names, ModuleOwnership, ProviderId, ProviderRegistry,
-    TransportAdapterProvider,
+use spanda_providers::{
+    bootstrap_default_providers, bootstrap_providers_for_packages, TransportAdapterProvider,
 };
-use spanda_core::providers::TransportConfig;
+use spanda_runtime::classification::{
+    module_classifications, official_package_names, ModuleOwnership,
+};
+use spanda_runtime::providers::{ProviderId, TransportConfig};
 use spanda_transport_ros2::Ros2TransportAdapter;
 
 #[test]
@@ -28,7 +30,7 @@ fn module_classifications_include_core_and_shims() {
 
 #[test]
 fn transport_adapter_provider_wraps_legacy_adapter() {
-    let mut registry = ProviderRegistry::new();
+    let mut registry = spanda_runtime::providers::ProviderRegistry::new();
     let adapter =
         TransportAdapterProvider::new("spanda-ros2", "project", Ros2TransportAdapter::default());
     registry.register_transport(Box::new(adapter));
@@ -50,15 +52,16 @@ fn transport_adapter_provider_wraps_legacy_adapter() {
 
 #[test]
 fn bootstrap_registers_default_transports() {
-    let registry = spanda_core::providers::bootstrap_default_providers();
+    let registry = bootstrap_default_providers();
     assert_eq!(registry.transport_count(), 2);
     let ids = registry.list_transports();
     assert!(ids.iter().any(|id| id.package == "spanda-mqtt"));
     assert!(ids.iter().any(|id| id.package == "spanda-ros2"));
 }
+
 #[test]
 fn bootstrap_providers_for_ros2_only() {
-    let registry = spanda_core::providers::bootstrap_providers_for_packages(&["spanda-ros2"]);
+    let registry = bootstrap_providers_for_packages(&["spanda-ros2"]);
     assert_eq!(registry.transport_count(), 1);
     assert!(registry.has_official_package("spanda-ros2"));
     assert!(!registry.has_official_package("spanda-mqtt"));
@@ -66,7 +69,7 @@ fn bootstrap_providers_for_ros2_only() {
 
 #[test]
 fn bootstrap_registers_fleet_when_installed() {
-    let registry = spanda_core::providers::bootstrap_providers_for_packages(&["spanda-fleet"]);
+    let registry = bootstrap_providers_for_packages(&["spanda-fleet"]);
     let ids = registry.list_fleet();
     assert_eq!(ids.len(), 1);
     assert_eq!(ids[0].package, "spanda-fleet");
@@ -74,7 +77,7 @@ fn bootstrap_registers_fleet_when_installed() {
 
 #[test]
 fn bootstrap_registers_positioning_when_gps_installed() {
-    let registry = spanda_core::providers::bootstrap_providers_for_packages(&["spanda-gps"]);
+    let registry = bootstrap_providers_for_packages(&["spanda-gps"]);
     let ids = registry.list_positioning();
     assert_eq!(ids.len(), 1);
     assert_eq!(ids[0].package, "spanda-gps");

@@ -14,3 +14,6 @@ spanda-ast = { path = "../spanda-ast" }
 spanda-error = { path = "../spanda-error" }
 spanda-hardware = { path = "../spanda-hardware" }
 spanda-ota = { path = "../spanda-ota" }
+
+[dev-dependencies]
+spanda-driver = { path = "../spanda-driver" }

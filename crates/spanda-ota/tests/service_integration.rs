@@ -1,8 +1,9 @@
 //! OTA deploy service integration tests.
 
-use spanda_core::{
-    apply_rollout, build_deploy_plan, plan_rollout, validate_rollout_certification, RolloutOptions,
-    RolloutStrategy, check, compile,
+use spanda_driver::{build_deploy_plan, check, compile};
+use spanda_ota::{
+    apply_rollout, plan_rollout, validate_rollout_certification, DeployState, RolloutOptions,
+    RolloutStrategy,
 };
 
 #[test]
@@ -39,7 +40,7 @@ fn ota_apply_rollout_updates_state() {
     let source = include_str!("../../../examples/robotics/ota_deployment.sd");
     let program = compile(source).expect("compile").program;
     let plan = build_deploy_plan(&program, "ota.sd", "2.0.0");
-    let mut state = spanda_core::DeployState::default();
+    let mut state = DeployState::default();
     let rollout = plan_rollout(
         &plan,
         &RolloutOptions {

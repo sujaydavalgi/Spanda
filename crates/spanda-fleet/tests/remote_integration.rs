@@ -1,7 +1,8 @@
 //! Remote fleet peer relay integration tests.
 
-use spanda_core::{
-    compile, fleet_entry_for_port, load_fleet_agent_registry, orchestrate_fleets_remote,
+use spanda_driver::compile;
+use spanda_fleet::{
+    fleet_entry_for_port, load_fleet_agent_registry, orchestrate_fleets_remote,
     register_fleet_agent, relay_peer_deliveries, save_fleet_agent_registry, spawn_test_fleet_agent,
     FleetAgentRegistry, PeerDelivery,
 };

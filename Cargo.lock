@@ -1263,6 +1263,7 @@ version = "0.1.0"
 dependencies = [
  "serde",
  "spanda-ast",
+ "spanda-driver",
  "spanda-error",
  "spanda-hardware",
  "spanda-ota",
@@ -1492,6 +1493,7 @@ dependencies = [
  "serde_json",
  "spanda-ast",
  "spanda-deploy-http",
+ "spanda-driver",
  "spanda-runtime",
 ]
 
@@ -1636,6 +1638,7 @@ dependencies = [
  "spanda-ast",
  "spanda-audit",
  "spanda-deploy-http",
+ "spanda-driver",
 ]
 
 [[package]]

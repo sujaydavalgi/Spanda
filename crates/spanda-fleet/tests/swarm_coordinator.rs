@@ -1,7 +1,9 @@
 //! Swarm coordinator runtime tests.
 
-use spanda_core::{
-    check, compile, coordinate_swarms, load_swarm_state, save_swarm_state, SwarmPolicy, SwarmState,
+use spanda_ast::robotics_decl::SwarmPolicy;
+use spanda_driver::{check, compile};
+use spanda_fleet::{
+    coordinate_swarms, load_swarm_state, save_swarm_state, SwarmState,
 };
 
 #[test]

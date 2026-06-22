@@ -1,6 +1,8 @@
 //! Fleet orchestrator integration tests.
 
-use spanda_core::{check, compile, orchestrate_fleets, parse_http_url};
+use spanda_deploy_http::parse_http_url;
+use spanda_driver::{check, compile};
+use spanda_fleet::orchestrate_fleets;
 
 #[test]
 fn orchestrates_robotics_fleet_example() {

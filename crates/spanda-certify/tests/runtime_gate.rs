@@ -1,6 +1,7 @@
 //! Runtime certification gate tests.
 
-use spanda_core::{compile, enforce_certification_runtime, run, RunOptions};
+use spanda_certify::enforce_certification_runtime;
+use spanda_driver::{compile, run, RunOptions};
 
 #[test]
 fn enforce_certify_blocks_deploy_without_metadata() {

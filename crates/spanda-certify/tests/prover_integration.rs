@@ -1,6 +1,8 @@
 //! Certification proof artifact tests.
 
-use spanda_core::{build_certification_proof, compile, CompatSeverity};
+use spanda_certify::build_certification_proof;
+use spanda_driver::compile;
+use spanda_hardware::CompatSeverity;
 
 #[test]
 fn certified_example_proof_passes() {

@@ -1,10 +1,11 @@
 //! Remote OTA deploy agent integration tests.
 
-use spanda_core::{
+use spanda_driver::{build_deploy_plan, compile};
+use spanda_ota::{
     agent_entry_for_port, agent_health, agent_rollout, agent_status, build_deploy_bundle,
-    build_deploy_plan, compile, default_agents_path, deploy_target_key, execute_remote_rollout,
-    load_agent_registry, register_agent, save_agent_registry, sign_deploy_bundle,
-    spawn_test_agent, DeployAgentRegistry, RolloutOptions, RolloutStrategy,
+    default_agents_path, deploy_target_key, execute_remote_rollout, load_agent_registry,
+    register_agent, save_agent_registry, sign_deploy_bundle, spawn_test_agent, DeployAgentRegistry,
+    RolloutOptions, RolloutStrategy,
 };
 use std::thread;
 use std::time::Duration;
