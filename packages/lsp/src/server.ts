@@ -26,6 +26,9 @@ import {
   TextEdit,
   RenameParams,
   WorkspaceEdit,
+  CodeAction,
+  CodeActionKind,
+  CodeActionParams,
 } from "vscode-languageserver/node.js";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { spawnSync } from "node:child_process";
@@ -88,9 +91,12 @@ type CompatItem = {
   message: string;
   line: number;
   column: number;
-  severity: "pass" | "warning" | "error";
+  severity: "pass" | "warning" | "error" | "info";
   category: string;
+  suggested_fix?: string;
 };
+
+const verificationCache = new Map<string, CompatItem[]>();
 
 const COMM_KEYWORDS = [
   "message",
@@ -556,6 +562,9 @@ connection.onInitialize((_params: InitializeParams) => ({
     documentFormattingProvider: true,
     documentSymbolProvider: true,
     renameProvider: true,
+    codeActionProvider: {
+      codeActionKinds: [CodeActionKind.QuickFix],
+    },
   },
 }));
 
@@ -579,6 +588,7 @@ function validate(textDocument: TextDocument): Diagnostic[] {
   const typeErrors = checkSource(source);
   const compatItems = verifySource(source);
   const verificationItems = verificationSource(source);
+  verificationCache.set(textDocument.uri, verificationItems);
   const typeDiags = typeErrors.map(
     (d): Diagnostic => ({
       severity: DiagnosticSeverity.Error,
@@ -765,7 +775,42 @@ documents.onDidChangeContent((change: { document: TextDocument }) => {
 
 documents.onDidClose((event: { document: TextDocument }) => {
   symbolCache.delete(event.document.uri);
+  verificationCache.delete(event.document.uri);
   connection.sendDiagnostics({ uri: event.document.uri, diagnostics: [] });
+});
+
+connection.onCodeAction((params: CodeActionParams): CodeAction[] => {
+  const doc = documents.get(params.textDocument.uri);
+  if (!doc) return [];
+  const items = verificationCache.get(params.textDocument.uri) ?? [];
+  const actions: CodeAction[] = [];
+  for (const item of items) {
+    if (!item.suggested_fix) continue;
+    const itemLine = Math.max(0, item.line - 1);
+    const itemColumn = Math.max(0, item.column - 1);
+    const overlaps = params.range.start.line === itemLine
+      || (params.context.diagnostics ?? []).some((diag) => diag.message.includes(item.message));
+    if (!overlaps) continue;
+    actions.push({
+      title: `Apply fix: ${item.category}`,
+      kind: CodeActionKind.QuickFix,
+      diagnostics: params.context.diagnostics,
+      edit: {
+        changes: {
+          [params.textDocument.uri]: [
+            {
+              range: {
+                start: { line: itemLine, character: itemColumn },
+                end: { line: itemLine, character: itemColumn },
+              },
+              newText: `${item.suggested_fix}\n`,
+            },
+          ],
+        },
+      },
+    });
+  }
+  return actions;
 });
 
 documents.listen(connection);
