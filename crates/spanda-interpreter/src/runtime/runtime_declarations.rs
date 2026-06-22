@@ -249,6 +249,7 @@ impl<B: RobotBackend> Interpreter<B> {
             goal,
             memory_kind,
             capabilities,
+            capability_enforced,
             ..
         } = agent_decl;
         let memory = memory_kind.map(|k| MemoryStore::new(k.into(), None));
@@ -256,6 +257,8 @@ impl<B: RobotBackend> Interpreter<B> {
         self.agents.insert(name.clone(), agent);
         self.agent_capabilities
             .insert(name.clone(), capabilities.clone());
+        self.agent_capability_enforced
+            .insert(name.clone(), *capability_enforced);
         self.comm_bus.register_agent(name);
         self.env
             .define(name.clone(), RuntimeValue::Agent { name: name.clone() });

@@ -163,6 +163,7 @@ impl<B: RobotBackend> Interpreter<B> {
         self.topic_deadline_misses.clear();
         self.state_machines.clear();
         self.agent_capabilities.clear();
+        self.agent_capability_enforced.clear();
         self.agent_trait_impls.clear();
         self.verify_rules.clear();
         self.verify_warning_rules.clear();

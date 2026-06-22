@@ -37,8 +37,28 @@ impl<B: RobotBackend> Interpreter<B> {
             .get(agent)
             .map(|v| v.as_slice())
             .unwrap_or(&[]);
+        let enforced = self
+            .agent_capability_enforced
+            .get(agent)
+            .copied()
+            .unwrap_or(false);
 
-        // Skip further work when caps is empty.
+        // Deny high-risk actions when capability enforcement is declared but empty.
+        if enforced && caps.is_empty() {
+            if matches!(action, "execute" | "propose_motion") {
+                self.log(format!("agent: denied {agent} {action} (capability_enforced)"));
+                return Err(RuntimeError::new(
+                    format!(
+                        "Agent '{agent}' declares can[] but lacks capability {action}"
+                    ),
+                    line,
+                )
+                .into_spanda());
+            }
+            return Ok(());
+        }
+
+        // Skip further work when caps is empty and enforcement is not declared.
         if caps.is_empty() {
             return Ok(());
         }
