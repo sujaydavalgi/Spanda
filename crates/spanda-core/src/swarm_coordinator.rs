@@ -1,9 +1,9 @@
 //! Experimental swarm coordinator runtime built on fleet declarations and mission controllers.
 
 use crate::ast::{Program, RobotDecl};
-use crate::comm::InMemoryCommBus;
-use crate::fleet_orchestrator::{
-    deliver_peer_steps, fleet_registry_from_program, peer_handoffs, FleetMemberState, PeerDelivery,
+use spanda_fleet::{
+    deliver_peer_steps, fleet_registry_from_program, peer_handoffs, FleetMemberState, FleetPeerMesh,
+    PeerDelivery,
 };
 use crate::foundations::MissionDecl;
 use crate::robotics_platform::{FleetDecl, SwarmDecl, SwarmPolicy};
@@ -90,7 +90,7 @@ fn mission_for_robot(robot: &RobotDecl) -> Option<crate::robotics_platform::Miss
 fn advance_member(
     robots: &[RobotDecl],
     member_name: &str,
-    mesh_bus: &mut InMemoryCommBus,
+    mesh: &mut FleetPeerMesh,
 ) -> (FleetMemberState, Vec<PeerDelivery>) {
     // Advance one fleet member mission and collect peer handoff metadata.
     let Some(robot) = robot_by_name(robots, member_name) else {
@@ -118,7 +118,7 @@ fn advance_member(
         (None, "NoMission".into(), String::new())
     };
     let handoffs = peer_handoffs(member_name, &current_step, peer_robots);
-    let deliveries = deliver_peer_steps(mesh_bus, member_name, &current_step, peer_robots);
+    let deliveries = deliver_peer_steps(mesh, member_name, &current_step, peer_robots);
     let _ = mission;
     (
         FleetMemberState {
@@ -175,9 +175,9 @@ fn coordinate_swarm_group(
             (name == fleet_name).then_some(members.as_slice())
         })
         .unwrap_or(&[]);
-    let mut mesh_bus = InMemoryCommBus::new();
+    let mut mesh = FleetPeerMesh::new();
     for member in members {
-        mesh_bus.register_robot(member);
+        mesh.register_robot(member);
     }
 
     let mut member_states = Vec::new();
@@ -194,7 +194,7 @@ fn coordinate_swarm_group(
                 let member_name = &members[index];
                 active_member = Some(member_name.clone());
                 let (state, deliveries) =
-                    advance_member(robots, member_name, &mut mesh_bus);
+                    advance_member(robots, member_name, &mut mesh);
                 peer_deliveries.extend(deliveries);
                 if !state.current_step.is_empty() {
                     steps_advanced = 1;
@@ -205,7 +205,7 @@ fn coordinate_swarm_group(
         SwarmPolicy::Broadcast => {
             for member_name in members {
                 let (state, deliveries) =
-                    advance_member(robots, member_name, &mut mesh_bus);
+                    advance_member(robots, member_name, &mut mesh);
                 peer_deliveries.extend(deliveries);
                 if !state.current_step.is_empty() {
                     steps_advanced += 1;
@@ -216,7 +216,7 @@ fn coordinate_swarm_group(
         SwarmPolicy::LeaderFollow => {
             if let Some(leader) = members.first() {
                 active_member = Some(leader.clone());
-                let (state, _) = advance_member(robots, leader, &mut mesh_bus);
+                let (state, _) = advance_member(robots, leader, &mut mesh);
                 if !state.current_step.is_empty() {
                     steps_advanced = 1;
                 }
