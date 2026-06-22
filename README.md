@@ -2,9 +2,9 @@
 
 **The Autonomous Systems Language.** *The pulse of autonomous intelligence.*
 
-*Spanda* is a Sanskrit term meaning *sacred tremor* or *divine vibration*, representing the creative pulsation of absolute consciousness that moves in waves of expansion and contraction. It is the universal activity or first stir of awareness that creates and sustains the entire universe.
-
 Spanda is an AI-native programming language for robotics, autonomous agents, digital twins, and edge systems. Source files use the **`.sd`** extension.
+
+*Spanda* is a Sanskrit term meaning *sacred tremor* or *divine vibration*, representing the creative pulsation of absolute consciousness that moves in waves of expansion and contraction. It is the universal activity or first stir of awareness that creates and sustains the entire universe.
 
 Repository: [github.com/Davalgi/Spanda](https://github.com/Davalgi/Spanda)
 
