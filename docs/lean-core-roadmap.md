@@ -58,15 +58,15 @@ Break circular `spanda-package` → `spanda-core` dependency:
 | Crate | Status | Notes |
 |-------|--------|-------|
 | `spanda-hardware` | Done | Builtin profile catalog; `spanda-package` no longer depends on `spanda-core` |
-| `spanda-ast` | Blocked | AST references `foundations`, `comm`, `regex_lang` — extract those first |
+| `spanda-ast` | Done | `nodes`, `foundations`, `comm_decl`, `robotics_decl`, `regex` — core `ast`/`foundations` shims |
 | `spanda-lexer` | Planned | Depends on AST + diagnostics |
 | `spanda-typecheck` | Planned | `spanda-package` target dependency |
 | `spanda-runtime` | Planned | Interpreter, scheduler, providers |
 
 ```
 spanda-hardware          (profile catalog — done)
-spanda-ast + foundations (next extraction unit)
-spanda-lexer
+spanda-ast               (AST + foundation + comm decl types — done)
+spanda-lexer             (next)
 spanda-typecheck   ← spanda-package depends here
 spanda-runtime     ← interpreter, scheduler, providers
 spanda-core        ← thin facade re-exporting above

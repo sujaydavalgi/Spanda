@@ -1,0 +1,14 @@
+[package]
+name = "spanda-ast"
+version.workspace = true
+edition.workspace = true
+description = "Spanda language AST, foundation declarations, and comm declaration types"
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+regex = "1"
+spanda-connectivity = { path = "../spanda-connectivity" }

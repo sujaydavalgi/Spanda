@@ -2,65 +2,18 @@
 //!
 use crate::ast::Span;
 use crate::error::SpandaError;
+pub use spanda_ast::{RegexCompileError, RegexPattern};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-/// Compiled regex pattern with optional inline flags (`/pattern/i`).
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct RegexPattern {
-    pub source: String,
-    #[serde(default)]
-    pub flags: String,
-    pub span: Span,
-}
-
-impl RegexPattern {
-    pub fn compile(&self) -> Result<Regex, SpandaError> {
-        // Compile the regex pattern into a Rust regex engine instance.
-        //
-        // Parameters:
-        // None.
-        //
-        // Returns:
-        // Compiled regex, or a syntax error diagnostic.
-        //
-        // Options:
-        // None.
-        //
-        // Example:
-        // let re = pattern.compile()?;
-
-        // Build the final pattern string with supported inline flags.
-        let mut pattern = self.source.clone();
-        for flag in self.flags.chars() {
-            // Reject unsupported flag letters early with a clear diagnostic.
-            if !matches!(flag, 'i' | 'm' | 's') {
-                return Err(SpandaError::Parse {
-                    message: format!(
-                        "Invalid regex flag '{flag}'; supported flags are i, m, s. Suggestion: remove unsupported flags."
-                    ),
-                    line: self.span.start.line,
-                    column: self.span.start.column,
-                });
-            }
+impl From<RegexCompileError> for SpandaError {
+    fn from(err: RegexCompileError) -> Self {
+        Self::Parse {
+            message: err.message,
+            line: err.line,
+            column: err.column,
         }
-        if self.flags.contains('i') && !pattern.starts_with("(?i)") {
-            pattern = format!("(?i){pattern}");
-        }
-        if self.flags.contains('m') && !pattern.starts_with("(?m)") {
-            pattern = format!("(?m){pattern}");
-        }
-        if self.flags.contains('s') && !pattern.starts_with("(?s)") {
-            pattern = format!("(?s){pattern}");
-        }
-        Regex::new(&pattern).map_err(|err| SpandaError::Parse {
-            message: format!(
-                "Invalid regex syntax: {err}. Suggestion: verify delimiters and escape sequences."
-            ),
-            line: self.span.start.line,
-            column: self.span.start.column,
-        })
     }
 }
 
@@ -221,5 +174,5 @@ pub fn validate_regex_literal(source: &str, flags: &str, span: Span) -> Result<(
         flags: flags.to_string(),
         span,
     };
-    pattern.compile().map(|_| ())
+    pattern.compile().map_err(SpandaError::from).map(|_| ())
 }

@@ -2294,7 +2294,7 @@ impl TypeChecker {
                         message,
                         line,
                         column,
-                    }) = pattern.compile()
+                    }) = pattern.compile().map_err(SpandaError::from)
                     {
                         self.error(message, line, column);
                     }
@@ -3534,7 +3534,7 @@ impl TypeChecker {
                         message,
                         line,
                         column,
-                    }) = filter.pattern.compile()
+                    }) = filter.pattern.compile().map_err(SpandaError::from)
                     {
                         self.error(message, line, column);
                     }
@@ -3676,7 +3676,7 @@ impl TypeChecker {
                         message,
                         line,
                         column,
-                    }) = pattern.compile()
+                    }) = pattern.compile().map_err(SpandaError::from)
                     {
                         self.error(message, line, column);
                     }

@@ -1142,6 +1142,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "spanda-ast"
+version = "0.1.0"
+dependencies = [
+ "regex",
+ "serde",
+ "spanda-connectivity",
+]
+
+[[package]]
 name = "spanda-audit"
 version = "0.1.0"
 dependencies = [
@@ -1188,6 +1197,7 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "sha2",
+ "spanda-ast",
  "spanda-audit",
  "spanda-connectivity",
  "spanda-deploy-http",

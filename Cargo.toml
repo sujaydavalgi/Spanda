@@ -19,6 +19,7 @@ members = [
     "crates/spanda-fleet",
     "crates/spanda-ota",
     "crates/spanda-hardware",
+    "crates/spanda-ast",
 ]
 exclude = ["crates/spanda-ros2-rclrs-native"]
 resolver = "2"
