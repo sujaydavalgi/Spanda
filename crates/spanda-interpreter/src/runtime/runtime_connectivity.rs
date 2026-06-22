@@ -8,8 +8,8 @@ use crate::error::SpandaError;
 impl<B: RobotBackend> Interpreter<B> {
     pub(super) fn load_connectivity_metadata(
         &mut self,
-        geofences: &[crate::foundations::GeofenceDecl],
-        policies: &[crate::foundations::ConnectivityPolicyDecl],
+        geofences: &[spanda_ast::foundations::GeofenceDecl],
+        policies: &[spanda_ast::foundations::ConnectivityPolicyDecl],
     ) {
         use crate::connectivity_positioning::{connectivity_policy_from_decl, geofence_from_decl};
         self.geofences = geofences.iter().map(geofence_from_decl).collect();

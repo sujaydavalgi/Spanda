@@ -3,7 +3,7 @@
 
 use super::{Interpreter, RobotBackend, RuntimeValue};
 use crate::ai::MemoryStore;
-use crate::ast::{AgentDecl, Expr};
+use spanda_ast::nodes::{AgentDecl, Expr};
 use crate::error::SpandaError;
 
 impl<B: RobotBackend> Interpreter<B> {
@@ -32,7 +32,7 @@ impl<B: RobotBackend> Interpreter<B> {
 
     pub(super) fn resolve_reason_goal(
         &mut self,
-        named_args: &[crate::ast::NamedArg],
+        named_args: &[spanda_ast::nodes::NamedArg],
         line: u32,
     ) -> Result<Option<String>, SpandaError> {
         // Resolve reason goal.

@@ -5,7 +5,7 @@ use super::{
     pose_from_state, runtime_pose, runtime_velocity, IntoSpandaError, Interpreter, RobotBackend,
     RuntimeError, RuntimeValue,
 };
-use crate::ast::{Expr, UnitKind};
+use spanda_ast::nodes::{Expr, UnitKind};
 use crate::error::SpandaError;
 use std::collections::HashMap;
 
@@ -15,7 +15,7 @@ impl<B: RobotBackend> Interpreter<B> {
         goal: &mut Option<String>,
         property: &str,
         args: &[Expr],
-        named_args: &[crate::ast::NamedArg],
+        named_args: &[spanda_ast::nodes::NamedArg],
         line: u32,
     ) -> Result<RuntimeValue, SpandaError> {
         match property {

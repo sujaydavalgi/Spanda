@@ -41,6 +41,23 @@ fn interpreter_sources_live_in_interpreter_crate() {
 }
 
 #[test]
+fn interpreter_runtime_uses_workspace_ast_paths() {
+    let orchestrator = fs::read_to_string(orchestrator_path()).expect("orchestrator.rs");
+    assert!(
+        orchestrator.contains("spanda_ast::nodes::"),
+        "orchestrator should import AST nodes from spanda-ast"
+    );
+    assert!(
+        orchestrator.contains("spanda_ast::foundations::"),
+        "orchestrator should import foundation decls from spanda-ast"
+    );
+    assert!(
+        !orchestrator.contains("crate::ast::"),
+        "orchestrator should not use crate::ast after Phase 8 routing"
+    );
+}
+
+#[test]
 fn transport_live_shim_stays_thin() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/transport_live.rs");
     let source = fs::read_to_string(&path).expect("transport_live.rs");

@@ -4,7 +4,7 @@
 use super::{
     get_string, pose_from_state, velocity_from_state, Interpreter, RobotBackend, RuntimeValue,
 };
-use crate::ast::Expr;
+use spanda_ast::nodes::Expr;
 use crate::comm::CommBus;
 use crate::error::SpandaError;
 use crate::safety::Pose2d;
@@ -14,7 +14,7 @@ impl<B: RobotBackend> Interpreter<B> {
         &mut self,
         method: &str,
         args: &[Expr],
-        _named_args: &[crate::ast::NamedArg],
+        _named_args: &[spanda_ast::nodes::NamedArg],
     ) -> Result<RuntimeValue, SpandaError> {
         let state = self.backend.get_state();
         match method {

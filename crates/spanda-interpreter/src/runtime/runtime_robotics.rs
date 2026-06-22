@@ -5,7 +5,7 @@ use super::{get_string, IntoSpandaError, Interpreter, RobotBackend, RuntimeError
 use crate::ai::{
     proposal_confidence, proposal_from_value, safe_action_from_proposal, AI_CONFIDENCE_LOW_THRESHOLD,
 };
-use crate::ast::{Expr, UnitKind};
+use spanda_ast::nodes::{Expr, UnitKind};
 use crate::error::SpandaError;
 use crate::safety::{Pose2d, ValidateActionResult};
 use crate::triggers::SystemTriggerCategory;
@@ -16,7 +16,7 @@ impl<B: RobotBackend> Interpreter<B> {
         target_name: &str,
         method: &str,
         args: &[Expr],
-        named_args: &[crate::ast::NamedArg],
+        named_args: &[spanda_ast::nodes::NamedArg],
         line: u32,
     ) -> Result<RuntimeValue, SpandaError> {
         // Eval ai method.
@@ -135,7 +135,7 @@ impl<B: RobotBackend> Interpreter<B> {
 
     pub(super) fn eval_mission_method(
         &self,
-        runtime: &mut crate::robotics_platform::MissionRuntime,
+        runtime: &mut spanda_runtime::robotics::MissionRuntime,
         property: &str,
         line: u32,
     ) -> Result<RuntimeValue, SpandaError> {
@@ -190,7 +190,7 @@ impl<B: RobotBackend> Interpreter<B> {
 
     pub(super) fn eval_fleet_method(
         &mut self,
-        registry: &crate::robotics_platform::FleetRegistry,
+        registry: &spanda_runtime::robotics::FleetRegistry,
         property: &str,
         args: &[Expr],
         line: u32,
@@ -229,7 +229,7 @@ impl<B: RobotBackend> Interpreter<B> {
     pub(super) fn eval_safety_validate(
         &mut self,
         args: &[Expr],
-        named_args: &[crate::ast::NamedArg],
+        named_args: &[spanda_ast::nodes::NamedArg],
         line: u32,
     ) -> Result<RuntimeValue, SpandaError> {
         // Eval safety validate.

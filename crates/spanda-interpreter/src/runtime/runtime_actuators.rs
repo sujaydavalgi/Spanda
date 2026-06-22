@@ -6,7 +6,7 @@ use super::{
     RobotBackend, RuntimeError, RuntimeValue,
 };
 use crate::ai::{is_action_proposal, is_safe_action};
-use crate::ast::Expr;
+use spanda_ast::nodes::Expr;
 use crate::error::SpandaError;
 use crate::safety::Pose2d;
 
@@ -17,7 +17,7 @@ impl<B: RobotBackend> Interpreter<B> {
         _actuator_type: &str,
         method: &str,
         args: &[Expr],
-        named_args: &[crate::ast::NamedArg],
+        named_args: &[spanda_ast::nodes::NamedArg],
         line: u32,
     ) -> Result<RuntimeValue, SpandaError> {
         // Execute actuator method.

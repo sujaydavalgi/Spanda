@@ -71,7 +71,7 @@ impl<B: RobotBackend> Interpreter<B> {
             .unwrap_or_else(|| "robot".into())
     }
 
-    pub(super) fn secure_policy_from_block(block: &crate::foundations::SecureBlockDecl) -> SecurePolicy {
+    pub(super) fn secure_policy_from_block(block: &spanda_ast::foundations::SecureBlockDecl) -> SecurePolicy {
         // Secure policy from block.
         //
         // Parameters:

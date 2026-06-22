@@ -4,8 +4,9 @@
 use super::{
     IntoSpandaError, Interpreter, MotionCommand, RobotBackend, RuntimeError, RuntimeValue,
 };
-use crate::ast::{Expr, SpandaType, Stmt};
-use crate::comm::{CommBus, DiscoverFilter};
+use spanda_ast::nodes::{Expr, SpandaType, Stmt};
+use crate::comm::CommBus;
+use spanda_ast::comm_decl::DiscoverFilter;
 use crate::error::SpandaError;
 use crate::triggers::SystemTriggerCategory;
 use std::collections::HashMap;

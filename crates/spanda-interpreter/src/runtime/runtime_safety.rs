@@ -2,7 +2,7 @@
 //!
 
 use super::{get_number, Interpreter, RobotBackend};
-use crate::ast::{SafetyZoneDecl, ZoneShape};
+use spanda_ast::nodes::{SafetyZoneDecl, ZoneShape};
 use crate::error::SpandaError;
 use crate::safety::{SafetyZoneRuntime, SafetyZoneShape};
 

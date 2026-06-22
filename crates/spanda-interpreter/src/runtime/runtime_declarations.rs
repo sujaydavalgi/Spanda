@@ -3,7 +3,7 @@
 
 use super::{Interpreter, RobotBackend, RuntimeValue};
 use crate::ai::{create_agent_runtime, MemoryStore};
-use crate::ast::{
+use spanda_ast::nodes::{
     ActionDecl, ActuatorDecl, AgentDecl, SensorBinding, SensorDecl, ServiceDecl, TopicDecl,
 };
 use crate::comm::CommBus;

@@ -4,7 +4,7 @@
 use super::{
     get_number, get_string, IntoSpandaError, Interpreter, RobotBackend, RuntimeError, RuntimeValue,
 };
-use crate::ast::{Expr, LiteralValue, UnitKind};
+use spanda_ast::nodes::{Expr, LiteralValue, UnitKind};
 use crate::error::SpandaError;
 
 impl<B: RobotBackend> Interpreter<B> {
@@ -12,7 +12,7 @@ impl<B: RobotBackend> Interpreter<B> {
         &mut self,
         method: &str,
         args: &[Expr],
-        named_args: &[crate::ast::NamedArg],
+        named_args: &[spanda_ast::nodes::NamedArg],
         line: u32,
     ) -> Result<RuntimeValue, SpandaError> {
         // Eval twin method.
@@ -120,7 +120,7 @@ impl<B: RobotBackend> Interpreter<B> {
     fn twin_field_name(
         &mut self,
         args: &[Expr],
-        named_args: &[crate::ast::NamedArg],
+        named_args: &[spanda_ast::nodes::NamedArg],
         line: u32,
     ) -> Result<String, SpandaError> {
         // Twin field name.

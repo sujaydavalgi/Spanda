@@ -6,7 +6,7 @@ use super::{
     runtime_velocity, IntoSpandaError, Interpreter, PoseValue, RobotBackend,
     RuntimeError, RuntimeValue,
 };
-use crate::ast::{Expr, UnitKind};
+use spanda_ast::nodes::{Expr, UnitKind};
 use crate::audit::{sha256 as audit_sha256, sign as audit_sign, verify_signature};
 use crate::error::SpandaError;
 use crate::safety::interpolate_poses;
@@ -17,7 +17,7 @@ impl<B: RobotBackend> Interpreter<B> {
         &mut self,
         name: &str,
         args: &[Expr],
-        named_args: &[crate::ast::NamedArg],
+        named_args: &[spanda_ast::nodes::NamedArg],
         line: u32,
     ) -> Result<RuntimeValue, SpandaError> {
         // Eval builtin function.

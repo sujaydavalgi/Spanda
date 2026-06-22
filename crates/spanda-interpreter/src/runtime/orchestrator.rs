@@ -3,16 +3,17 @@
 use crate::ai::{
     AgentRuntime, AiModel,
 };
-use crate::ast::{
+use spanda_ast::nodes::{
     BehaviorDecl, Expr, Program,
     RobotDecl, SafetyRule, SafetyZoneDecl,
     Stmt,
 };
 use crate::audit::{AuditRuntime, MockLedgerBackend};
-use crate::comm::{CommBus, QosDecl, TransportKind};
+use crate::comm::CommBus;
+use spanda_ast::comm_decl::{QosDecl, TransportKind};
 use crate::error::{PoseState, RobotState, SpandaError, VelocityState};
 use crate::events::EventBus;
-use crate::foundations::{
+use spanda_ast::foundations::{
     CapabilityDecl, TaskDecl, TaskPriority, TriggerKind,
 };
 use crate::hal::{create_sim_hal, HalBackend, SimHalBackend};
@@ -38,7 +39,7 @@ use crate::triggers::{
 use crate::twin::TwinRuntime;
 use std::collections::HashMap;
 
-type AgentTraitImplBody = (Vec<crate::foundations::TraitParamDecl>, Vec<Stmt>);
+type AgentTraitImplBody = (Vec<spanda_ast::foundations::TraitParamDecl>, Vec<Stmt>);
 type BehaviorContracts = (Vec<Stmt>, Option<Expr>, Option<Expr>, Option<Expr>);
 type TaskContracts = (Vec<Stmt>, f64, Option<Expr>, Option<Expr>, Option<Expr>);
 pub use spanda_runtime::value::*;
@@ -345,9 +346,9 @@ pub struct Interpreter<B: RobotBackend> {
     security: SecurityContext,
     comm_bus: RoutingCommBus,
     default_transport: TransportKind,
-    module_functions: HashMap<String, crate::foundations::ModuleFnDecl>,
-    imported_functions: HashMap<String, crate::foundations::ModuleFnDecl>,
-    extern_functions: HashMap<String, crate::foundations::ExternFnDecl>,
+    module_functions: HashMap<String, spanda_ast::foundations::ModuleFnDecl>,
+    imported_functions: HashMap<String, spanda_ast::foundations::ModuleFnDecl>,
+    extern_functions: HashMap<String, spanda_ast::foundations::ExternFnDecl>,
     concurrency: crate::concurrency::ConcurrencyRuntime,
     telemetry: crate::telemetry::RuntimeTelemetry,
     active_mode: String,
@@ -368,8 +369,8 @@ pub struct Interpreter<B: RobotBackend> {
     active_connectivity_link: String,
     connectivity_events_seen: std::collections::HashSet<String>,
     gps_available: bool,
-    fleets: crate::robotics_platform::FleetRegistry,
-    program_safety_zones: crate::robotics_platform::ProgramSafetyZoneRegistry,
+    fleets: spanda_runtime::robotics::FleetRegistry,
+    program_safety_zones: spanda_runtime::robotics::ProgramSafetyZoneRegistry,
     nav2_enabled: bool,
     slam_enabled: bool,
     provider_registry: Rc<RefCell<crate::providers::ProviderRegistry>>,
@@ -475,8 +476,8 @@ impl<B: RobotBackend> Interpreter<B> {
             active_connectivity_link: "wifi".into(),
             connectivity_events_seen: std::collections::HashSet::new(),
             gps_available: true,
-            fleets: crate::robotics_platform::FleetRegistry::default(),
-            program_safety_zones: crate::robotics_platform::ProgramSafetyZoneRegistry::default(),
+            fleets: spanda_runtime::robotics::FleetRegistry::default(),
+            program_safety_zones: spanda_runtime::robotics::ProgramSafetyZoneRegistry::default(),
             nav2_enabled: false,
             slam_enabled: false,
             host,
@@ -795,8 +796,8 @@ impl<B: RobotBackend> Interpreter<B> {
         stmt: &Stmt,
     ) -> Option<(
         String,
-        crate::foundations::ModuleFnDecl,
-        Vec<crate::ast::Expr>,
+        spanda_ast::foundations::ModuleFnDecl,
+        Vec<spanda_ast::nodes::Expr>,
     )> {
         // Resolve sync call.
         //
@@ -814,7 +815,7 @@ impl<B: RobotBackend> Interpreter<B> {
         // let result = instance.resolve_sync_call(stmt);
 
         // Import the items needed by the logic below.
-        use crate::ast::{Expr, Stmt};
+        use spanda_ast::nodes::{Expr, Stmt};
         let expr = match stmt {
             Stmt::VarDecl {
                 init: Some(init), ..
@@ -846,8 +847,8 @@ impl<B: RobotBackend> Interpreter<B> {
 
     pub fn bind_call_args(
         &mut self,
-        func: &crate::foundations::ModuleFnDecl,
-        args: &[crate::ast::Expr],
+        func: &spanda_ast::foundations::ModuleFnDecl,
+        args: &[spanda_ast::nodes::Expr],
     ) -> Result<Environment, SpandaError> {
         // Bind call args.
         //
@@ -935,7 +936,7 @@ impl<B: RobotBackend> Interpreter<B> {
 
         // Emit output when simulate compatibility provides a sim.
         if let Some(sim) = simulate_compatibility {
-            use crate::foundations::SimulateCompatibilityDecl;
+            use spanda_ast::foundations::SimulateCompatibilityDecl;
             let SimulateCompatibilityDecl::SimulateCompatibilityDecl { faults, .. } = sim;
             sim_faults = faults.iter().map(|f| f.fault_type.clone()).collect();
         }
@@ -1112,7 +1113,7 @@ impl<B: RobotBackend> Interpreter<B> {
         // let result = instance.load_program_metadata(program);
 
         // Import the items needed by the logic below.
-        use crate::foundations::{EnumDecl, ModuleFnDecl, StructDecl, TraitDecl, Visibility};
+        use spanda_ast::foundations::{EnumDecl, ModuleFnDecl, StructDecl, TraitDecl, Visibility};
         let Program::Program {
             structs,
             enums,
@@ -1142,7 +1143,7 @@ impl<B: RobotBackend> Interpreter<B> {
         for ext in extern_functions {
             self.extern_functions.insert(ext.name.clone(), ext.clone());
         }
-        use crate::ast::ImportDecl;
+        use spanda_ast::nodes::ImportDecl;
 
         // Emit output when module registry provides a registry.
         if let Some(registry) = &self.options.module_registry {
@@ -1200,7 +1201,7 @@ impl<B: RobotBackend> Interpreter<B> {
             let paths: Vec<&str> = imports
                 .iter()
                 .map(|imp| {
-                    let crate::ast::ImportDecl::ImportDecl { path, .. } = imp;
+                    let spanda_ast::nodes::ImportDecl::ImportDecl { path, .. } = imp;
                     path.as_str()
                 })
                 .collect();
@@ -1210,7 +1211,7 @@ impl<B: RobotBackend> Interpreter<B> {
             let paths: Vec<&str> = imports
                 .iter()
                 .map(|imp| {
-                    let crate::ast::ImportDecl::ImportDecl { path, .. } = imp;
+                    let spanda_ast::nodes::ImportDecl::ImportDecl { path, .. } = imp;
                     path.as_str()
                 })
                 .collect();
@@ -1337,13 +1338,13 @@ struct TaskSchedule {
     requires: Option<Expr>,
     ensures: Option<Expr>,
     invariant: Option<Expr>,
-    budget: Option<crate::foundations::ResourceBudgetDecl>,
+    budget: Option<spanda_ast::foundations::ResourceBudgetDecl>,
 }
 
 const RUNTIME_TASK_COST_MS: f64 = 5.0;
 
 fn task_budget_violation_kind(
-    budget: &crate::foundations::ResourceBudgetDecl,
+    budget: &spanda_ast::foundations::ResourceBudgetDecl,
     duration_ms: f64,
     interval_ms: f64,
 ) -> Option<&'static str> {
@@ -1364,7 +1365,7 @@ fn task_budget_violation_kind(
     // let result = spanda_core::runtime::task_budget_violation_kind(budget, duration_ms, interval_ms);
 
     // Compute crate for the following logic.
-    let crate::foundations::ResourceBudgetDecl::ResourceBudgetDecl {
+    let spanda_ast::foundations::ResourceBudgetDecl::ResourceBudgetDecl {
         cpu_pct_max,
         battery_pct_max,
         ..
@@ -1649,7 +1650,7 @@ trait SocDeclExt {
     fn profile(&self) -> &str;
 }
 
-impl SocDeclExt for crate::ast::SocDecl {
+impl SocDeclExt for spanda_ast::nodes::SocDecl {
     fn profile(&self) -> &str {
         // Profile.
         //
@@ -1667,24 +1668,24 @@ impl SocDeclExt for crate::ast::SocDecl {
 
         // Dispatch based on the enum variant or current state.
         match self {
-            crate::ast::SocDecl::SocDecl { profile, .. } => profile,
+            spanda_ast::nodes::SocDecl::SocDecl { profile, .. } => profile,
         }
     }
 }
 
 trait HalBlockExt {
-    fn members(&self) -> &[crate::ast::HalMemberDecl];
+    fn members(&self) -> &[spanda_ast::nodes::HalMemberDecl];
 }
 
-impl HalBlockExt for crate::ast::HalBlock {
-    fn members(&self) -> &[crate::ast::HalMemberDecl] {
+impl HalBlockExt for spanda_ast::nodes::HalBlock {
+    fn members(&self) -> &[spanda_ast::nodes::HalMemberDecl] {
         // Members.
         //
         // Parameters:
         // - `self` — method receiver
         //
         // Returns:
-        // &[crate::ast::HalMemberDecl].
+        // &[spanda_ast::nodes::HalMemberDecl].
         //
         // Options:
         // None.
@@ -1694,7 +1695,7 @@ impl HalBlockExt for crate::ast::HalBlock {
 
         // Dispatch based on the enum variant or current state.
         match self {
-            crate::ast::HalBlock::HalBlock { members, .. } => members,
+            spanda_ast::nodes::HalBlock::HalBlock { members, .. } => members,
         }
     }
 }
@@ -1704,7 +1705,7 @@ trait SafetyBlockExt {
     fn zones(&self) -> &[SafetyZoneDecl];
 }
 
-impl SafetyBlockExt for crate::ast::SafetyBlock {
+impl SafetyBlockExt for spanda_ast::nodes::SafetyBlock {
     fn rules(&self) -> &[SafetyRule] {
         // Rules.
         //
@@ -1722,7 +1723,7 @@ impl SafetyBlockExt for crate::ast::SafetyBlock {
 
         // Dispatch based on the enum variant or current state.
         match self {
-            crate::ast::SafetyBlock::SafetyBlock { rules, .. } => rules,
+            spanda_ast::nodes::SafetyBlock::SafetyBlock { rules, .. } => rules,
         }
     }
 
@@ -1743,7 +1744,7 @@ impl SafetyBlockExt for crate::ast::SafetyBlock {
 
         // Dispatch based on the enum variant or current state.
         match self {
-            crate::ast::SafetyBlock::SafetyBlock { zones, .. } => zones,
+            spanda_ast::nodes::SafetyBlock::SafetyBlock { zones, .. } => zones,
         }
     }
 }

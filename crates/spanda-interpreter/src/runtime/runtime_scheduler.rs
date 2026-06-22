@@ -5,9 +5,9 @@ use super::{
     priority_label, task_budget_violation_kind, IntoSpandaError,
     Interpreter, RobotBackend, RuntimeError, RuntimeValue, TaskSchedule, RUNTIME_TASK_COST_MS,
 };
-use crate::ast::{Expr, Stmt};
+use spanda_ast::nodes::{Expr, Stmt};
 use crate::error::SpandaError;
-use crate::foundations::TaskPriority;
+use spanda_ast::foundations::TaskPriority;
 use crate::scheduler;
 use crate::triggers::SystemTriggerCategory;
 
@@ -296,7 +296,7 @@ impl<B: RobotBackend> Interpreter<B> {
         requires: &Option<Expr>,
         ensures: &Option<Expr>,
         invariant: &Option<Expr>,
-        budget: Option<crate::foundations::ResourceBudgetDecl>,
+        budget: Option<spanda_ast::foundations::ResourceBudgetDecl>,
     ) -> Result<(), SpandaError> {
         // Execute task loop with contracts.
         //

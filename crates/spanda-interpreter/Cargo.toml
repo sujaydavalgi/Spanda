@@ -9,5 +9,7 @@ authors.workspace = true
 homepage.workspace = true
 
 [dependencies]
+spanda-ast = { path = "../spanda-ast" }
 spanda-core = { path = "../spanda-core" }
 spanda-runtime = { path = "../spanda-runtime" }
+spanda-typecheck = { path = "../spanda-typecheck" }

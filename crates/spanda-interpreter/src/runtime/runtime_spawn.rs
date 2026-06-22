@@ -2,13 +2,13 @@
 //!
 
 use super::{IntoSpandaError, Interpreter, RobotBackend, RuntimeError, RuntimeValue};
-use crate::ast::Expr;
+use spanda_ast::nodes::Expr;
 use crate::error::SpandaError;
 
 impl<B: RobotBackend> Interpreter<B> {
     pub(super) fn call_module_function(
         &mut self,
-        func: &crate::foundations::ModuleFnDecl,
+        func: &spanda_ast::foundations::ModuleFnDecl,
         args: &[Expr],
         _line: u32,
     ) -> Result<RuntimeValue, SpandaError> {

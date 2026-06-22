@@ -6,7 +6,7 @@ use super::{
     RuntimeError, RuntimeValue,
 };
 use crate::error::SpandaError;
-use crate::foundations::{TriggerHandlerDecl, TriggerKind};
+use spanda_ast::foundations::{TriggerHandlerDecl, TriggerKind};
 use crate::triggers::{priority_rank, trigger_display_name, SystemTriggerCategory};
 use crate::twin::TwinRuntime;
 

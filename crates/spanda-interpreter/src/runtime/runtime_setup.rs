@@ -6,10 +6,10 @@ use super::{
     RuntimeValue, SafetyBlockExt, SocDeclExt,
 };
 use crate::ai::create_ai_model;
-use crate::ast::{
+use spanda_ast::nodes::{
     AgentDecl, RobotDecl, SafetyRule, TopicDecl,
 };
-use crate::foundations::{StateMachineDecl, TwinDecl};
+use spanda_ast::foundations::{StateMachineDecl, TwinDecl};
 use crate::audit::{AuditRuntime, DeviceIdentity, MockLedgerBackend};
 use crate::error::SpandaError;
 use crate::events::EventBus;
@@ -28,14 +28,14 @@ use std::rc::Rc;
 impl<B: RobotBackend> Interpreter<B> {
     pub(super) fn load_robotics_platform_metadata(
         &mut self,
-        fleets: &[crate::robotics_platform::FleetDecl],
-        program_safety_zones: &[crate::robotics_platform::ProgramSafetyZoneDecl],
-        certifications: &[crate::robotics_platform::CertifyDecl],
+        fleets: &[spanda_ast::robotics_decl::FleetDecl],
+        program_safety_zones: &[spanda_ast::robotics_decl::ProgramSafetyZoneDecl],
+        certifications: &[spanda_ast::robotics_decl::CertifyDecl],
     ) {
         // Load fleet groupings, safety zone policies, and certification metadata.
         use crate::robotics_platform::{CertifyDecl, FleetDecl, ProgramSafetyZoneDecl};
-        self.fleets = crate::robotics_platform::FleetRegistry::default();
-        self.program_safety_zones = crate::robotics_platform::ProgramSafetyZoneRegistry::default();
+        self.fleets = spanda_runtime::robotics::FleetRegistry::default();
+        self.program_safety_zones = spanda_runtime::robotics::ProgramSafetyZoneRegistry::default();
 
         // Register each declared fleet and expose it through the fleet runtime object.
         for fleet in fleets {
@@ -208,7 +208,7 @@ impl<B: RobotBackend> Interpreter<B> {
 
         // Register declared trust boundaries for runtime enforcement.
         for tb in trust_boundaries {
-            let crate::foundations::TrustBoundaryDecl::TrustBoundaryDecl { name, .. } = tb;
+            let spanda_ast::foundations::TrustBoundaryDecl::TrustBoundaryDecl { name, .. } = tb;
             if let Ok(kind) = name.parse::<spanda_security::TrustBoundaryKind>() {
                 self.security.trust_boundaries.declare(kind);
             }
@@ -216,7 +216,7 @@ impl<B: RobotBackend> Interpreter<B> {
 
         // Process each bus.
         for bus in buses {
-            let crate::comm::BusDecl::BusDecl {
+            let spanda_ast::comm_decl::BusDecl::BusDecl {
                 transport,
                 encryption,
                 authentication,
@@ -233,7 +233,7 @@ impl<B: RobotBackend> Interpreter<B> {
                 )
                 .unwrap_or_default();
             if let Some(sc) = secure_comm {
-                let crate::foundations::SecureCommPolicyDecl::SecureCommPolicyDecl {
+                let spanda_ast::foundations::SecureCommPolicyDecl::SecureCommPolicyDecl {
                     encryption,
                     authentication,
                     integrity,
@@ -259,15 +259,15 @@ impl<B: RobotBackend> Interpreter<B> {
                 );
             }
             for secret_decl in secrets {
-                let crate::foundations::SecretDecl::SecretDecl { name, source, .. } = secret_decl;
+                let spanda_ast::foundations::SecretDecl::SecretDecl { name, source, .. } = secret_decl;
                 if name.contains("cert") {
-                    if let crate::foundations::SecretSourceDecl::File { path } = source {
+                    if let spanda_ast::foundations::SecretSourceDecl::File { path } = source {
                         bus_security.cert_path = Some(path.clone());
                     }
                 }
                 if name.contains("key") {
                     bus_security.key_secret = Some(name.clone());
-                    if let crate::foundations::SecretSourceDecl::File { path } = source {
+                    if let spanda_ast::foundations::SecretSourceDecl::File { path } = source {
                         bus_security.key_path = Some(path.clone());
                     }
                 }
@@ -310,13 +310,13 @@ impl<B: RobotBackend> Interpreter<B> {
 
         // Process each peer robot.
         for peer in peer_robots {
-            let crate::comm::PeerRobotDecl::PeerRobotDecl { name, .. } = peer;
+            let spanda_ast::comm_decl::PeerRobotDecl::PeerRobotDecl { name, .. } = peer;
             self.comm_bus.register_robot(name);
         }
 
         // Process each device.
         for device in devices {
-            let crate::comm::DeviceDecl::DeviceDecl { name, .. } = device;
+            let spanda_ast::comm_decl::DeviceDecl::DeviceDecl { name, .. } = device;
             self.comm_bus.register_device(name);
             self.env.define(
                 name.clone(),
@@ -375,7 +375,7 @@ impl<B: RobotBackend> Interpreter<B> {
 
         // Process each agent channel.
         for channel in agent_channels {
-            let crate::comm::AgentChannelDecl::AgentChannelDecl {
+            let spanda_ast::comm_decl::AgentChannelDecl::AgentChannelDecl {
                 from_agent,
                 to_agent,
                 message_type,
@@ -396,7 +396,7 @@ impl<B: RobotBackend> Interpreter<B> {
 
         // Process each trait impl.
         for trait_impl in trait_impls {
-            use crate::foundations::TraitImplDecl;
+            use spanda_ast::foundations::TraitImplDecl;
             let TraitImplDecl::TraitImplDecl {
                 agent_name,
                 methods,
@@ -418,14 +418,14 @@ impl<B: RobotBackend> Interpreter<B> {
 
         // Process each event.
         for event in events {
-            let crate::foundations::EventDecl::EventDecl { name, .. } = event;
+            let spanda_ast::foundations::EventDecl::EventDecl { name, .. } = event;
             self.declared_event_names.insert(name.clone());
             self.log(format!("event declared: {name}"));
         }
 
         // Invoke each registered handler.
         for handler in event_handlers {
-            let crate::foundations::EventHandlerDecl::EventHandlerDecl {
+            let spanda_ast::foundations::EventHandlerDecl::EventHandlerDecl {
                 event_name, body, ..
             } = handler;
             self.event_bus.register(event_name.clone(), body.clone());
@@ -471,7 +471,7 @@ impl<B: RobotBackend> Interpreter<B> {
 
             // Emit output when twin sync provides a sync.
             if let Some(sync) = twin_sync {
-                let crate::comm::TwinSyncDecl::TwinSyncDecl {
+                let spanda_ast::comm_decl::TwinSyncDecl::TwinSyncDecl {
                     telemetry,
                     replay: sync_replay,
                     faults,
@@ -488,7 +488,7 @@ impl<B: RobotBackend> Interpreter<B> {
                 mirrors.join(", ")
             ));
         } else if let Some(sync) = twin_sync {
-            let crate::comm::TwinSyncDecl::TwinSyncDecl {
+            let spanda_ast::comm_decl::TwinSyncDecl::TwinSyncDecl {
                 telemetry,
                 replay,
                 faults,
@@ -508,7 +508,7 @@ impl<B: RobotBackend> Interpreter<B> {
 
         // Emit output when verify provides a verify decl.
         if let Some(verify_decl) = verify {
-            let crate::foundations::VerifyDecl::VerifyDecl {
+            let spanda_ast::foundations::VerifyDecl::VerifyDecl {
                 rules, warnings, ..
             } = verify_decl;
             self.verify_rules = rules.clone();
@@ -522,7 +522,7 @@ impl<B: RobotBackend> Interpreter<B> {
 
         // Emit output when observe provides a observe decl.
         if let Some(observe_decl) = observe {
-            let crate::foundations::ObserveDecl::ObserveDecl { sensors, .. } = observe_decl;
+            let spanda_ast::foundations::ObserveDecl::ObserveDecl { sensors, .. } = observe_decl;
             self.fusion_sensors = sensors.clone();
             self.env.define(
                 "fusion",
@@ -539,14 +539,14 @@ impl<B: RobotBackend> Interpreter<B> {
 
         // Initialize mission controller and navigation helpers when declared.
         if let Some(mission_decl) = mission {
-            use crate::foundations::MissionDecl;
+            use spanda_ast::foundations::MissionDecl;
             let MissionDecl::MissionDecl {
                 name,
                 duration_hours,
                 steps,
                 ..
             } = mission_decl;
-            let runtime = crate::robotics_platform::MissionRuntime::new(
+            let runtime = spanda_runtime::robotics::MissionRuntime::new(
                 name.clone(),
                 steps.clone(),
                 *duration_hours,
@@ -570,7 +570,7 @@ impl<B: RobotBackend> Interpreter<B> {
 
         // Emit output when permissions provides a perm decl.
         if let Some(perm_decl) = permissions {
-            let crate::foundations::PermissionsDecl::PermissionsDecl { capabilities, .. } =
+            let spanda_ast::foundations::PermissionsDecl::PermissionsDecl { capabilities, .. } =
                 perm_decl;
             self.security.enable_strict_permissions();
             self.security.capabilities.grant_all(capabilities);
@@ -582,7 +582,7 @@ impl<B: RobotBackend> Interpreter<B> {
 
         // Emit output when trust provides a trust decl.
         if let Some(trust_decl) = trust {
-            let crate::foundations::TrustDecl::TrustDecl { level, .. } = trust_decl;
+            let spanda_ast::foundations::TrustDecl::TrustDecl { level, .. } = trust_decl;
 
             // Handle the success value from <TrustLevel>.
             if let Ok(t) = level.parse::<TrustLevel>() {
@@ -593,15 +593,15 @@ impl<B: RobotBackend> Interpreter<B> {
 
         // Process each secret.
         for secret_decl in secrets {
-            let crate::foundations::SecretDecl::SecretDecl { name, source, .. } = secret_decl;
+            let spanda_ast::foundations::SecretDecl::SecretDecl { name, source, .. } = secret_decl;
             let src = match source {
-                crate::foundations::SecretSourceDecl::Env { var } => {
+                spanda_ast::foundations::SecretSourceDecl::Env { var } => {
                     SecretSource::Env { var: var.clone() }
                 }
-                crate::foundations::SecretSourceDecl::File { path } => {
+                spanda_ast::foundations::SecretSourceDecl::File { path } => {
                     SecretSource::File { path: path.clone() }
                 }
-                crate::foundations::SecretSourceDecl::Literal { value } => SecretSource::Literal {
+                spanda_ast::foundations::SecretSourceDecl::Literal { value } => SecretSource::Literal {
                     value: value.clone(),
                 },
             };
@@ -617,7 +617,7 @@ impl<B: RobotBackend> Interpreter<B> {
 
         // Emit output when identity provides a identity decl.
         if let Some(identity_decl) = identity {
-            let crate::foundations::IdentityDecl::IdentityDecl { fields, .. } = identity_decl;
+            let spanda_ast::foundations::IdentityDecl::IdentityDecl { fields, .. } = identity_decl;
             let id = fields
                 .iter()
                 .find(|(k, _)| k == "id")
@@ -650,13 +650,13 @@ impl<B: RobotBackend> Interpreter<B> {
 
         // Emit output when audit provides a audit decl.
         if let Some(audit_decl) = audit {
-            let crate::foundations::AuditDecl::AuditDecl { name, records, .. } = audit_decl;
+            let spanda_ast::foundations::AuditDecl::AuditDecl { name, records, .. } = audit_decl;
             let watched: Vec<String> = records.iter().map(|e| Self::expr_path_string(e)).collect();
             let mut rt = AuditRuntime::new(name.clone(), watched.clone());
 
             // Emit output when identity provides a identity decl.
             if let Some(identity_decl) = identity {
-                let crate::foundations::IdentityDecl::IdentityDecl { fields, .. } = identity_decl;
+                let spanda_ast::foundations::IdentityDecl::IdentityDecl { fields, .. } = identity_decl;
                 let id = fields
                     .iter()
                     .find(|(k, _)| k == "id")
@@ -672,7 +672,7 @@ impl<B: RobotBackend> Interpreter<B> {
 
             // Emit output when provenance provides a provenance decl.
             if let Some(provenance_decl) = provenance {
-                let crate::foundations::ProvenanceDecl::ProvenanceDecl {
+                let spanda_ast::foundations::ProvenanceDecl::ProvenanceDecl {
                     hash_algo,
                     signed_by,
                     ..
@@ -692,13 +692,13 @@ impl<B: RobotBackend> Interpreter<B> {
 
         // Emit output when provenance provides a provenance decl.
         if let Some(provenance_decl) = provenance {
-            let crate::foundations::ProvenanceDecl::ProvenanceDecl { name, .. } = provenance_decl;
+            let spanda_ast::foundations::ProvenanceDecl::ProvenanceDecl { name, .. } = provenance_decl;
             self.log(format!("provenance {name}: sha256 signing enabled"));
         }
 
         // Process each signed record.
         for signed in signed_records {
-            let crate::foundations::SignedRecordDecl::SignedRecordDecl {
+            let spanda_ast::foundations::SignedRecordDecl::SignedRecordDecl {
                 event_name,
                 signed_by,
                 ..

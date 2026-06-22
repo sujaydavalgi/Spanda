@@ -2,7 +2,7 @@
 //!
 
 use super::{get_string, IntoSpandaError, Interpreter, RobotBackend, RuntimeError, RuntimeValue};
-use crate::ast::{Expr, UnitKind};
+use spanda_ast::nodes::{Expr, UnitKind};
 use crate::error::SpandaError;
 use std::collections::HashMap;
 
@@ -11,7 +11,7 @@ impl<B: RobotBackend> Interpreter<B> {
         &mut self,
         method: &str,
         args: &[Expr],
-        _named_args: &[crate::ast::NamedArg],
+        _named_args: &[spanda_ast::nodes::NamedArg],
         line: u32,
     ) -> Result<RuntimeValue, SpandaError> {
         // Eval audit method.
@@ -179,7 +179,7 @@ impl<B: RobotBackend> Interpreter<B> {
         &mut self,
         method: &str,
         args: &[Expr],
-        _named_args: &[crate::ast::NamedArg],
+        _named_args: &[spanda_ast::nodes::NamedArg],
         line: u32,
     ) -> Result<RuntimeValue, SpandaError> {
         // Eval ledger method.

@@ -4,8 +4,8 @@
 use super::{trigger_category_label, Interpreter, RobotBackend, RuntimeValue};
 use crate::comm::CommBus;
 use crate::error::SpandaError;
-use crate::ast::Expr;
-use crate::foundations::TriggerKind;
+use spanda_ast::nodes::Expr;
+use spanda_ast::foundations::TriggerKind;
 use crate::triggers::SystemTriggerCategory;
 
 impl<B: RobotBackend> Interpreter<B> {

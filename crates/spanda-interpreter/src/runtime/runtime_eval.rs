@@ -3,11 +3,12 @@
 
 use super::{IntoSpandaError, Interpreter, RobotBackend, RuntimeError, RuntimeValue};
 use crate::ai::{execute_agent_plan, mock_analyze_frame, mock_camera_frame, PlanExecutor};
-use crate::ast::{AgentDecl, BinaryOp, Expr, LiteralValue, Stmt, UnaryOp, UnitKind};
-use crate::comm::{CommBus, DiscoverFilter};
+use spanda_ast::nodes::{AgentDecl, BinaryOp, Expr, LiteralValue, Stmt, UnaryOp, UnitKind};
+use crate::comm::CommBus;
+use spanda_ast::comm_decl::DiscoverFilter;
 use crate::error::SpandaError;
 use crate::triggers::SystemTriggerCategory;
-use crate::units::align_for_binary;
+use spanda_typecheck::units::align_for_binary;
 use std::collections::HashMap;
 
 impl<B: RobotBackend> Interpreter<B> {
@@ -236,7 +237,7 @@ impl<B: RobotBackend> Interpreter<B> {
     fn eval_struct_literal(
         &mut self,
         type_name: &str,
-        fields: &[crate::ast::StructFieldInit],
+        fields: &[spanda_ast::nodes::StructFieldInit],
         line: u32,
     ) -> Result<RuntimeValue, SpandaError> {
         // Eval struct literal.
@@ -496,7 +497,7 @@ impl<B: RobotBackend> Interpreter<B> {
         &mut self,
         callee: &Expr,
         args: &[Expr],
-        named_args: &[crate::ast::NamedArg],
+        named_args: &[spanda_ast::nodes::NamedArg],
         line: u32,
     ) -> Result<RuntimeValue, SpandaError> {
         // Eval call.
@@ -748,7 +749,7 @@ impl<B: RobotBackend> Interpreter<B> {
 
     pub(super) fn get_named_arg_value(
         &mut self,
-        named_args: &[crate::ast::NamedArg],
+        named_args: &[spanda_ast::nodes::NamedArg],
         name: &str,
     ) -> Result<RuntimeValue, SpandaError> {
         //
