@@ -2,9 +2,10 @@
 //!
 
 use super::{
-    get_number, get_trajectory_waypoints, is_action_proposal, is_safe_action,
-    IntoSpandaError, Interpreter, MotionCommand, RobotBackend, RuntimeError, RuntimeValue,
+    get_number, get_trajectory_waypoints, IntoSpandaError, Interpreter, MotionCommand,
+    RobotBackend, RuntimeError, RuntimeValue,
 };
+use crate::ai::{is_action_proposal, is_safe_action};
 use crate::ast::Expr;
 use crate::error::SpandaError;
 use crate::safety::Pose2d;

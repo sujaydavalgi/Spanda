@@ -137,6 +137,21 @@ fn runtime_builtins_audit_and_actuator_logic_is_extracted() {
 }
 
 #[test]
+fn runtime_eval_logic_is_extracted() {
+    let runtime = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/runtime.rs");
+    let eval = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/runtime_eval.rs");
+    let runtime_source = fs::read_to_string(&runtime).expect("runtime.rs");
+    let eval_source = fs::read_to_string(&eval).expect("runtime_eval.rs");
+    assert!(eval_source.contains("fn eval_expr"));
+    assert!(eval_source.contains("fn eval_call"));
+    assert!(eval_source.contains("fn eval_binary"));
+    assert!(eval_source.contains("fn get_named_arg_value"));
+    assert!(!runtime_source.contains("fn eval_expr"));
+    assert!(!runtime_source.contains("fn eval_call"));
+    assert!(!runtime_source.contains("fn eval_binary"));
+}
+
+#[test]
 fn interpreter_accepts_injected_runtime_host() {
     use spanda_core::runtime::{Interpreter, InterpreterOptions};
     use spanda_core::simulator::{create_default_simulator, SimulatorConfig};
