@@ -2,7 +2,7 @@
 //!
 
 use super::{IntoSpandaError, Interpreter, RobotBackend, RuntimeError, RuntimeValue};
-use crate::ai::{execute_agent_plan, mock_analyze_frame, mock_camera_frame, PlanExecutor};
+use spanda_ai::{execute_agent_plan, mock_analyze_frame, mock_camera_frame, PlanExecutor};
 use spanda_ast::nodes::{AgentDecl, BinaryOp, Expr, LiteralValue, Stmt, UnaryOp, UnitKind};
 use spanda_comm::CommBus;
 use spanda_ast::comm_decl::DiscoverFilter;

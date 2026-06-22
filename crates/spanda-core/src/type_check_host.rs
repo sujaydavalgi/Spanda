@@ -1,6 +1,6 @@
 //! Core-backed [`TypeCheckHost`] hooks for the extracted program type checker.
 //!
-use crate::ai::resolve_ai_import;
+use spanda_ai::resolve_ai_import;
 use crate::ffi_registry;
 use crate::hal::hal_member_from_decl;
 use crate::lib_registry::{all_library_sensor_types, resolve_import};

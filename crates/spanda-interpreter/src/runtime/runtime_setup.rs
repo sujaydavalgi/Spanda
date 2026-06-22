@@ -5,7 +5,7 @@ use super::{
     Environment, HalBlockExt, IntoSpandaError, Interpreter, RobotBackend, RuntimeError,
     RuntimeValue, SafetyBlockExt, SocDeclExt,
 };
-use crate::ai::create_ai_model;
+use spanda_ai::create_ai_model;
 use spanda_ast::nodes::{
     AgentDecl, RobotDecl, SafetyRule, TopicDecl,
 };

@@ -58,6 +58,20 @@ fn interpreter_runtime_uses_workspace_ast_paths() {
 }
 
 #[test]
+fn ai_shim_reexports_spanda_ai() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/ai.rs");
+    let source = fs::read_to_string(&path).expect("ai.rs");
+    assert!(
+        source.lines().count() <= 8,
+        "ai.rs should be a thin re-export shim"
+    );
+    assert!(
+        source.contains("spanda_ai"),
+        "ai shim should re-export from spanda-ai"
+    );
+}
+
+#[test]
 fn error_shim_reexports_spanda_error() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/error.rs");
     let source = fs::read_to_string(&path).expect("error.rs");

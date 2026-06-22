@@ -1,6 +1,6 @@
 //! runtime support for Spanda.
 //!
-use crate::ai::{
+use spanda_ai::{
     AgentRuntime, AiModel,
 };
 use spanda_ast::nodes::{

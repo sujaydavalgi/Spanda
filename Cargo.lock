@@ -1163,6 +1163,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "spanda-ai"
+version = "0.1.0"
+dependencies = [
+ "spanda-ast",
+ "spanda-error",
+ "spanda-runtime",
+]
+
+[[package]]
 name = "spanda-ast"
 version = "0.1.0"
 dependencies = [
@@ -1224,6 +1233,7 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "sha2",
+ "spanda-ai",
  "spanda-ast",
  "spanda-audit",
  "spanda-comm",
@@ -1309,6 +1319,7 @@ dependencies = [
 name = "spanda-interpreter"
 version = "0.1.0"
 dependencies = [
+ "spanda-ai",
  "spanda-ast",
  "spanda-audit",
  "spanda-comm",

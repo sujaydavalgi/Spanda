@@ -27,4 +27,4 @@ pub use spanda_runtime::providers::{
 pub use transport_adapter::{adapter_config_to_runtime, TransportAdapterProvider};
 
 /// Re-export legacy AI provider surface for vision-capable packages.
-pub use crate::ai::{AiProvider, CompletionRequest, DetectionRequest, EmbedRequest};
+pub use spanda_ai::{AiProvider, CompletionRequest, DetectionRequest, EmbedRequest};

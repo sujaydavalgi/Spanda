@@ -5,7 +5,7 @@ use super::{
     get_number, get_trajectory_waypoints, IntoSpandaError, Interpreter, MotionCommand,
     RobotBackend, RuntimeError, RuntimeValue,
 };
-use crate::ai::{is_action_proposal, is_safe_action};
+use spanda_ai::{is_action_proposal, is_safe_action};
 use spanda_ast::nodes::Expr;
 use spanda_error::SpandaError;
 use spanda_safety::Pose2d;

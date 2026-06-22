@@ -2,7 +2,7 @@
 //!
 
 use super::{get_string, IntoSpandaError, Interpreter, RobotBackend, RuntimeError, RuntimeValue};
-use crate::ai::{
+use spanda_ai::{
     proposal_confidence, proposal_from_value, safe_action_from_proposal, AI_CONFIDENCE_LOW_THRESHOLD,
 };
 use spanda_ast::nodes::{Expr, UnitKind};

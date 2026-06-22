@@ -2,7 +2,7 @@
 //!
 
 use super::{Interpreter, RobotBackend, RuntimeValue};
-use crate::ai::MemoryStore;
+use spanda_ai::MemoryStore;
 use spanda_ast::nodes::{AgentDecl, Expr};
 use spanda_error::SpandaError;
 

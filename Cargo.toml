@@ -28,6 +28,7 @@ members = [
     "crates/spanda-hal",
     "crates/spanda-transport-routing",
     "crates/spanda-error",
+    "crates/spanda-ai",
     "crates/spanda-interpreter",
     "crates/spanda-transport",
 ]
