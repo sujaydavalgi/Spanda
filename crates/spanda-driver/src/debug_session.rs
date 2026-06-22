@@ -1,6 +1,6 @@
 //! Resumable debug sessions with step/continue and variable mutation.
 
-use spanda_ast::nodes::{BehaviorDecl, Program, RobotDecl, Stmt, UnitKind};
+use spanda_ast::nodes::{Program, RobotDecl, Stmt, UnitKind};
 use spanda_debug::{stmt_line, DebugController, DebugOptions, DebugPause, DebugSession};
 use spanda_error::SpandaError;
 use spanda_interpreter::runtime::{Environment, Interpreter, InterpreterOptions, RuntimeValue};
@@ -503,9 +503,7 @@ fn debug_entry_body(robot: &RobotDecl) -> Result<(String, Vec<Stmt>), SpandaErro
     }
     for handler in trigger_handlers {
         let TriggerHandlerDecl::TriggerHandlerDecl {
-            trigger_kind,
-            body,
-            ..
+            trigger_kind, body, ..
         } = handler;
         if matches!(trigger_kind, TriggerKind::Timer { .. }) {
             return Ok(("every".into(), body.clone()));
@@ -517,7 +515,10 @@ fn debug_entry_body(robot: &RobotDecl) -> Result<(String, Vec<Stmt>), SpandaErro
     })
 }
 
+#[cfg(test)]
 fn behavior_body(robot: &RobotDecl) -> Result<(String, Vec<Stmt>), SpandaError> {
+    use spanda_ast::nodes::BehaviorDecl;
+
     // Behavior body.
     //
     // Parameters:

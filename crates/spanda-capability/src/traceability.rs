@@ -3,7 +3,7 @@
 use crate::registry::{actuator_capabilities, lookup_capability, sensor_capabilities};
 use serde::{Deserialize, Serialize};
 use spanda_ast::foundations::{HardwareDecl, KillSwitchDecl};
-use spanda_ast::nodes::{Program, RobotDecl, SensorDecl, ActuatorDecl};
+use spanda_ast::nodes::{ActuatorDecl, Program, RobotDecl, SensorDecl};
 use std::collections::{HashMap, HashSet};
 
 /// Single row in the hardware traceability matrix.
@@ -170,7 +170,7 @@ pub fn hardware_traceability(program: &Program) -> TraceabilityReport {
                 used_by: name.clone(),
                 source_location: format!("robot {name} sensor {sensor_name}"),
                 capability: sensor_type.clone(),
-                provider: infer_sensor_provider(&sensor_type),
+                provider: infer_sensor_provider(sensor_type),
                 verified: uses_hardware
                     .as_ref()
                     .map(|hw| profiles.contains_key(hw))
@@ -187,10 +187,9 @@ pub fn hardware_traceability(program: &Program) -> TraceabilityReport {
                 ..
             } = actuator;
             used_actuators.insert(actuator_name.clone());
-            let has_safety = rows.iter().any(|r| {
-                r.hardware_component.contains(actuator_name)
-                    && r.safety_rule.is_some()
-            });
+            let has_safety = rows
+                .iter()
+                .any(|r| r.hardware_component.contains(actuator_name) && r.safety_rule.is_some());
             if !has_safety {
                 warnings.push(format!(
                     "Actuator '{actuator_name}' on robot '{name}' has no safety gate"
@@ -201,7 +200,7 @@ pub fn hardware_traceability(program: &Program) -> TraceabilityReport {
                 used_by: name.clone(),
                 source_location: format!("robot {name} actuator {actuator_name}"),
                 capability: actuator_type.clone(),
-                provider: infer_actuator_provider(&actuator_type),
+                provider: infer_actuator_provider(actuator_type),
                 verified: true,
                 safety_rule: if actuator_type.contains("Drive") {
                     Some("max_speed".into())
@@ -215,9 +214,7 @@ pub fn hardware_traceability(program: &Program) -> TraceabilityReport {
         // Flag robots using hardware without declaration.
         if let Some(hw) = uses_hardware {
             if !profiles.contains_key(hw) {
-                errors.push(format!(
-                    "Robot '{name}' uses undeclared hardware '{hw}'"
-                ));
+                errors.push(format!("Robot '{name}' uses undeclared hardware '{hw}'"));
             }
         }
     }
@@ -264,10 +261,7 @@ pub fn capability_traceability(program: &Program) -> TraceabilityReport {
 
     for req in requires_capabilities {
         let cap_name = &req.capability;
-        let required_by = req
-            .required_by
-            .clone()
-            .unwrap_or_else(|| "program".into());
+        let required_by = req.required_by.clone().unwrap_or_else(|| "program".into());
         if let Some(def) = lookup_capability(cap_name) {
             for robot in robots {
                 let RobotDecl::RobotDecl {
@@ -276,8 +270,8 @@ pub fn capability_traceability(program: &Program) -> TraceabilityReport {
                     exposes_capabilities,
                     ..
                 } = robot;
-                let provided = exposes_capabilities.contains(cap_name)
-                    || infer_provides(robot, cap_name);
+                let provided =
+                    exposes_capabilities.contains(cap_name) || infer_provides(robot, cap_name);
                 report.capability_rows.push(CapabilityTraceRow {
                     capability: cap_name.clone(),
                     required_by: required_by.clone(),
@@ -291,7 +285,9 @@ pub fn capability_traceability(program: &Program) -> TraceabilityReport {
                 });
             }
         } else {
-            report.errors.push(format!("Unknown capability '{cap_name}'"));
+            report
+                .errors
+                .push(format!("Unknown capability '{cap_name}'"));
         }
     }
 

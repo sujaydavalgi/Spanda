@@ -325,9 +325,7 @@ pub fn cmd_test(args: &[String]) {
         let test_dir = root.join("tests");
         if !test_dir.is_dir() {
             if json {
-                println!(
-                    r#"{{"passed":0,"failed":0,"skipped":0,"duration_ms":0,"tests":[]}}"#
-                );
+                println!(r#"{{"passed":0,"failed":0,"skipped":0,"duration_ms":0,"tests":[]}}"#);
             } else {
                 println!("✓ No tests directory — nothing to run");
             }
@@ -359,8 +357,8 @@ pub fn cmd_test(args: &[String]) {
     } else {
         None
     };
-    if manifest.is_some() {
-        validate_project(&root, manifest.as_ref().unwrap());
+    if let Some(ref manifest) = manifest {
+        validate_project(&root, manifest);
     }
 
     let registry = if project_mode || !had_paths {

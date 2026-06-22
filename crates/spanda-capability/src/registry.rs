@@ -242,7 +242,14 @@ pub fn capability_registry() -> Vec<CapabilityDefinition> {
 /// Package contributions to the registry.
 pub fn package_contributions() -> Vec<PackageCapabilityContribution> {
     vec![
-        contrib("spanda-nav", &["autonomous_navigation", "path_planning", "obstacle_avoidance"]),
+        contrib(
+            "spanda-nav",
+            &[
+                "autonomous_navigation",
+                "path_planning",
+                "obstacle_avoidance",
+            ],
+        ),
         contrib("spanda-gps", &["gps_navigation", "geofencing"]),
         contrib("spanda-mqtt", &["telemetry_streaming", "remote_command"]),
         contrib("spanda-fleet", &["fleet_coordination"]),
@@ -257,9 +264,7 @@ pub fn package_contributions() -> Vec<PackageCapabilityContribution> {
 
 /// Look up a capability by name.
 pub fn lookup_capability(name: &str) -> Option<CapabilityDefinition> {
-    capability_registry()
-        .into_iter()
-        .find(|c| c.name == name)
+    capability_registry().into_iter().find(|c| c.name == name)
 }
 
 /// Map sensor/actuator types to hardware-level capabilities.
@@ -303,6 +308,7 @@ fn def(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn req(
     sensors: &[&str],
     actuators: &[&str],

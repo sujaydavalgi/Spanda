@@ -993,7 +993,9 @@ impl Parser {
         })
     }
 
-    fn parse_kill_switch(&mut self) -> Result<spanda_ast::foundations::KillSwitchDecl, SpandaError> {
+    fn parse_kill_switch(
+        &mut self,
+    ) -> Result<spanda_ast::foundations::KillSwitchDecl, SpandaError> {
         use spanda_ast::foundations::KillSwitchDecl;
         let start = self.advance();
         let name = self.parse_label("Expected kill switch name")?;
@@ -1095,9 +1097,7 @@ impl Parser {
                 } else if self.check(TokenType::False) {
                     self.advance();
                     "false".into()
-                } else if self.check(TokenType::Ident) {
-                    self.advance().lexeme.clone()
-                } else if self.check(TokenType::Number) {
+                } else if self.check(TokenType::Ident) || self.check(TokenType::Number) {
                     self.advance().lexeme.clone()
                 } else {
                     self.parse_label("Expected threshold value")?
@@ -1106,7 +1106,10 @@ impl Parser {
                     self.advance();
                     threshold.push('%');
                 }
-                self.expect(TokenType::Semicolon, "Expected ';' after health check condition")?;
+                self.expect(
+                    TokenType::Semicolon,
+                    "Expected ';' after health check condition",
+                )?;
                 conditions.push(HealthCheckCondition {
                     metric,
                     operator: op,
@@ -1158,10 +1161,7 @@ impl Parser {
                 let status = self.parse_label("Expected health status")?;
                 self.expect(TokenType::Lbrace, "Expected '{' after status")?;
                 let body = self.parse_block()?;
-                reactions.push(spanda_ast::foundations::HealthPolicyReaction {
-                    status,
-                    body,
-                });
+                reactions.push(spanda_ast::foundations::HealthPolicyReaction { status, body });
                 self.expect(TokenType::Rbrace, "Expected '}' after health policy action")?;
             } else {
                 let t = self.peek();
@@ -1178,31 +1178,6 @@ impl Parser {
             reactions,
             span: self.span_from(&start, &end),
         })
-    }
-
-    fn parse_action_stmts(&mut self) -> Result<String, SpandaError> {
-        let mut parts = Vec::new();
-        while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
-            if self.check(TokenType::Ident) || self.check(TokenType::EmergencyStop) {
-                parts.push(self.advance().lexeme.clone());
-            } else if self.check(TokenType::Semicolon) {
-                self.advance();
-            } else if self.check(TokenType::Lparen) {
-                let _ = self.parse_expr()?;
-                if self.check(TokenType::Semicolon) {
-                    self.advance();
-                }
-            } else {
-                let t = self.peek();
-                return Err(SpandaError::Parse {
-                    message: "Expected action statement in health policy".into(),
-                    line: t.line,
-                    column: t.column,
-                });
-            }
-        }
-        self.expect(TokenType::Rbrace, "Expected '}' to close action block")?;
-        Ok(parts.join(" "))
     }
 
     fn parse_requires_capability(
@@ -1223,10 +1198,7 @@ impl Parser {
                 let kind = if self.check(TokenType::Sensors) {
                     self.advance();
                     "sensors".to_string()
-                } else if self.check(TokenType::Actuators) {
-                    self.advance();
-                    "actuators".to_string()
-                } else if self.check(TokenType::Actuator) {
+                } else if self.check(TokenType::Actuators) || self.check(TokenType::Actuator) {
                     self.advance();
                     "actuators".to_string()
                 } else if self.check(TokenType::Ident) && self.peek().lexeme == "connectivity" {
@@ -1268,7 +1240,10 @@ impl Parser {
                 });
             }
         }
-        let end = self.expect(TokenType::Rbrace, "Expected '}' to close requires_capability")?;
+        let end = self.expect(
+            TokenType::Rbrace,
+            "Expected '}' to close requires_capability",
+        )?;
         Ok(RequiresCapabilityDecl {
             capability,
             required_by: None,
@@ -2038,10 +2013,8 @@ impl Parser {
                 self.expect(TokenType::Semicolon, "Expected ';' after duration")?;
             } else if self.check(TokenType::Requires) {
                 self.advance();
-                let cap_kw = self.expect(
-                    TokenType::Ident,
-                    "Expected 'capabilities' after requires",
-                )?;
+                let cap_kw =
+                    self.expect(TokenType::Ident, "Expected 'capabilities' after requires")?;
                 if cap_kw.lexeme != "capabilities" {
                     return Err(SpandaError::Parse {
                         message: "Expected 'capabilities' after requires".into(),
@@ -3307,10 +3280,8 @@ impl Parser {
                 self.expect(TokenType::Semicolon, "Expected ';' after uses hardware")?;
             } else if self.check(TokenType::Ident) && self.peek().lexeme == "exposes" {
                 self.advance();
-                let cap_kw = self.expect(
-                    TokenType::Ident,
-                    "Expected 'capabilities' after exposes",
-                )?;
+                let cap_kw =
+                    self.expect(TokenType::Ident, "Expected 'capabilities' after exposes")?;
                 if cap_kw.lexeme != "capabilities" {
                     return Err(SpandaError::Parse {
                         message: "Expected 'capabilities' after exposes".into(),
@@ -6512,7 +6483,9 @@ impl Parser {
         }
     }
 
-    fn parse_optional_trigger_return_type(&mut self) -> Result<spanda_ast::nodes::SpandaType, SpandaError> {
+    fn parse_optional_trigger_return_type(
+        &mut self,
+    ) -> Result<spanda_ast::nodes::SpandaType, SpandaError> {
         // Parse optional return type on trigger handlers (`-> Type` before `{`).
         //
         // Parameters:

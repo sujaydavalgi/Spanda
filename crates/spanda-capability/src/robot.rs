@@ -98,13 +98,16 @@ fn analyze_robot(
     }
 
     // Infer capabilities from component combinations.
-    if has_any(&sensor_types, &["GPS", "GNSS"]) && has_any(&actuator_types, &["DifferentialDrive"]) {
+    if has_any(&sensor_types, &["GPS", "GNSS"]) && has_any(&actuator_types, &["DifferentialDrive"])
+    {
         inferred.insert("gps_navigation".into());
     }
     if has_any(&sensor_types, &["Lidar", "DepthCamera", "Radar"]) {
         inferred.insert("obstacle_avoidance".into());
     }
-    if has_any(&sensor_types, &["Lidar", "Camera"]) && has_any(&actuator_types, &["DifferentialDrive"]) {
+    if has_any(&sensor_types, &["Lidar", "Camera"])
+        && has_any(&actuator_types, &["DifferentialDrive"])
+    {
         inferred.insert("autonomous_navigation".into());
     }
     if has_any(&connectivity, &["WiFi", "LTE", "FiveG", "MQTT"]) {
@@ -125,20 +128,14 @@ fn analyze_robot(
 
     // Mission-required capabilities from mission block name.
     if let Some(spanda_ast::foundations::MissionDecl::MissionDecl {
-        name: mission_name,
-        ..
+        name: Some(mname), ..
     }) = mission
     {
-        if let Some(mname) = mission_name {
-            match mname.as_str() {
-                "Patrol" => {
-                    inferred.insert("gps_navigation".into());
-                    inferred.insert("obstacle_avoidance".into());
-                    inferred.insert("emergency_stop".into());
-                    inferred.insert("telemetry_streaming".into());
-                }
-                _ => {}
-            }
+        if mname == "Patrol" {
+            inferred.insert("gps_navigation".into());
+            inferred.insert("obstacle_avoidance".into());
+            inferred.insert("emergency_stop".into());
+            inferred.insert("telemetry_streaming".into());
         }
     }
 
@@ -206,23 +203,22 @@ fn satisfies(
         return false;
     };
     let req = &def.minimum;
-    let sensors_ok = req.any_of_sensors.is_empty()
-        || req.any_of_sensors.iter().any(|s| sensors.contains(s));
+    let sensors_ok =
+        req.any_of_sensors.is_empty() || req.any_of_sensors.iter().any(|s| sensors.contains(s));
     let actuators_ok = req.any_of_actuators.is_empty()
         || req.any_of_actuators.iter().any(|a| actuators.contains(a));
     let conn_ok = req.any_of_connectivity.is_empty()
-        || req.any_of_connectivity.iter().any(|c| connectivity.contains(c));
+        || req
+            .any_of_connectivity
+            .iter()
+            .any(|c| connectivity.contains(c));
     sensors_ok && actuators_ok && conn_ok
 }
 
 /// List package contributions relevant to a robot's inferred capabilities.
 pub fn package_capabilities_for_robot(report: &RobotCapabilityReport) -> Vec<CapabilityDefinition> {
     let contribs = package_contributions();
-    let caps: HashSet<String> = report
-        .rows
-        .iter()
-        .map(|r| r.capability.clone())
-        .collect();
+    let caps: HashSet<String> = report.rows.iter().map(|r| r.capability.clone()).collect();
     contribs
         .into_iter()
         .filter(|c| c.capabilities.iter().any(|cap| caps.contains(cap)))
