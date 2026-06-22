@@ -12,3 +12,4 @@ homepage.workspace = true
 spanda-ast = { path = "../spanda-ast" }
 spanda-error = { path = "../spanda-error" }
 spanda-runtime = { path = "../spanda-runtime" }
+serde_json = "1"

@@ -1,5 +1,7 @@
 //! ai support for Spanda.
 //!
+pub mod live;
+
 use spanda_ast::nodes::{AgentDecl, AiModelDecl, ConfigValue, MemoryKind, Stmt, UnitKind};
 use spanda_runtime::value::RuntimeValue;
 use std::collections::HashMap;
@@ -219,7 +221,7 @@ pub trait AiProvider: Send + Sync {
     fn embed(&self, request: &EmbedRequest) -> RuntimeValue;
 }
 
-fn scan_distance(input: Option<&RuntimeValue>) -> f64 {
+pub(crate) fn scan_distance(input: Option<&RuntimeValue>) -> f64 {
     // Scan distance.
     //
     // Parameters:
@@ -249,7 +251,7 @@ fn scan_distance(input: Option<&RuntimeValue>) -> f64 {
     }
 }
 
-fn action_proposal(
+pub(crate) fn action_proposal(
     linear: f64,
     angular: f64,
     source: impl Into<String>,
@@ -753,6 +755,7 @@ impl AiModel {
         // let value = spanda_ai::new(decl, provider);
 
         // Assemble the struct fields and return it.
+        let config = parse_config(decl);
         Self {
             name: match decl {
                 AiModelDecl::AiModelDecl { name, .. } => name.clone(),
@@ -760,8 +763,8 @@ impl AiModel {
             model_type: match decl {
                 AiModelDecl::AiModelDecl { model_type, .. } => model_type.clone(),
             },
-            config: parse_config(decl),
-            provider: provider.unwrap_or_else(|| Box::new(MockAiProvider)),
+            config: config.clone(),
+            provider: provider.unwrap_or_else(|| live::resolve_ai_provider(&config.provider)),
         }
     }
 
