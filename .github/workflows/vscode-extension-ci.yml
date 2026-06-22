@@ -1,0 +1,27 @@
+name: VS Code Extension CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'editor/vscode/**'
+      - 'packages/lsp/**'
+      - 'scripts/bundle-vscode-extension.sh'
+      - 'scripts/verify_vscode_vsix.sh'
+  pull_request:
+    paths:
+      - 'editor/vscode/**'
+      - 'packages/lsp/**'
+      - 'scripts/bundle-vscode-extension.sh'
+      - 'scripts/verify_vscode_vsix.sh'
+
+jobs:
+  vsix-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Verify VSIX build
+        run: ./scripts/verify_vscode_vsix.sh
