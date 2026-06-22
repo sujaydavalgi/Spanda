@@ -138,8 +138,8 @@ See [tier-3-experimental.md](./tier-3-experimental.md) and [tier-3-golden-paths.
 | Prebuilt packages | **Stable** | Linux/macOS/Windows archives, shell/PowerShell installers, Windows MSI, Homebrew formula; see [installation.md](./installation.md) |
 | TypeScript CLI | **Stable** | Delegates to Rust when built |
 | Formatter / linter / docgen | **Stable** | Rust |
-| LSP | **Experimental** | VS Code extension scaffold exists; marketplace publish pending |
-| DAP debugger | **Experimental** | Per-frame locals, step-in/out |
+| LSP | **Experimental** | VS Code extension scaffold; CI builds VSIX on push |
+| DAP debugger | **Experimental** | Per-frame locals, step-in/out (tested in `phase34_gaps.rs`) |
 | N-API | **Experimental** | check, run, verify, sir, fmt |
 | WASM | **Experimental** | check, run, verify, sir, fmt |
 
@@ -157,7 +157,7 @@ See [tier-3-experimental.md](./tier-3-experimental.md) and [tier-3-golden-paths.
 
 ## Known limitations (v0.1.0-alpha)
 
-- AI providers use **mock backends** by default; set `OPENAI_API_KEY` and `provider: "openai"` for live OpenAI via the Python bridge (`SPANDA_LIVE_AI=0` forces mock).
+- AI providers use **mock backends** by default; set `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` with `provider: "openai"` / `"anthropic"` for live calls via the Python bridge (`SPANDA_LIVE_AI=0` forces mock).
 - ROS2 integration requires manual ROS Humble setup and is not the default simulator transport.
 - Native compilation via LLVM is **experimental**; the tree-walking interpreter is the primary runtime.
 - Package publishing targets a **local stub registry**, not crates.io or npm-style global registry.
@@ -171,8 +171,10 @@ See [tier-3-experimental.md](./tier-3-experimental.md) and [tier-3-golden-paths.
 | Item | Category | Detail |
 |------|----------|--------|
 | Global package registry | Stubbed | `spanda publish` writes to local `~/.spanda/registry` |
-| Live OpenAI / cloud AI | Production path | `provider: "openai"` + `OPENAI_API_KEY`; Python bridge; mock fallback |
+| Live OpenAI / Anthropic AI | Production path | `provider: "openai"` + `OPENAI_API_KEY` or `provider: "anthropic"` + `ANTHROPIC_API_KEY`; Python bridge; mock fallback |
 | Live Modbus / OPC-UA IoT | Optional live hardware | `SPANDA_LIVE_MODBUS=1` / `SPANDA_LIVE_OPCUA=1`; `--features live-iot` for native Modbus TCP |
+| IoT protocol stubs (zigbee/lora/matter/canbus) | Package dispatch | In-memory hub + `package_dispatch`; `.sd` stubs in registry packages |
+| Kill switch remote_signed | Runtime enforced | Requires `kill_switch_signature` JSON when `remote_signed` is set |
 | MQTT / DDS / WebSocket live transport | Production wire + optional live brokers | AES-256-GCM wire frames; live MQTT/WebSocket/DDS via `--features live-transport` + `SPANDA_LIVE_MQTT=1` / `SPANDA_LIVE_WEBSOCKET=1` / `SPANDA_LIVE_DDS=1`; TypeScript mirrors the same env flags |
 | Secure comm live crypto | Production wire | AES-256-GCM for transport frames and `EncryptedMessage` payloads; session material from robot secrets |
 | Full native binary deploy | Stubbed | `spanda codegen` emits skeleton output |

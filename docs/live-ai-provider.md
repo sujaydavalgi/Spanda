@@ -1,10 +1,37 @@
-# Live AI provider path (OpenAI)
+# Live AI provider path (OpenAI + Anthropic)
 
-Spanda v0.5 beta includes a **real AI provider path** for `ai_model` blocks with `provider: "openai"`. When `OPENAI_API_KEY` is set, `planner.reason(...)` calls OpenAI via the Python bridge; otherwise it falls back to the deterministic mock provider.
+Spanda v0.5 beta includes **real AI provider paths** for `ai_model` blocks:
 
-For FFI `extern python fn openai_complete`, the same bridge applies.
+| Provider | When live | Fallback |
+|----------|-----------|----------|
+| `openai` | `OPENAI_API_KEY` set | Mock provider |
+| `anthropic` | `ANTHROPIC_API_KEY` set | Mock provider |
 
-## Quick start
+When the key is set, `planner.reason(...)` calls the provider via the Python bridge; otherwise it falls back to the deterministic mock provider.
+
+For FFI `extern python fn openai_complete` / `anthropic_complete`, the same bridge applies.
+
+## Anthropic quick start
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-your-key
+spanda run examples/ffi_openai_live.sd  # swap provider to "anthropic" in ai_model
+```
+
+With the `spanda-anthropic` registry package:
+
+```spanda
+import ai.anthropic;
+
+robot Agent {
+  behavior plan() {
+    let text = ai.anthropic.complete("Plan a safe stop");
+    let _ = text;
+  }
+}
+```
+
+## OpenAI quick start
 
 ```bash
 export OPENAI_API_KEY=sk-your-key
@@ -61,12 +88,15 @@ Unsafe direct execution remains a **compile error** regardless of provider.
 | Variable | Purpose |
 |----------|---------|
 | `OPENAI_API_KEY` | Enables live OpenAI calls for `provider: "openai"` and FFI bridge |
+| `ANTHROPIC_API_KEY` | Enables live Anthropic calls for `provider: "anthropic"` and FFI bridge |
 | `SPANDA_LIVE_AI=0` | Force mock provider even when API key is set |
 | `SPANDA_PYTHON_BRIDGE` | Override bridge script path |
 
 ## Registry package
 
 `spanda-openai` ships import path `ai.openai` with `complete(prompt)` wrapping `openai_complete`.
+
+`spanda-anthropic` ships import path `ai.anthropic` with `complete(prompt)` wrapping `anthropic_complete`.
 
 Default registry: `SPANDA_REGISTRY_URL` points at the hosted index in this repository (see [registry.md](./registry.md)).
 

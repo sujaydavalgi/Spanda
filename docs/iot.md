@@ -56,6 +56,10 @@ When official IoT packages are installed, module imports dispatch through `packa
 | `iot.telemetry` | `publish` | `spanda-iot-core` |
 | `iot.modbus` | `read_register` | `spanda-modbus` |
 | `iot.opcua` | `read_node` | `spanda-opcua` |
+| `iot.zigbee` | `read_attribute` | `spanda-zigbee` |
+| `iot.lora` | `read_payload` | `spanda-lora` |
+| `iot.matter` | `read_cluster` | `spanda-matter` |
+| `iot.canbus` | `read_frame` | `spanda-canbus` |
 
 ## Live hardware (optional)
 

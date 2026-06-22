@@ -449,3 +449,18 @@ Goal: close remaining partial gaps — trigger handler return types, live Modbus
 | Live OpenAI provider for `provider: "openai"` when `OPENAI_API_KEY` set | **Complete** |
 | Integration tests (`phase33_gaps.rs`) + `scripts/live_iot_golden_path.sh` | **Complete** |
 
+## Phase 34 — Complete ✓ (I/O verification, kill switch signing, debugger CI, IoT protocols, Anthropic, fleet/swarm health)
+
+Goal: fully close the six remaining partial areas from the 14-item verification/DX audit.
+
+| Step | Status |
+|------|--------|
+| Event handler `-> Type` return validation (Rust + TypeScript mirror) | **Complete** |
+| `on kill_switch Name { }` trigger syntax + typecheck + runtime dispatch | **Complete** |
+| `remote_signed` kill switch runtime signature enforcement (`kill_switch_signature` in `RunOptions`) | **Complete** |
+| VS Code extension CI workflow (`.github/workflows/vscode-extension-ci.yml`) | **Complete** |
+| IoT protocol dispatch for zigbee/lora/matter/canbus + package `.sd` stubs | **Complete** |
+| Live Anthropic provider (`ANTHROPIC_API_KEY`, `spanda-anthropic` package) | **Complete** |
+| Fleet-target health refinement via `apply_fleet_health_checks` + swarm coordination hooks | **Complete** |
+| Integration tests (`phase34_gaps.rs`) | **Complete** |
+

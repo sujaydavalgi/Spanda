@@ -34,6 +34,7 @@
 - **Verification & DX (Phase 31):** runtime health_policy reactions; behavior return types; agent SafeAction plan returns; IoT package dispatch; agent capability audit hooks
 - **Verification & DX (Phase 32):** in-memory IoT hub; task return types; agent can[] enforcement; VSIX verify script
 - **Verification & DX (Phase 33):** trigger handler return types; live Modbus/OPC-UA IoT paths; live OpenAI provider for ai_model
+- **Verification & DX (Phase 34):** event handler I/O verification; kill switch `remote_signed` enforcement and `on kill_switch` handlers; VS Code extension CI; IoT protocol dispatch; live Anthropic provider; fleet/swarm health runtime coordination
 
 ## In progress
 

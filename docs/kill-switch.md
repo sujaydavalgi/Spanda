@@ -37,13 +37,15 @@ robot Rover {
 - Kill switches preempt AI/agent tasks
 - Actuators must stop on activation
 - Activation is audited when an `audit` block is present
-- Remote kill switches require `remote_signed` and verified commands
+- Remote kill switches require `remote_signed` and verified commands (`RunOptions.kill_switch_signature` JSON at runtime)
+- `on kill_switch Name { }` handlers run after activation
 - Available in simulation via `--trigger-kill-switch`
 
 ## CLI
 
 ```bash
 spanda sim rover.sd --trigger-kill-switch EmergencyStop
+# Remote-signed switches require a JSON signature payload at runtime (see spanda_security::SignedMessage)
 spanda trace hardware rover.sd   # shows kill switch in traceability matrix
 ```
 

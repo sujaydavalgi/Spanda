@@ -50,7 +50,17 @@ health_policy SafetyPolicy {
 }
 ```
 
-At runtime, matching reactions execute when health status transitions (wired to `HardwareMonitor` polling). Policies latch per `(policy, status)` until health returns to `Healthy`.
+At runtime, matching reactions execute when health status transitions (wired to `HardwareMonitor` polling). Fleet-target checks are refined against fleet membership and member faults via `apply_fleet_health_checks`. Swarm programs log coordination events when fleet health is critical. Policies latch per `(policy, status)` until health returns to `Healthy`.
+
+## Event handler return types
+
+```spanda
+event Alert;
+
+on Alert -> Bool {
+    return true;
+}
+```
 
 ## Behavior and task return types
 
