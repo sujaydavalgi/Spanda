@@ -49,6 +49,41 @@ def _opcua_read_node(endpoint: str, node_id: str) -> str:
         return str(value)
 
 
+def _zigbee_read_attribute(device: str, cluster: str) -> str:
+    return f"mock-zigbee:{device}:{cluster}"
+
+
+def _lora_read_payload(device_id: str) -> str:
+    return f"mock-lora:{device_id}"
+
+
+def _matter_read_cluster(node: str, cluster: str) -> float:
+    return float((hash(f"{node}:{cluster}") % 100) + 1)
+
+
+def _canbus_read_frame(can_id: int) -> float:
+    return float(can_id & 0xFF)
+
+
+def _onnx_complete(prompt: str) -> str:
+    import os
+
+    model_path = os.environ.get("SPANDA_ONNX_MODEL_PATH")
+    if not model_path:
+        return f"mock-onnx:{prompt[:48]}"
+    try:
+        import onnxruntime as ort
+    except ImportError:
+        return f"mock-onnx:{prompt[:48]}"
+    session = ort.InferenceSession(model_path)
+    outputs = session.run(None, {})
+    if outputs:
+        first = outputs[0]
+        if hasattr(first, "tolist"):
+            return str(first.tolist())[:256]
+    return "onnx-empty"
+
+
 def _anthropic_complete(prompt: str) -> str:
     import os
 
@@ -205,6 +240,11 @@ HANDLERS: dict[str, Handler] = {
     "mqtt_publish": _mqtt_publish,
     "modbus_read_register": _modbus_read_register,
     "opcua_read_node": _opcua_read_node,
+    "zigbee_read_attribute": _zigbee_read_attribute,
+    "lora_read_payload": _lora_read_payload,
+    "matter_read_cluster": _matter_read_cluster,
+    "canbus_read_frame": _canbus_read_frame,
+    "onnx_complete": _onnx_complete,
     "openai_complete": _openai_complete,
     "anthropic_complete": _anthropic_complete,
 }

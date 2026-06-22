@@ -15,4 +15,28 @@ echo "== opcua bridge mock path =="
 RESULT="$(printf '%s\n' '{"fn":"opcua_read_node","args":["opc.tcp://127.0.0.1:4840","ns=2;s=Temperature"]}' | python3 "${BRIDGE}")"
 echo "${RESULT}" | grep -q '"ok": true'
 
+echo "== zigbee bridge mock path =="
+export SPANDA_LIVE_ZIGBEE=1
+RESULT="$(printf '%s\n' '{"fn":"zigbee_read_attribute","args":["sensor-1","temperature"]}' | python3 "${BRIDGE}")"
+echo "${RESULT}" | grep -q '"ok": true'
+
+echo "== lora bridge mock path =="
+export SPANDA_LIVE_LORA=1
+RESULT="$(printf '%s\n' '{"fn":"lora_read_payload","args":["dev-42"]}' | python3 "${BRIDGE}")"
+echo "${RESULT}" | grep -q '"ok": true'
+
+echo "== matter bridge mock path =="
+export SPANDA_LIVE_MATTER=1
+RESULT="$(printf '%s\n' '{"fn":"matter_read_cluster","args":["node-1","OnOff"]}' | python3 "${BRIDGE}")"
+echo "${RESULT}" | grep -q '"ok": true'
+
+echo "== canbus bridge mock path =="
+export SPANDA_LIVE_CANBUS=1
+RESULT="$(printf '%s\n' '{"fn":"canbus_read_frame","args":[291]}' | python3 "${BRIDGE}")"
+echo "${RESULT}" | grep -q '"ok": true'
+
+echo "== onnx bridge mock path =="
+RESULT="$(printf '%s\n' '{"fn":"onnx_complete","args":["plan safe stop"]}' | python3 "${BRIDGE}")"
+echo "${RESULT}" | grep -q '"ok": true'
+
 echo "Live IoT golden path complete."

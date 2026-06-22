@@ -76,6 +76,88 @@ pub fn read_opcua_node_live(node: &str) -> Option<String> {
     read_opcua_via_python_bridge(node)
 }
 
+fn live_iot_flag(name: &str) -> bool {
+    std::env::var(name)
+        .ok()
+        .as_deref()
+        .is_some_and(|v| v == "1" || v.eq_ignore_ascii_case("true"))
+}
+
+/// Return true when live Zigbee bridge reads are enabled.
+pub fn live_zigbee_enabled() -> bool {
+    live_iot_flag("SPANDA_LIVE_ZIGBEE")
+}
+
+/// Return true when live LoRa bridge reads are enabled.
+pub fn live_lora_enabled() -> bool {
+    live_iot_flag("SPANDA_LIVE_LORA")
+}
+
+/// Return true when live Matter bridge reads are enabled.
+pub fn live_matter_enabled() -> bool {
+    live_iot_flag("SPANDA_LIVE_MATTER")
+}
+
+/// Return true when live CAN bus bridge reads are enabled.
+pub fn live_canbus_enabled() -> bool {
+    live_iot_flag("SPANDA_LIVE_CANBUS")
+}
+
+pub fn read_zigbee_attribute_live(device: &str, cluster: &str) -> Option<String> {
+    if !live_zigbee_enabled() {
+        return None;
+    }
+    read_string_via_python_bridge("zigbee_read_attribute", vec![
+        serde_json::Value::String(device.to_string()),
+        serde_json::Value::String(cluster.to_string()),
+    ])
+}
+
+pub fn read_lora_payload_live(device_id: &str) -> Option<String> {
+    if !live_lora_enabled() {
+        return None;
+    }
+    read_string_via_python_bridge(
+        "lora_read_payload",
+        vec![serde_json::Value::String(device_id.to_string())],
+    )
+}
+
+pub fn read_matter_cluster_live(node: &str, cluster: &str) -> Option<f64> {
+    if !live_matter_enabled() {
+        return None;
+    }
+    read_number_via_python_bridge("matter_read_cluster", vec![
+        serde_json::Value::String(node.to_string()),
+        serde_json::Value::String(cluster.to_string()),
+    ])
+}
+
+pub fn read_canbus_frame_live(can_id: u32) -> Option<f64> {
+    if !live_canbus_enabled() {
+        return None;
+    }
+    read_number_via_python_bridge(
+        "canbus_read_frame",
+        vec![serde_json::Value::Number(can_id.into())],
+    )
+}
+
+fn read_string_via_python_bridge(fn_name: &str, args: Vec<serde_json::Value>) -> Option<String> {
+    match call_python_bridge(fn_name, args)?.get("result") {
+        Some(serde_json::Value::String(text)) if !text.is_empty() => Some(text.clone()),
+        _ => None,
+    }
+}
+
+fn read_number_via_python_bridge(fn_name: &str, args: Vec<serde_json::Value>) -> Option<f64> {
+    match call_python_bridge(fn_name, args)?.get("result") {
+        Some(serde_json::Value::Number(n)) => n.as_f64(),
+        Some(serde_json::Value::String(text)) => text.parse().ok(),
+        _ => None,
+    }
+}
+
 #[cfg(feature = "live-iot")]
 fn read_modbus_tcp(address: u16) -> Result<f64, String> {
     // Read one holding register over Modbus TCP using the pure-Rust client.

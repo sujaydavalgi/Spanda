@@ -145,21 +145,33 @@ pub fn read_opcua_node(node: &str) -> Option<String> {
 
 /// Read a CAN bus frame value from the in-memory IoT hub.
 pub fn read_canbus_frame(can_id: u32) -> f64 {
+    if let Some(value) = crate::iot_live::read_canbus_frame_live(can_id) {
+        return value;
+    }
     hub().lock().unwrap().read_canbus_frame(can_id)
 }
 
 /// Read a Zigbee attribute from the in-memory IoT hub.
 pub fn read_zigbee_attribute(device: &str, cluster: &str) -> String {
+    if let Some(value) = crate::iot_live::read_zigbee_attribute_live(device, cluster) {
+        return value;
+    }
     hub().lock().unwrap().read_zigbee_attribute(device, cluster)
 }
 
 /// Read a LoRa payload from the in-memory IoT hub.
 pub fn read_lora_payload(device_id: &str) -> String {
+    if let Some(value) = crate::iot_live::read_lora_payload_live(device_id) {
+        return value;
+    }
     hub().lock().unwrap().read_lora_payload(device_id)
 }
 
 /// Read a Matter cluster value from the in-memory IoT hub.
 pub fn read_matter_cluster(node: &str, cluster: &str) -> f64 {
+    if let Some(value) = crate::iot_live::read_matter_cluster_live(node, cluster) {
+        return value;
+    }
     hub().lock().unwrap().read_matter_cluster(node, cluster)
 }
 
