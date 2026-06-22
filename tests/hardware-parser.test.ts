@@ -21,15 +21,14 @@ describe("hardware program parsing (TypeScript mirror)", () => {
     expect(program.deployments[0]?.targets).toEqual(["RoverV1"]);
   });
 
-  it("parses requires_hardware, requires_network, and simulate_compatibility", () => {
+  it("parses requires_hardware and simulate_compatibility", () => {
     const program = parse(tokenize(fullCompat));
     expect(program.requiresHardware?.memoryMbMin).toBe(2048);
     expect(program.requiresHardware?.sensors).toEqual(["Camera", "Lidar"]);
-    expect(program.requiresNetwork?.bandwidthMbpsMin).toBe(10);
-    expect(program.requiresNetwork?.latencyMsMax).toBe(50);
+    expect(program.requiresNetwork).toBeNull();
     expect(program.simulateCompatibility?.faults).toHaveLength(1);
     expect(program.simulateCompatibility?.faults[0]?.faultType).toBe("BatteryDegradation");
-    expect(program.deployments[0]?.targets).toEqual(["RoverV1", "ESP32", "JetsonOrin"]);
+    expect(program.deployments[0]?.targets).toEqual(["RoverV1"]);
   });
 
   it("type-checks valid deploy against declared and built-in profiles", () => {

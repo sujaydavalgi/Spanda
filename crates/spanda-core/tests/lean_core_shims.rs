@@ -23,6 +23,16 @@ fn transport_live_shim_stays_thin() {
 }
 
 #[test]
+fn transport_no_inline_adapter_impls() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/transport.rs");
+    let source = fs::read_to_string(&path).expect("transport.rs");
+    assert!(
+        !source.contains("impl TransportAdapter for Ros2"),
+        "transport.rs must not define TransportAdapter impls; use spanda-transport-* crates"
+    );
+}
+
+#[test]
 fn transport_live_no_direct_python_bridge() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/transport_live.rs");
     let source = fs::read_to_string(&path).expect("transport_live.rs");

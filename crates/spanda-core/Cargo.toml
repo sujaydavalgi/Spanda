@@ -13,10 +13,6 @@ serde_yaml = "0.9"
 thiserror = "2"
 spanda-audit = { path = "../spanda-audit" }
 spanda-security = { path = "../spanda-security" }
-hex = "0.4"
-rustls-pemfile = "2"
-rustls = { version = "0.23", default-features = false, features = ["ring", "std"] }
-webpki-roots = "0.26"
 sha2 = "0.10"
 spanda-transport-mqtt = { path = "../spanda-transport-mqtt" }
 spanda-transport-ros2 = { path = "../spanda-transport-ros2" }
