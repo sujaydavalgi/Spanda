@@ -1277,6 +1277,7 @@ name = "spanda-interpreter"
 version = "0.1.0"
 dependencies = [
  "spanda-core",
+ "spanda-runtime",
 ]
 
 [[package]]

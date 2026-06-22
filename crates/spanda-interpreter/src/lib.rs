@@ -1,8 +1,9 @@
-//! Spanda interpreter staging crate — re-exports the public run API from `spanda-core`.
+//! Spanda interpreter — modular runtime implementation and public run API.
 //!
-//! Phase 4 lean-core extraction target. The full `Interpreter` body (~9k lines) remains in
-//! `spanda-core/src/runtime.rs` as the orchestration root until subsystems finish migrating to
-//! [`spanda_runtime::RuntimeHost`].
+//! The full `Interpreter` implementation is split across `src/runtime/*.rs` in this crate.
+//! `spanda-core` compiles those sources via a thin `#[path]` include shim (`spanda_core::runtime`)
+//! so auxiliary core modules (`ai`, `safety`, `transport`, …) remain available without a
+//! `spanda-core` ↔ `spanda-interpreter` dependency cycle.
 //!
 
 pub use spanda_core::replay::{MissionTrace, PlaybackReport, TraceVerification};

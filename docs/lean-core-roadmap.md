@@ -31,10 +31,10 @@ Compiler/runtime kernel extracted; interpreter remains the composition root in `
 | `spanda-typecheck` | Done — `TypeCheckHost` + `CoreTypeCheckHost` |
 | `spanda-transport` | Done — `TransportAdapter` trait, wire security/TLS, stub state |
 | `spanda-runtime` | Done — scheduler, `ProviderRegistry`, provider traits, robotics state, `RuntimeValue`, `Environment`, `RuntimeError`, `RuntimeHost` |
-| `spanda-interpreter` | Staging — re-exports public run API from `spanda-core`; `Interpreter` body still in core until `RuntimeHost` migration completes |
-| `spanda-core` | Facade — `Interpreter` body, `RoutingCommBus`, bootstrap, thin re-export shims |
+| `spanda-interpreter` | **Done** — owns `src/runtime/` module tree (21 files, ~10.7k lines); public API re-exported from `spanda-core` via thin include shim |
+| `spanda-core` | Facade — lexer/parser/typecheck, domain modules, `RoutingCommBus`, bootstrap, `CoreRuntimeHost`, and `#[path]` compile of interpreter sources |
 
-The ~8k-line `Interpreter` intentionally stays in core as the orchestration layer until additional subsystems (HAL, safety, transport) expose narrower host traits.
+The `Interpreter` is split across 21 modules under `crates/spanda-interpreter/src/runtime/` (orchestrator + eval/execute/scheduler/setup/… child files). `spanda-core` compiles them through a thin `#[path]` shim to avoid a dependency cycle with auxiliary modules (`ai`, `safety`, `transport`, …).
 
 ## Phase 5 — Complete ✓ (bootstrap wiring)
 

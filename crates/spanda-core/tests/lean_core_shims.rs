@@ -1,7 +1,44 @@
 //! Guardrails for lean-core shim deprecation in `spanda-core`.
 //!
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
+
+fn interpreter_runtime_dir() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("../spanda-interpreter/src/runtime")
+}
+
+fn runtime_shim_path() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("src/runtime.rs")
+}
+
+fn orchestrator_path() -> PathBuf {
+    interpreter_runtime_dir().join("orchestrator.rs")
+}
+
+#[test]
+fn runtime_shim_stays_thin() {
+    let source = fs::read_to_string(runtime_shim_path()).expect("runtime.rs shim");
+    let lines = source.lines().count();
+    assert!(
+        lines <= 12,
+        "runtime.rs should be a thin include shim (got {lines} lines)"
+    );
+    assert!(
+        source.contains("spanda-interpreter/src/runtime/orchestrator.rs"),
+        "runtime shim should include orchestrator from spanda-interpreter"
+    );
+}
+
+#[test]
+fn interpreter_sources_live_in_interpreter_crate() {
+    let orchestrator = orchestrator_path();
+    assert!(
+        orchestrator.exists(),
+        "orchestrator.rs should live under crates/spanda-interpreter/src/runtime/"
+    );
+    let eval = interpreter_runtime_dir().join("runtime_eval.rs");
+    assert!(eval.exists(), "runtime_eval.rs should live in spanda-interpreter tree");
+}
 
 #[test]
 fn transport_live_shim_stays_thin() {
@@ -48,120 +85,122 @@ fn transport_live_no_direct_python_bridge() {
 
 #[test]
 fn runtime_connectivity_logic_is_extracted() {
-    let runtime = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/runtime.rs");
-    let connectivity = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/runtime_connectivity.rs");
-    let runtime_source = fs::read_to_string(&runtime).expect("runtime.rs");
-    let connectivity_source = fs::read_to_string(&connectivity).expect("runtime_connectivity.rs");
-    assert!(
-        connectivity_source.contains("fn run_geofence_triggers"),
-        "runtime_connectivity.rs should own geofence trigger dispatch"
-    );
-    assert!(
-        !runtime_source.contains("fn run_geofence_triggers"),
-        "runtime.rs should delegate geofence triggers to runtime_connectivity.rs"
-    );
-    assert!(
-        !runtime_source.contains("connectivity_positioning::apply_gps_reading_faults"),
-        "runtime.rs should route GPS reading faults through RuntimeHost"
-    );
+    let orchestrator = fs::read_to_string(orchestrator_path()).expect("orchestrator.rs");
+    let connectivity =
+        fs::read_to_string(interpreter_runtime_dir().join("runtime_connectivity.rs"))
+            .expect("runtime_connectivity.rs");
+    assert!(connectivity.contains("fn run_geofence_triggers"));
+    assert!(!orchestrator.contains("fn run_geofence_triggers"));
+    assert!(!orchestrator.contains("connectivity_positioning::apply_gps_reading_faults"));
 }
 
 #[test]
 fn runtime_navigation_and_robot_logic_is_extracted() {
-    let runtime = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/runtime.rs");
-    let navigation = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/runtime_navigation.rs");
-    let robot = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/runtime_robot.rs");
-    let runtime_source = fs::read_to_string(&runtime).expect("runtime.rs");
-    let navigation_source = fs::read_to_string(&navigation).expect("runtime_navigation.rs");
-    let robot_source = fs::read_to_string(&robot).expect("runtime_robot.rs");
-    assert!(navigation_source.contains("fn eval_navigation_method"));
-    assert!(navigation_source.contains("invoke_nav2_bridge"));
-    assert!(robot_source.contains("fn eval_robot_method"));
-    assert!(!runtime_source.contains("fn eval_navigation_method"));
-    assert!(!runtime_source.contains("fn eval_robot_method"));
+    let orchestrator = fs::read_to_string(orchestrator_path()).expect("orchestrator.rs");
+    let navigation = fs::read_to_string(interpreter_runtime_dir().join("runtime_navigation.rs"))
+        .expect("runtime_navigation.rs");
+    let robot = fs::read_to_string(interpreter_runtime_dir().join("runtime_robot.rs"))
+        .expect("runtime_robot.rs");
+    assert!(navigation.contains("fn eval_navigation_method"));
+    assert!(navigation.contains("invoke_nav2_bridge"));
+    assert!(robot.contains("fn eval_robot_method"));
+    assert!(!orchestrator.contains("fn eval_navigation_method"));
+    assert!(!orchestrator.contains("fn eval_robot_method"));
 }
 
 #[test]
 fn runtime_trigger_logic_is_extracted() {
-    let runtime = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/runtime.rs");
-    let triggers = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/runtime_triggers.rs");
-    let runtime_source = fs::read_to_string(&runtime).expect("runtime.rs");
-    let triggers_source = fs::read_to_string(&triggers).expect("runtime_triggers.rs");
-    assert!(triggers_source.contains("fn run_trigger_maintenance"));
-    assert!(triggers_source.contains("fn dispatch_system_trigger"));
-    assert!(!runtime_source.contains("fn run_trigger_maintenance"));
-    assert!(!runtime_source.contains("fn dispatch_system_trigger"));
+    let orchestrator = fs::read_to_string(orchestrator_path()).expect("orchestrator.rs");
+    let triggers = fs::read_to_string(interpreter_runtime_dir().join("runtime_triggers.rs"))
+        .expect("runtime_triggers.rs");
+    assert!(triggers.contains("fn run_trigger_maintenance"));
+    assert!(triggers.contains("fn dispatch_system_trigger"));
+    assert!(!orchestrator.contains("fn run_trigger_maintenance"));
+    assert!(!orchestrator.contains("fn dispatch_system_trigger"));
 }
 
 #[test]
 fn runtime_robotics_sensors_and_twin_logic_is_extracted() {
-    let runtime = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/runtime.rs");
-    let robotics = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/runtime_robotics.rs");
-    let sensors = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/runtime_sensors.rs");
-    let twin = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/runtime_twin.rs");
-    let runtime_source = fs::read_to_string(&runtime).expect("runtime.rs");
-    let robotics_source = fs::read_to_string(&robotics).expect("runtime_robotics.rs");
-    let sensors_source = fs::read_to_string(&sensors).expect("runtime_sensors.rs");
-    let twin_source = fs::read_to_string(&twin).expect("runtime_twin.rs");
-    assert!(robotics_source.contains("fn eval_ai_method"));
-    assert!(robotics_source.contains("fn eval_safety_validate"));
-    assert!(sensors_source.contains("fn read_sensor_value"));
-    assert!(sensors_source.contains("fn read_fused_observation"));
-    assert!(twin_source.contains("fn eval_twin_method"));
-    assert!(!runtime_source.contains("fn eval_ai_method"));
-    assert!(!runtime_source.contains("fn read_sensor_value"));
-    assert!(!runtime_source.contains("fn eval_safety_validate"));
-    assert!(!runtime_source.contains("fn eval_twin_method"));
+    let orchestrator = fs::read_to_string(orchestrator_path()).expect("orchestrator.rs");
+    let dir = interpreter_runtime_dir();
+    let robotics = fs::read_to_string(dir.join("runtime_robotics.rs")).expect("runtime_robotics.rs");
+    let sensors = fs::read_to_string(dir.join("runtime_sensors.rs")).expect("runtime_sensors.rs");
+    let twin = fs::read_to_string(dir.join("runtime_twin.rs")).expect("runtime_twin.rs");
+    assert!(robotics.contains("fn eval_ai_method"));
+    assert!(robotics.contains("fn eval_safety_validate"));
+    assert!(sensors.contains("fn read_sensor_value"));
+    assert!(sensors.contains("fn read_fused_observation"));
+    assert!(twin.contains("fn eval_twin_method"));
+    assert!(!orchestrator.contains("fn eval_ai_method"));
+    assert!(!orchestrator.contains("fn read_sensor_value"));
+    assert!(!orchestrator.contains("fn eval_safety_validate"));
+    assert!(!orchestrator.contains("fn eval_twin_method"));
 }
 
 #[test]
 fn runtime_builtins_audit_and_actuator_logic_is_extracted() {
-    let runtime = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/runtime.rs");
-    let builtins = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/runtime_builtins.rs");
-    let audit = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/runtime_audit.rs");
-    let actuators = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/runtime_actuators.rs");
-    let helpers = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/runtime_helpers.rs");
-    let runtime_source = fs::read_to_string(&runtime).expect("runtime.rs");
-    let builtins_source = fs::read_to_string(&builtins).expect("runtime_builtins.rs");
-    let audit_source = fs::read_to_string(&audit).expect("runtime_audit.rs");
-    let actuators_source = fs::read_to_string(&actuators).expect("runtime_actuators.rs");
-    let helpers_source = fs::read_to_string(&helpers).expect("runtime_helpers.rs");
-    assert!(builtins_source.contains("fn eval_builtin_function"));
-    assert!(audit_source.contains("fn eval_audit_method"));
-    assert!(audit_source.contains("fn eval_ledger_method"));
-    assert!(actuators_source.contains("fn execute_actuator_method"));
-    assert!(helpers_source.contains("fn runtime_value_payload"));
-    assert!(!runtime_source.contains("fn eval_builtin_function"));
-    assert!(!runtime_source.contains("fn eval_audit_method"));
-    assert!(!runtime_source.contains("fn execute_actuator_method"));
+    let orchestrator = fs::read_to_string(orchestrator_path()).expect("orchestrator.rs");
+    let dir = interpreter_runtime_dir();
+    let builtins = fs::read_to_string(dir.join("runtime_builtins.rs")).expect("runtime_builtins.rs");
+    let audit = fs::read_to_string(dir.join("runtime_audit.rs")).expect("runtime_audit.rs");
+    let actuators =
+        fs::read_to_string(dir.join("runtime_actuators.rs")).expect("runtime_actuators.rs");
+    let helpers = fs::read_to_string(dir.join("runtime_helpers.rs")).expect("runtime_helpers.rs");
+    assert!(builtins.contains("fn eval_builtin_function"));
+    assert!(audit.contains("fn eval_audit_method"));
+    assert!(audit.contains("fn eval_ledger_method"));
+    assert!(actuators.contains("fn execute_actuator_method"));
+    assert!(helpers.contains("fn runtime_value_payload"));
+    assert!(!orchestrator.contains("fn eval_builtin_function"));
+    assert!(!orchestrator.contains("fn eval_audit_method"));
+    assert!(!orchestrator.contains("fn execute_actuator_method"));
 }
 
 #[test]
 fn runtime_eval_logic_is_extracted() {
-    let runtime = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/runtime.rs");
-    let eval = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/runtime_eval.rs");
-    let runtime_source = fs::read_to_string(&runtime).expect("runtime.rs");
-    let eval_source = fs::read_to_string(&eval).expect("runtime_eval.rs");
-    assert!(eval_source.contains("fn eval_expr"));
-    assert!(eval_source.contains("fn eval_call"));
-    assert!(eval_source.contains("fn eval_binary"));
-    assert!(eval_source.contains("fn get_named_arg_value"));
-    assert!(!runtime_source.contains("fn eval_expr"));
-    assert!(!runtime_source.contains("fn eval_call"));
-    assert!(!runtime_source.contains("fn eval_binary"));
+    let orchestrator = fs::read_to_string(orchestrator_path()).expect("orchestrator.rs");
+    let eval = fs::read_to_string(interpreter_runtime_dir().join("runtime_eval.rs"))
+        .expect("runtime_eval.rs");
+    assert!(eval.contains("fn eval_expr"));
+    assert!(eval.contains("fn eval_call"));
+    assert!(eval.contains("fn eval_binary"));
+    assert!(eval.contains("fn get_named_arg_value"));
+    assert!(!orchestrator.contains("fn eval_expr"));
+    assert!(!orchestrator.contains("fn eval_call"));
+    assert!(!orchestrator.contains("fn eval_binary"));
 }
 
 #[test]
 fn runtime_spawn_logic_is_extracted() {
-    let runtime = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/runtime.rs");
-    let spawn = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/runtime_spawn.rs");
-    let runtime_source = fs::read_to_string(&runtime).expect("runtime.rs");
-    let spawn_source = fs::read_to_string(&spawn).expect("runtime_spawn.rs");
-    assert!(spawn_source.contains("fn resolve_future"));
-    assert!(spawn_source.contains("fn process_spawn_queue"));
-    assert!(spawn_source.contains("fn eval_spawn_target"));
-    assert!(!runtime_source.contains("fn resolve_future"));
-    assert!(!runtime_source.contains("fn process_spawn_queue"));
+    let orchestrator = fs::read_to_string(orchestrator_path()).expect("orchestrator.rs");
+    let spawn = fs::read_to_string(interpreter_runtime_dir().join("runtime_spawn.rs"))
+        .expect("runtime_spawn.rs");
+    assert!(spawn.contains("fn resolve_future"));
+    assert!(spawn.contains("fn process_spawn_queue"));
+    assert!(spawn.contains("fn eval_spawn_target"));
+    assert!(!orchestrator.contains("fn resolve_future"));
+    assert!(!orchestrator.contains("fn process_spawn_queue"));
+}
+
+#[test]
+fn runtime_execute_and_scheduler_logic_is_extracted() {
+    let orchestrator = fs::read_to_string(orchestrator_path()).expect("orchestrator.rs");
+    let dir = interpreter_runtime_dir();
+    let execute = fs::read_to_string(dir.join("runtime_execute.rs")).expect("runtime_execute.rs");
+    let scheduler =
+        fs::read_to_string(dir.join("runtime_scheduler.rs")).expect("runtime_scheduler.rs");
+    let setup = fs::read_to_string(dir.join("runtime_setup.rs")).expect("runtime_setup.rs");
+    assert!(execute.contains("fn execute_stmt"));
+    assert!(scheduler.contains("fn execute_multiplexed_tasks"));
+    assert!(setup.contains("fn setup_robot"));
+    assert!(!orchestrator.contains("fn execute_stmt"));
+    assert!(!orchestrator.contains("fn execute_multiplexed_tasks"));
+    assert!(!orchestrator.contains("fn setup_robot("));
+    let lines = orchestrator.lines().count();
+    assert!(
+        lines <= 1850,
+        "orchestrator.rs should stay orchestration-only (got {lines} lines)"
+    );
 }
 
 #[test]
