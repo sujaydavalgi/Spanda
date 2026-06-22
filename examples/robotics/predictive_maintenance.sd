@@ -6,25 +6,24 @@
 import std.maintenance;
 
 robot IndustrialArm {
-  sensor torque: TorqueSensor;
-  actuator joint: Servo;
+  sensor lidar: Lidar on "/scan";
+  actuator wheels: DifferentialDrive;
 
   safety {
     max_speed = 0.5 m/s;
-    stop_if torque.read() > 50.0 N;
+    stop_if lidar.nearest_distance < 0.3 m;
   }
 
-  on every 5s {
-    let score: HealthScore = 0.92;
-    let _ = score;
-    if score < 0.7 {
-      joint.stop();
+  every 5s {
+    let health = 0.92;
+    if health < 0.7 {
+      wheels.stop();
     }
   }
 
   behavior operate() {
     loop every 100ms {
-      joint.rotate(angle: 0.1 rad);
+      wheels.drive(linear: 0.1 m/s, angular: 0.0 rad/s);
     }
   }
 }

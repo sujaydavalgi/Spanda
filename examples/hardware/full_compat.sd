@@ -3,23 +3,13 @@ requires_hardware {
   sensors [ Camera, Lidar ];
 }
 
-requires_network {
-  bandwidth >= 10 Mbps;
-  latency <= 50 ms;
-}
-
 hardware RoverV1 {
   cpu: CortexA78;
   memory: 4 GB;
   sensors [ Camera, Lidar, IMU ];
   actuators [ DifferentialDrive ];
   battery { capacity: 100 Wh; }
-  network {
-    bandwidth: 100 Mbps;
-    latency: 20 ms;
-  }
   timing { min_period: 10 ms; }
-  resource: 15 W;
 }
 
 robot RoverMission {
@@ -54,4 +44,4 @@ simulate_compatibility {
   fault BatteryDegradation;
 }
 
-deploy RoverMission to [ RoverV1, ESP32, JetsonOrin ];
+deploy RoverMission to RoverV1;

@@ -17,11 +17,11 @@ robot DeliveryRover {
   mission Delivery {
     duration: 45 min;
     navigate;
-    deliver;
+    inspect;
     return_home;
   }
 
-  behavior execute() {
+  behavior run_mission() {
     mission.start();
     loop every 500ms {
       let step = mission.advance();

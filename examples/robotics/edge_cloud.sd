@@ -26,8 +26,7 @@ robot EdgeRover {
     uses local_vision;
     goal "Infer locally, sync summaries to cloud";
 
-    can read(camera);
-    can propose_motion;
+    can [ read(camera), propose_motion ];
 
     plan {
       let frame = camera.frame();

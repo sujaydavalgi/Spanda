@@ -28,22 +28,16 @@ robot EncryptedLidar {
 
   trust_boundary robot_internal;
 
-  bus local_secure {
-    transport: "local";
-    encryption: optional;
-  }
-
-  topic lidar_scan: Topic<LidarScan> {
-    secure {
-      encryption required;
-      signed required;
-      trusted_sources [LidarFront];
-    }
+  topic lidar_scan: LidarScan publish on "/scan" secure {
+    encryption required;
+    signed required;
+    trusted_sources [RoverIdentity];
   };
 
-  sensor LidarFront: Lidar { rate: 10 Hz; }
+  sensor lidar_front: Lidar on "/scan";
 
   behavior run() {
-    publish lidar_scan with scan(ranges: [1.0, 2.0, 3.0]);
+    let scan = lidar_front.read();
+    publish lidar_scan with scan;
   }
 }

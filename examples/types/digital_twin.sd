@@ -9,8 +9,6 @@ robot Shadow {
   }
 
   behavior run() {
-    let state: SimulationState;
-    let telemetry: Telemetry;
     let frames = RobotTwin.frame_count();
     let _ = frames;
     wheels.stop();

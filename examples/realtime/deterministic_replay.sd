@@ -3,7 +3,7 @@ robot ReplayRover {
 
     twin Shadow {
         replay true;
-        mirror lidar;
+        mirror pose;
     }
 
     task sense every 20ms {

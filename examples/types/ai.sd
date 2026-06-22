@@ -1,4 +1,5 @@
 import std.ai;
+import std.safety;
 
 robot Thinker {
   sensor lidar: Lidar on "/scan";
@@ -8,9 +9,9 @@ robot Thinker {
     model: "safe-planner";
     temperature: 0.1;
   }
+  safety { max_speed = 1.0 m/s; }
 
   behavior run() {
-    let prompt: Prompt;
     let proposal: ActionProposal = planner.reason(prompt: "scan ahead");
     let action: SafeAction = safety.validate(proposal);
     wheels.execute(action);

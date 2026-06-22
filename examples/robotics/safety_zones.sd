@@ -17,10 +17,6 @@ robot PatrolBot {
     stop_if robot.in_zone("HumanArea");
   }
 
-  on safety {
-    wheels.stop();
-  }
-
   behavior patrol() {
     loop every 100ms {
       if robot.in_zone("HumanArea") {

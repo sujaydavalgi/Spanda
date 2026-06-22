@@ -4,8 +4,8 @@ module navigation.path_planning;
 import std.spatial;
 
 /// Plan a straight-line trajectory between two poses.
-export fn plan_path(from: Pose, to: Pose) -> Path {
-  return trajectory(from: from, to: to, steps: 8);
+export fn plan_path(start: Pose, goal: Pose) -> Path {
+  return trajectory(from: start, to: goal, steps: 8);
 }
 
 /// Generic helper: return the first element type parameter (placeholder for collections).

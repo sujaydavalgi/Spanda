@@ -6,10 +6,10 @@ import std.robotics;
 import std.sensors;
 
 robot Ros2WarehouseBot {
-    sensor front_lidar: LidarScan;
-    actuator drive: MotionCommand;
+    sensor front_lidar: Lidar on "/scan";
+    actuator drive: DifferentialDrive;
 
-    behavior ros2_navigate {
+    behavior ros2_navigate() {
         // Bridge Spanda motion to ROS 2 /cmd_vel
     }
 }

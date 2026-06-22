@@ -5,10 +5,10 @@ import std.sensors;
 import navigation.path_planning;
 
 robot WarehouseBot {
-    sensor front_lidar: LidarScan;
-    actuator drive: MotionCommand;
+    sensor front_lidar: Lidar on "/scan";
+    actuator drive: DifferentialDrive;
 
-    behavior navigate {
+    behavior navigate() {
         // Basic warehouse navigation loop
     }
 }

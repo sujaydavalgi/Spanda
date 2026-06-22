@@ -6,9 +6,9 @@ import std.sensors;
 // Community RPLidar driver — exposes LidarAdapter for consumers.
 
 robot RplidarNode {
-    sensor scan: LidarScan;
+    sensor scan: Lidar on "/scan";
 
-    behavior publish_scans {
+    behavior publish_scans() {
         // Read from serial port and publish LidarScan messages
     }
 }

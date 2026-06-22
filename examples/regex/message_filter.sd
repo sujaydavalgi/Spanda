@@ -1,4 +1,7 @@
 robot FilterRover {
+    topic diagnostics: String subscribe on "/diagnostics";
+    topic commands: String subscribe on "/commands";
+
     task listen every 100ms {
         subscribe diagnostics
         where message.text matches /WARN|ERROR/;
