@@ -10,7 +10,7 @@ use std::collections::{HashMap, HashSet, VecDeque};
 
 // ── Transport & QoS ──────────────────────────────────────────────────────────
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum TransportKind {
     Local,

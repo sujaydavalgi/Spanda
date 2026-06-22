@@ -34,6 +34,7 @@ Phased plan to complete the package-first architecture after the initial scaffol
 | `spanda-deploy-http` | Done | Shared HTTP/TLS helpers for agents and OTA |
 | `spanda-fleet` | Done | Remote relay, agents, mesh extracted; orchestrator shim in core |
 | `spanda-ota` | Done | Rollout runtime, agents, bundles extracted; AST plan shim in core |
+| Comm-bus registry routing | Done | `RoutingCommBus` delegates to `ProviderRegistry` for official transports |
 
 Extract optional backends from `spanda-core` into workspace members:
 

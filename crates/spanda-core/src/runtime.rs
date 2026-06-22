@@ -41,16 +41,15 @@ use crate::security::{
 use crate::soc::get_soc_profile;
 use crate::state_machine::StateMachineRuntime;
 use crate::transport::{RoutingCommBus, TransportConfig};
+use std::cell::RefCell;
+use std::rc::Rc;
 use crate::triggers::{
     priority_rank, trigger_display_name, ConditionTriggerState, SystemTriggerCategory,
     TriggerRegistry, TriggerTimerSchedule, MAX_TRIGGERS_PER_TICK,
 };
 use crate::twin::TwinRuntime;
 use crate::units::align_for_binary;
-#[cfg(test)]
-use std::cell::RefCell;
 use std::collections::HashMap;
-use std::rc::Rc;
 
 type AgentTraitImplBody = (Vec<crate::foundations::TraitParamDecl>, Vec<Stmt>);
 type BehaviorContracts = (Vec<Stmt>, Option<Expr>, Option<Expr>, Option<Expr>);
@@ -947,7 +946,7 @@ pub struct Interpreter<B: RobotBackend> {
     program_safety_zones: crate::robotics_platform::ProgramSafetyZoneRegistry,
     nav2_enabled: bool,
     slam_enabled: bool,
-    provider_registry: crate::providers::ProviderRegistry,
+    provider_registry: Rc<RefCell<crate::providers::ProviderRegistry>>,
 }
 
 impl<B: RobotBackend> Interpreter<B> {
@@ -968,18 +967,22 @@ impl<B: RobotBackend> Interpreter<B> {
         // let value = spanda_core::runtime::new(backend, options);
 
         // Assemble the struct fields and return it.
-        let provider_registry = options
-            .provider_registry
-            .take()
-            .unwrap_or_else(|| {
-                crate::providers::bootstrap_providers_for_packages(
-                    &options
-                        .official_packages
-                        .iter()
-                        .map(String::as_str)
-                        .collect::<Vec<_>>(),
-                )
-            });
+        let provider_registry = Rc::new(RefCell::new(
+            options
+                .provider_registry
+                .take()
+                .unwrap_or_else(|| {
+                    crate::providers::bootstrap_providers_for_packages(
+                        &options
+                            .official_packages
+                            .iter()
+                            .map(String::as_str)
+                            .collect::<Vec<_>>(),
+                    )
+                }),
+        ));
+        let mut comm_bus = RoutingCommBus::new();
+        comm_bus.attach_provider_registry(Rc::clone(&provider_registry));
         Self {
             backend,
             options,
@@ -1017,7 +1020,7 @@ impl<B: RobotBackend> Interpreter<B> {
             audit_runtime: None,
             mock_ledger: MockLedgerBackend::new(),
             security: SecurityContext::new(),
-            comm_bus: RoutingCommBus::new(),
+            comm_bus,
             default_transport: TransportKind::Sim,
             module_functions: HashMap::new(),
             imported_functions: HashMap::new(),
@@ -1068,7 +1071,7 @@ impl<B: RobotBackend> Interpreter<B> {
         &self.telemetry
     }
 
-    pub fn provider_registry(&self) -> &crate::providers::ProviderRegistry {
+    pub fn provider_registry(&self) -> std::cell::Ref<'_, crate::providers::ProviderRegistry> {
         // Return the domain provider registry active for this interpreter session.
         //
         // Parameters:
@@ -1083,7 +1086,7 @@ impl<B: RobotBackend> Interpreter<B> {
         // Example:
         // let count = interp.provider_registry().transport_count();
 
-        &self.provider_registry
+        self.provider_registry.borrow()
     }
 
     pub fn take_telemetry(&mut self) -> crate::telemetry::RuntimeTelemetry {
@@ -1502,14 +1505,14 @@ impl<B: RobotBackend> Interpreter<B> {
             sim_faults = faults.iter().map(|f| f.fault_type.clone()).collect();
         }
         self.load_program_metadata(program);
-        if !self.provider_registry.official_packages().is_empty() {
+        if !self.provider_registry.borrow().official_packages().is_empty() {
             crate::providers::sync_comm_bus_for_official_packages(
                 &mut self.comm_bus,
-                self.provider_registry.official_packages(),
+                &mut self.provider_registry.borrow_mut(),
             );
             self.log(format!(
                 "providers: {} official package(s) active",
-                self.provider_registry.official_packages().len()
+                self.provider_registry.borrow().official_packages().len()
             ));
         }
         self.load_connectivity_metadata(geofences, connectivity_policies);
@@ -1898,7 +1901,9 @@ impl<B: RobotBackend> Interpreter<B> {
                 },
             );
         }
+        let registry = Rc::clone(&self.provider_registry);
         self.comm_bus = RoutingCommBus::new();
+        self.comm_bus.attach_provider_registry(registry);
         self.zones.clear();
         self.stop_if_conditions.clear();
         self.event_bus = EventBus::new();

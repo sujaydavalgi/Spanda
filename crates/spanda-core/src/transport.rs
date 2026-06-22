@@ -1101,11 +1101,12 @@ impl RoutingCommBus {
         message_type: &str,
         value: RuntimeValue,
     ) {
-        if let Some(()) = self.with_registry_transport(kind, |provider| {
-            if provider.is_connected() {
-                provider.publish(topic_path, message_type, value);
-            }
-        }) {
+        if self.uses_registry_transport(kind) {
+            let _ = self.with_registry_transport(kind, |provider| {
+                if provider.is_connected() {
+                    provider.publish(topic_path, message_type, value);
+                }
+            });
             return;
         }
         if let Some(adapter) = self.adapter_mut(kind) {
@@ -1124,7 +1125,7 @@ impl RoutingCommBus {
         }
     }
 
-    fn receive_external(&self, kind: TransportKind, topic_path: &str) -> Option<RuntimeValue> {
+    fn receive_external(&mut self, kind: TransportKind, topic_path: &str) -> Option<RuntimeValue> {
         if let Some(value) = self
             .with_registry_transport(kind, |provider| {
                 if provider.is_connected() {
@@ -1137,13 +1138,12 @@ impl RoutingCommBus {
         {
             return Some(value);
         }
-        self.adapter(kind).and_then(|adapter| {
+        if let Some(adapter) = self.adapter_mut(kind) {
             if adapter.is_connected() {
-                adapter.receive(topic_path)
-            } else {
-                None
+                return adapter.receive(topic_path);
             }
-        })
+        }
+        None
     }
 
     fn connect_external(&mut self, kind: TransportKind, config: &TransportConfig) {
@@ -1504,6 +1504,7 @@ impl RoutingCommBus {
         // let result = instance.reconnect_transport(transport);
 
         let paths = self.memory.subscription_paths();
+        let config = self.config.clone();
 
         // Tear down transports that are no longer the active kind.
         for kind in [
@@ -1520,19 +1521,18 @@ impl RoutingCommBus {
         // Connect the target transport when it is not already live.
         match transport {
             TransportKind::Ros2 if !self.is_external_connected(TransportKind::Ros2) => {
-                self.connect_external(TransportKind::Ros2, &self.config);
+                self.connect_external(TransportKind::Ros2, &config);
             }
             TransportKind::Mqtt if !self.is_external_connected(TransportKind::Mqtt) => {
                 self.connect_external(
                     TransportKind::Mqtt,
                     &TransportConfig {
-                        broker_url: self
-                            .config
+                        broker_url: config
                             .broker_url
                             .clone()
                             .or(Some("mqtt://localhost:1883".into())),
-                        client_id: self.config.client_id.clone().or(Some("spanda".into())),
-                        ..self.config.clone()
+                        client_id: config.client_id.clone().or(Some("spanda".into())),
+                        ..config.clone()
                     },
                 );
             }
@@ -1540,8 +1540,8 @@ impl RoutingCommBus {
                 self.connect_external(
                     TransportKind::Dds,
                     &TransportConfig {
-                        domain_id: self.config.domain_id.or(Some(0)),
-                        ..self.config.clone()
+                        domain_id: config.domain_id.or(Some(0)),
+                        ..config.clone()
                     },
                 );
             }
@@ -1549,12 +1549,11 @@ impl RoutingCommBus {
                 self.connect_external(
                     TransportKind::Websocket,
                     &TransportConfig {
-                        broker_url: self
-                            .config
+                        broker_url: config
                             .broker_url
                             .clone()
                             .or(Some("ws://localhost:9090".into())),
-                        ..self.config.clone()
+                        ..config
                     },
                 );
             }
