@@ -49,6 +49,42 @@ def _opcua_read_node(endpoint: str, node_id: str) -> str:
         return str(value)
 
 
+def _anthropic_complete(prompt: str) -> str:
+    import os
+
+    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    if not api_key:
+        return f"mock-anthropic:{prompt[:48]}"
+    try:
+        import urllib.request
+
+        body = json.dumps(
+            {
+                "model": "claude-3-5-haiku-latest",
+                "max_tokens": 256,
+                "messages": [{"role": "user", "content": prompt}],
+            }
+        ).encode()
+        req = urllib.request.Request(
+            "https://api.anthropic.com/v1/messages",
+            data=body,
+            headers={
+                "x-api-key": api_key,
+                "anthropic-version": "2023-06-01",
+                "Content-Type": "application/json",
+            },
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=30) as resp:  # noqa: S310
+            data = json.loads(resp.read().decode())
+        content = data.get("content") or []
+        if content and isinstance(content[0], dict):
+            return str(content[0].get("text", ""))
+        return "anthropic-empty"
+    except Exception as exc:  # noqa: BLE001
+        return f"anthropic-error:{exc}"
+
+
 def _openai_complete(prompt: str) -> str:
     import os
 
@@ -170,6 +206,7 @@ HANDLERS: dict[str, Handler] = {
     "modbus_read_register": _modbus_read_register,
     "opcua_read_node": _opcua_read_node,
     "openai_complete": _openai_complete,
+    "anthropic_complete": _anthropic_complete,
 }
 
 

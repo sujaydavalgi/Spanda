@@ -1,0 +1,7 @@
+module ai.anthropic;
+
+extern python fn anthropic_complete(prompt: String) -> String;
+
+export fn complete(prompt: String) -> String {
+  anthropic_complete(prompt)
+}
