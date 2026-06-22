@@ -983,6 +983,7 @@ impl<B: RobotBackend> Interpreter<B> {
                 self.comm_bus.inject_fault(fault);
             }
             self.log("health: injected default health fault scenarios".into());
+            self.log_runtime_health_report(program);
         }
 
         if let Some(ks) = &self.options.trigger_kill_switch {
@@ -1087,6 +1088,44 @@ impl<B: RobotBackend> Interpreter<B> {
             }
         }
         Ok(self.backend.get_state())
+    }
+
+    fn log_runtime_health_report(&mut self, program: &Program) {
+        // Log runtime health derived from hardware monitor state.
+        //
+        // Parameters:
+        // - `self` — method receiver
+        // - `program` — parsed program with health_check declarations
+        //
+        // Returns:
+        // Nothing.
+        //
+        // Options:
+        // None.
+        //
+        // Example:
+        // let result = instance.log_runtime_health_report(program);
+
+        use spanda_capability::{evaluate_runtime_health, HealthStatus};
+
+        let faults = self.hardware_monitor.runtime_faults();
+        let events = self.hardware_monitor.runtime_events();
+        let report = evaluate_runtime_health(&faults, &events, program);
+        self.log(format!(
+            "health: overall {:?} ({} checks, monitor={})",
+            report.overall,
+            report.checks.len(),
+            self.hardware_monitor.overall_health_label()
+        ));
+
+        for check in &report.checks {
+            if !matches!(check.status, HealthStatus::Healthy | HealthStatus::Unknown) {
+                self.log(format!(
+                    "health: {} on {} {:?}",
+                    check.name, check.target, check.status
+                ));
+            }
+        }
     }
 
     pub fn run_tests(&mut self, program: &Program) -> Result<(), SpandaError> {

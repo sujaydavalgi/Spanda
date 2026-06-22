@@ -324,6 +324,72 @@ impl HardwareMonitor {
         self.active_events.remove(event);
         self.dispatched_events.remove(event);
     }
+
+    pub fn overall_health_label(&self) -> &'static str {
+        // Summarize monitor state for runtime health reporting.
+        //
+        // Parameters:
+        // None.
+        //
+        // Returns:
+        // Human-readable health label.
+        //
+        // Options:
+        // None.
+        //
+        // Example:
+        // let label = monitor.overall_health_label();
+
+        let faults: Vec<String> = self
+            .injected_faults
+            .iter()
+            .map(|f| f.to_ascii_lowercase())
+            .collect();
+
+        if faults.iter().any(|f| f.contains("critical") || f.contains("unsafe")) {
+            return "Critical";
+        }
+        if !self.active_events.is_empty() || !self.injected_faults.is_empty() {
+            return "Degraded";
+        }
+        "Healthy"
+    }
+
+    pub fn runtime_faults(&self) -> Vec<String> {
+        // Return injected fault names for health evaluation.
+        //
+        // Parameters:
+        // None.
+        //
+        // Returns:
+        // Active fault labels.
+        //
+        // Options:
+        // None.
+        //
+        // Example:
+        // let faults = monitor.runtime_faults();
+
+        self.injected_faults.iter().cloned().collect()
+    }
+
+    pub fn runtime_events(&self) -> Vec<String> {
+        // Return active hardware events for health evaluation.
+        //
+        // Parameters:
+        // None.
+        //
+        // Returns:
+        // Active event labels.
+        //
+        // Options:
+        // None.
+        //
+        // Example:
+        // let events = monitor.runtime_events();
+
+        self.active_events.iter().cloned().collect()
+    }
 }
 
 #[cfg(test)]
