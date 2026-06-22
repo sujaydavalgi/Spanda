@@ -10,9 +10,8 @@ pub mod traceability;
 
 pub use diagnostics::{collect_verification_diagnostics, VerificationDiagnostic};
 pub use health::{
-    evaluate_health_checks, apply_fleet_health_checks, evaluate_runtime_health,
-    health_traceability, HealthCheckResult,
-    HealthReport, HealthStatus, HealthTraceRow,
+    apply_fleet_health_checks, evaluate_health_checks, evaluate_runtime_health,
+    health_traceability, HealthCheckResult, HealthReport, HealthStatus, HealthTraceRow,
 };
 pub use minimum::{check_minimum_capabilities, MinimumCapabilityReport, MinimumCapabilityRow};
 pub use registry::{
@@ -21,6 +20,6 @@ pub use registry::{
 };
 pub use robot::{infer_robot_capabilities, RobotCapabilityReport, RobotCapabilityRow};
 pub use traceability::{
-    hardware_traceability, capability_traceability, HardwareTraceRow, CapabilityTraceRow,
+    capability_traceability, hardware_traceability, CapabilityTraceRow, HardwareTraceRow,
     TraceabilityReport,
 };

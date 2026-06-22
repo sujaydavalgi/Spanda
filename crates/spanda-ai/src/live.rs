@@ -164,7 +164,11 @@ fn proposal_from_completion(text: &str, request: &CompletionRequest) -> RuntimeV
     }
     if lower.contains("turn") || lower.contains("avoid") || dist < 0.8 {
         let angular = if dist < 0.4 { 0.6 } else { 0.25 };
-        let linear = if dist < 0.4 { 0.0 } else { (0.4_f64).min(dist * 0.3) };
+        let linear = if dist < 0.4 {
+            0.0
+        } else {
+            (0.4_f64).min(dist * 0.3)
+        };
         return action_proposal(
             linear,
             angular,
@@ -270,11 +274,7 @@ fn call_python_bridge(fn_name: &str, args: Vec<serde_json::Value>) -> Option<ser
         stdin.write_all(payload.as_bytes()).ok()?;
     }
     let mut stdout = String::new();
-    child
-        .stdout
-        .as_mut()?
-        .read_to_string(&mut stdout)
-        .ok()?;
+    child.stdout.as_mut()?.read_to_string(&mut stdout).ok()?;
     let _ = child.wait();
     let parsed: serde_json::Value = serde_json::from_str(stdout.trim()).ok()?;
     if parsed.get("ok") == Some(&serde_json::Value::Bool(true)) {

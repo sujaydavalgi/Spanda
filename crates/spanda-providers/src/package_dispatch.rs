@@ -2,11 +2,11 @@
 //!
 use crate::iot_hub::{
     number_arg, publish_telemetry, read_canbus_frame, read_lora_payload, read_matter_cluster,
-    read_modbus_register, read_opcua_node, read_zigbee_attribute, register_device,
-    send_command, string_arg, update_shadow,
+    read_modbus_register, read_opcua_node, read_zigbee_attribute, register_device, send_command,
+    string_arg, update_shadow,
 };
-use spanda_runtime::providers::{Command, DeviceShadow, IoTDevice, Telemetry};
 use spanda_runtime::providers::{transport_registry_key, ProviderRegistry};
+use spanda_runtime::providers::{Command, DeviceShadow, IoTDevice, Telemetry};
 use spanda_runtime::replay::MissionTrace;
 use spanda_runtime::telemetry::RuntimeTelemetry;
 use spanda_runtime::value::RuntimeValue;
@@ -339,7 +339,11 @@ pub fn dispatch_official_package_call(
                 started,
                 failed,
             );
-            if failed { None } else { Some(ok_int()) }
+            if failed {
+                None
+            } else {
+                Some(ok_int())
+            }
         }
         ("iot.telemetry", "publish") if registry.has_capability("iot.telemetry") => {
             publish_telemetry(Telemetry {
@@ -379,7 +383,11 @@ pub fn dispatch_official_package_call(
                 started,
                 failed,
             );
-            if failed { None } else { Some(ok_int()) }
+            if failed {
+                None
+            } else {
+                Some(ok_int())
+            }
         }
         ("iot.shadow", "update") if registry.has_capability("iot.shadow") => {
             update_shadow(DeviceShadow {

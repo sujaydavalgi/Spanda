@@ -46,11 +46,11 @@ impl<B: RobotBackend> Interpreter<B> {
         // Deny high-risk actions when capability enforcement is declared but empty.
         if enforced && caps.is_empty() {
             if matches!(action, "execute" | "propose_motion") {
-                self.log(format!("agent: denied {agent} {action} (capability_enforced)"));
+                self.log(format!(
+                    "agent: denied {agent} {action} (capability_enforced)"
+                ));
                 return Err(RuntimeError::new(
-                    format!(
-                        "Agent '{agent}' declares can[] but lacks capability {action}"
-                    ),
+                    format!("Agent '{agent}' declares can[] but lacks capability {action}"),
                     line,
                 )
                 .into_spanda());

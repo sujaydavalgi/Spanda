@@ -101,11 +101,9 @@ pub fn publish_package(root: &Path, manifest: &PackageManifest) -> PackageResult
     // Create mutable report for accumulating results.
     let mut report = bundle_package(root, manifest)?;
 
-    if let Some(mirror_path) = mirror_bundle_to_local_registry(root, manifest, &report.bundle_path)? {
-        eprintln!(
-            "Registry mirror: wrote {}",
-            mirror_path.display()
-        );
+    if let Some(mirror_path) = mirror_bundle_to_local_registry(root, manifest, &report.bundle_path)?
+    {
+        eprintln!("Registry mirror: wrote {}", mirror_path.display());
     }
 
     // Emit output when registry base url provides a base.

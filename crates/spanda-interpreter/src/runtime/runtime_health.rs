@@ -86,11 +86,7 @@ impl<B: RobotBackend> Interpreter<B> {
             report.overall,
             HealthStatus::Critical | HealthStatus::Unsafe | HealthStatus::Failed
         ) {
-            self.record_debug_event(
-                1,
-                "health_critical",
-                &[("overall", label.clone())],
-            );
+            self.record_debug_event(1, "health_critical", &[("overall", label.clone())]);
         }
         self.apply_health_policy_reactions(&report);
         self.apply_swarm_health_coordination(&report);
@@ -162,7 +158,9 @@ impl<B: RobotBackend> Interpreter<B> {
         let Some(program) = self.health_program.clone() else {
             return;
         };
-        let Program::Program { health_policies, .. } = program;
+        let Program::Program {
+            health_policies, ..
+        } = program;
         if health_policies.is_empty() {
             return;
         }
@@ -177,7 +175,9 @@ impl<B: RobotBackend> Interpreter<B> {
 
         // Run each policy reaction that matches an active status.
         for policy in &health_policies {
-            let HealthPolicyDecl::HealthPolicyDecl { name, reactions, .. } = policy;
+            let HealthPolicyDecl::HealthPolicyDecl {
+                name, reactions, ..
+            } = policy;
             for HealthPolicyReaction { status, body } in reactions {
                 if !active_statuses
                     .iter()
@@ -198,10 +198,7 @@ impl<B: RobotBackend> Interpreter<B> {
                 self.record_debug_event(
                     1,
                     "health_policy_applied",
-                    &[
-                        ("policy", name.clone()),
-                        ("status", status.clone()),
-                    ],
+                    &[("policy", name.clone()), ("status", status.clone())],
                 );
             }
         }

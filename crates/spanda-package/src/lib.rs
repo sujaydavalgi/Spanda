@@ -57,7 +57,9 @@ pub use official::{
     official_packages_from_manifest,
 };
 pub use project::{add_dependency, collect_source_files, init_package, remove_dependency};
-pub use publish::{bundle_package, mirror_bundle_to_local_registry, publish_package, PublishReport};
+pub use publish::{
+    bundle_package, mirror_bundle_to_local_registry, publish_package, PublishReport,
+};
 pub use registry::{
     find_registry_entry, registry_info, registry_package_dir, search_registry,
     search_registry_merged, RegistryEntry, RegistryInfo, LOCAL_REGISTRY,

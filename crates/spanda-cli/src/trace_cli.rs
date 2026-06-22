@@ -112,7 +112,10 @@ pub fn cmd_hardware_capabilities(args: &[String]) {
     let program = parse_program(&source);
     let report = hardware_traceability(&program);
     if json {
-        println!("{}", serde_json::to_string_pretty(&report.hardware_rows).unwrap());
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&report.hardware_rows).unwrap()
+        );
     } else {
         print_hardware_trace(&report);
     }
@@ -182,7 +185,14 @@ pub fn cmd_safety_check(args: &[String]) {
     }
 }
 
-pub fn verify_extensions(source: &str, traceability: bool, capabilities: bool, health: bool, minimum: bool, json: bool) {
+pub fn verify_extensions(
+    source: &str,
+    traceability: bool,
+    capabilities: bool,
+    health: bool,
+    minimum: bool,
+    json: bool,
+) {
     let program = parse_program(source);
     let mut failed = false;
 
@@ -253,7 +263,11 @@ fn print_hardware_trace(report: &spanda_capability::TraceabilityReport) {
         println!(
             "{} | {} | {} | {} | {} | {} | {}",
             row.hardware_component,
-            if row.used_by.is_empty() { "-" } else { &row.used_by },
+            if row.used_by.is_empty() {
+                "-"
+            } else {
+                &row.used_by
+            },
             row.source_location,
             row.capability,
             row.provider,

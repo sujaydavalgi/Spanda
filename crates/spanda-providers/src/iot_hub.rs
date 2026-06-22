@@ -1,8 +1,6 @@
 //! In-memory IoT device, telemetry, and shadow store for package dispatch stubs.
 
-use spanda_runtime::providers::{
-    Command, DeviceShadow, IoTDevice, Telemetry,
-};
+use spanda_runtime::providers::{Command, DeviceShadow, IoTDevice, Telemetry};
 use spanda_runtime::value::RuntimeValue;
 use std::collections::HashMap;
 use std::sync::{Mutex, OnceLock};

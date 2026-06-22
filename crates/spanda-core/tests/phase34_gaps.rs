@@ -52,7 +52,10 @@ robot Rover {
         .map(|d| d.message)
         .collect::<Vec<_>>()
         .join(" ");
-    assert!(text.contains("kill switch"), "expected kill switch error, got {text}");
+    assert!(
+        text.contains("kill switch"),
+        "expected kill switch error, got {text}"
+    );
 }
 
 #[test]

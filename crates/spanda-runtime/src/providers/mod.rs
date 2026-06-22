@@ -1,8 +1,8 @@
 //! Lean-core provider contracts and registry for optional domain packages.
 //!
+pub mod iot;
 pub mod registry;
 pub mod traits;
-pub mod iot;
 pub mod transport_types;
 pub mod types;
 

@@ -65,7 +65,10 @@ robot Rover {
         "kill switch trigger should set emergency_stop"
     );
     assert!(
-        result.logs.iter().any(|l| l.contains("kill_switch: activated")),
+        result
+            .logs
+            .iter()
+            .any(|l| l.contains("kill_switch: activated")),
         "expected kill switch log, got {:?}",
         result.logs
     );

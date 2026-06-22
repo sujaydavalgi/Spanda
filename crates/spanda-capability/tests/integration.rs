@@ -48,7 +48,10 @@ robot Rover {
     let program = parse_source(source);
     let reports = infer_robot_capabilities(&program);
     assert_eq!(reports.len(), 1);
-    assert!(reports[0].rows.iter().any(|r| r.capability == "gps_navigation"));
+    assert!(reports[0]
+        .rows
+        .iter()
+        .any(|r| r.capability == "gps_navigation"));
 }
 
 #[test]

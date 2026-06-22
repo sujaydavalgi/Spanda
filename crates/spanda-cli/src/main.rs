@@ -193,7 +193,10 @@ fn read_source(path: &str) -> String {
     })
 }
 
-fn print_check_json(err: Option<SpandaError>, verification: Option<Vec<spanda_capability::VerificationDiagnostic>>) {
+fn print_check_json(
+    err: Option<SpandaError>,
+    verification: Option<Vec<spanda_capability::VerificationDiagnostic>>,
+) {
     // Print check json.
     //
     // Parameters:

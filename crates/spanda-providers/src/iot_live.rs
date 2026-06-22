@@ -107,10 +107,13 @@ pub fn read_zigbee_attribute_live(device: &str, cluster: &str) -> Option<String>
     if !live_zigbee_enabled() {
         return None;
     }
-    read_string_via_python_bridge("zigbee_read_attribute", vec![
-        serde_json::Value::String(device.to_string()),
-        serde_json::Value::String(cluster.to_string()),
-    ])
+    read_string_via_python_bridge(
+        "zigbee_read_attribute",
+        vec![
+            serde_json::Value::String(device.to_string()),
+            serde_json::Value::String(cluster.to_string()),
+        ],
+    )
 }
 
 pub fn read_lora_payload_live(device_id: &str) -> Option<String> {
@@ -127,10 +130,13 @@ pub fn read_matter_cluster_live(node: &str, cluster: &str) -> Option<f64> {
     if !live_matter_enabled() {
         return None;
     }
-    read_number_via_python_bridge("matter_read_cluster", vec![
-        serde_json::Value::String(node.to_string()),
-        serde_json::Value::String(cluster.to_string()),
-    ])
+    read_number_via_python_bridge(
+        "matter_read_cluster",
+        vec![
+            serde_json::Value::String(node.to_string()),
+            serde_json::Value::String(cluster.to_string()),
+        ],
+    )
 }
 
 pub fn read_canbus_frame_live(can_id: u32) -> Option<f64> {
@@ -174,7 +180,7 @@ fn read_modbus_tcp(address: u16) -> Result<f64, String> {
     // Example:
     // let value = read_modbus_tcp(40001)?;
 
-    use modbus::{Client, tcp};
+    use modbus::{tcp, Client};
 
     let host = std::env::var("SPANDA_MODBUS_HOST").unwrap_or_else(|_| "127.0.0.1".into());
     let port = std::env::var("SPANDA_MODBUS_PORT")
@@ -187,7 +193,8 @@ fn read_modbus_tcp(address: u16) -> Result<f64, String> {
         .unwrap_or(1u8);
     let zero_based = address.saturating_sub(40001);
     let endpoint = format!("{host}:{port}");
-    let mut transport = tcp::Transport::new(&endpoint).map_err(|e| format!("modbus connect failed: {e}"))?;
+    let mut transport =
+        tcp::Transport::new(&endpoint).map_err(|e| format!("modbus connect failed: {e}"))?;
     transport.set_uid(unit);
     let values = transport
         .read_holding_registers(zero_based, 1)
@@ -216,11 +223,14 @@ fn read_modbus_via_python_bridge(address: u16) -> Option<f64> {
 
     let host = std::env::var("SPANDA_MODBUS_HOST").unwrap_or_else(|_| "127.0.0.1".into());
     let port = std::env::var("SPANDA_MODBUS_PORT").unwrap_or_else(|_| "502".into());
-    let response = call_python_bridge("modbus_read_register", vec![
-        serde_json::Value::String(host),
-        serde_json::Value::String(port),
-        serde_json::Value::Number(address.into()),
-    ])?;
+    let response = call_python_bridge(
+        "modbus_read_register",
+        vec![
+            serde_json::Value::String(host),
+            serde_json::Value::String(port),
+            serde_json::Value::Number(address.into()),
+        ],
+    )?;
     match response.get("result") {
         Some(serde_json::Value::Number(n)) => n.as_f64(),
         _ => None,
@@ -244,10 +254,13 @@ fn read_opcua_via_python_bridge(node: &str) -> Option<String> {
 
     let endpoint = std::env::var("SPANDA_OPCUA_ENDPOINT")
         .unwrap_or_else(|_| "opc.tcp://127.0.0.1:4840".into());
-    let response = call_python_bridge("opcua_read_node", vec![
-        serde_json::Value::String(endpoint),
-        serde_json::Value::String(node.to_string()),
-    ])?;
+    let response = call_python_bridge(
+        "opcua_read_node",
+        vec![
+            serde_json::Value::String(endpoint),
+            serde_json::Value::String(node.to_string()),
+        ],
+    )?;
     match response.get("result") {
         Some(serde_json::Value::String(value)) => Some(value.clone()),
         Some(serde_json::Value::Number(n)) => n.as_f64().map(|v| v.to_string()),
@@ -287,11 +300,7 @@ fn call_python_bridge(fn_name: &str, args: Vec<serde_json::Value>) -> Option<ser
         stdin.write_all(payload.as_bytes()).ok()?;
     }
     let mut stdout = String::new();
-    child
-        .stdout
-        .as_mut()?
-        .read_to_string(&mut stdout)
-        .ok()?;
+    child.stdout.as_mut()?.read_to_string(&mut stdout).ok()?;
     let _ = child.wait();
     let parsed: serde_json::Value = serde_json::from_str(stdout.trim()).ok()?;
     if parsed.get("ok") == Some(&serde_json::Value::Bool(true)) {

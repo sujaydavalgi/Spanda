@@ -89,7 +89,10 @@ pub fn evaluate_health_checks(program: &Program) -> HealthReport {
                 operator: cond.operator.clone(),
                 threshold: cond.threshold.clone(),
                 status: HealthStatus::Unknown,
-                message: Some(format!("Static check: {} {} {}", cond.metric, cond.operator, cond.threshold)),
+                message: Some(format!(
+                    "Static check: {} {} {}",
+                    cond.metric, cond.operator, cond.threshold
+                )),
             });
         }
     }
@@ -152,7 +155,10 @@ pub fn evaluate_runtime_health(
 ) -> HealthReport {
     let mut report = evaluate_health_checks(program);
     let fault_lower: Vec<String> = faults.iter().map(|f| f.to_ascii_lowercase()).collect();
-    let event_lower: Vec<String> = active_events.iter().map(|f| f.to_ascii_lowercase()).collect();
+    let event_lower: Vec<String> = active_events
+        .iter()
+        .map(|f| f.to_ascii_lowercase())
+        .collect();
 
     for check in &mut report.checks {
         check.status = runtime_status_for_metric(&check.metric, &fault_lower, &event_lower);
@@ -219,8 +225,7 @@ pub fn apply_fleet_health_checks(
 
         if check.metric.starts_with("require:") {
             let req = check.threshold.clone();
-            check.status =
-                evaluate_fleet_requirement(&req, members, &fault_lower);
+            check.status = evaluate_fleet_requirement(&req, members, &fault_lower);
             check.message = Some(format!(
                 "Fleet '{}' requirement '{req}' => {:?} (members={})",
                 check.target,
@@ -232,9 +237,9 @@ pub fn apply_fleet_health_checks(
 
         let member_hit = members.iter().any(|member| {
             let member_lower = member.to_ascii_lowercase();
-            fault_lower
-                .iter()
-                .any(|f| f.contains(&member_lower) || f.contains("critical") || f.contains("unsafe"))
+            fault_lower.iter().any(|f| {
+                f.contains(&member_lower) || f.contains("critical") || f.contains("unsafe")
+            })
         });
         check.status = if member_hit {
             HealthStatus::Critical
@@ -331,16 +336,19 @@ fn evaluate_fleet_requirement(
     HealthStatus::Unknown
 }
 
-fn runtime_status_for_metric(
-    metric: &str,
-    faults: &[String],
-    events: &[String],
-) -> HealthStatus {
+fn runtime_status_for_metric(metric: &str, faults: &[String], events: &[String]) -> HealthStatus {
     let metric_lower = metric.to_ascii_lowercase();
-    let signals: Vec<&str> = faults.iter().chain(events.iter()).map(String::as_str).collect();
+    let signals: Vec<&str> = faults
+        .iter()
+        .chain(events.iter())
+        .map(String::as_str)
+        .collect();
 
     if metric_lower.contains("emergency_stop") {
-        return if signals.iter().any(|s| s.contains("emergency") || s.contains("kill")) {
+        return if signals
+            .iter()
+            .any(|s| s.contains("emergency") || s.contains("kill"))
+        {
             HealthStatus::Unsafe
         } else {
             HealthStatus::Healthy
@@ -348,7 +356,10 @@ fn runtime_status_for_metric(
     }
 
     if metric_lower.contains("gps") {
-        if signals.iter().any(|s| s.contains("gps") && s.contains("critical")) {
+        if signals
+            .iter()
+            .any(|s| s.contains("gps") && s.contains("critical"))
+        {
             return HealthStatus::Critical;
         }
         if signals.iter().any(|s| s.contains("gps")) {
@@ -371,9 +382,15 @@ fn runtime_status_for_metric(
         return HealthStatus::Healthy;
     }
 
-    if signals.iter().any(|s| s.contains("critical") || s.contains("unsafe")) {
+    if signals
+        .iter()
+        .any(|s| s.contains("critical") || s.contains("unsafe"))
+    {
         HealthStatus::Critical
-    } else if signals.iter().any(|s| s.contains("degraded") || s.contains("offline")) {
+    } else if signals
+        .iter()
+        .any(|s| s.contains("degraded") || s.contains("offline"))
+    {
         HealthStatus::Degraded
     } else if signals.is_empty() {
         HealthStatus::Healthy
@@ -385,12 +402,16 @@ fn runtime_status_for_metric(
 /// Generate health traceability matrix.
 pub fn health_traceability(program: &Program) -> Vec<HealthTraceRow> {
     let report = evaluate_health_checks(program);
-    let Program::Program { health_policies, .. } = program;
+    let Program::Program {
+        health_policies, ..
+    } = program;
 
     let policy_actions: std::collections::HashMap<String, String> = health_policies
         .iter()
         .flat_map(|p| {
-            let HealthPolicyDecl::HealthPolicyDecl { name, reactions, .. } = p;
+            let HealthPolicyDecl::HealthPolicyDecl {
+                name, reactions, ..
+            } = p;
             reactions.iter().map(move |reaction| {
                 let action = reaction
                     .body
@@ -457,12 +478,11 @@ health_check RoverHealth for robot Rover {
 }
 "#;
         let program = parse_source(source);
-        let report = evaluate_runtime_health(
-            &["GPSDegraded".into()],
-            &[],
-            &program,
-        );
-        assert!(report.checks.iter().any(|c| c.status == HealthStatus::Degraded));
+        let report = evaluate_runtime_health(&["GPSDegraded".into()], &[], &program);
+        assert!(report
+            .checks
+            .iter()
+            .any(|c| c.status == HealthStatus::Degraded));
     }
 
     #[test]

@@ -96,17 +96,20 @@ pub fn check_minimum_capabilities(program: &Program) -> MinimumCapabilityReport 
             exposes_capabilities,
             ..
         } = robot;
-        if mission.is_some() || exposes_capabilities.iter().any(|c| c == "obstacle_avoidance") {
+        if mission.is_some()
+            || exposes_capabilities
+                .iter()
+                .any(|c| c == "obstacle_avoidance")
+        {
             let caps = ["obstacle_avoidance", "gps_navigation", "emergency_stop"];
             for cap in caps {
-                if exposes_capabilities.iter().any(|c| c == cap)
-                    || mission.is_some()
-                {
+                if exposes_capabilities.iter().any(|c| c == cap) || mission.is_some() {
                     if let Some(report) = robot_reports.iter().find(|r| r.robot == *name) {
                         if !report.inferred.contains(&cap.to_string())
                             && !report.declared.contains(&cap.to_string())
                         {
-                            let fixes = suggest_fixes(cap, &["Lidar OR DepthCamera OR Radar".into()]);
+                            let fixes =
+                                suggest_fixes(cap, &["Lidar OR DepthCamera OR Radar".into()]);
                             rows.push(MinimumCapabilityRow {
                                 capability: cap.into(),
                                 required_by: name.clone(),
@@ -173,16 +176,10 @@ fn compute_missing(
 ) -> Vec<String> {
     let mut missing = Vec::new();
     if !req.any_of_sensors.is_empty() {
-        missing.push(format!(
-            "sensor: {}",
-            req.any_of_sensors.join(" OR ")
-        ));
+        missing.push(format!("sensor: {}", req.any_of_sensors.join(" OR ")));
     }
     if !req.any_of_actuators.is_empty() {
-        missing.push(format!(
-            "actuator: {}",
-            req.any_of_actuators.join(" OR ")
-        ));
+        missing.push(format!("actuator: {}", req.any_of_actuators.join(" OR ")));
     }
     if !req.any_of_connectivity.is_empty() {
         missing.push(format!(
@@ -194,10 +191,7 @@ fn compute_missing(
         missing.push(format!("package: {}", req.required_packages.join(", ")));
     }
     if !req.required_safety_rules.is_empty() {
-        missing.push(format!(
-            "safety: {}",
-            req.required_safety_rules.join(", ")
-        ));
+        missing.push(format!("safety: {}", req.required_safety_rules.join(", ")));
     }
     missing
 }

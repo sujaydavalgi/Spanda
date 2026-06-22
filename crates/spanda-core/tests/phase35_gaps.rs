@@ -23,18 +23,17 @@ health_check PatrolHealth for fleet Patrol {
     check rover.status == Healthy;
 }
 "#;
-    let program = spanda_parser::parse(spanda_lexer::tokenize(source).expect("tokenize")).expect("parse");
+    let program =
+        spanda_parser::parse(spanda_lexer::tokenize(source).expect("tokenize")).expect("parse");
     let mut report = evaluate_health_checks(&program);
     let mut fleets = FleetRegistry::default();
     fleets.register("Patrol", vec!["RoverA".into(), "RoverB".into()]);
-    apply_fleet_health_checks(
-        &mut report,
-        &program,
-        &fleets,
-        &["RoverADegraded".into()],
-    );
+    apply_fleet_health_checks(&mut report, &program, &fleets, &["RoverADegraded".into()]);
     assert!(
-        report.checks.iter().any(|c| c.metric.starts_with("require:")),
+        report
+            .checks
+            .iter()
+            .any(|c| c.metric.starts_with("require:")),
         "expected fleet requirement row, got {:?}",
         report.checks
     );
@@ -49,7 +48,8 @@ kill_switch EmergencyStop {
     action { emergency_stop; }
 }
 "#;
-    let program = spanda_parser::parse(spanda_lexer::tokenize(source).expect("tokenize")).expect("parse");
+    let program =
+        spanda_parser::parse(spanda_lexer::tokenize(source).expect("tokenize")).expect("parse");
     let diags = spanda_capability::collect_verification_diagnostics(&program);
     assert!(
         diags

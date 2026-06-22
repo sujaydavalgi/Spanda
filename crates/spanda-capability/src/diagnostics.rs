@@ -186,7 +186,8 @@ fn diag(
     }
 }
 
-const KILL_SWITCH_STUB: &str = "kill_switch EmergencyStop {\n    priority: critical;\n    action { emergency_stop; }\n}";
+const KILL_SWITCH_STUB: &str =
+    "kill_switch EmergencyStop {\n    priority: critical;\n    action { emergency_stop; }\n}";
 
 const HEALTH_POLICY_STUB: &str = "health_policy SafetyPolicy {\n    on Critical { enter degraded_mode; }\n    on Unsafe { emergency_stop; }\n}";
 
@@ -228,7 +229,10 @@ fn map_traceability_error(
             let _ = tail;
         }
     }
-    if let Some(cap) = err.strip_prefix("Unknown capability '").and_then(|s| s.strip_suffix('\'')) {
+    if let Some(cap) = err
+        .strip_prefix("Unknown capability '")
+        .and_then(|s| s.strip_suffix('\''))
+    {
         if let Some(req) = requires.iter().find(|r| r.capability == cap) {
             return Some(diag(
                 err.to_string(),
@@ -292,7 +296,9 @@ fn map_minimum_error(
                 req.span.start.column,
                 severity_for(req.severity),
                 "minimum-hardware",
-                fix_from_rows.clone().or_else(|| capability_fix_for(&req.capability)),
+                fix_from_rows
+                    .clone()
+                    .or_else(|| capability_fix_for(&req.capability)),
             ));
         }
     }
@@ -386,7 +392,9 @@ kill_switch EmergencyStop {
 "#;
         let program = parse_source(source);
         let diags = collect_verification_diagnostics(&program);
-        assert!(diags.iter().any(|d| d.category == "kill-switch" && d.severity == "error"));
+        assert!(diags
+            .iter()
+            .any(|d| d.category == "kill-switch" && d.severity == "error"));
         assert!(
             diags.iter().any(|d| {
                 d.suggested_fix
@@ -407,6 +415,8 @@ robot Rover {
 "#;
         let program = parse_source(source);
         let diags = collect_verification_diagnostics(&program);
-        assert!(diags.iter().any(|d| d.category == "traceability" && d.line > 1));
+        assert!(diags
+            .iter()
+            .any(|d| d.category == "traceability" && d.line > 1));
     }
 }

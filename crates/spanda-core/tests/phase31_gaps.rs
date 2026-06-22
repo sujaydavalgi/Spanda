@@ -36,7 +36,10 @@ robot Rover {
     )
     .expect("health policy run");
     assert!(
-        result.logs.iter().any(|l| l.contains("health_policy: applying")),
+        result
+            .logs
+            .iter()
+            .any(|l| l.contains("health_policy: applying")),
         "expected health policy reaction, got {:?}",
         result.logs
     );

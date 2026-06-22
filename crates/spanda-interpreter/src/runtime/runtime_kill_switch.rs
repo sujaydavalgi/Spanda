@@ -85,16 +85,19 @@ impl<B: RobotBackend> Interpreter<B> {
                     ),
                     line: 1,
                 })?;
-            let signed: SignedMessage = serde_json::from_str(signature_json).map_err(|e| {
-                SpandaError::Runtime {
+            let signed: SignedMessage =
+                serde_json::from_str(signature_json).map_err(|e| SpandaError::Runtime {
                     message: format!("Invalid kill switch signature JSON: {e}"),
                     line: 1,
-                }
-            })?;
-            let identity = self.security.identity.as_ref().ok_or_else(|| SpandaError::Runtime {
-                message: "Kill switch remote_signed requires robot identity".into(),
-                line: 1,
-            })?;
+                })?;
+            let identity = self
+                .security
+                .identity
+                .as_ref()
+                .ok_or_else(|| SpandaError::Runtime {
+                    message: "Kill switch remote_signed requires robot identity".into(),
+                    line: 1,
+                })?;
             if !signed.verify(identity).unwrap_or(false) {
                 return Err(SpandaError::Runtime {
                     message: format!("Kill switch '{name}' signature verification failed"),
@@ -118,10 +121,7 @@ impl<B: RobotBackend> Interpreter<B> {
         Ok(())
     }
 
-    pub(super) fn dispatch_kill_switch_handlers(
-        &mut self,
-        name: &str,
-    ) -> Result<(), SpandaError> {
+    pub(super) fn dispatch_kill_switch_handlers(&mut self, name: &str) -> Result<(), SpandaError> {
         // Dispatch registered `on kill_switch` trigger handlers.
         //
         // Parameters:

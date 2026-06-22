@@ -346,7 +346,10 @@ impl HardwareMonitor {
             .map(|f| f.to_ascii_lowercase())
             .collect();
 
-        if faults.iter().any(|f| f.contains("critical") || f.contains("unsafe")) {
+        if faults
+            .iter()
+            .any(|f| f.contains("critical") || f.contains("unsafe"))
+        {
             return "Critical";
         }
         if !self.active_events.is_empty() || !self.injected_faults.is_empty() {
