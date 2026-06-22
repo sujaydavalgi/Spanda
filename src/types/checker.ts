@@ -1248,6 +1248,12 @@ class TypeChecker {
       });
     }
 
+    this.symbols.set("world_model", {
+      name: "world_model",
+      roboType: { kind: "named", name: "WorldModel" },
+      kind: "variable",
+    });
+
     // Iterate over secrets ?? [].
     for (const secret of robot.secrets ?? []) {
       this.symbols.set(secret.name, {

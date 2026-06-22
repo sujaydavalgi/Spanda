@@ -98,6 +98,8 @@ All examples are type-checked in CI:
 
 Golden fixtures: [`tests/golden/manifest.json`](../tests/golden/manifest.json) · Vitest: `npm test -- tests/golden/rust.test.ts`
 
+**Tier 3 experimental golden paths** (MQTT, twin cloud, LLVM, cpp-native, ledger, world model, self-host lexer): [docs/tier-3-golden-paths.md](../docs/tier-3-golden-paths.md)
+
 ---
 
 ## Adding an example

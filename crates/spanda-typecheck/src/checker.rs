@@ -1792,6 +1792,17 @@ impl<'h> TypeChecker<'h> {
                 actuator_type: None,
             },
         );
+        self.symbols.insert(
+            String::from("world_model"),
+            SymbolEntry {
+                robo_type: SpandaType::Named {
+                    name: "WorldModel".into(),
+                },
+                kind: SymbolKind::Variable,
+                sensor_type: None,
+                actuator_type: None,
+            },
+        );
 
         // Emit output when provenance provides a provenance decl.
         if let Some(provenance_decl) = provenance {
@@ -6412,6 +6423,34 @@ fn builtin_methods(
                         name: "ProvenanceRecord".into(),
                     },
                 ),
+            ),
+        ])),
+        "WorldModel" => Some(HashMap::from([
+            (
+                "update",
+                m(
+                    vec![SpandaType::Named {
+                        name: "FusedObservation".into(),
+                    }],
+                    HashMap::new(),
+                    SpandaType::Number {
+                        unit: UnitKind::None,
+                    },
+                ),
+            ),
+            (
+                "belief",
+                m(
+                    vec![],
+                    HashMap::new(),
+                    SpandaType::Number {
+                        unit: UnitKind::None,
+                    },
+                ),
+            ),
+            (
+                "export",
+                m(vec![], HashMap::new(), SpandaType::String),
             ),
         ])),
         "MockLedger" => Some(HashMap::from([

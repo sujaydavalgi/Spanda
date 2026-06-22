@@ -1,0 +1,45 @@
+// Showcase: observe → fusion → world_model belief → motion decision
+//
+//   spanda check examples/showcase/world_model_patrol.sd
+//   spanda run examples/showcase/world_model_patrol.sd
+//   ./scripts/world_model_golden_path.sh
+
+module showcase.world_model_patrol;
+
+robot PatrolBot {
+  bus sim;
+
+  sensor lidar: Lidar on "/scan";
+  actuator wheels: DifferentialDrive;
+
+  observe {
+    lidar;
+  }
+
+  world_model {
+    enabled;
+  }
+
+  safety {
+    max_speed = 1.0 m/s;
+    stop_if lidar.nearest_distance < 0.5 m;
+  }
+
+  behavior patrol() {
+    loop every 200ms {
+      let fused = fusion.read();
+      let belief = world_model.belief();
+      if belief < 0.05 {
+        wheels.stop();
+        return;
+      }
+      let scan = lidar.read();
+      if scan.nearest_distance < 0.8 m {
+        wheels.stop();
+      } else {
+        wheels.drive(linear: 0.25 m/s, angular: 0.0 rad/s);
+      }
+      let _ = fused;
+    }
+  }
+}

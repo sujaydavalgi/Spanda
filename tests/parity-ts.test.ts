@@ -16,6 +16,16 @@ describe("TypeScript parity checks", () => {
     expect(() => compile(source, "typescript")).not.toThrow();
   });
 
+  it("parses and type-checks world_model patrol showcase (Rust + TS parity)", () => {
+    const source = readFileSync(join(repoRoot, "examples/showcase/world_model_patrol.sd"), "utf-8");
+    expect(() => compile(source, "typescript")).not.toThrow();
+  });
+
+  it("parses and type-checks world_model_observe feature example", () => {
+    const source = readFileSync(join(repoRoot, "examples/features/world_model_observe.sd"), "utf-8");
+    expect(() => compile(source, "typescript")).not.toThrow();
+  });
+
   for (const dir of ["realtime", "regex"] as const) {
     const examplesDir = join(repoRoot, "examples", dir);
     for (const file of readdirSync(examplesDir).filter((name) => name.endsWith(".sd"))) {

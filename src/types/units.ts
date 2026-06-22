@@ -667,6 +667,14 @@ export const BUILTIN_METHODS: Record<
   SensorFusion: {
     read: { params: [], returns: { kind: "named", name: "FusedObservation" } },
   },
+  WorldModel: {
+    update: {
+      params: [{ kind: "named", name: "FusedObservation" }],
+      returns: { kind: "number", unit: "none" },
+    },
+    belief: { params: [], returns: { kind: "number", unit: "none" } },
+    export: { params: [], returns: { kind: "string" } },
+  },
   FleetCoordinator: {
     members: { params: [{ kind: "string" }], returns: { kind: "int" } },
     names: { params: [], returns: { kind: "int" } },

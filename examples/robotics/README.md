@@ -7,6 +7,7 @@ Runnable `.sd` programs demonstrating the Spanda robotics platform. See [robotic
 | `mission_management.sd` | Named mission steps and lifecycle |
 | `fleet_management.sd` | Program-level `fleet` declarations |
 | `fleet_peer_missions.sd` | Peer mesh fleet orchestration |
+| `fleet_field_trial.sd` | Three-agent field-trial fleet layout (Phase 24) |
 | `swarm_coordination.sd` | Swarm policies (`round_robin`, `broadcast`, `leader_follow`) |
 | `safety_zones.sd` | Program-level `safety_zone` speed caps |
 | `sensor_fusion.sd` | `observe` + `fusion.read()` |
@@ -21,4 +22,5 @@ Runnable `.sd` programs demonstrating the Spanda robotics platform. See [robotic
 
 **Scripts**
 
-- `golden_path_deploy.sh` — check → verify → certify prove → deploy plan/rollout dry-run → verify-adapter → fleet orchestrate → swarm coordinate
+- `golden_path_deploy.sh` — check → verify → certify prove → deploy plan/rollout dry-run → verify-adapter → fleet orchestrate (local, remote, mesh) → swarm → **3-agent field trial**
+- Golden path index: [docs/tier-3-golden-paths.md](../../docs/tier-3-golden-paths.md)

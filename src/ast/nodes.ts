@@ -31,6 +31,7 @@ import type {
   TwinDecl,
   VerifyDecl,
   ObserveDecl,
+  WorldModelDecl,
 } from "../foundations.js";
 
 export type {
@@ -222,6 +223,7 @@ export type RobotDecl = {
   twin: TwinDecl | null;
   verify: VerifyDecl | null;
   observe: ObserveDecl | null;
+  worldModel: WorldModelDecl | null;
   identity: import("../foundations.js").IdentityDecl | null;
   audit: import("../foundations.js").AuditDecl | null;
   provenance: import("../foundations.js").ProvenanceDecl | null;

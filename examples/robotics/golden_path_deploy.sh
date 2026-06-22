@@ -109,6 +109,11 @@ echo "== swarm coordination via mesh =="
 rm -f "${SPANDA_SWARM_STATE}"
 "${SPANDA}" swarm coordinate "${SWARM}" --mesh-url "http://${MESH_BIND}"
 
+echo "== fleet field trial (3 agents) =="
+FLEET_TRIAL="${ROOT}/examples/robotics/fleet_field_trial.sd"
+"${SPANDA}" check "${FLEET_TRIAL}"
+"${SPANDA}" fleet orchestrate "${FLEET_TRIAL}" --remote
+
 echo "== start remote deploy agent =="
 : > "${SPANDA_DEPLOY_AGENTS}"
 "${SPANDA}" deploy agent start --target "${DEPLOY_TARGET}" --require-certify --bind "${DEPLOY_AGENT_BIND}" &

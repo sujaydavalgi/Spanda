@@ -1,0 +1,43 @@
+// Robotics — three-agent fleet field-trial layout (Phase 24)
+//
+//   spanda check examples/robotics/fleet_field_trial.sd
+//   spanda fleet orchestrate examples/robotics/fleet_field_trial.sd
+//   spanda fleet orchestrate examples/robotics/fleet_field_trial.sd --remote
+//
+// Multi-host CI: examples/robotics/golden_path_deploy.sh
+
+robot ScoutA {
+  robot ScoutB;
+  robot ScoutC;
+
+  mission Survey {
+    navigate;
+    scan;
+    relay;
+    return_home;
+  }
+}
+
+robot ScoutB {
+  mission Survey {
+    navigate;
+    scan;
+    relay;
+    return_home;
+  }
+}
+
+robot ScoutC {
+  mission Survey {
+    navigate;
+    scan;
+    relay;
+    return_home;
+  }
+}
+
+fleet FieldTrial {
+  ScoutA;
+  ScoutB;
+  ScoutC;
+}

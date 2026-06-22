@@ -56,6 +56,7 @@ spanda verify examples/showcase/killer_demo.sd --simulate
 |------|------|
 | [`killer_demo.sd`](./killer_demo.sd) | Patrol loop, lidar stop, AI planner, deploy + verify + sim |
 | [`autonomous_rover/`](./autonomous_rover/) | **Flagship platform demo** — GPS, MQTT, WiFi, providers, replay |
+| [`world_model_patrol.sd`](./world_model_patrol.sd) | **World model** — observe → fusion → belief → motion decision |
 
 Record and replay: [`examples/end_to_end/replay_mission.sd`](../end_to_end/replay_mission.sd)
 
@@ -83,5 +84,6 @@ These illustrate additional capabilities but are **not** part of the evaluator q
 | [`warehouse_robot.sd`](./warehouse_robot.sd) | Tasks, comms, safety zones |
 | [`communication_demo.sd`](./communication_demo.sd) | Message, topic, service, action |
 | [`digital_twin_demo.sd`](./digital_twin_demo.sd) | Twin, telemetry, replay |
+| [`world_model_patrol.sd`](./world_model_patrol.sd) | Observe, fusion hook, belief-gated patrol |
 
-Browse by capability: [examples/features/README.md](../features/README.md) · End-to-end workflows: [examples/end_to_end/README.md](../end_to_end/README.md)
+Browse by capability: [examples/features/README.md](../features/README.md) · End-to-end workflows: [examples/end_to_end/README.md](../end_to_end/README.md) · Tier 3 CI golden paths: [docs/tier-3-golden-paths.md](../../docs/tier-3-golden-paths.md)

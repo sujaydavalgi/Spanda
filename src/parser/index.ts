@@ -74,6 +74,7 @@ import type {
   TwinDecl,
   VerifyDecl,
   ObserveDecl,
+  WorldModelDecl,
   HardwareDecl,
   DeployDecl,
   RequiresHardwareDecl,
@@ -1228,6 +1229,7 @@ class Parser {
     let twin: TwinDecl | null = null;
     let verify: VerifyDecl | null = null;
     let observe: ObserveDecl | null = null;
+    let worldModel: WorldModelDecl | null = null;
     let identity: IdentityDecl | null = null;
     let audit: AuditDecl | null = null;
     let provenance: ProvenanceDecl | null = null;
@@ -1357,6 +1359,10 @@ class Parser {
       } else if (this.check("OBSERVE")) {
         observe = this.parseObserve();
 
+      // Otherwise, continue when this.isRobotMemberKeyword("world_model").
+      } else if (this.isRobotMemberKeyword("world_model")) {
+        worldModel = this.parseWorldModel();
+
       // Otherwise, continue when this.isRobotMemberKeyword("identity").
       } else if (this.isRobotMemberKeyword("identity")) {
         identity = this.parseIdentity();
@@ -1460,6 +1466,7 @@ class Parser {
       twin,
       verify,
       observe,
+      worldModel,
       identity,
       audit,
       provenance,
@@ -2794,7 +2801,44 @@ class Parser {
     }
     const end = this.expect("RBRACE", "Expected '}' to close observe block");
     return { kind: "ObserveDecl", sensors, span: this.spanFrom(start, end) };
-}
+  }
+
+  private parseWorldModel(): WorldModelDecl {
+    // Parse world_model block on a robot declaration.
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Parsed world_model declaration.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // const result = parseWorldModel();
+
+    const start = this.expect("IDENT", "Expected 'world_model'");
+    this.expect("LBRACE", "Expected '{' after world_model");
+    let enabled = true;
+    while (!this.check("RBRACE") && !this.check("EOF")) {
+      const flag = this.expect("IDENT", "Expected world_model flag");
+      this.expect("SEMICOLON", "Expected ';' after world_model flag");
+      if (flag.lexeme === "enabled") {
+        enabled = true;
+      } else if (flag.lexeme === "disabled") {
+        enabled = false;
+      } else {
+        throw new ParseError(
+          `Unknown world_model flag '${flag.lexeme}' (use enabled or disabled)`,
+          flag.line,
+          flag.column,
+        );
+      }
+    }
+    const end = this.expect("RBRACE", "Expected '}' to close world_model block");
+    return { kind: "WorldModelDecl", enabled, span: this.spanFrom(start, end) };
+  }
 
   private parseIdentity(): IdentityDecl {
     // ParseIdentity.

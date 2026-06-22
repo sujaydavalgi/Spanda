@@ -408,6 +408,12 @@ export type ObserveDecl = {
   span: Span;
 };
 
+export type WorldModelDecl = {
+  kind: "WorldModelDecl";
+  enabled: boolean;
+  span: Span;
+};
+
 export type CapabilityDecl = {
   action: string;
   target: string | null;
