@@ -410,3 +410,17 @@ Goal: poll runtime health during trigger maintenance, surface suggested fixes in
 | `record_debug_event` for kill switch and critical health (`health_critical`, `kill_switch_activated`) | **Complete** |
 | Integration test: continuous health poll during `every` trigger loop | **Complete** |
 
+## Phase 31 — Complete ✓ (gap closure: health policy runtime, typed I/O, IoT dispatch, agent audit, DAP output)
+
+Goal: close partial gaps from the 14-item verification/DX audit — runtime health_policy enforcement, behavior/agent I/O typing, IoT package dispatch, agent capability audit hooks, and DAP output for health events.
+
+| Step | Status |
+|------|--------|
+| `health_policy` reactions store `Vec<Stmt>` and execute at runtime on status transitions | **Complete** |
+| Behavior `-> Type` return type validation in typechecker | **Complete** |
+| Agent plan `SafeAction` return enforcement when `propose_motion` / `execute` granted | **Complete** |
+| IoT package bootstrap + `package_dispatch` for `spanda-iot-core`, modbus, opcua | **Complete** |
+| Agent capability grant/deny audit logging | **Complete** |
+| DAP `output` events for health/kill-switch debug pauses | **Complete** |
+| Integration tests (`phase31_gaps.rs`, IoT dispatch test) | **Complete** |
+

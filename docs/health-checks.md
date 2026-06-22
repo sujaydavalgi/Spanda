@@ -50,6 +50,8 @@ health_policy SafetyPolicy {
 }
 ```
 
+At runtime, matching reactions execute when health status transitions (wired to `HardwareMonitor` polling). Policies latch per `(policy, status)` until health returns to `Healthy`.
+
 ## Health triggers
 
 ```spanda

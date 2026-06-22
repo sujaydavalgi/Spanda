@@ -21,6 +21,10 @@ Robot-scoped handler:
 
 ```spanda
 robot Rover {
+    behavior status() -> Bool {
+        return true;
+    }
+
     on kill_switch EmergencyStop {
         stop_all_actuators();
     }

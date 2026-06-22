@@ -41,3 +41,14 @@ device TemperatureSensor {
 ```
 
 Install packages via `spanda add spanda-mqtt`.
+
+## Runtime dispatch
+
+When official IoT packages are installed, module imports dispatch through `package_dispatch`:
+
+| Module | Function | Package |
+|--------|----------|---------|
+| `iot.device` | `register` | `spanda-iot-core` |
+| `iot.telemetry` | `publish` | `spanda-iot-core` |
+| `iot.modbus` | `read_register` | `spanda-modbus` |
+| `iot.opcua` | `read_node` | `spanda-opcua` |
