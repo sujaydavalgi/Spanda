@@ -339,6 +339,11 @@ impl Parser {
                 | TokenType::Faults
                 | TokenType::Verify
                 | TokenType::Requires
+                | TokenType::Robot
+                | TokenType::Sensor
+                | TokenType::Actuator
+                | TokenType::Fleet
+                | TokenType::Swarm
         );
 
         // Take this path when ok.
@@ -602,6 +607,10 @@ impl Parser {
         let mut simulate_compatibility = None;
         let mut messages = Vec::new();
         let mut validate_rules = Vec::new();
+        let mut kill_switches = Vec::new();
+        let mut health_checks = Vec::new();
+        let mut health_policies = Vec::new();
+        let mut requires_capabilities = Vec::new();
         let mut robots = Vec::new();
 
         // Repeat while self.check(TokenType::Import).
@@ -654,6 +663,14 @@ impl Parser {
                 messages.push(self.parse_message()?);
             } else if self.check(TokenType::Ident) && self.peek().lexeme == "validate" {
                 validate_rules.push(self.parse_validate_rule()?);
+            } else if self.check(TokenType::Ident) && self.peek().lexeme == "kill_switch" {
+                kill_switches.push(self.parse_kill_switch()?);
+            } else if self.check(TokenType::Ident) && self.peek().lexeme == "health_check" {
+                health_checks.push(self.parse_health_check()?);
+            } else if self.check(TokenType::Ident) && self.peek().lexeme == "health_policy" {
+                health_policies.push(self.parse_health_policy()?);
+            } else if self.check(TokenType::Ident) && self.peek().lexeme == "requires_capability" {
+                requires_capabilities.push(self.parse_requires_capability()?);
             } else if self.check(TokenType::Robot) {
                 robots.push(self.parse_robot()?);
             } else {
@@ -690,6 +707,10 @@ impl Parser {
             simulate_compatibility,
             messages,
             validate_rules,
+            kill_switches,
+            health_checks,
+            health_policies,
+            requires_capabilities,
             robots,
             span: self.span_from(&start, self.previous()),
         })
@@ -723,6 +744,7 @@ impl Parser {
         let mut sensors = Vec::new();
         let mut actuators = Vec::new();
         let mut connectivity = Vec::new();
+        let mut components = Vec::new();
         let mut battery_wh = None;
         let mut network_bandwidth_mbps = None;
         let mut network_latency_ms = None;
@@ -830,6 +852,13 @@ impl Parser {
                     }
                 }
                 self.expect(TokenType::Rbrace, "Expected '}' to close timing block")?;
+            } else if self.check(TokenType::Ident)
+                && matches!(
+                    self.peek().lexeme.as_str(),
+                    "sensor" | "actuator" | "compute" | "connectivity"
+                )
+            {
+                components.push(self.parse_hardware_component()?);
             } else if self.match_types(&[TokenType::Resource]) {
                 self.expect(TokenType::Colon, "Expected ':' after resource")?;
                 power_draw_w = Some(self.parse_number_value()?);
@@ -859,6 +888,7 @@ impl Parser {
             sensors,
             actuators,
             connectivity,
+            components,
             battery_wh,
             network_bandwidth_mbps,
             network_latency_ms,
@@ -914,6 +944,334 @@ impl Parser {
             &format!("Expected ';' after {kind} list"),
         )?;
         Ok(items)
+    }
+
+    fn parse_hardware_component(
+        &mut self,
+    ) -> Result<spanda_ast::foundations::HardwareComponentDecl, SpandaError> {
+        use spanda_ast::foundations::HardwareComponentDecl;
+        let start = self.advance();
+        let component_kind = start.lexeme.clone();
+        let name_tok = self.expect(TokenType::Ident, "Expected component name")?;
+        self.expect(TokenType::Colon, "Expected ':' after component name")?;
+        let component_type = self.parse_label("Expected component type")?;
+        self.expect(TokenType::Lbrace, "Expected '{' after component type")?;
+        let mut capabilities = Vec::new();
+        let mut properties = Vec::new();
+        while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+            if self.check(TokenType::Ident) && self.peek().lexeme == "capabilities" {
+                self.advance();
+                capabilities = self.parse_hardware_type_list("capabilities")?;
+            } else if self.check(TokenType::Ident) {
+                let key = self.advance().lexeme.clone();
+                self.expect(TokenType::Colon, "Expected ':' after property")?;
+                let val = if self.check(TokenType::String) {
+                    format!("\"{}\"", self.advance().lexeme.trim_matches('"'))
+                } else {
+                    self.parse_label("Expected property value")?
+                };
+                self.expect(TokenType::Semicolon, "Expected ';' after property")?;
+                properties.push((key, val));
+            } else {
+                let t = self.peek();
+                return Err(SpandaError::Parse {
+                    message: "Expected capabilities or property in hardware component".into(),
+                    line: t.line,
+                    column: t.column,
+                });
+            }
+        }
+        let end = self.expect(TokenType::Rbrace, "Expected '}' to close component")?;
+        self.expect(TokenType::Semicolon, "Expected ';' after component")?;
+        Ok(HardwareComponentDecl {
+            component_kind,
+            name: name_tok.lexeme,
+            component_type,
+            capabilities,
+            properties,
+            span: self.span_from(&start, &end),
+        })
+    }
+
+    fn parse_kill_switch(&mut self) -> Result<spanda_ast::foundations::KillSwitchDecl, SpandaError> {
+        use spanda_ast::foundations::KillSwitchDecl;
+        let start = self.advance();
+        let name = self.parse_label("Expected kill switch name")?;
+        self.expect(TokenType::Lbrace, "Expected '{' after kill switch name")?;
+        let mut source = None;
+        let mut priority = "critical".into();
+        let mut remote_signed = false;
+        let mut body = Vec::new();
+        while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+            if self.check(TokenType::Ident) && self.peek().lexeme == "source" {
+                self.advance();
+                self.expect(TokenType::Colon, "Expected ':' after source")?;
+                source = Some(self.parse_dotted_name("Expected kill switch source")?);
+                self.expect(TokenType::Semicolon, "Expected ';' after source")?;
+            } else if self.check(TokenType::Priority)
+                || (self.check(TokenType::Ident) && self.peek().lexeme == "priority")
+            {
+                self.advance();
+                self.expect(TokenType::Colon, "Expected ':' after priority")?;
+                priority = self.parse_label("Expected priority level")?;
+                self.expect(TokenType::Semicolon, "Expected ';' after priority")?;
+            } else if self.check(TokenType::Ident) && self.peek().lexeme == "remote_signed" {
+                self.advance();
+                remote_signed = true;
+                self.expect(TokenType::Semicolon, "Expected ';' after remote_signed")?;
+            } else if self.check(TokenType::Action)
+                || (self.check(TokenType::Ident)
+                    && (self.peek().lexeme == "action" || self.peek().lexeme == "body"))
+            {
+                self.advance();
+                self.expect(TokenType::Lbrace, "Expected '{' after action")?;
+                body = self.parse_block()?;
+                self.expect(TokenType::Rbrace, "Expected '}' to close action")?;
+            } else {
+                let t = self.peek();
+                return Err(SpandaError::Parse {
+                    message: "Expected source, priority, or action in kill_switch".into(),
+                    line: t.line,
+                    column: t.column,
+                });
+            }
+        }
+        let end = self.expect(TokenType::Rbrace, "Expected '}' to close kill_switch")?;
+        Ok(KillSwitchDecl::KillSwitchDecl {
+            name,
+            source,
+            priority,
+            body,
+            remote_signed,
+            span: self.span_from(&start, &end),
+        })
+    }
+
+    fn parse_health_check(
+        &mut self,
+    ) -> Result<spanda_ast::foundations::HealthCheckDecl, SpandaError> {
+        use spanda_ast::foundations::{HealthCheckCondition, HealthCheckDecl};
+        let start = self.advance();
+        let name = self.parse_label("Expected health check name")?;
+        self.expect(TokenType::For, "Expected 'for' after health check name")?;
+        let target_kind = self.parse_label("Expected target kind")?;
+        let target = self.parse_label("Expected target name")?;
+        self.expect(TokenType::Lbrace, "Expected '{' after health check target")?;
+        let mut conditions = Vec::new();
+        while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+            if self.check(TokenType::Ident) && self.peek().lexeme == "check" {
+                self.advance();
+                let metric = self.parse_dotted_name("Expected metric path")?;
+                let op = if self.check(TokenType::Gt) {
+                    self.advance();
+                    if self.check(TokenType::Eq) {
+                        self.advance();
+                        ">=".into()
+                    } else {
+                        ">".into()
+                    }
+                } else if self.check(TokenType::Lt) {
+                    self.advance();
+                    if self.check(TokenType::Eq) {
+                        self.advance();
+                        "<=".into()
+                    } else {
+                        "<".into()
+                    }
+                } else if self.check(TokenType::Eq) {
+                    self.advance();
+                    "==".into()
+                } else {
+                    return Err(SpandaError::Parse {
+                        message: "Expected comparison operator in health check".into(),
+                        line: self.peek().line,
+                        column: self.peek().column,
+                    });
+                };
+                let mut threshold = if self.check(TokenType::True) {
+                    self.advance();
+                    "true".into()
+                } else if self.check(TokenType::False) {
+                    self.advance();
+                    "false".into()
+                } else if self.check(TokenType::Ident) {
+                    self.advance().lexeme.clone()
+                } else if self.check(TokenType::Number) {
+                    self.advance().lexeme.clone()
+                } else {
+                    self.parse_label("Expected threshold value")?
+                };
+                if self.check(TokenType::Percent) {
+                    self.advance();
+                    threshold.push('%');
+                }
+                self.expect(TokenType::Semicolon, "Expected ';' after health check condition")?;
+                conditions.push(HealthCheckCondition {
+                    metric,
+                    operator: op,
+                    threshold,
+                    span: self.span_from(&start, self.previous()),
+                });
+            } else if self.check(TokenType::Ident) && self.peek().lexeme == "require" {
+                self.advance();
+                let _ = self.parse_label("Expected require clause")?;
+                self.expect(TokenType::Semicolon, "Expected ';' after require")?;
+            } else {
+                let t = self.peek();
+                return Err(SpandaError::Parse {
+                    message: "Expected check or require in health_check".into(),
+                    line: t.line,
+                    column: t.column,
+                });
+            }
+        }
+        let end = self.expect(TokenType::Rbrace, "Expected '}' to close health_check")?;
+        Ok(HealthCheckDecl::HealthCheckDecl {
+            name,
+            target_kind,
+            target,
+            conditions,
+            span: self.span_from(&start, &end),
+        })
+    }
+
+    fn parse_health_policy(
+        &mut self,
+    ) -> Result<spanda_ast::foundations::HealthPolicyDecl, SpandaError> {
+        use spanda_ast::foundations::HealthPolicyDecl;
+        let start = self.advance();
+        let name = self.parse_label("Expected health policy name")?;
+        self.expect(TokenType::Lbrace, "Expected '{' after health policy name")?;
+        let mut reactions = Vec::new();
+        while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+            if self.check(TokenType::On) {
+                self.advance();
+                let status = self.parse_label("Expected health status")?;
+                self.expect(TokenType::Lbrace, "Expected '{' after status")?;
+                let body = self.parse_block()?;
+                let action = body
+                    .iter()
+                    .map(|s| format!("{s:?}"))
+                    .collect::<Vec<_>>()
+                    .join("; ");
+                reactions.push((status, action));
+                self.expect(TokenType::Rbrace, "Expected '}' after health policy action")?;
+            } else {
+                let t = self.peek();
+                return Err(SpandaError::Parse {
+                    message: "Expected 'on Status { ... }' in health_policy".into(),
+                    line: t.line,
+                    column: t.column,
+                });
+            }
+        }
+        let end = self.expect(TokenType::Rbrace, "Expected '}' to close health_policy")?;
+        Ok(HealthPolicyDecl::HealthPolicyDecl {
+            name,
+            reactions,
+            span: self.span_from(&start, &end),
+        })
+    }
+
+    fn parse_action_stmts(&mut self) -> Result<String, SpandaError> {
+        let mut parts = Vec::new();
+        while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+            if self.check(TokenType::Ident) || self.check(TokenType::EmergencyStop) {
+                parts.push(self.advance().lexeme.clone());
+            } else if self.check(TokenType::Semicolon) {
+                self.advance();
+            } else if self.check(TokenType::Lparen) {
+                let _ = self.parse_expr()?;
+                if self.check(TokenType::Semicolon) {
+                    self.advance();
+                }
+            } else {
+                let t = self.peek();
+                return Err(SpandaError::Parse {
+                    message: "Expected action statement in health policy".into(),
+                    line: t.line,
+                    column: t.column,
+                });
+            }
+        }
+        self.expect(TokenType::Rbrace, "Expected '}' to close action block")?;
+        Ok(parts.join(" "))
+    }
+
+    fn parse_requires_capability(
+        &mut self,
+    ) -> Result<spanda_ast::foundations::RequiresCapabilityDecl, SpandaError> {
+        use spanda_ast::foundations::{RequiresCapabilityDecl, RequiresCapabilitySeverity};
+        let start = self.advance();
+        let capability = self.parse_label("Expected capability name")?;
+        self.expect(TokenType::Lbrace, "Expected '{' after capability name")?;
+        let mut any_of_sensors = Vec::new();
+        let mut any_of_actuators = Vec::new();
+        let mut any_of_connectivity = Vec::new();
+        let mut safety_rules = Vec::new();
+        let mut severity = RequiresCapabilitySeverity::Error;
+        while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+            if self.check(TokenType::Ident) && self.peek().lexeme == "any_of" {
+                self.advance();
+                let kind = if self.check(TokenType::Sensors) {
+                    self.advance();
+                    "sensors".to_string()
+                } else if self.check(TokenType::Actuators) {
+                    self.advance();
+                    "actuators".to_string()
+                } else if self.check(TokenType::Actuator) {
+                    self.advance();
+                    "actuators".to_string()
+                } else if self.check(TokenType::Ident) && self.peek().lexeme == "connectivity" {
+                    self.advance();
+                    "connectivity".to_string()
+                } else {
+                    self.parse_label("Expected any_of kind")?
+                };
+                let list = self.parse_hardware_type_list(&kind)?;
+                match kind.as_str() {
+                    "sensors" => any_of_sensors = list,
+                    "actuators" => any_of_actuators = list,
+                    "connectivity" => any_of_connectivity = list,
+                    _ => any_of_sensors = list,
+                }
+            } else if self.check(TokenType::Actuator) {
+                let act = self.parse_label("Expected actuator type")?;
+                any_of_actuators.push(act);
+                self.expect(TokenType::Semicolon, "Expected ';' after actuator")?;
+            } else if self.check(TokenType::Ident) && self.peek().lexeme == "safety" {
+                self.advance();
+                safety_rules.push(self.parse_label("Expected safety rule")?);
+                self.expect(TokenType::Semicolon, "Expected ';' after safety rule")?;
+            } else if self.check(TokenType::Ident) && self.peek().lexeme == "severity" {
+                self.advance();
+                let sev = self.parse_label("Expected severity")?;
+                severity = match sev.as_str() {
+                    "warning" => RequiresCapabilitySeverity::Warning,
+                    "info" => RequiresCapabilitySeverity::Info,
+                    _ => RequiresCapabilitySeverity::Error,
+                };
+                self.expect(TokenType::Semicolon, "Expected ';' after severity")?;
+            } else {
+                let t = self.peek();
+                return Err(SpandaError::Parse {
+                    message: "Expected any_of, actuator, safety, or severity".into(),
+                    line: t.line,
+                    column: t.column,
+                });
+            }
+        }
+        let end = self.expect(TokenType::Rbrace, "Expected '}' to close requires_capability")?;
+        Ok(RequiresCapabilityDecl {
+            capability,
+            required_by: None,
+            any_of_sensors,
+            any_of_actuators,
+            any_of_connectivity,
+            safety_rules,
+            severity,
+            span: self.span_from(&start, &end),
+        })
     }
 
     fn parse_storage_amount(&mut self) -> Result<f64, SpandaError> {
@@ -1662,6 +2020,7 @@ impl Parser {
         self.expect(TokenType::Lbrace, "Expected '{' after mission")?;
         let mut duration_hours = None;
         let mut steps = Vec::new();
+        let mut required_capabilities = Vec::new();
 
         // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
@@ -1670,6 +2029,20 @@ impl Parser {
                 self.expect(TokenType::Colon, "Expected ':' after duration")?;
                 duration_hours = Some(self.parse_duration_hours()?);
                 self.expect(TokenType::Semicolon, "Expected ';' after duration")?;
+            } else if self.check(TokenType::Requires) {
+                self.advance();
+                let cap_kw = self.expect(
+                    TokenType::Ident,
+                    "Expected 'capabilities' after requires",
+                )?;
+                if cap_kw.lexeme != "capabilities" {
+                    return Err(SpandaError::Parse {
+                        message: "Expected 'capabilities' after requires".into(),
+                        line: cap_kw.line,
+                        column: cap_kw.column,
+                    });
+                }
+                required_capabilities = self.parse_hardware_type_list("capabilities")?;
             } else {
                 let step = self.parse_label("Expected mission step name")?;
                 self.expect(TokenType::Semicolon, "Expected ';' after mission step")?;
@@ -1677,7 +2050,7 @@ impl Parser {
             }
         }
         let end = self.expect(TokenType::Rbrace, "Expected '}' to close mission")?;
-        if duration_hours.is_none() && steps.is_empty() {
+        if duration_hours.is_none() && steps.is_empty() && required_capabilities.is_empty() {
             let t = self.peek();
             return Err(SpandaError::Parse {
                 message: "mission block requires duration or at least one step".into(),
@@ -1689,6 +2062,7 @@ impl Parser {
             name,
             duration_hours,
             steps,
+            required_capabilities,
             span: self.span_from(&start, &end),
         })
     }
@@ -2790,6 +3164,10 @@ impl Parser {
         let mut devices = Vec::new();
         let mut agent_channels = Vec::new();
         let mut twin_sync = None;
+        let mut uses_hardware = None;
+        let mut exposes_capabilities = Vec::new();
+        let mut robot_kill_switches = Vec::new();
+        let mut robot_health_checks = Vec::new();
 
         // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
@@ -2913,6 +3291,29 @@ impl Parser {
                 peer_robots.push(self.parse_peer_robot()?);
             } else if self.check(TokenType::Device) {
                 devices.push(self.parse_device()?);
+            } else if self.check(TokenType::Uses) {
+                self.advance();
+                self.expect(TokenType::Hardware, "Expected 'hardware' after uses")?;
+                uses_hardware = Some(self.parse_label("Expected hardware profile name")?);
+                self.expect(TokenType::Semicolon, "Expected ';' after uses hardware")?;
+            } else if self.check(TokenType::Ident) && self.peek().lexeme == "exposes" {
+                self.advance();
+                let cap_kw = self.expect(
+                    TokenType::Ident,
+                    "Expected 'capabilities' after exposes",
+                )?;
+                if cap_kw.lexeme != "capabilities" {
+                    return Err(SpandaError::Parse {
+                        message: "Expected 'capabilities' after exposes".into(),
+                        line: cap_kw.line,
+                        column: cap_kw.column,
+                    });
+                }
+                exposes_capabilities = self.parse_hardware_type_list("capabilities")?;
+            } else if self.check(TokenType::Ident) && self.peek().lexeme == "kill_switch" {
+                robot_kill_switches.push(self.parse_kill_switch()?);
+            } else if self.check(TokenType::Ident) && self.peek().lexeme == "health_check" {
+                robot_health_checks.push(self.parse_health_check()?);
             } else {
                 let t = self.peek();
                 return Err(SpandaError::Parse {
@@ -2972,6 +3373,10 @@ impl Parser {
             devices,
             agent_channels,
             twin_sync,
+            uses_hardware,
+            exposes_capabilities,
+            kill_switches: robot_kill_switches,
+            health_checks: robot_health_checks,
             span: self.span_from(&start, &end),
         })
     }

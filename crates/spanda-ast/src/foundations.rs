@@ -385,6 +385,8 @@ pub enum HardwareDecl {
         actuators: Vec<String>,
         #[serde(default)]
         connectivity: Vec<String>,
+        #[serde(default)]
+        components: Vec<HardwareComponentDecl>,
         battery_wh: Option<f64>,
         network_bandwidth_mbps: Option<f64>,
         network_latency_ms: Option<f64>,
@@ -612,6 +614,8 @@ pub enum MissionDecl {
         duration_hours: Option<f64>,
         #[serde(default)]
         steps: Vec<String>,
+        #[serde(default)]
+        required_capabilities: Vec<String>,
         span: Span,
     },
 }
@@ -830,6 +834,95 @@ impl Default for SecureBlockDecl {
             },
         }
     }
+}
+
+/// Detailed hardware component with explicit capabilities.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct HardwareComponentDecl {
+    pub component_kind: String,
+    pub name: String,
+    pub component_type: String,
+    #[serde(default)]
+    pub capabilities: Vec<String>,
+    #[serde(default)]
+    pub properties: Vec<(String, String)>,
+    pub span: Span,
+}
+
+/// First-class kill switch declaration.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "kind")]
+pub enum KillSwitchDecl {
+    KillSwitchDecl {
+        name: String,
+        source: Option<String>,
+        priority: String,
+        body: Vec<crate::nodes::Stmt>,
+        remote_signed: bool,
+        span: Span,
+    },
+}
+
+/// Single condition in a health check.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct HealthCheckCondition {
+    pub metric: String,
+    pub operator: String,
+    pub threshold: String,
+    pub span: Span,
+}
+
+/// Health check declaration for robots, sensors, actuators, or fleets.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "kind")]
+pub enum HealthCheckDecl {
+    HealthCheckDecl {
+        name: String,
+        target_kind: String,
+        target: String,
+        conditions: Vec<HealthCheckCondition>,
+        span: Span,
+    },
+}
+
+/// Automatic reaction policy for health status transitions.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "kind")]
+pub enum HealthPolicyDecl {
+    HealthPolicyDecl {
+        name: String,
+        reactions: Vec<(String, String)>,
+        span: Span,
+    },
+}
+
+/// Minimum capability requirement with hardware constraints.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct RequiresCapabilityDecl {
+    pub capability: String,
+    #[serde(default)]
+    pub required_by: Option<String>,
+    #[serde(default)]
+    pub any_of_sensors: Vec<String>,
+    #[serde(default)]
+    pub any_of_actuators: Vec<String>,
+    #[serde(default)]
+    pub any_of_connectivity: Vec<String>,
+    #[serde(default)]
+    pub safety_rules: Vec<String>,
+    #[serde(default)]
+    pub severity: RequiresCapabilitySeverity,
+    pub span: Span,
+}
+
+/// Severity for requires_capability checks.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "lowercase")]
+pub enum RequiresCapabilitySeverity {
+    #[default]
+    Error,
+    Warning,
+    Info,
 }
 
 /// Capability granted to an agent (`can [ read(lidar), propose_motion ]`).

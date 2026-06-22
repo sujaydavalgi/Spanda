@@ -523,6 +523,14 @@ pub enum Program {
         messages: Vec<crate::comm_decl::MessageDecl>,
         #[serde(default)]
         validate_rules: Vec<crate::foundations::ValidateRuleDecl>,
+        #[serde(default)]
+        kill_switches: Vec<crate::foundations::KillSwitchDecl>,
+        #[serde(default)]
+        health_checks: Vec<crate::foundations::HealthCheckDecl>,
+        #[serde(default)]
+        health_policies: Vec<crate::foundations::HealthPolicyDecl>,
+        #[serde(default)]
+        requires_capabilities: Vec<crate::foundations::RequiresCapabilityDecl>,
         robots: Vec<RobotDecl>,
         span: Span,
     },
@@ -597,6 +605,14 @@ pub enum RobotDecl {
         devices: Vec<crate::comm_decl::DeviceDecl>,
         agent_channels: Vec<crate::comm_decl::AgentChannelDecl>,
         twin_sync: Option<crate::comm_decl::TwinSyncDecl>,
+        #[serde(default)]
+        uses_hardware: Option<String>,
+        #[serde(default)]
+        exposes_capabilities: Vec<String>,
+        #[serde(default)]
+        kill_switches: Vec<crate::foundations::KillSwitchDecl>,
+        #[serde(default)]
+        health_checks: Vec<crate::foundations::HealthCheckDecl>,
         span: Span,
     },
 }

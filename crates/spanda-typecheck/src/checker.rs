@@ -1699,6 +1699,7 @@ impl<'h> TypeChecker<'h> {
                 duration_hours,
                 steps,
                 span,
+                ..
             } = mission_decl;
             if let Some(message) = self
                 .host
