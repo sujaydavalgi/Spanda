@@ -2,8 +2,8 @@
 //!
 use spanda_audit::{sha256, Hash, LedgerBackend, MockLedgerBackend};
 use spanda_runtime::providers::traits::{
-    CloudProvider, FleetProvider, LedgerProvider, MaintenanceProvider, NavigationProvider,
-    PositioningProvider, SimulationProvider, SlamProvider, VisionProvider,
+    CloudProvider, ConnectivityProvider, FleetProvider, LedgerProvider, MaintenanceProvider,
+    NavigationProvider, PositioningProvider, SimulationProvider, SlamProvider, VisionProvider,
 };
 use spanda_runtime::providers::types::{
     ProviderError, ProviderId, ProviderMetadata, ProviderResult, ProviderSafetyLevel,
@@ -18,6 +18,66 @@ fn package_metadata(package: &str, name: &str, description: &str) -> ProviderMet
         safety_level: ProviderSafetyLevel::Development,
         capabilities_required: Vec::new(),
         hardware_requirements: Vec::new(),
+    }
+}
+
+/// Wireless connectivity stub for `spanda-wifi` / `spanda-ble` / `spanda-cellular` bootstrap.
+pub struct ConnectivityPackageStub {
+    package: &'static str,
+    channel: &'static str,
+}
+
+impl ConnectivityPackageStub {
+    pub fn wifi() -> Self {
+        Self {
+            package: "spanda-wifi",
+            channel: "wifi",
+        }
+    }
+
+    pub fn ble() -> Self {
+        Self {
+            package: "spanda-ble",
+            channel: "ble",
+        }
+    }
+
+    pub fn cellular() -> Self {
+        Self {
+            package: "spanda-cellular",
+            channel: "cellular",
+        }
+    }
+}
+
+impl ConnectivityProvider for ConnectivityPackageStub {
+    fn metadata(&self) -> ProviderMetadata {
+        package_metadata(
+            self.package,
+            "project",
+            "Package-scoped connectivity stub (radio driver in transport shim)",
+        )
+    }
+
+    fn connect(&mut self, channel: &str) -> ProviderResult<()> {
+        let _ = channel;
+        Ok(())
+    }
+
+    fn disconnect(&mut self, channel: &str) {
+        let _ = channel;
+    }
+
+    fn is_connected(&self, channel: &str) -> bool {
+        channel == self.channel
+    }
+
+    fn signal_strength_dbm(&self, channel: &str) -> Option<f64> {
+        if channel == self.channel {
+            Some(-55.0)
+        } else {
+            None
+        }
     }
 }
 
@@ -37,8 +97,20 @@ impl PositioningProvider for GpsPositioningStub {
         RuntimeValue::Object {
             type_name: "GeoPoint".into(),
             fields: [
-                ("lat".into(), RuntimeValue::Number { value: 37.0, unit: spanda_ast::nodes::UnitKind::None }),
-                ("lon".into(), RuntimeValue::Number { value: -122.0, unit: spanda_ast::nodes::UnitKind::None }),
+                (
+                    "lat".into(),
+                    RuntimeValue::Number {
+                        value: 37.0,
+                        unit: spanda_ast::nodes::UnitKind::None,
+                    },
+                ),
+                (
+                    "lon".into(),
+                    RuntimeValue::Number {
+                        value: -122.0,
+                        unit: spanda_ast::nodes::UnitKind::None,
+                    },
+                ),
             ]
             .into_iter()
             .collect(),
@@ -102,10 +174,7 @@ impl SlamProvider for SlamPackageStub {
         Ok(RuntimeValue::Object {
             type_name: "LocalizationEstimate".into(),
             fields: [
-                (
-                    "pose".into(),
-                    runtime_pose(0.0, 0.0, 0.0, 0.0),
-                ),
+                ("pose".into(), runtime_pose(0.0, 0.0, 0.0, 0.0)),
                 (
                     "confidence".into(),
                     RuntimeValue::Number {
@@ -175,7 +244,12 @@ impl FleetProvider for FleetPackageStub {
         Ok(RuntimeValue::Object {
             type_name: "FleetTask".into(),
             fields: [
-                ("member".into(), RuntimeValue::String { value: member_id.into() }),
+                (
+                    "member".into(),
+                    RuntimeValue::String {
+                        value: member_id.into(),
+                    },
+                ),
                 ("task".into(), task),
             ]
             .into_iter()
@@ -303,7 +377,7 @@ impl CloudProvider for CloudPackageStub {
         })
         .to_string();
         if let Some(url) = cloud_upload_url() {
-            post_json(&url, &body).map_err(|err| cloud_err(err))?;
+            post_json(&url, &body).map_err(cloud_err)?;
         }
         Ok(())
     }
@@ -312,7 +386,12 @@ impl CloudProvider for CloudPackageStub {
         Ok(RuntimeValue::Object {
             type_name: "CloudResponse".into(),
             fields: [
-                ("endpoint".into(), RuntimeValue::String { value: endpoint.into() }),
+                (
+                    "endpoint".into(),
+                    RuntimeValue::String {
+                        value: endpoint.into(),
+                    },
+                ),
                 ("request".into(), request),
             ]
             .into_iter()

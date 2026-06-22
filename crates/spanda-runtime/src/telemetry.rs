@@ -1,7 +1,7 @@
 //! Runtime telemetry for deterministic scheduler and task execution.
 
-use spanda_ast::foundations::TaskPriority;
 use serde::{Deserialize, Serialize};
+use spanda_ast::foundations::TaskPriority;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
@@ -72,12 +72,23 @@ pub struct TopicMetrics {
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
+pub struct ProviderMetrics {
+    pub provider_key: String,
+    pub category: String,
+    pub calls: u64,
+    pub failures: u64,
+    pub last_duration_ms: f64,
+    pub max_duration_ms: f64,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
 pub struct RuntimeTelemetry {
     pub tasks: HashMap<String, TaskMetrics>,
     pub triggers: HashMap<String, TriggerMetrics>,
     pub pipelines: HashMap<String, PipelineMetrics>,
     pub watchdogs: HashMap<String, WatchdogMetrics>,
     pub topics: HashMap<String, TopicMetrics>,
+    pub providers: HashMap<String, ProviderMetrics>,
     pub scheduler: SchedulerMetrics,
     pub execution: ExecutionMetrics,
     pub replay_frames: u64,
@@ -615,6 +626,50 @@ impl RuntimeTelemetry {
         entry.deadline_misses += 1;
         entry.last_elapsed_ms = elapsed_ms;
         let _ = deadline_ms;
+    }
+
+    pub fn record_provider_call(
+        &mut self,
+        provider_key: &str,
+        category: &str,
+        duration_ms: f64,
+        failed: bool,
+    ) {
+        // Record a provider registry dispatch for observability.
+        //
+        // Parameters:
+        // - `self` — method receiver
+        // - `provider_key` — registry lookup key
+        // - `category` — provider trait category (positioning, transport, …)
+        // - `duration_ms` — call duration in milliseconds
+        // - `failed` — whether the call returned an error
+        //
+        // Returns:
+        // Nothing.
+        //
+        // Options:
+        // None.
+        //
+        // Example:
+        // telemetry.record_provider_call("spanda-gps::project", "positioning", 1.2, false);
+
+        // Accumulate per-provider call counts and latency peaks.
+        let entry = self
+            .providers
+            .entry(provider_key.to_string())
+            .or_insert_with(|| ProviderMetrics {
+                provider_key: provider_key.to_string(),
+                category: category.to_string(),
+                ..Default::default()
+            });
+        entry.calls += 1;
+        if failed {
+            entry.failures += 1;
+        }
+        entry.last_duration_ms = duration_ms;
+        if duration_ms > entry.max_duration_ms {
+            entry.max_duration_ms = duration_ms;
+        }
     }
 }
 

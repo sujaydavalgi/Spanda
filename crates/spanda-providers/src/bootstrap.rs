@@ -1,18 +1,18 @@
 //! Bootstrap default provider registrations from core compatibility shims.
 //!
 use super::package_stubs::{
-    CloudPackageStub, FleetPackageStub, GpsPositioningStub, LedgerPackageStub,
-    MaintenancePackageStub, NavNavigationStub, SimulationPackageStub, SlamPackageStub,
-    VisionPackageStub,
+    CloudPackageStub, ConnectivityPackageStub, FleetPackageStub, GpsPositioningStub,
+    LedgerPackageStub, MaintenancePackageStub, NavNavigationStub, SimulationPackageStub,
+    SlamPackageStub, VisionPackageStub,
 };
 use super::transport_adapter::TransportAdapterProvider;
 use spanda_comm::TransportKind;
 use spanda_runtime::providers::{transport_registry_key, ProviderRegistry, TransportConfig};
 use spanda_transport::TransportAdapter;
-use spanda_transport_routing::RoutingCommBus;
 use spanda_transport_dds::DdsTransportAdapterLive;
 use spanda_transport_mqtt::MqttTransportAdapter;
 use spanda_transport_ros2::Ros2TransportAdapter;
+use spanda_transport_routing::RoutingCommBus;
 use spanda_transport_websocket::WebsocketTransportAdapterLive;
 
 fn register_transport_stub(
@@ -21,9 +21,7 @@ fn register_transport_stub(
     adapter: impl TransportAdapter + Send + Sync + 'static,
 ) {
     registry.register_transport(Box::new(TransportAdapterProvider::new(
-        package,
-        "project",
-        adapter,
+        package, "project", adapter,
     )));
 }
 
@@ -96,6 +94,12 @@ pub fn bootstrap_providers_for_packages(package_names: &[&str]) -> ProviderRegis
             WebsocketTransportAdapterLive::default(),
         );
     }
+    if names.contains("spanda-wifi") {
+        registry.register_connectivity(Box::new(ConnectivityPackageStub::wifi()));
+    }
+    if names.contains("spanda-ble") {
+        registry.register_connectivity(Box::new(ConnectivityPackageStub::ble()));
+    }
     if names.contains("spanda-gps") {
         registry.grant_capability("positioning.read");
         registry.register_positioning(Box::new(GpsPositioningStub));
@@ -129,15 +133,19 @@ pub fn bootstrap_providers_for_packages(package_names: &[&str]) -> ProviderRegis
         registry.register_maintenance(Box::new(MaintenancePackageStub));
     }
     if names.contains("spanda-opencv") {
+        registry.grant_capability("vision.detect");
         registry.register_vision(Box::new(VisionPackageStub::opencv()));
     }
     if names.contains("spanda-yolo") {
+        registry.grant_capability("vision.detect");
         registry.register_vision(Box::new(VisionPackageStub::yolo()));
     }
     if names.contains("spanda-gazebo") {
+        registry.grant_capability("simulation.step");
         registry.register_simulation(Box::new(SimulationPackageStub::gazebo()));
     }
     if names.contains("spanda-webots") {
+        registry.grant_capability("simulation.step");
         registry.register_simulation(Box::new(SimulationPackageStub::webots()));
     }
     if names.contains("spanda-moveit") {
@@ -145,6 +153,7 @@ pub fn bootstrap_providers_for_packages(package_names: &[&str]) -> ProviderRegis
     }
     if names.contains("spanda-cellular") {
         registry.grant_capability("connectivity.cellular");
+        registry.register_connectivity(Box::new(ConnectivityPackageStub::cellular()));
     }
     if names.contains("spanda-openai") {
         registry.grant_capability("ai.invoke");
@@ -191,13 +200,7 @@ pub fn sync_comm_bus_for_official_packages(
     for name in packages {
         match name.as_str() {
             "spanda-ros2" => {
-                connect_registry_transport(
-                    comm_bus,
-                    registry,
-                    TransportKind::Ros2,
-                    &name,
-                    &base,
-                );
+                connect_registry_transport(comm_bus, registry, TransportKind::Ros2, &name, &base);
             }
             "spanda-mqtt" => {
                 connect_registry_transport(

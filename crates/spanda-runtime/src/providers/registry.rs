@@ -190,4 +190,69 @@ impl ProviderRegistry {
             .map(|(key, _)| key.clone())?;
         self.with_transport(&key, f)
     }
+
+    pub fn with_positioning<F, R>(&mut self, key: &str, f: F) -> Option<R>
+    where
+        F: FnOnce(&mut dyn PositioningProvider) -> R,
+    {
+        self.positioning.get_mut(key).map(|p| f(p.as_mut()))
+    }
+
+    pub fn with_connectivity<F, R>(&mut self, key: &str, f: F) -> Option<R>
+    where
+        F: FnOnce(&mut dyn ConnectivityProvider) -> R,
+    {
+        self.connectivity.get_mut(key).map(|p| f(p.as_mut()))
+    }
+
+    pub fn with_navigation<F, R>(&mut self, key: &str, f: F) -> Option<R>
+    where
+        F: FnOnce(&mut dyn NavigationProvider) -> R,
+    {
+        self.navigation.get_mut(key).map(|p| f(p.as_mut()))
+    }
+
+    pub fn with_fleet<F, R>(&mut self, key: &str, f: F) -> Option<R>
+    where
+        F: FnOnce(&mut dyn FleetProvider) -> R,
+    {
+        self.fleet.get_mut(key).map(|p| f(p.as_mut()))
+    }
+
+    pub fn with_slam<F, R>(&mut self, key: &str, f: F) -> Option<R>
+    where
+        F: FnOnce(&mut dyn SlamProvider) -> R,
+    {
+        self.slam.get_mut(key).map(|p| f(p.as_mut()))
+    }
+
+    pub fn with_vision<F, R>(&mut self, key: &str, f: F) -> Option<R>
+    where
+        F: FnOnce(&mut dyn VisionProvider) -> R,
+    {
+        self.vision.get_mut(key).map(|p| f(p.as_mut()))
+    }
+
+    pub fn positioning_count(&self) -> usize {
+        self.positioning.len()
+    }
+
+    pub fn connectivity_count(&self) -> usize {
+        self.connectivity.len()
+    }
+
+    pub fn navigation_count(&self) -> usize {
+        self.navigation.len()
+    }
+
+    pub fn fleet_count(&self) -> usize {
+        self.fleet.len()
+    }
+
+    pub fn with_simulation<F, R>(&mut self, key: &str, f: F) -> Option<R>
+    where
+        F: FnOnce(&mut dyn SimulationProvider) -> R,
+    {
+        self.simulation.get_mut(key).map(|p| f(p.as_mut()))
+    }
 }

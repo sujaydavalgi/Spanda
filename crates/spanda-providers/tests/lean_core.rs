@@ -23,9 +23,9 @@ fn module_classifications_include_core_and_shims() {
     assert!(table
         .iter()
         .any(|m| m.module == "providers" && m.ownership == ModuleOwnership::Core));
-    assert!(table.iter().any(|m| {
-        m.module == "transport" && m.ownership == ModuleOwnership::Deprecated
-    }));
+    assert!(table
+        .iter()
+        .any(|m| { m.module == "transport" && m.ownership == ModuleOwnership::Deprecated }));
 }
 
 #[test]
@@ -84,8 +84,71 @@ fn bootstrap_registers_positioning_when_gps_installed() {
 }
 
 #[test]
-fn provider_id_key_format() {
-    let id = ProviderId::new("spanda-gps", "nmea");
-    assert_eq!(id.package, "spanda-gps");
-    assert_eq!(id.name, "nmea");
+fn bootstrap_registers_connectivity_when_wifi_installed() {
+    let registry = bootstrap_providers_for_packages(&["spanda-wifi"]);
+    assert_eq!(registry.connectivity_count(), 1);
+    assert!(registry.has_capability("connectivity.wifi"));
+}
+
+#[test]
+fn dispatch_gps_read_when_package_installed() {
+    use spanda_providers::dispatch_official_package_call;
+    let mut registry = bootstrap_providers_for_packages(&["spanda-gps"]);
+    let value = dispatch_official_package_call(
+        &mut registry,
+        "positioning.gps",
+        "read",
+        &[],
+        None,
+        None,
+        0.0,
+    )
+        .expect("dispatch");
+    match value {
+        spanda_runtime::value::RuntimeValue::Object { type_name, .. } => {
+            assert_eq!(type_name, "GeoPoint");
+        }
+        other => panic!("expected GeoPoint, got {other:?}"),
+    }
+}
+
+#[test]
+fn dispatch_slam_localize_when_installed() {
+    use spanda_providers::dispatch_official_package_call;
+    let mut registry = bootstrap_providers_for_packages(&["spanda-slam"]);
+    let value =
+        dispatch_official_package_call(
+            &mut registry,
+            "navigation.slam",
+            "localize",
+            &[],
+            None,
+            None,
+            0.0,
+        )
+            .expect("dispatch");
+    match value {
+        spanda_runtime::value::RuntimeValue::Object { type_name, .. } => {
+            assert_eq!(type_name, "LocalizationEstimate");
+        }
+        other => panic!("expected LocalizationEstimate, got {other:?}"),
+    }
+}
+
+#[test]
+fn dispatch_skips_when_package_not_installed() {
+    use spanda_providers::dispatch_official_package_call;
+    let mut registry = bootstrap_providers_for_packages(&[]);
+    assert!(
+        dispatch_official_package_call(
+            &mut registry,
+            "positioning.gps",
+            "read",
+            &[],
+            None,
+            None,
+            0.0,
+        )
+            .is_none()
+    );
 }

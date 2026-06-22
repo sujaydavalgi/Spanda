@@ -35,6 +35,8 @@ pub struct RunOptions {
     #[serde(default)]
     pub trace_events: bool,
     #[serde(default)]
+    pub trace_providers: bool,
+    #[serde(default)]
     pub trace_realtime: bool,
     #[serde(default)]
     pub record_trace: bool,

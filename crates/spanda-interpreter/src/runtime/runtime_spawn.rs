@@ -1,9 +1,10 @@
 //! Spawn targets, async futures, and task-handle resolution.
 //!
 
-use super::{IntoSpandaError, Interpreter, RobotBackend, RuntimeError, RuntimeValue};
+use super::{Interpreter, IntoSpandaError, RobotBackend, RuntimeError, RuntimeValue};
 use spanda_ast::nodes::Expr;
 use spanda_error::SpandaError;
+use spanda_providers::dispatch_official_package_call;
 
 impl<B: RobotBackend> Interpreter<B> {
     pub(super) fn call_module_function(
@@ -29,15 +30,50 @@ impl<B: RobotBackend> Interpreter<B> {
         // Example:
         // let result = instance.call_module_function(func, args, _line);
 
+        // Evaluate call arguments before provider dispatch or stub execution.
+        let mut arg_values = Vec::new();
+        for arg in args {
+            arg_values.push(self.eval_expr(arg)?);
+        }
+
+        // Route official package exports through the provider registry when installed.
+        if let Some(module_path) = self.imported_function_modules.get(&func.name) {
+            let trace_providers = self.options.trace_providers;
+            let record_trace = self.options.record_trace;
+            let sim_time_ms = self.sim_time_ms;
+            let dispatched = {
+                let mut registry = self.provider_registry.borrow_mut();
+                dispatch_official_package_call(
+                    &mut registry,
+                    module_path,
+                    &func.name,
+                    &arg_values,
+                    if trace_providers {
+                        Some(&mut self.telemetry)
+                    } else {
+                        None
+                    },
+                    if record_trace {
+                        self.mission_trace.as_mut()
+                    } else {
+                        None
+                    },
+                    sim_time_ms,
+                )
+            };
+            if let Some(value) = dispatched {
+                return Ok(value);
+            }
+        }
+
         // Save current variable bindings before the call.
         let saved = self.env.clone_bindings();
 
         // Bind each formal parameter to its call argument.
         for (i, param) in func.params.iter().enumerate() {
             // Emit output when get provides a arg.
-            if let Some(arg) = args.get(i) {
-                let val = self.eval_expr(arg)?;
-                self.env.define(param.name.clone(), val);
+            if let Some(val) = arg_values.get(i) {
+                self.env.define(param.name.clone(), val.clone());
             }
         }
         let result = self
@@ -193,7 +229,11 @@ impl<B: RobotBackend> Interpreter<B> {
         Ok(result)
     }
 
-    pub(super) fn resolve_task_handle(&mut self, id: u64, line: u32) -> Result<RuntimeValue, SpandaError> {
+    pub(super) fn resolve_task_handle(
+        &mut self,
+        id: u64,
+        line: u32,
+    ) -> Result<RuntimeValue, SpandaError> {
         // Resolve task handle.
         //
         // Parameters:
@@ -280,5 +320,4 @@ impl<B: RobotBackend> Interpreter<B> {
         }
         Ok(())
     }
-
 }

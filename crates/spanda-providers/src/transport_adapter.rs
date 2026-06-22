@@ -1,8 +1,10 @@
 //! Wrap legacy `spanda-transport` adapters as runtime `TransportProvider` implementations.
 //!
 use spanda_runtime::providers::{
-    transport_types::{AdapterMessage as RuntimeAdapterMessage, TransportConfig as RuntimeTransportConfig},
     traits::TransportProvider,
+    transport_types::{
+        AdapterMessage as RuntimeAdapterMessage, TransportConfig as RuntimeTransportConfig,
+    },
     types::{ProviderId, ProviderMetadata, ProviderSafetyLevel},
 };
 use spanda_runtime::value::RuntimeValue;

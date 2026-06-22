@@ -1,58 +1,46 @@
 //! runtime support for Spanda.
 //!
-use spanda_ai::{
-    AgentRuntime, AiModel,
-};
-use spanda_ast::nodes::{
-    BehaviorDecl, Expr, Program,
-    RobotDecl, SafetyRule, SafetyZoneDecl,
-    Stmt,
-};
+use spanda_ai::{AgentRuntime, AiModel};
+use spanda_ast::comm_decl::{QosDecl, TransportKind};
+use spanda_ast::foundations::{CapabilityDecl, TaskDecl, TaskPriority, TriggerKind};
+use spanda_ast::nodes::{BehaviorDecl, Expr, Program, RobotDecl, SafetyRule, SafetyZoneDecl, Stmt};
 use spanda_audit::{AuditRuntime, MockLedgerBackend};
 use spanda_comm::CommBus;
 use spanda_concurrency::ConcurrencyRuntime;
 use spanda_connectivity_runtime::ConnectivityPolicyRuntime;
 use spanda_debug::DebugController;
-use spanda_ffi::FfiRegistry;
-use spanda_providers::{bootstrap_providers_for_packages, sync_comm_bus_for_official_packages};
-use spanda_runtime_host::core_runtime_host;
-use spanda_typecheck::ModuleRegistry;
-use spanda_ast::comm_decl::{QosDecl, TransportKind};
 use spanda_error::SpandaError;
-use spanda_runtime::robot_state::{PoseState, RobotState, VelocityState};
-use spanda_runtime::events::EventBus;
-use spanda_ast::foundations::{
-    CapabilityDecl, TaskDecl, TaskPriority, TriggerKind,
-};
+use spanda_ffi::FfiRegistry;
 use spanda_hal::hal::{create_sim_hal, HalBackend, SimHalBackend};
 use spanda_hal::HardwareMonitor;
+use spanda_providers::{bootstrap_providers_for_packages, sync_comm_bus_for_official_packages};
+use spanda_runtime::events::EventBus;
 use spanda_runtime::reliability_runtime::{
-    ModeRuntime, PipelineRuntime, RecoverHandlers, RetryRuntime,
-    WatchdogRuntime,
+    ModeRuntime, PipelineRuntime, RecoverHandlers, RetryRuntime, WatchdogRuntime,
 };
 use spanda_runtime::replay::MissionTrace;
-use spanda_safety::{
-    Pose2d, SafetyMonitor, SafetyZoneRuntime,
-};
+use spanda_runtime::robot_state::{PoseState, RobotState, VelocityState};
 use spanda_runtime::scheduler::SchedulerClock;
-use spanda_security::SecurityContext;
 use spanda_runtime::state_machine::StateMachineRuntime;
-use spanda_transport_routing::RoutingCommBus;
-use std::cell::RefCell;
-use std::rc::Rc;
 use spanda_runtime::triggers::{
-    ConditionTriggerState,
-    TriggerRegistry, TriggerTimerSchedule, MAX_TRIGGERS_PER_TICK,
+    ConditionTriggerState, TriggerRegistry, TriggerTimerSchedule, MAX_TRIGGERS_PER_TICK,
 };
 use spanda_runtime::twin::TwinRuntime;
 use spanda_runtime::world_model::WorldModelRuntime;
+use spanda_runtime_host::core_runtime_host;
+use spanda_safety::{Pose2d, SafetyMonitor, SafetyZoneRuntime};
+use spanda_security::SecurityContext;
+use spanda_transport_routing::RoutingCommBus;
+use spanda_typecheck::ModuleRegistry;
+use std::cell::RefCell;
 use std::collections::HashMap;
+use std::rc::Rc;
 
 type AgentTraitImplBody = (Vec<spanda_ast::foundations::TraitParamDecl>, Vec<Stmt>);
 type BehaviorContracts = (Vec<Stmt>, Option<Expr>, Option<Expr>, Option<Expr>);
 type TaskContracts = (Vec<Stmt>, f64, Option<Expr>, Option<Expr>, Option<Expr>);
-pub use spanda_runtime::value::*;
 pub use spanda_runtime::environment::Environment;
+pub use spanda_runtime::value::*;
 pub use spanda_runtime::RuntimeError;
 use spanda_runtime::RuntimeHost;
 
@@ -102,9 +90,6 @@ pub fn velocity_from_state(state: &VelocityState) -> RuntimeValue {
 
     runtime_velocity(state.linear, state.angular)
 }
-
-
-
 
 pub trait RobotBackend {
     fn read_sensor(
@@ -233,9 +218,6 @@ pub trait RobotBackend {
     }
 }
 
-
-
-
 type LogCallback = Rc<dyn Fn(String)>;
 type MotionBlockedCallback = Rc<dyn Fn(String)>;
 
@@ -250,6 +232,7 @@ pub struct InterpreterOptions {
     pub trace_tasks: bool,
     pub trace_triggers: bool,
     pub trace_events: bool,
+    pub trace_providers: bool,
     pub replay_trace: bool,
     pub record_trace: bool,
     pub trace_source: Option<String>,
@@ -302,6 +285,7 @@ impl Default for InterpreterOptions {
             trace_tasks: false,
             trace_triggers: false,
             trace_events: false,
+            trace_providers: false,
             replay_trace: false,
             record_trace: false,
             trace_source: None,
@@ -358,6 +342,7 @@ pub struct Interpreter<B: RobotBackend> {
     default_transport: TransportKind,
     module_functions: HashMap<String, spanda_ast::foundations::ModuleFnDecl>,
     imported_functions: HashMap<String, spanda_ast::foundations::ModuleFnDecl>,
+    imported_function_modules: HashMap<String, String>,
     extern_functions: HashMap<String, spanda_ast::foundations::ExternFnDecl>,
     concurrency: ConcurrencyRuntime,
     telemetry: spanda_runtime::telemetry::RuntimeTelemetry,
@@ -406,22 +391,17 @@ impl<B: RobotBackend> Interpreter<B> {
 
         // Assemble the struct fields and return it.
         let provider_registry = Rc::new(RefCell::new(
-            options
-                .provider_registry
-                .take()
-                .unwrap_or_else(|| {
-                    bootstrap_providers_for_packages(
-                        &options
-                            .official_packages
-                            .iter()
-                            .map(String::as_str)
-                            .collect::<Vec<_>>(),
-                    )
-                }),
+            options.provider_registry.take().unwrap_or_else(|| {
+                bootstrap_providers_for_packages(
+                    &options
+                        .official_packages
+                        .iter()
+                        .map(String::as_str)
+                        .collect::<Vec<_>>(),
+                )
+            }),
         ));
-        let host = options
-            .runtime_host
-            .unwrap_or_else(|| core_runtime_host());
+        let host = options.runtime_host.unwrap_or_else(|| core_runtime_host());
         let mut comm_bus = RoutingCommBus::new();
         comm_bus.attach_provider_registry(Rc::clone(&provider_registry));
         Self {
@@ -466,6 +446,7 @@ impl<B: RobotBackend> Interpreter<B> {
             default_transport: TransportKind::Sim,
             module_functions: HashMap::new(),
             imported_functions: HashMap::new(),
+            imported_function_modules: HashMap::new(),
             extern_functions: HashMap::new(),
             concurrency: ConcurrencyRuntime::new(),
             telemetry: spanda_runtime::telemetry::RuntimeTelemetry::default(),
@@ -518,7 +499,9 @@ impl<B: RobotBackend> Interpreter<B> {
         &self.telemetry
     }
 
-    pub fn provider_registry(&self) -> std::cell::Ref<'_, spanda_runtime::providers::ProviderRegistry> {
+    pub fn provider_registry(
+        &self,
+    ) -> std::cell::Ref<'_, spanda_runtime::providers::ProviderRegistry> {
         // Return the domain provider registry active for this interpreter session.
         //
         // Parameters:
@@ -952,7 +935,12 @@ impl<B: RobotBackend> Interpreter<B> {
             sim_faults = faults.iter().map(|f| f.fault_type.clone()).collect();
         }
         self.load_program_metadata(program);
-        if !self.provider_registry.borrow().official_packages().is_empty() {
+        if !self
+            .provider_registry
+            .borrow()
+            .official_packages()
+            .is_empty()
+        {
             sync_comm_bus_for_official_packages(
                 &mut self.comm_bus,
                 &mut self.provider_registry.borrow_mut(),
@@ -1136,6 +1124,7 @@ impl<B: RobotBackend> Interpreter<B> {
         } = program;
         self.module_functions.clear();
         self.imported_functions.clear();
+        self.imported_function_modules.clear();
         self.extern_functions.clear();
 
         // Generate code for each module function.
@@ -1167,6 +1156,8 @@ impl<B: RobotBackend> Interpreter<B> {
                     // Iterate over functions with destructured elements.
                     for (name, func) in &exports.functions {
                         self.imported_functions.insert(name.clone(), func.clone());
+                        self.imported_function_modules
+                            .insert(name.clone(), path.clone());
                     }
                 }
             }
@@ -1309,7 +1300,6 @@ impl<B: RobotBackend> Interpreter<B> {
         }
     }
 }
-
 
 fn pose_value_to_state(pose: &PoseValue) -> PoseState {
     // Pose value to state.
@@ -1760,47 +1750,47 @@ impl SafetyBlockExt for spanda_ast::nodes::SafetyBlock {
     }
 }
 
-#[path = "runtime_connectivity.rs"]
-mod runtime_connectivity;
-#[path = "runtime_setup.rs"]
-mod runtime_setup;
-#[path = "runtime_reliability.rs"]
-mod runtime_reliability;
-#[path = "runtime_safety.rs"]
-mod runtime_safety;
-#[path = "runtime_declarations.rs"]
-mod runtime_declarations;
-#[path = "runtime_scheduler.rs"]
-mod runtime_scheduler;
-#[path = "runtime_program.rs"]
-mod runtime_program;
-#[path = "runtime_security.rs"]
-mod runtime_security;
-#[path = "runtime_execute.rs"]
-mod runtime_execute;
-#[path = "runtime_navigation.rs"]
-mod runtime_navigation;
-#[path = "runtime_robot.rs"]
-mod runtime_robot;
-#[path = "runtime_triggers.rs"]
-mod runtime_triggers;
-#[path = "runtime_sensors.rs"]
-mod runtime_sensors;
-#[path = "runtime_robotics.rs"]
-mod runtime_robotics;
-#[path = "runtime_twin.rs"]
-mod runtime_twin;
-#[path = "runtime_helpers.rs"]
-mod runtime_helpers;
-#[path = "runtime_builtins.rs"]
-mod runtime_builtins;
-#[path = "runtime_audit.rs"]
-mod runtime_audit;
-#[path = "runtime_world_model.rs"]
-mod runtime_world_model;
 #[path = "runtime_actuators.rs"]
 mod runtime_actuators;
+#[path = "runtime_audit.rs"]
+mod runtime_audit;
+#[path = "runtime_builtins.rs"]
+mod runtime_builtins;
+#[path = "runtime_connectivity.rs"]
+mod runtime_connectivity;
+#[path = "runtime_declarations.rs"]
+mod runtime_declarations;
 #[path = "runtime_eval.rs"]
 mod runtime_eval;
+#[path = "runtime_execute.rs"]
+mod runtime_execute;
+#[path = "runtime_helpers.rs"]
+mod runtime_helpers;
+#[path = "runtime_navigation.rs"]
+mod runtime_navigation;
+#[path = "runtime_program.rs"]
+mod runtime_program;
+#[path = "runtime_reliability.rs"]
+mod runtime_reliability;
+#[path = "runtime_robot.rs"]
+mod runtime_robot;
+#[path = "runtime_robotics.rs"]
+mod runtime_robotics;
+#[path = "runtime_safety.rs"]
+mod runtime_safety;
+#[path = "runtime_scheduler.rs"]
+mod runtime_scheduler;
+#[path = "runtime_security.rs"]
+mod runtime_security;
+#[path = "runtime_sensors.rs"]
+mod runtime_sensors;
+#[path = "runtime_setup.rs"]
+mod runtime_setup;
 #[path = "runtime_spawn.rs"]
 mod runtime_spawn;
+#[path = "runtime_triggers.rs"]
+mod runtime_triggers;
+#[path = "runtime_twin.rs"]
+mod runtime_twin;
+#[path = "runtime_world_model.rs"]
+mod runtime_world_model;

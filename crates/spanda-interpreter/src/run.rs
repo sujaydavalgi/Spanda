@@ -60,10 +60,7 @@ pub fn run_program(program: &Program, options: RunOptions) -> Result<RunResult, 
                 .collect::<Vec<_>>(),
         ))
     };
-    let ffi_registry = options
-        .ffi_registry
-        .clone()
-        .unwrap_or_default();
+    let ffi_registry = options.ffi_registry.clone().unwrap_or_default();
     let mut interp = Interpreter::new(
         sim,
         InterpreterOptions {
@@ -75,6 +72,7 @@ pub fn run_program(program: &Program, options: RunOptions) -> Result<RunResult, 
             trace_tasks: options.trace_tasks || trace_realtime,
             trace_triggers: options.trace_triggers || trace_realtime,
             trace_events: options.trace_events || trace_realtime,
+            trace_providers: options.trace_providers || trace_realtime,
             replay_trace: options.replay_trace,
             record_trace,
             trace_source,
