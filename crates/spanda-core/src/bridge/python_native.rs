@@ -52,7 +52,7 @@ pub fn call_extern(
                 message: format!("Failed to encode native bridge args: {e}"),
                 line,
             })?;
-    Python::with_gil(|py| -> PyResult<RuntimeValue> {
+    Python::attach(|py| -> PyResult<RuntimeValue> {
         let locals = PyDict::new(py);
         locals.set_item("script_path", script.to_string_lossy().to_string())?;
         locals.set_item("fn_name", &decl.name)?;
@@ -60,20 +60,14 @@ pub fn call_extern(
         py.run(
             c"import json, importlib.util
 spec = importlib.util.spec_from_file_location('spanda_python_bridge', script_path)
-
-// Take this path when spec is None or spec.loader is None:.
 if spec is None or spec.loader is None:
     raise RuntimeError('failed to load python bridge module')
 mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
 args = json.loads(args_json)
 handler = mod.HANDLERS.get(fn_name)
-
-// Take this path when handler is None:.
 if handler is None:
     response = json.dumps({'ok': False, 'error': f\"Unknown python extern '{fn_name}'\"})
-
-// Handle any remaining cases.
 else:
     result = handler(*args)
     response = json.dumps({'ok': True, 'result': result})",

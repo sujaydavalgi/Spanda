@@ -51,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Dependency security:** `cargo update` bumps `log` 0.4.33 and `quote` 1.0.46; npm upgrades `vitest` to 3.2.6 (critical Dependabot) with `vite` override to 6.4.3 (`npm audit` clean); removed unused TLS crates from `spanda-core` AES-256-GCM wire frames (`spanda/wire/v1:`), `TransportWireFrame` with `source_id`, TLS session negotiation from cert/key secrets, rustls PEM validation when cert files exist, broker URL TLS scheme auto-upgrade (`mqtts://`, `wss://`), session-key derivation from robot secrets for `EncryptedMessage`, and production wire crypto (replacing mock-session stubs)
+- **Python native bridge runtime:** upgraded optional `pyo3` from 0.23 to 0.29 and migrated bridge GIL entrypoint to `Python::attach`; fixed embedded Python runner script syntax for native bridge tests
 - **VS Code marketplace readiness:** bundled LSP in extension VSIX, deploy-target autocomplete, verify picker command, Spanda debug type (`editor/vscode/`)
 - **Hosted package registry:** `registry/index.json` + `spanda-openai` / `spanda-ros2` tarballs; default `SPANDA_REGISTRY_URL`
 - **Live AI provider:** OpenAI via Python bridge — `docs/live-ai-provider.md`, `examples/ffi_openai_live.sd`
