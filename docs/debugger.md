@@ -14,7 +14,7 @@ spanda debug rover.sd --break 42
 - Breakpoints, step over, step into, continue
 - Variable inspection
 - Task, trigger, provider, safety, and hardware verification state
-- Debug events: trigger fired, task started/completed, deadline missed, safety validation failed, kill switch activated, message received, provider called
+- Debug events: trigger fired, task started/completed, deadline missed, safety validation failed, kill switch activated (`kill_switch_activated`), critical health (`health_critical`), message received, provider called
 
 ## VS Code
 

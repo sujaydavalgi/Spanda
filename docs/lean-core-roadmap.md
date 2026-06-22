@@ -398,3 +398,15 @@ Goal: wire capability/traceability/health analysis into the IDE, connect runtime
 | Runtime health evaluation via `evaluate_runtime_health` + `HardwareMonitor` | **Complete** |
 | Integration tests (`phase29_verification.rs`, diagnostics unit tests) | **Complete** |
 
+## Phase 30 — Complete ✓ (continuous health polling, verification quick-fixes, debug events)
+
+Goal: poll runtime health during trigger maintenance, surface suggested fixes in verification diagnostics and LSP code actions, and emit debugger pause events for kill switch and critical health.
+
+| Step | Status |
+|------|--------|
+| `suggested_fix` on `VerificationDiagnostic` (kill-switch, health, capability, minimum-hardware) | **Complete** |
+| LSP quick-fix code actions from `--verification-json` cache | **Complete** |
+| Continuous health polling in `run_trigger_maintenance` + startup inject path | **Complete** |
+| `record_debug_event` for kill switch and critical health (`health_critical`, `kill_switch_activated`) | **Complete** |
+| Integration test: continuous health poll during `every` trigger loop | **Complete** |
+
