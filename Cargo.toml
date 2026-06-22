@@ -26,6 +26,7 @@ members = [
     "crates/spanda-comm",
     "crates/spanda-safety",
     "crates/spanda-hal",
+    "crates/spanda-transport-routing",
     "crates/spanda-interpreter",
     "crates/spanda-transport",
 ]

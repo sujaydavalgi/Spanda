@@ -1242,6 +1242,7 @@ dependencies = [
  "spanda-transport-dds",
  "spanda-transport-mqtt",
  "spanda-transport-ros2",
+ "spanda-transport-routing",
  "spanda-transport-websocket",
  "spanda-typecheck",
  "thiserror 2.0.18",
@@ -1306,6 +1307,7 @@ dependencies = [
  "spanda-safety",
  "spanda-security",
  "spanda-transport",
+ "spanda-transport-routing",
  "spanda-typecheck",
 ]
 
@@ -1415,6 +1417,7 @@ dependencies = [
  "serde_json",
  "sha2",
  "spanda-ast",
+ "spanda-comm",
  "spanda-runtime",
  "spanda-security",
  "webpki-roots 0.26.11",
@@ -1455,6 +1458,20 @@ dependencies = [
  "spanda-ast",
  "spanda-runtime",
  "spanda-transport",
+]
+
+[[package]]
+name = "spanda-transport-routing"
+version = "0.1.0"
+dependencies = [
+ "spanda-comm",
+ "spanda-runtime",
+ "spanda-security",
+ "spanda-transport",
+ "spanda-transport-dds",
+ "spanda-transport-mqtt",
+ "spanda-transport-ros2",
+ "spanda-transport-websocket",
 ]
 
 [[package]]

@@ -19,7 +19,7 @@ use spanda_safety::{create_safety_config_from_robot, SafetyMonitor};
 use spanda_security::{RobotIdentity, SecretHandle, SecretSource, SecurityContext, TrustLevel};
 use spanda_hal::get_soc_profile;
 use spanda_runtime::state_machine::StateMachineRuntime;
-use crate::transport::RoutingCommBus;
+use spanda_transport_routing::RoutingCommBus;
 use spanda_transport::TransportConfig;
 use spanda_runtime::triggers::{ConditionTriggerState, TriggerRegistry, TriggerTimerSchedule};
 use spanda_runtime::twin::TwinRuntime;

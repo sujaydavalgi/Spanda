@@ -1,0 +1,19 @@
+[package]
+name = "spanda-transport-routing"
+version.workspace = true
+edition.workspace = true
+description = "Spanda RoutingCommBus — routes comm calls across transport adapters"
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+
+[dependencies]
+spanda-comm = { path = "../spanda-comm" }
+spanda-runtime = { path = "../spanda-runtime" }
+spanda-security = { path = "../spanda-security" }
+spanda-transport = { path = "../spanda-transport" }
+spanda-transport-dds = { path = "../spanda-transport-dds" }
+spanda-transport-mqtt = { path = "../spanda-transport-mqtt" }
+spanda-transport-ros2 = { path = "../spanda-transport-ros2" }
+spanda-transport-websocket = { path = "../spanda-transport-websocket" }

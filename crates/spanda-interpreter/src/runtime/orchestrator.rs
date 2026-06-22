@@ -30,7 +30,7 @@ use spanda_safety::{
 use spanda_runtime::scheduler::SchedulerClock;
 use spanda_security::SecurityContext;
 use spanda_runtime::state_machine::StateMachineRuntime;
-use crate::transport::RoutingCommBus;
+use spanda_transport_routing::RoutingCommBus;
 use std::cell::RefCell;
 use std::rc::Rc;
 use spanda_runtime::triggers::{

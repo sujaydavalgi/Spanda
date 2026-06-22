@@ -175,6 +175,22 @@ fn transport_live_shim_stays_thin() {
 }
 
 #[test]
+fn transport_routing_shim_reexports_spanda_transport() {
+    for module in ["transport.rs", "transport_wire.rs"] {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src").join(module);
+        let source = fs::read_to_string(&path).expect(module);
+        assert!(
+            source.lines().count() <= 15,
+            "{module} should be a thin re-export shim"
+        );
+        assert!(
+            source.contains("spanda_transport_routing") || source.contains("spanda_transport"),
+            "{module} shim should re-export from spanda-transport routing stack"
+        );
+    }
+}
+
+#[test]
 fn transport_no_inline_adapter_impls() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/transport.rs");
     let source = fs::read_to_string(&path).expect("transport.rs");

@@ -18,5 +18,6 @@ spanda-hal = { path = "../spanda-hal" }
 spanda-core = { path = "../spanda-core" }
 spanda-runtime = { path = "../spanda-runtime" }
 spanda-security = { path = "../spanda-security" }
+spanda-transport-routing = { path = "../spanda-transport-routing" }
 spanda-transport = { path = "../spanda-transport" }
 spanda-typecheck = { path = "../spanda-typecheck" }

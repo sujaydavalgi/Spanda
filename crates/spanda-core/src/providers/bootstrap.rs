@@ -8,6 +8,8 @@ use super::package_stubs::{
 use super::transport_adapter::TransportAdapterProvider;
 use crate::comm::TransportKind;
 use spanda_runtime::providers::{transport_registry_key, ProviderRegistry, TransportConfig};
+use spanda_transport::TransportAdapter;
+use spanda_transport_routing::RoutingCommBus;
 use spanda_transport_dds::DdsTransportAdapterLive;
 use spanda_transport_mqtt::MqttTransportAdapter;
 use spanda_transport_ros2::Ros2TransportAdapter;
@@ -16,7 +18,7 @@ use spanda_transport_websocket::WebsocketTransportAdapterLive;
 fn register_transport_stub(
     registry: &mut ProviderRegistry,
     package: &str,
-    adapter: impl crate::transport::TransportAdapter + Send + Sync + 'static,
+    adapter: impl TransportAdapter + Send + Sync + 'static,
 ) {
     registry.register_transport(Box::new(TransportAdapterProvider::new(
         package,
@@ -163,7 +165,7 @@ pub fn official_package_for_transport(kind: TransportKind) -> Option<&'static st
 }
 
 fn connect_registry_transport(
-    comm_bus: &mut crate::transport::RoutingCommBus,
+    comm_bus: &mut RoutingCommBus,
     registry: &mut ProviderRegistry,
     kind: TransportKind,
     package: &str,
@@ -180,7 +182,7 @@ fn connect_registry_transport(
 
 /// Connect comm-bus transports through installed official package providers.
 pub fn sync_comm_bus_for_official_packages(
-    comm_bus: &mut crate::transport::RoutingCommBus,
+    comm_bus: &mut RoutingCommBus,
     registry: &mut ProviderRegistry,
 ) {
     comm_bus.clear_registry_backed();
