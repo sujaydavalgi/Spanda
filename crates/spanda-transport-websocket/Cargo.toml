@@ -1,0 +1,18 @@
+[package]
+name = "spanda-transport-websocket"
+version.workspace = true
+edition.workspace = true
+description = "WebSocket transport backend for Spanda (optional live broker via tungstenite)"
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tungstenite = { version = "0.24", optional = true, default-features = false, features = ["rustls-tls-webpki-roots"] }
+
+[features]
+default = []
+live = ["dep:tungstenite"]

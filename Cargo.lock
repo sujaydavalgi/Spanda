@@ -1195,8 +1195,8 @@ dependencies = [
  "spanda-transport-dds",
  "spanda-transport-mqtt",
  "spanda-transport-ros2",
+ "spanda-transport-websocket",
  "thiserror 2.0.18",
- "tungstenite",
  "webpki-roots 0.26.11",
 ]
 
@@ -1286,6 +1286,15 @@ dependencies = [
  "libloading",
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "spanda-transport-websocket"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "tungstenite",
 ]
 
 [[package]]

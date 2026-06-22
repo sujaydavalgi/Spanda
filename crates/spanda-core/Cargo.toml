@@ -22,7 +22,7 @@ spanda-transport-mqtt = { path = "../spanda-transport-mqtt" }
 spanda-transport-ros2 = { path = "../spanda-transport-ros2" }
 spanda-connectivity = { path = "../spanda-connectivity" }
 spanda-transport-dds = { path = "../spanda-transport-dds" }
-tungstenite = { version = "0.24", optional = true, default-features = false, features = ["rustls-tls-webpki-roots"] }
+spanda-transport-websocket = { path = "../spanda-transport-websocket" }
 pyo3 = { version = "0.23", optional = true, features = ["auto-initialize", "abi3-py310"] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
@@ -31,7 +31,7 @@ libloading = "0.8"
 [features]
 default = []
 live-mqtt = ["spanda-transport-mqtt/live"]
-live-websocket = ["dep:tungstenite"]
+live-websocket = ["spanda-transport-websocket/live"]
 live-dds = ["spanda-transport-dds/live"]
 live-transport = ["live-mqtt", "live-websocket", "live-dds"]
 python-native = ["dep:pyo3"]

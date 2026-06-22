@@ -100,7 +100,7 @@ pub fn module_classifications() -> &'static [ModuleClassification] {
             module: "transport_websocket",
             ownership: ModuleOwnership::CompatibilityShim,
             target_package: Some("spanda-mqtt"),
-            notes: "WebSocket transport shim until spanda-websocket package",
+            notes: "WebSocket transport; use spanda-transport-websocket crate",
         },
         ModuleClassification {
             module: "nav2_adapter",
