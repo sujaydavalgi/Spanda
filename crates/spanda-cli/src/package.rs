@@ -1,13 +1,13 @@
 //! package support for Spanda.
 //!
-use spanda_driver::{check, compile, run_tests_with_registry};
+use spanda_driver::{check_with_registry, compile_with_registry, run_tests_with_registry};
 use spanda_modules::load_project_modules;
 use spanda_package::{
-    add_dependency, adapter_verify_ok, collect_source_files, find_project_root, init_package,
-    publish_package, registry_info, remove_dependency, resolve_dependencies, search_registry,
-    search_registry_merged, validate_package, verify_adapter_package, ApplicationPermissions,
-    DependencySpec, Lockfile, PackageManifest, ResolveOptions, LOCKFILE_FILENAME,
-    MANIFEST_FILENAME, load_official_packages_for_source,
+    adapter_verify_ok, add_dependency, collect_source_files, find_project_root, init_package,
+    load_official_packages_for_source, publish_package, registry_info, remove_dependency,
+    resolve_dependencies, search_registry, search_registry_merged, validate_package,
+    verify_adapter_package, ApplicationPermissions, DependencySpec, Lockfile, PackageManifest,
+    ResolveOptions, LOCKFILE_FILENAME, MANIFEST_FILENAME,
 };
 use std::env;
 use std::fs;
@@ -39,6 +39,7 @@ pub fn usage_package() {
            spanda add <package> [--version <ver>] [--path <dir>] [--git <url>]\n\
            spanda remove <package>\n\
            spanda install [--project <dir>]\n\
+           spanda update [--project <dir>]\n\
            spanda publish [--project <dir>]\n\
            spanda verify-adapter [--project <dir>] [--import <path>] [--package <name>]\n\
            spanda registry search <query>\n"
@@ -167,6 +168,13 @@ pub fn cmd_build(args: &[String]) {
     let root = parse_project_arg(args);
     let manifest = load_project(&root);
     let _ = run_install_inner(&root, &manifest, false);
+    let registry = load_project_modules(&root).unwrap_or_else(|e| {
+        eprintln!("Error loading modules: {e}");
+        for d in e.diagnostics() {
+            eprintln!("  [{}:{}] {}", d.line, d.column, d.message);
+        }
+        process::exit(1);
+    });
     let files = collect_source_files(&root).unwrap_or_else(|e| {
         eprintln!("Error: {e}");
         process::exit(1);
@@ -186,7 +194,7 @@ pub fn cmd_build(args: &[String]) {
         });
 
         // Handle the error returned from compile.
-        if let Err(e) = compile(&source) {
+        if let Err(e) = compile_with_registry(&source, &registry) {
             eprintln!("Build failed for {}: {e}", file.display());
             process::exit(1);
         }
@@ -217,6 +225,13 @@ pub fn cmd_check_project(args: &[String]) {
     let root = parse_project_arg(args);
     let manifest = load_project(&root);
     validate_project(&root, &manifest);
+    let registry = load_project_modules(&root).unwrap_or_else(|e| {
+        eprintln!("Error loading modules: {e}");
+        for d in e.diagnostics() {
+            eprintln!("  [{}:{}] {}", d.line, d.column, d.message);
+        }
+        process::exit(1);
+    });
     let files = collect_source_files(&root).unwrap_or_else(|e| {
         eprintln!("Error: {e}");
         process::exit(1);
@@ -231,7 +246,7 @@ pub fn cmd_check_project(args: &[String]) {
         });
 
         // Match on check and handle each case.
-        match check(&source) {
+        match check_with_registry(&source, &registry) {
             Ok(()) => println!("✓ {} — no type errors", file.display()),
             Err(e) => {
                 failed = true;
@@ -296,6 +311,13 @@ pub fn cmd_test(args: &[String]) {
         println!("✓ No test files found");
         return;
     }
+    let registry = load_project_modules(&root).unwrap_or_else(|e| {
+        eprintln!("Error loading modules: {e}");
+        for d in e.diagnostics() {
+            eprintln!("  [{}:{}] {}", d.line, d.column, d.message);
+        }
+        process::exit(1);
+    });
     let mut failed = false;
 
     // Handle each file in the listing.
@@ -306,12 +328,10 @@ pub fn cmd_test(args: &[String]) {
         });
 
         // Handle the error returned from check.
-        if let Err(e) = check(&source) {
+        if let Err(e) = check_with_registry(&source, &registry) {
             failed = true;
             eprintln!("Test failed (type errors) {}: {e}", file.display());
         } else {
-            let registry = load_project_modules(&root).unwrap_or_default();
-
             // Match on run tests with registry and handle each case.
             match run_tests_with_registry(&source, &registry) {
                 Ok(result) if result.failed == 0 => {
@@ -476,6 +496,32 @@ pub fn cmd_install(args: &[String]) {
     run_install_inner(&root, &manifest, true);
 }
 
+pub fn cmd_update(args: &[String]) {
+    // Cmd update — refresh spanda.lock and vendored packages to latest compatible versions.
+    //
+    // Parameters:
+    // - `args` — optional `--project <dir>`
+    //
+    // Returns:
+    // Nothing.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // let result = spanda_cli::package::cmd_update(args);
+
+    // Resolve project root and re-run dependency resolution.
+    let root = parse_project_arg(args);
+    let manifest = load_project(&root);
+    println!("Updating dependencies for {}…", manifest.package.name);
+    run_install_inner(&root, &manifest, true);
+    println!(
+        "✓ Updated {} (spanda.lock refreshed)",
+        manifest.package.name
+    );
+}
+
 fn run_install_inner(root: &Path, manifest: &PackageManifest, verbose: bool) -> Lockfile {
     // Run install inner.
     //
@@ -537,13 +583,9 @@ fn run_install_inner(root: &Path, manifest: &PackageManifest, verbose: bool) -> 
         for w in &result.warnings {
             eprintln!("  ⚠ {w}");
         }
-        let official =
-            spanda_package::official_packages_from_lockfile(&lockfile);
+        let official = spanda_package::official_packages_from_lockfile(&lockfile);
         if !official.is_empty() {
-            println!(
-                "  official packages: {}",
-                official.join(", ")
-            );
+            println!("  official packages: {}", official.join(", "));
         }
     }
     lockfile
@@ -552,6 +594,30 @@ fn run_install_inner(root: &Path, manifest: &PackageManifest, verbose: bool) -> 
 /// Resolve official lean-core package names for a source file path.
 pub fn official_packages_for_source(source: &Path) -> Vec<String> {
     load_official_packages_for_source(source)
+}
+
+pub fn module_registry_for_source(source: &Path) -> Option<spanda_typecheck::ModuleRegistry> {
+    // Load vendored project modules when the source file belongs to a package project.
+    //
+    // Parameters:
+    // - `source` — path to a `.sd` source file
+    //
+    // Returns:
+    // Module registry when a project root with modules is found.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // let registry = module_registry_for_source(Path::new("src/rover.sd"));
+
+    let start = if source.is_file() {
+        source.parent()?
+    } else {
+        source
+    };
+    let root = find_project_root(start)?;
+    load_project_modules(&root).ok()
 }
 
 pub fn cmd_publish(args: &[String]) {
@@ -784,15 +850,11 @@ pub fn cmd_verify_adapter(args: &[String]) {
     if import_path.is_none() && package_name.is_none() {
         import_path = Some("navigation.nav2".into());
     }
-    let issues = verify_adapter_package(
-        &manifest,
-        import_path.as_deref(),
-        package_name.as_deref(),
-    )
-    .unwrap_or_else(|e| {
-        eprintln!("Adapter verify failed: {e}");
-        process::exit(1);
-    });
+    let issues = verify_adapter_package(&manifest, import_path.as_deref(), package_name.as_deref())
+        .unwrap_or_else(|e| {
+            eprintln!("Adapter verify failed: {e}");
+            process::exit(1);
+        });
     for issue in &issues {
         let icon = match issue.severity {
             spanda_package::AdapterVerifySeverity::Pass => "✓",
@@ -804,5 +866,8 @@ pub fn cmd_verify_adapter(args: &[String]) {
     if !adapter_verify_ok(&issues) {
         process::exit(1);
     }
-    println!("✓ Adapter package verification passed for {}", manifest.package.name);
+    println!(
+        "✓ Adapter package verification passed for {}",
+        manifest.package.name
+    );
 }

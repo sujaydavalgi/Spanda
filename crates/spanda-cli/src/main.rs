@@ -2,34 +2,34 @@
 //!
 mod certify_cli;
 mod deploy_ota;
-mod swarm_cli;
 mod package;
+mod swarm_cli;
 
 use serde::Serialize;
-use spanda_driver::{
-    check, compile, lower_to_sir, playback_mission, replay_mission, run, run_debug,
-    tokenize, verify_compatibility, RunOptions, RunResult,
-};
-use spanda_format::format_source;
-use spanda_docs::{generate_cli_man_pages, generate_language_reference, generate_markdown};
-use spanda_lint::{lint, LintIssue, LintSeverity};
+use spanda_ast::comm_decl::PeerRobotDecl;
+use spanda_ast::foundations::{DeployDecl, TaskDecl};
+use spanda_ast::nodes::{BehaviorDecl, Program, RobotDecl};
 use spanda_codegen::{generate as codegen, wasm_deploy_manifest, CodegenTarget};
-use spanda_security::validate::{security_audit, security_check, SecurityReport, SecuritySeverity};
+use spanda_debug::DebugOptions;
+use spanda_docs::{generate_cli_man_pages, generate_language_reference, generate_markdown};
+use spanda_driver::{
+    check, compile, lower_to_sir, playback_mission, replay_mission, run, run_debug, tokenize,
+    verify_compatibility_with_registry, RunOptions, RunResult,
+};
+use spanda_error::SpandaError;
+use spanda_format::format_source;
 use spanda_hardware::{
     CompatItem, CompatSeverity, CompatibilityMatrix, CompatibilityReport, VerifyOptions,
 };
-use spanda_error::SpandaError;
-use spanda_typecheck::Diagnostic;
-use spanda_debug::DebugOptions;
-use spanda_runtime::replay::{parse_replay_offset, MissionTrace};
-use spanda_runtime::scheduler::SchedulerClock;
-use spanda_sir::SirProgram;
-use spanda_ast::nodes::{BehaviorDecl, Program, RobotDecl};
-use spanda_ast::foundations::{DeployDecl, TaskDecl};
-use spanda_ast::comm_decl::PeerRobotDecl;
-use spanda_parser::parse;
+use spanda_lint::{lint, LintIssue, LintSeverity};
 #[cfg(feature = "llvm")]
 use spanda_llvm::{compile_native, emit_module_ir_with_options, CompileNativeOptions};
+use spanda_parser::parse;
+use spanda_runtime::replay::{parse_replay_offset, MissionTrace};
+use spanda_runtime::scheduler::SchedulerClock;
+use spanda_security::validate::{security_audit, security_check, SecurityReport, SecuritySeverity};
+use spanda_sir::SirProgram;
+use spanda_typecheck::Diagnostic;
 use std::collections::HashSet;
 use std::env;
 use std::fs;
@@ -39,7 +39,11 @@ use std::process;
 
 fn run_options_for_file(file: &str, opts: RunOptions) -> RunOptions {
     let mut opts = opts;
-    opts.official_packages = package::official_packages_for_source(Path::new(file));
+    let path = Path::new(file);
+    opts.official_packages = package::official_packages_for_source(path);
+    if let Some(registry) = package::module_registry_for_source(path) {
+        opts.module_registry = Some(registry);
+    }
     opts
 }
 
@@ -124,8 +128,8 @@ fn usage() {
            spanda verify [--json] [--target <HardwareProfile>] [--all-targets] [--simulate] [--strict-certify] <file.sd>\n\
            spanda certify prove [--json] [--strict] [--out <file.json>] <file.sd>\n\
            spanda compatibility [--json] [--target <HardwareProfile>] [--all-targets] [--simulate] [--strict-certify] <file.sd>\n\
-           spanda run [--json] [--verbose] [--twin-export <replay.json>] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] [--trace-realtime] [--metrics-json] [--record] [--enforce-certify] <file.sd>\n\
-           spanda sim [--json] [--replay] [--twin-export <replay.json>] [--trace-realtime] [--metrics-json] [--record] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] [--enforce-certify] <file.sd>\n\
+           spanda run [--json] [--verbose] [--twin-export <replay.json>] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] [--trace-providers] [--trace-realtime] [--metrics-json] [--record] [--enforce-certify] <file.sd>\n\
+           spanda sim [--json] [--replay] [--twin-export <replay.json>] [--trace-realtime] [--metrics-json] [--record] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] [--trace-providers] [--enforce-certify] <file.sd>\n\
            spanda replay <mission.trace> [--from T+mm:ss] [--deterministic] [--playback]\n\
            spanda twin export <file.sd> --out <replay.json>\n\
            spanda fleet run [--json] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] <file.sd>\n\
@@ -152,6 +156,7 @@ fn usage() {
            spanda add <package> [--version <ver>] [--path <dir>] [--git <url>]\n\
            spanda remove <package>\n\
            spanda install [--project <dir>]\n\
+           spanda update [--project <dir>]\n\
            spanda publish [--project <dir>]\n\
            spanda verify-adapter [--project <dir>] [--import <path>] [--package <name>]\n\
            spanda registry search <query>\n\
@@ -479,6 +484,7 @@ fn human_run(source: &str, file: &str, command: &str, opts: RunOptions) {
     let trace_tasks = opts.trace_tasks;
     let trace_triggers = opts.trace_triggers;
     let trace_events = opts.trace_events;
+    let trace_providers = opts.trace_providers;
 
     // Match on run and handle each case.
     match run(source, opts.clone()) {
@@ -506,7 +512,13 @@ fn human_run(source: &str, file: &str, command: &str, opts: RunOptions) {
             );
 
             // Log scheduler decisions when scheduler tracing is enabled.
-            if verbose || trace_scheduler || trace_tasks || trace_triggers || trace_events {
+            if verbose
+                || trace_scheduler
+                || trace_tasks
+                || trace_triggers
+                || trace_events
+                || trace_providers
+            {
                 println!("\n── Simulation Log ──");
 
                 // Process each event.
@@ -526,7 +538,7 @@ fn human_run(source: &str, file: &str, command: &str, opts: RunOptions) {
             }
 
             // Log scheduler decisions when scheduler tracing is enabled.
-            if trace_scheduler || trace_tasks || trace_triggers || trace_events {
+            if trace_scheduler || trace_tasks || trace_triggers || trace_events || trace_providers {
                 println!("\n── Runtime Metrics ──");
 
                 // Log scheduler decisions when scheduler tracing is enabled.
@@ -569,6 +581,23 @@ fn human_run(source: &str, file: &str, command: &str, opts: RunOptions) {
                             trigger.executions,
                             trigger.failures,
                             trigger.missed_deadlines
+                        );
+                    }
+                }
+
+                // Print provider dispatch metrics when provider tracing is enabled.
+                if trace_providers && !result.metrics.providers.is_empty() {
+                    println!("  Providers:");
+
+                    // Report each provider call aggregate.
+                    for provider in result.metrics.providers.values() {
+                        println!(
+                            "    {} [{}]: calls={}, failures={}, max_duration_ms={:.2}",
+                            provider.provider_key,
+                            provider.category,
+                            provider.calls,
+                            provider.failures,
+                            provider.max_duration_ms
                         );
                     }
                 }
@@ -635,7 +664,8 @@ fn human_verify(source: &str, file: &str, options: &VerifyOptions) {
     // let result = spanda_cli::main::human_verify(source, file, options);
 
     // Match on verify compatibility and handle each case.
-    match verify_compatibility(source, options) {
+    let registry = package::module_registry_for_source(Path::new(file));
+    match verify_compatibility_with_registry(source, options, registry.as_ref()) {
         Ok(report) => {
             println!("Hardware compatibility: {file}");
 
@@ -751,7 +781,15 @@ fn is_package_command(cmd: &str) -> bool {
     // Produce matches! as the result.
     matches!(
         cmd,
-        "init" | "build" | "test" | "add" | "remove" | "publish" | "install" | "registry"
+        "init"
+            | "build"
+            | "test"
+            | "add"
+            | "remove"
+            | "publish"
+            | "install"
+            | "update"
+            | "registry"
             | "verify-adapter"
     )
 }
@@ -877,7 +915,9 @@ fn fleet_dispatch(args: &[String]) {
     }
     if args.first().map(String::as_str) != Some("run") {
         eprintln!("Usage: spanda fleet run [--json] [--trace-*] <file.sd>");
-        eprintln!("       spanda fleet orchestrate [--json] [--remote] [--mesh-url <url>] <file.sd>");
+        eprintln!(
+            "       spanda fleet orchestrate [--json] [--remote] [--mesh-url <url>] <file.sd>"
+        );
         eprintln!("       spanda fleet agent start|register|list");
         eprintln!("       spanda fleet mesh start [--bind <addr>]");
         process::exit(1);
@@ -1243,6 +1283,7 @@ fn dispatch_package(command: &str, rest: &[String]) {
         "add" => package::cmd_add(rest),
         "remove" => package::cmd_remove(rest),
         "install" => package::cmd_install(rest),
+        "update" => package::cmd_update(rest),
         "publish" => package::cmd_publish(rest),
         "verify-adapter" => package::cmd_verify_adapter(rest),
         "registry" => match rest.first().map(String::as_str) {
@@ -1353,6 +1394,7 @@ fn main() {
     let mut trace_tasks = false;
     let mut trace_triggers = false;
     let mut trace_events = false;
+    let mut trace_providers = false;
     let mut replay_trace = false;
     let mut trace_realtime = false;
     let mut record_trace = false;
@@ -1378,6 +1420,7 @@ fn main() {
             "--trace-tasks" => trace_tasks = true,
             "--trace-triggers" => trace_triggers = true,
             "--trace-events" => trace_events = true,
+            "--trace-providers" => trace_providers = true,
             "--replay" => replay_trace = true,
             "--trace-realtime" => trace_realtime = true,
             "--metrics-json" => {
@@ -1554,10 +1597,11 @@ fn main() {
                 simulate,
                 strict_certify,
             };
+            let registry = package::module_registry_for_source(Path::new(&file));
 
             // Take this path when json.
             if json {
-                let result = verify_compatibility(&source, &options);
+                let result = verify_compatibility_with_registry(&source, &options, registry.as_ref());
                 let failed = match &result {
                     Ok(report) => !options.all_targets && !report.compatible,
                     Err(_) => true,
@@ -1588,6 +1632,7 @@ fn main() {
                     trace_tasks: trace_tasks || trace_realtime,
                     trace_triggers: trace_triggers || trace_realtime,
                     trace_events: trace_events || trace_realtime,
+                    trace_providers: trace_providers || trace_realtime,
                     trace_realtime,
                     record_trace: record_trace || (command == "sim" && replay_trace),
                     trace_source: Some(file.clone()),
@@ -1907,38 +1952,38 @@ fn main() {
             llvm_unavailable();
             #[cfg(feature = "llvm")]
             {
-            let file = file.unwrap_or_else(|| {
-                eprintln!("Missing file path");
-                usage();
-                process::exit(1);
-            });
-            let source = read_source(&file);
+                let file = file.unwrap_or_else(|| {
+                    eprintln!("Missing file path");
+                    usage();
+                    process::exit(1);
+                });
+                let source = read_source(&file);
 
-            // Match on lower to sir and handle each case.
-            match lower_to_sir(&source) {
-                Ok(sir) => {
-                    let ir = emit_module_ir_with_options(
-                        &sir,
-                        target_triple.as_deref(),
-                        hal_profile.as_deref(),
-                    );
+                // Match on lower to sir and handle each case.
+                match lower_to_sir(&source) {
+                    Ok(sir) => {
+                        let ir = emit_module_ir_with_options(
+                            &sir,
+                            target_triple.as_deref(),
+                            hal_profile.as_deref(),
+                        );
 
-                    // Take this path when let Some(ref out) = out path.
-                    if let Some(ref out) = out_path {
-                        fs::write(out, &ir).unwrap_or_else(|e| {
-                            eprintln!("Error writing {out}: {e}");
-                            process::exit(1);
-                        });
-                        println!("✓ wrote LLVM IR to {out}");
-                    } else {
-                        print!("{ir}");
+                        // Take this path when let Some(ref out) = out path.
+                        if let Some(ref out) = out_path {
+                            fs::write(out, &ir).unwrap_or_else(|e| {
+                                eprintln!("Error writing {out}: {e}");
+                                process::exit(1);
+                            });
+                            println!("✓ wrote LLVM IR to {out}");
+                        } else {
+                            print!("{ir}");
+                        }
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {e}");
+                        process::exit(1);
                     }
                 }
-                Err(e) => {
-                    eprintln!("Error: {e}");
-                    process::exit(1);
-                }
-            }
             }
         }
         "compile-native" => {
@@ -1946,47 +1991,50 @@ fn main() {
             llvm_unavailable();
             #[cfg(feature = "llvm")]
             {
-            let file = file.unwrap_or_else(|| {
-                eprintln!("Missing file path");
-                usage();
-                process::exit(1);
-            });
-            let source = read_source(&file);
+                let file = file.unwrap_or_else(|| {
+                    eprintln!("Missing file path");
+                    usage();
+                    process::exit(1);
+                });
+                let source = read_source(&file);
 
-            // Match on lower to sir and handle each case.
-            match lower_to_sir(&source) {
-                Ok(sir) => {
-                    let workspace = std::env::current_dir().unwrap_or_else(|_| ".".into());
-                    let output = out_path
-                        .map(std::path::PathBuf::from)
-                        .unwrap_or_else(|| workspace.join("target/spanda-native/spanda-program"));
+                // Match on lower to sir and handle each case.
+                match lower_to_sir(&source) {
+                    Ok(sir) => {
+                        let workspace = std::env::current_dir().unwrap_or_else(|_| ".".into());
+                        let output = out_path.map(std::path::PathBuf::from).unwrap_or_else(|| {
+                            workspace.join("target/spanda-native/spanda-program")
+                        });
 
-                    // Match on compile native and handle each case.
-                    match compile_native(
-                        &sir,
-                        &CompileNativeOptions {
-                            output,
-                            clang: None,
-                            workspace_root: workspace,
-                            target_triple,
-                            hal_profile,
-                        },
-                    ) {
-                        Ok(result) => {
-                            println!("✓ wrote LLVM IR to {}", result.llvm_ir_path.display());
-                            println!("✓ linked native binary to {}", result.executable.display());
-                        }
-                        Err(e) => {
-                            eprintln!("Error: {e}");
-                            process::exit(1);
+                        // Match on compile native and handle each case.
+                        match compile_native(
+                            &sir,
+                            &CompileNativeOptions {
+                                output,
+                                clang: None,
+                                workspace_root: workspace,
+                                target_triple,
+                                hal_profile,
+                            },
+                        ) {
+                            Ok(result) => {
+                                println!("✓ wrote LLVM IR to {}", result.llvm_ir_path.display());
+                                println!(
+                                    "✓ linked native binary to {}",
+                                    result.executable.display()
+                                );
+                            }
+                            Err(e) => {
+                                eprintln!("Error: {e}");
+                                process::exit(1);
+                            }
                         }
                     }
+                    Err(e) => {
+                        eprintln!("Error: {e}");
+                        process::exit(1);
+                    }
                 }
-                Err(e) => {
-                    eprintln!("Error: {e}");
-                    process::exit(1);
-                }
-            }
             }
         }
         "debug" => {

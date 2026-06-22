@@ -6,17 +6,27 @@ use spanda_hardware::{
     verify_program_compatibility, CompatSeverity, CompatibilityReport, VerifyOptions,
 };
 
-use crate::compile::compile;
+use crate::compile::{compile, compile_with_registry};
+use spanda_typecheck::ModuleRegistry;
 
 pub fn verify_compatibility(
     source: &str,
     options: &VerifyOptions,
+) -> Result<CompatibilityReport, SpandaError> {
+    verify_compatibility_with_registry(source, options, None)
+}
+
+pub fn verify_compatibility_with_registry(
+    source: &str,
+    options: &VerifyOptions,
+    registry: Option<&ModuleRegistry>,
 ) -> Result<CompatibilityReport, SpandaError> {
     // Compile source and verify hardware plus certification compatibility.
     //
     // Parameters:
     // - `source` — full `.sd` source text
     // - `options` — verify targets, simulation, and strict certify flags
+    // - `registry` — optional project module registry for package imports
     //
     // Returns:
     // Compatibility report with merged hardware and certification items.
@@ -25,14 +35,17 @@ pub fn verify_compatibility(
     // None.
     //
     // Example:
-    // let report = verify_compatibility(source, &options)?;
+    // let report = verify_compatibility_with_registry(source, &options, Some(&registry))?;
 
-    let program = compile(source)?.program;
+    let program = if let Some(registry) = registry {
+        compile_with_registry(source, registry)?.program
+    } else {
+        compile(source)?.program
+    };
     let mut report = verify_program_compatibility(&program, options);
-    report.items.extend(verify_certification_proof(
-        &program,
-        options.strict_certify,
-    ));
+    report
+        .items
+        .extend(verify_certification_proof(&program, options.strict_certify));
     report.compatible = !report
         .items
         .iter()

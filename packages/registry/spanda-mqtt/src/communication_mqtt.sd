@@ -1,7 +1,7 @@
 module communication.mqtt;
 
-export fn publish_topic(topic: String, payload: String) -> Int {
-  let _ = topic;
+export fn publish_topic(topic_path: String, payload: String) -> Int {
+  let _ = topic_path;
   let _ = payload;
   return 1;
 }

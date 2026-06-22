@@ -98,6 +98,14 @@ fn collect_modules(dir: &Path, out: &mut Vec<(String, Program)>) -> Result<(), S
         if path.is_dir() {
             collect_modules(&path, out)?;
         } else if path.extension().is_some_and(|e| e == "sd") {
+            // Skip macOS AppleDouble resource-fork sidecar files.
+            if path
+                .file_name()
+                .and_then(|n| n.to_str())
+                .is_some_and(|n| n.starts_with("._"))
+            {
+                continue;
+            }
             let source = std::fs::read_to_string(&path).map_err(|e| SpandaError::Runtime {
                 message: format!("{}: {e}", path.display()),
                 line: 0,
@@ -147,8 +155,8 @@ pub fn module_name_from_path(path: &Path) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use spanda_ast::nodes::{Span, SpandaType, Stmt};
     use spanda_ast::foundations::{ModuleFnDecl, Visibility};
+    use spanda_ast::nodes::{Span, SpandaType, Stmt};
 
     fn empty_span() -> Span {
         // Empty span.
