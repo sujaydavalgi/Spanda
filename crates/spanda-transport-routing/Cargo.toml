@@ -17,3 +17,10 @@ spanda-transport-dds = { path = "../spanda-transport-dds" }
 spanda-transport-mqtt = { path = "../spanda-transport-mqtt" }
 spanda-transport-ros2 = { path = "../spanda-transport-ros2" }
 spanda-transport-websocket = { path = "../spanda-transport-websocket" }
+
+[features]
+default = []
+live-mqtt = ["spanda-transport-mqtt/live"]
+live-websocket = ["spanda-transport-websocket/live"]
+live-dds = ["spanda-transport-dds/live"]
+live-transport = ["live-mqtt", "live-websocket", "live-dds"]

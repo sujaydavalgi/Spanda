@@ -106,6 +106,7 @@ spanda run examples/features/enum_payload.sd
 | Actions | `communication/actions.sd` |
 | Agent-to-agent | `communication/agent_to_agent.sd` |
 | Multi-robot fleet | `communication/multi_robot_fleet.sd` |
+| Live MQTT (Mosquitto) | `communication/mqtt_live.sd` |
 | Digital twin sync | `communication/digital_twin_sync.sd` |
 | Human interaction | `communication/human_interaction.sd` |
 | ROS2 bridge surface | `ros2_bridge.sd` |

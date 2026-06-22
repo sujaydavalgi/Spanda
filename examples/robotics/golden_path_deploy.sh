@@ -93,6 +93,9 @@ sleep 1
 echo "== fleet orchestration (local) =="
 "${SPANDA}" fleet orchestrate "${FLEET}"
 
+echo "== fleet orchestration (remote HTTP relay) =="
+"${SPANDA}" fleet orchestrate "${FLEET}" --remote
+
 echo "== fleet orchestration via mesh =="
 "${SPANDA}" fleet orchestrate "${FLEET}" --mesh-url "http://${MESH_BIND}"
 

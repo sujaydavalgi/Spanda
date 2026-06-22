@@ -51,6 +51,10 @@ serde_json = "1"
 default = ["llvm"]
 llvm = ["dep:spanda-llvm"]
 slim = []
+live-mqtt = ["spanda-driver/live-mqtt"]
+live-websocket = ["spanda-driver/live-websocket"]
+live-dds = ["spanda-driver/live-dds"]
+live-transport = ["spanda-driver/live-transport"]
 
 [dev-dependencies]
 serde_json = "1"

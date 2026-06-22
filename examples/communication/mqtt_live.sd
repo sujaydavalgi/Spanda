@@ -1,0 +1,21 @@
+// Golden path for live MQTT against a local Mosquitto broker.
+//
+//   SPANDA_LIVE_MQTT=1 spanda sim examples/communication/mqtt_live.sd
+//   ./scripts/mqtt_golden_path.sh
+
+module mqtt_live;
+
+robot MqttProbe {
+  bus broker {
+    transport: "mqtt";
+    url: "mqtt://127.0.0.1:1883";
+  };
+
+  topic ping: String publish on "/spanda/ci/ping";
+
+  behavior ping_loop() {
+    loop every 200ms {
+      publish ping with "spanda-mqtt-live";
+    }
+  }
+}

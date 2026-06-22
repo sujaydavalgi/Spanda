@@ -24,3 +24,10 @@ spanda-ota = { path = "../spanda-ota" }
 spanda-runtime = { path = "../spanda-runtime" }
 spanda-sir = { path = "../spanda-sir" }
 serde = { version = "1", features = ["derive"] }
+
+[features]
+default = []
+live-mqtt = ["spanda-interpreter/live-mqtt"]
+live-websocket = ["spanda-interpreter/live-websocket"]
+live-dds = ["spanda-interpreter/live-dds"]
+live-transport = ["live-mqtt", "live-websocket", "live-dds"]

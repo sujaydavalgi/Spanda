@@ -1,0 +1,23 @@
+// Minimal twin replay export for cloud-upload golden path CI.
+//
+//   spanda twin export examples/communication/twin_replay_golden.sd --out replay.json
+
+robot ReplayProbe {
+  bus sim;
+
+  sensor lidar: Lidar on "/scan";
+  actuator wheels: DifferentialDrive;
+
+  twin Shadow {
+    mirror pose;
+    replay true;
+  }
+
+  safety {
+    max_speed = 1.0 m/s;
+  }
+
+  task sync every 50ms {
+    wheels.drive(linear: 0.2 m/s, angular: 0.0 rad/s);
+  }
+}
