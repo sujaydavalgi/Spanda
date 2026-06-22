@@ -1,5 +1,10 @@
 //! Runtime dispatch from official package module exports to provider registry backends.
 //!
+use crate::iot_hub::{
+    number_arg, publish_telemetry, read_modbus_register, read_opcua_node, register_device,
+    send_command, string_arg, update_shadow,
+};
+use spanda_runtime::providers::{Command, DeviceShadow, IoTDevice, Telemetry};
 use spanda_runtime::providers::{transport_registry_key, ProviderRegistry};
 use spanda_runtime::replay::MissionTrace;
 use spanda_runtime::telemetry::RuntimeTelemetry;
@@ -35,6 +40,8 @@ pub fn official_package_for_module(module_path: &str) -> Option<&'static str> {
         "provenance.ledger" => Some("spanda-ledger"),
         "iot.device" => Some("spanda-iot-core"),
         "iot.telemetry" => Some("spanda-iot-core"),
+        "iot.command" => Some("spanda-iot-core"),
+        "iot.shadow" => Some("spanda-iot-core"),
         "iot.modbus" => Some("spanda-modbus"),
         "iot.opcua" => Some("spanda-opcua"),
         _ => None,
@@ -43,13 +50,6 @@ pub fn official_package_for_module(module_path: &str) -> Option<&'static str> {
 
 fn project_provider_key(package: &str) -> String {
     format!("{package}::project")
-}
-
-fn string_arg(args: &[RuntimeValue], index: usize) -> String {
-    match args.get(index) {
-        Some(RuntimeValue::String { value }) => value.clone(),
-        _ => String::new(),
-    }
 }
 
 fn ok_int() -> RuntimeValue {
@@ -314,6 +314,35 @@ pub fn dispatch_official_package_call(
                 ok_int()
             }),
         ("iot.device", "register") if registry.has_capability("iot.device") => {
+            let device = IoTDevice {
+                id: string_arg(args, 0),
+                protocol: string_arg(args, 1),
+                topic: args.get(2).and_then(|v| match v {
+                    RuntimeValue::String { value } => Some(value.clone()),
+                    _ => None,
+                }),
+            };
+            let failed = register_device(device).is_err();
+            record_call(
+                telemetry,
+                mission_trace,
+                sim_time_ms,
+                &key,
+                "iot",
+                module_path,
+                function_name,
+                started,
+                failed,
+            );
+            if failed { None } else { Some(ok_int()) }
+        }
+        ("iot.telemetry", "publish") if registry.has_capability("iot.telemetry") => {
+            publish_telemetry(Telemetry {
+                device_id: string_arg(args, 0),
+                metric: string_arg(args, 1),
+                value: args.get(2).cloned().unwrap_or(RuntimeValue::Void),
+                timestamp_ms: sim_time_ms,
+            });
             record_call(
                 telemetry,
                 mission_trace,
@@ -327,7 +356,32 @@ pub fn dispatch_official_package_call(
             );
             Some(ok_int())
         }
-        ("iot.telemetry", "publish") if registry.has_capability("iot.telemetry") => {
+        ("iot.command", "send") if registry.has_capability("iot.command") => {
+            let command = Command {
+                device_id: string_arg(args, 0),
+                action: string_arg(args, 1),
+                payload: args.get(2).cloned().unwrap_or(RuntimeValue::Void),
+            };
+            let failed = send_command(command).is_err();
+            record_call(
+                telemetry,
+                mission_trace,
+                sim_time_ms,
+                &key,
+                "iot",
+                module_path,
+                function_name,
+                started,
+                failed,
+            );
+            if failed { None } else { Some(ok_int()) }
+        }
+        ("iot.shadow", "update") if registry.has_capability("iot.shadow") => {
+            update_shadow(DeviceShadow {
+                device_id: string_arg(args, 0),
+                desired: args.get(1).cloned().unwrap_or(RuntimeValue::Void),
+                reported: args.get(2).cloned().unwrap_or(RuntimeValue::Void),
+            });
             record_call(
                 telemetry,
                 mission_trace,
@@ -342,6 +396,8 @@ pub fn dispatch_official_package_call(
             Some(ok_int())
         }
         ("iot.modbus", "read_register") if registry.has_capability("iot.modbus") => {
+            let address = number_arg(args, 0) as u16;
+            let value = read_modbus_register(address);
             record_call(
                 telemetry,
                 mission_trace,
@@ -354,11 +410,13 @@ pub fn dispatch_official_package_call(
                 false,
             );
             Some(RuntimeValue::Number {
-                value: 0.0,
+                value,
                 unit: spanda_ast::nodes::UnitKind::None,
             })
         }
         ("iot.opcua", "read_node") if registry.has_capability("iot.opcua") => {
+            let node = string_arg(args, 0);
+            let value = read_opcua_node(&node).unwrap_or_else(|| "unknown".into());
             record_call(
                 telemetry,
                 mission_trace,
@@ -370,9 +428,7 @@ pub fn dispatch_official_package_call(
                 started,
                 false,
             );
-            Some(RuntimeValue::String {
-                value: "ok".into(),
-            })
+            Some(RuntimeValue::String { value })
         }
         _ => None,
     };

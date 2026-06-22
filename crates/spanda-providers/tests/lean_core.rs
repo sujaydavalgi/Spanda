@@ -177,21 +177,58 @@ fn ledger_package_append_dispatches() {
 #[test]
 fn iot_core_package_dispatches() {
     use spanda_providers::dispatch_official_package_call;
+    use spanda_providers::hub_stats;
+    use spanda_runtime::value::RuntimeValue;
+
     let mut registry = bootstrap_providers_for_packages(&["spanda-iot-core"]);
     let value = dispatch_official_package_call(
         &mut registry,
         "iot.device",
         "register",
-        &[],
+        &[
+            RuntimeValue::String {
+                value: "sensor-1".into(),
+            },
+            RuntimeValue::String {
+                value: "mqtt".into(),
+            },
+        ],
         None,
         None,
         0.0,
     )
     .expect("iot device register dispatch");
     match value {
-        spanda_runtime::value::RuntimeValue::Number { value, .. } => {
+        RuntimeValue::Number { value, .. } => {
             assert!((value - 1.0).abs() < f64::EPSILON);
         }
         other => panic!("expected ok int, got {other:?}"),
+    }
+    let (devices, _) = hub_stats();
+    assert_eq!(devices, 1);
+}
+
+#[test]
+fn modbus_register_reads_seeded_value() {
+    use spanda_providers::dispatch_official_package_call;
+    use spanda_runtime::value::RuntimeValue;
+
+    let mut registry = bootstrap_providers_for_packages(&["spanda-modbus"]);
+    let value = dispatch_official_package_call(
+        &mut registry,
+        "iot.modbus",
+        "read_register",
+        &[RuntimeValue::Number {
+            value: 40001.0,
+            unit: spanda_ast::nodes::UnitKind::None,
+        }],
+        None,
+        None,
+        0.0,
+    )
+    .expect("modbus read dispatch");
+    match value {
+        RuntimeValue::Number { value, .. } => assert!((value - 42.0).abs() < f64::EPSILON),
+        other => panic!("expected number, got {other:?}"),
     }
 }

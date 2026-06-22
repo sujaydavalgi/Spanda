@@ -166,6 +166,7 @@ pub fn bootstrap_providers_for_packages(package_names: &[&str]) -> ProviderRegis
     }
     if names.contains("spanda-modbus") {
         registry.grant_capability("iot.modbus");
+        crate::iot_hub::seed_modbus_demo_register(40001, 42.0);
     }
     if names.contains("spanda-opcua") {
         registry.grant_capability("iot.opcua");

@@ -1,6 +1,7 @@
 //! Official package provider bootstrap and transport adapter wiring.
 //!
 pub mod bootstrap;
+pub mod iot_hub;
 pub mod package_dispatch;
 pub mod package_stubs;
 pub mod transport_adapter;
@@ -9,6 +10,7 @@ pub use bootstrap::{
     bootstrap_default_providers, bootstrap_providers_for_packages, official_package_for_transport,
     sync_comm_bus_for_official_packages,
 };
+pub use iot_hub::{hub_stats, register_device, seed_modbus_demo_register};
 pub use package_dispatch::{
     dispatch_official_package_call, official_package_for_module, ProviderDispatchContext,
 };
