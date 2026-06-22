@@ -1931,6 +1931,7 @@ impl<'h> TypeChecker<'h> {
         for behavior in behaviors {
             let BehaviorDecl::BehaviorDecl {
                 name,
+                return_type,
                 requires,
                 ensures,
                 invariant,
@@ -1976,7 +1977,7 @@ impl<'h> TypeChecker<'h> {
                     actuator_type: None,
                 },
             );
-            self.check_behavior(body);
+            self.check_behavior(body, return_type);
         }
 
         // Process each task.
@@ -2140,7 +2141,7 @@ impl<'h> TypeChecker<'h> {
                     actuator_type: None,
                 },
             );
-            self.check_behavior(body);
+            self.check_behavior(body, &SpandaType::Void);
         }
 
         // Invoke each registered handler.
@@ -2167,7 +2168,7 @@ impl<'h> TypeChecker<'h> {
                     span.start.column,
                 );
             }
-            self.check_behavior(body);
+            self.check_behavior(body, &SpandaType::Void);
         }
         self.check_trigger_handlers(trigger_handlers, events, topics, state_machines, agents);
     }
@@ -2303,7 +2304,7 @@ impl<'h> TypeChecker<'h> {
                     }
                 }
             }
-            self.check_behavior(body);
+            self.check_behavior(body, &SpandaType::Void);
         }
 
         // Process each agent.
@@ -2340,7 +2341,7 @@ impl<'h> TypeChecker<'h> {
                     }
                     _ => {}
                 }
-                self.check_behavior(body);
+                self.check_behavior(body, &SpandaType::Void);
             }
         }
     }
@@ -3260,20 +3261,32 @@ impl<'h> TypeChecker<'h> {
         let prev_agent = self.active_agent.clone();
         self.active_agent = Some(name.clone());
 
+        // Require SafeAction returns when the agent may propose or execute motion.
+        let requires_safe_action = capabilities
+            .iter()
+            .any(|cap| cap.action == "propose_motion" || cap.action == "execute");
+        if requires_safe_action {
+            self.expected_return_type = Some(SpandaType::Named {
+                name: "SafeAction".into(),
+            });
+        }
+
         // Execute each statement in sequence.
         for stmt in plan_body {
             self.check_stmt(stmt);
         }
+        self.expected_return_type = None;
         self.active_agent = prev_agent;
         self.symbols = saved;
     }
 
-    fn check_behavior(&mut self, body: &[Stmt]) {
+    fn check_behavior(&mut self, body: &[Stmt], return_type: &SpandaType) {
         // Check behavior.
         //
         // Parameters:
         // - `self` — method receiver
         // - `body` — input value
+        // - `return_type` — declared behavior return type
         //
         // Returns:
         // Nothing.
@@ -3282,7 +3295,7 @@ impl<'h> TypeChecker<'h> {
         // None.
         //
         // Example:
-        // let result = instance.check_behavior(body);
+        // let result = instance.check_behavior(body, return_type);
 
         // Compute parent for the following logic.
         let parent = self.symbols.clone();
@@ -3299,10 +3312,15 @@ impl<'h> TypeChecker<'h> {
             },
         );
 
+        // Validate return statements against the declared behavior return type.
+        let expected_return = self.resolve_type_ann(return_type);
+        self.expected_return_type = Some(expected_return);
+
         // Execute each statement in sequence.
         for stmt in body {
             self.check_stmt(stmt);
         }
+        self.expected_return_type = None;
         self.symbols = parent;
     }
 
