@@ -3,7 +3,7 @@
 This document is retained for historical context.
 
 - Original audit date: **June 2025**
-- Current release target: **v0.1.0-alpha**
+- Current release target: **v0.4.0**
 - Canonical status source: [`docs/feature-status.md`](./feature-status.md)
 
 ## Why this file is archived

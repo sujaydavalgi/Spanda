@@ -11,7 +11,7 @@ See [tier-3-experimental.md](./tier-3-experimental.md) for feature status and [t
 | Capability | Script | CI job | Example |
 |------------|--------|--------|---------|
 | **Killer demo** | [killer_demo_golden_path.sh](../scripts/killer_demo_golden_path.sh) | `killer-demo-golden-path` | [killer_demo.sd](../examples/showcase/killer_demo.sd) |
-| **Live AI (OpenAI mock/live)** | [live_ai_golden_path.sh](../scripts/live_ai_golden_path.sh) | `live-ai-golden-path` | [ffi_openai_live.sd](../examples/ffi_openai_live.sd) |
+| **Live AI (OpenAI mock/live)** | [live_ai_golden_path.sh](../scripts/live_ai_golden_path.sh) | `live-ai-golden-path` | [live_openai.sd](../examples/features/live_openai.sd) |
 | **ROS2 rclpy `/cmd_vel`** | [ros2_golden_path.sh](../scripts/ros2_golden_path.sh) | `ros2-golden-path` | [ros2_cmd_vel_ping.sd](../examples/communication/ros2_cmd_vel_ping.sd) |
 | **Hosted registry install** | [registry_golden_path.sh](../scripts/registry_golden_path.sh) | `registry-golden-path` | `spanda-openai`, `spanda-ros2` |
 | **CI verify `--json` gate** | [ci_verify_golden_path.sh](../scripts/ci_verify_golden_path.sh) | `ci-verify-golden-path` | [hardware_compatibility.sd](../examples/showcase/hardware_compatibility.sd) |
@@ -80,7 +80,7 @@ Then run any script from the repo root:
 
 ## Related
 
-- [lean-core-roadmap.md](./lean-core-roadmap.md) — Phase 23–24 (complete), Phase 25 (in progress)
+- [lean-core-roadmap.md](./lean-core-roadmap.md) — Phase 23–25 (complete), Phases 26–35 (complete)
 - [mqtt-nav2-reference-architecture.md](./mqtt-nav2-reference-architecture.md) — ROS2 + Nav2 + MQTT stack
 - [llvm-embedded-benchmark.md](./llvm-embedded-benchmark.md) — Jetson/Pi cross-compile slice
 - [ffi-and-ecosystem.md](./ffi-and-ecosystem.md) — Python/C++/ROS2 bridges

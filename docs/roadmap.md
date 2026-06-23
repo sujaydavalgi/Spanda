@@ -12,8 +12,8 @@ Current release line: **v0.4.0**.
 
 | Item | Status |
 |------|--------|
-| `spanda deploy --target native` | **Stable** — [native-deploy.md](./native-deploy.md) |
-| `spanda compile-native` / LLVM golden paths | **Stable** |
+| `spanda deploy --target native` | **Experimental** — [native-deploy.md](./native-deploy.md) (clang required; interpreter remains primary) |
+| `spanda compile-native` / LLVM golden paths | **Experimental** |
 | `spanda ros2 check` | **Stable** — [ros2-golden-path.md](./ros2-golden-path.md) |
 | Distributed fleet guide (`--remote`, agents) | **Stable** — [fleet-distributed.md](./fleet-distributed.md) |
 | ROS2 rclpy golden path | **Experimental** |
@@ -34,6 +34,8 @@ Current release line: **v0.4.0**.
 | LSP SafeAction quick-fix + keyword hover | **Stable** |
 | Live IoT golden path CI | **Stable** |
 | VS Code snippets | **Stable** |
+| VS Code Marketplace publish | **Partial** — VSIX CI; listing pending `VSCE_PAT` |
+| Hosted registry (29 scaffolds) | **Stable** — full index in `registry/index.json`; rebuild with `./scripts/build-registry.sh` |
 
 ---
 

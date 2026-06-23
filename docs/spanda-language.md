@@ -1,4 +1,4 @@
-# Spanda Language Reference (v0.2 foundations)
+# Spanda Language Reference (v0.4 foundations)
 
 Spanda programs use the `.sd` extension. Programs are organized around **autonomous systems**, not OOP class hierarchies.
 
@@ -486,6 +486,62 @@ let past_pose = RobotTwin.replay(index: 0, field: pose);
 ## Physical units
 
 `m`, `s`, `ms`, `rad`, `deg`, `m/s`, `Hz` — unit mismatches are compile-time errors.
+
+## Verification, health, and kill switch
+
+Program-level declarations for capability traceability, runtime health, and emergency stops (Phases 27–35). See [health-checks.md](./health-checks.md), [kill-switch.md](./kill-switch.md), [capability-traceability.md](./capability-traceability.md), [typed-handler-io.md](./typed-handler-io.md), [testing.md](./testing.md).
+
+```spanda
+kill_switch EmergencyStop {
+    priority: critical;
+    remote_signed;
+    action { stop_all_actuators(); }
+}
+
+requires_capability gps_navigation {
+    any_of sensors [GPS, GNSS];
+}
+
+health_check RoverHealth for robot Rover {
+    check gps.status == Healthy;
+}
+
+health_check FleetHealth for fleet Patrol {
+    require at_least 80% robots Healthy;
+    require no robot Unsafe;
+}
+
+health_policy SafetyPolicy {
+    on Critical { enter degraded_mode; }
+    on Unsafe { trigger kill_switch EmergencyStop; }
+}
+
+robot Rover {
+    uses hardware RoverV1;
+    exposes capabilities [autonomous_navigation];
+
+    behavior status() -> Bool {
+        return true;
+    }
+
+    on kill_switch EmergencyStop {
+        stop_all_actuators();
+    }
+}
+```
+
+Compile-fail tests inside `test` blocks:
+
+```spanda
+test "rejects bad assignment" {
+    expect_compile_error {
+        let x: Int = "not an int";
+    }
+    assert(true);
+}
+```
+
+CLI: `spanda check --verification-json`, `spanda verify --health`, `spanda trace capabilities …`, `spanda sim --inject-health-faults`.
 
 ## Examples
 

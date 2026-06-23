@@ -79,9 +79,9 @@ Honest snapshot of Spanda capabilities as of **v0.4.0**. Use this document to un
 | **WASM / web playground** | Browser check/run/verify | Limited surface vs native CLI |
 | **Live AI providers** | OpenAI, Anthropic, ONNX via Python bridge | Requires API keys or `SPANDA_ONNX_MODEL_PATH`; mock fallback by default |
 | **Live IoT bridges** | Modbus TCP, OPC-UA, zigbee, lora, matter, canbus | Env-gated (`SPANDA_LIVE_*=1`); in-memory hub fallback |
-| **Package publish** | `spanda publish`, registry search, mirror to `registry/packages/` | Remote upload via `SPANDA_REGISTRY_URL`; hosted index lists 20 curated packages |
+| **Package publish** | `spanda publish`, registry search, mirror to `registry/packages/` | Remote upload via `SPANDA_REGISTRY_URL`; hosted index lists **29** packages after `build-registry.sh` |
 
-### Planned (not in v0.1.0-alpha)
+### Planned (v0.5 beta and beyond)
 
 | Area | Description |
 |------|-------------|
@@ -172,12 +172,12 @@ See [tier-3-experimental.md](./tier-3-experimental.md) and [tier-3-golden-paths.
 
 ---
 
-## Known limitations (v0.1.0-alpha)
+## Known limitations (v0.4.0)
 
 - AI providers use **mock backends** by default; set `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, or `SPANDA_ONNX_MODEL_PATH` for live calls (`SPANDA_LIVE_AI=0` forces mock).
 - ROS2 integration requires manual ROS Humble setup and is not the default simulator transport.
 - Native compilation via LLVM is **experimental**; the tree-walking interpreter is the primary runtime.
-- `spanda publish` mirrors bundles to `registry/packages/` in-repo; remote upload requires `SPANDA_REGISTRY_URL`. The hosted index currently lists 20 curated packages — run `./scripts/build-registry.sh` after adding new scaffolds.
+- `spanda publish` mirrors bundles to `registry/packages/` in-repo; remote upload requires `SPANDA_REGISTRY_URL`. Run `./scripts/build-registry.sh` to refresh the hosted index after adding scaffolds under `packages/registry/`.
 - VS Code extension builds in CI (`verify_vscode_vsix.sh`); **Marketplace publish** pending maintainer `VSCE_PAT`.
 - Multi-robot fleet examples run in a single process by default; distributed orchestration uses HTTP fleet agents and an optional fleet mesh coordinator (`spanda fleet mesh start`, `--mesh-url` on orchestrate/swarm).
 

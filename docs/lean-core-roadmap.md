@@ -326,7 +326,7 @@ Goal: ship evaluator-ready showcases and golden paths for P3 promotion criteria 
 
 See [tier-3-golden-paths.md](./tier-3-golden-paths.md) and [tier-3-priority-plan.md](./tier-3-priority-plan.md) § P3.
 
-## Phase 25 — In progress (v0.5 beta P0 golden paths)
+## Phase 25 — Complete ✓ (v0.5 beta P0 golden paths; Marketplace partial)
 
 Goal: close v0.5 beta blockers with CI-backed golden paths for killer demo, live AI, ROS2 rclpy bridge, and hosted registry install.
 

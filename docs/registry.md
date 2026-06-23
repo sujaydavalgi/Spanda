@@ -15,7 +15,7 @@ spanda registry search openai
 
 ## Curated packages (hosted)
 
-All 20 curated packages under `packages/registry/` are published in the hosted index. An additional nine scaffolds (IoT protocols, `spanda-onnx`, `spanda-anthropic`, etc.) exist under `packages/registry/` and can be added via `spanda publish` + `./scripts/build-registry.sh`. Tarballs live at `registry/packages/<name>/<version>` with SHA-256 digests and Ed25519 signatures in `registry/index.json` (`version_checksums`, `version_signatures`). Rebuild with `./scripts/build-registry.sh` (runs `scripts/update_registry_checksums.py`, which delegates to `registry-index-maintain`). CI verifies signatures against the trust key in `registry/TRUST_KEY` (hosted signing material: `spanda-hosted-registry-v1` unless `SPANDA_REGISTRY_SIGN_KEY` is set).
+All **29** curated packages under `packages/registry/` are published in the hosted index. Tarballs live at `registry/packages/<name>/<version>` with SHA-256 digests and Ed25519 signatures in `registry/index.json` (`version_checksums`, `version_signatures`). Rebuild with `./scripts/build-registry.sh` (runs `scripts/update_registry_checksums.py`, which delegates to `registry-index-maintain`). CI verifies signatures against the trust key in `registry/TRUST_KEY` (hosted signing material: `spanda-hosted-registry-v1` unless `SPANDA_REGISTRY_SIGN_KEY` is set).
 
 | Package | Category | Import paths |
 |---------|----------|--------------|
@@ -39,16 +39,9 @@ All 20 curated packages under `packages/registry/` are published in the hosted i
 | `spanda-webots` | simulation | `sim.webots` |
 | `spanda-wifi` | connectivity | `connectivity.wifi` |
 | `spanda-yolo` | vision | `vision.yolo` |
-
-### Additional scaffolds (not yet in hosted index)
-
-These packages exist under `packages/registry/` and are available via path dependency or after `spanda publish` + `./scripts/build-registry.sh`:
-
-| Package | Category | Import paths |
-|---------|----------|--------------|
 | `spanda-anthropic` | ai | `ai.anthropic` |
 | `spanda-onnx` | ai | `ai.onnx` |
-| `spanda-iot-core` | iot | `iot.device`, `iot.telemetry` |
+| `spanda-iot-core` | iot | `iot.device`, `iot.telemetry`, `iot.command`, `iot.shadow` |
 | `spanda-opcua` | iot | `iot.opcua` |
 | `spanda-modbus` | iot | `iot.modbus` |
 | `spanda-zigbee` | iot | `iot.zigbee` |

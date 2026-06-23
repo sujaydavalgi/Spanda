@@ -2,7 +2,7 @@
 
 Strategic analysis for Spanda as an autonomous systems language. This document defines positioning, priorities, and release scope. It complements [vision.md](./vision.md) (aspiration) and [feature-status.md](./feature-status.md) (implementation truth).
 
-**Last updated:** 2026-06-20 (post v0.1.0-alpha)
+**Last updated:** 2026-06-22 (v0.4.0 deploy path; Phases 27–35 verification & DX complete)
 
 ---
 
@@ -77,7 +77,7 @@ These are non-negotiable differentiators. Protect them in every release decision
 | Communication model | Already common | ROS2 owns production transport |
 | AI agents / goals / memory | Already common | Structural value; live OpenAI/Anthropic/ONNX when configured |
 | Blockchain / provenance | Already common | Optional; stub only — remove from core narrative |
-| World models | Not implemented | Type names only; no runtime |
+| World models | Minimal runtime | `world_model { }` + belief hook; not full knowledge graphs |
 | LLVM / self-hosting | Already common | Premature for current adoption stage |
 
 ---

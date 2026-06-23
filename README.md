@@ -130,7 +130,7 @@ Video script: [docs/demo-script.md](docs/demo-script.md) · Architecture: [docs/
 
 ## Architecture overview
 
-Spanda uses a **lean-core, package-first** workspace (Phases 1–17 complete). `spanda-core` is the stable public facade; first-party apps import focused workspace crates directly.
+Spanda uses a **lean-core, package-first** workspace (Phases 1–35 complete). `spanda-core` is the stable public facade; first-party apps import focused workspace crates directly.
 
 ```
 .sd source → lexer → parser → AST → type checker
@@ -395,11 +395,11 @@ Package guide: [docs/packages.md](docs/packages.md)
 
 ## Roadmap
 
-**v0.4.0 (current):** Native deploy (`spanda deploy --target native`), `spanda ros2 check`, distributed fleet docs, bundled demos, `cargo install spanda`, LSP hover/quick-fixes, live IoT CI.
+**v0.4.0 (current):** Native deploy (`spanda deploy --target native`, experimental), `spanda ros2 check`, distributed fleet docs, bundled demos (`spanda demo`), `cargo install spanda`, LSP hover/quick-fixes, live IoT CI.
 
-**v0.3.0:** Tooling polish — package rename to `spanda`, showcase demos without clone, fleet multi-robot fix, verification & DX (Phases 27–35), docs site on GitHub Pages.
+**v0.3.0 (shipped):** Tooling polish — crate rename to `spanda`, showcase demos without clone, fleet multi-robot fix, verification & DX (Phases 27–35), docs site on GitHub Pages.
 
-**Next (v0.3):** VS Code Marketplace, expanded registry, IDE polish. **v0.4:** LLVM deploy path, distributed fleet. See [docs/roadmap.md](docs/roadmap.md).
+**Next:** VS Code Marketplace publish (`VSCE_PAT`), expand hosted registry index (29 scaffolds), IDE polish. **v1.0:** production verify on 5+ profiles, edge deploy golden path. See [docs/roadmap.md](docs/roadmap.md).
 
 Full roadmap: [docs/roadmap.md](docs/roadmap.md)  
 Feature status: [docs/feature-status.md](docs/feature-status.md)  

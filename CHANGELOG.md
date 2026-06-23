@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Bundled rover demo:** `spanda demo rover` ships `examples/showcase/autonomous_rover/` source in the crate (install fetches registry deps).
+- **Registry index:** all 29 `packages/registry/*` scaffolds indexed in `registry/index.json`.
+- **Phase 30 test crate:** `phase30_gaps.rs` for health polling during trigger loops.
+- **Docs:** Phase 27+ language reference section; version narrative aligned to v0.4; Phase 25 marked complete; native deploy tier matches feature-status (experimental).
+
+### Changed
+
+- Golden-path live AI example reference: `examples/features/live_openai.sd`.
+
 ## [0.4.0] - 2026-06-22
 
 ### Added

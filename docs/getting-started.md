@@ -231,7 +231,7 @@ See [realtime.md](./realtime.md), [replay.md](./replay.md), and [reliability.md]
 
 ## Try the showcase examples
 
-The `examples/showcase/` directory contains curated demos for v0.1.0-alpha:
+The `examples/showcase/` directory contains curated demos for v0.4:
 
 ```bash
 spanda check examples/showcase/rover_navigation.sd
@@ -385,7 +385,7 @@ npm run build --workspace=@spanda/lsp
 
 Spanda includes a first-party VS Code extension at `editor/vscode` with bundled LSP, verify diagnostics, deploy-target autocomplete, and DAP debugging. CI builds and verifies the VSIX on every push (`.github/workflows/vscode-extension-ci.yml`).
 
-### Editor support (v0.1.0-alpha)
+### Editor support (v0.4)
 
 | Capability | Status |
 |------------|--------|
