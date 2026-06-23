@@ -298,6 +298,9 @@ pub fn serve_tls_connection(
     let conn = ServerConnection::new(Arc::clone(server_config))
         .map_err(|e| format!("TLS server connection: {e}"))?;
     let mut tls = StreamOwned::new(conn, stream);
+    let _ = tls
+        .sock
+        .set_read_timeout(Some(Duration::from_secs(30)));
     let mut raw = String::new();
     tls.read_to_string(&mut raw)
         .map_err(|e| format!("read request failed: {e}"))?;
@@ -305,7 +308,10 @@ pub fn serve_tls_connection(
     let response = handler(request);
     let encoded = http_response(response.status, &response.body);
     tls.write_all(encoded.as_bytes())
-        .map_err(|e| format!("write response failed: {e}"))
+        .map_err(|e| format!("write response failed: {e}"))?;
+    tls.sock
+        .shutdown(Shutdown::Write)
+        .map_err(|e| format!("shutdown response failed: {e}"))
 }
 
 /// Return true when the bind address listens on a non-loopback interface.

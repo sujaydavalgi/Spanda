@@ -6,10 +6,9 @@ use crate::remote::{
 use crate::PeerDelivery;
 use serde::{Deserialize, Serialize};
 use spanda_deploy_http::{
-    http_request, http_response, parse_http_request, read_plain_request, serve_tls_connection,
+    http_request, parse_http_request, read_plain_request, serve_tls_connection,
     write_plain_response, DeployAgentTls, HttpRequest, HttpResponse,
 };
-use std::io::Write;
 use std::net::{TcpListener, TcpStream};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
@@ -193,14 +192,24 @@ fn handle_connection(
     let raw = match read_plain_request(&mut stream) {
         Ok(raw) => raw,
         Err(_) => {
-            let _ = stream
-                .write_all(http_response(400, r#"{"ok":false,"error":"bad request"}"#).as_bytes());
+            let _ = write_plain_response(
+                &mut stream,
+                &HttpResponse {
+                    status: 400,
+                    body: r#"{"ok":false,"error":"bad request"}"#.into(),
+                },
+            );
             return;
         }
     };
     let Ok(request) = parse_http_request(&raw) else {
-        let _ = stream
-            .write_all(http_response(400, r#"{"ok":false,"error":"bad request"}"#).as_bytes());
+        let _ = write_plain_response(
+            &mut stream,
+            &HttpResponse {
+                status: 400,
+                body: r#"{"ok":false,"error":"bad request"}"#.into(),
+            },
+        );
         return;
     };
     let response = dispatch_mesh_request(state, &registry_backing, request);

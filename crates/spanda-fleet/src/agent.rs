@@ -8,11 +8,10 @@ use crate::remote::{
 use crate::PeerDelivery;
 use serde::{Deserialize, Serialize};
 use spanda_deploy_http::{
-    http_response, parse_http_request, read_plain_request, serve_tls_connection,
+    parse_http_request, read_plain_request, serve_tls_connection,
     write_plain_response, DeployAgentTls, HttpRequest, HttpResponse,
 };
 use std::fs;
-use std::io::Write;
 use std::net::{TcpListener, TcpStream};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
@@ -60,6 +59,14 @@ fn unauthorized(request: &HttpRequest, state: &FleetAgentState) -> bool {
         (Some(expected), Some(provided)) => expected != provided,
         (Some(_), None) => true,
         _ => false,
+    }
+}
+
+fn clear_fleet_agent_on_identity_change(state: &mut FleetAgentState, new_robot_name: &str) {
+    // Drop stale peer history when the on-disk identity does not match startup robot.
+    if !state.robot_name.is_empty() && state.robot_name != new_robot_name {
+        state.last_peer_messages.clear();
+        state.token = None;
     }
 }
 
@@ -189,14 +196,24 @@ fn handle_connection(
     let raw = match read_plain_request(&mut stream) {
         Ok(raw) => raw,
         Err(_) => {
-            let _ = stream
-                .write_all(http_response(400, r#"{"ok":false,"error":"bad request"}"#).as_bytes());
+            let _ = write_plain_response(
+                &mut stream,
+                &HttpResponse {
+                    status: 400,
+                    body: r#"{"ok":false,"error":"bad request"}"#.into(),
+                },
+            );
             return;
         }
     };
     let Ok(request) = parse_http_request(&raw) else {
-        let _ = stream
-            .write_all(http_response(400, r#"{"ok":false,"error":"bad request"}"#).as_bytes());
+        let _ = write_plain_response(
+            &mut stream,
+            &HttpResponse {
+                status: 400,
+                body: r#"{"ok":false,"error":"bad request"}"#.into(),
+            },
+        );
         return;
     };
     let response = {
@@ -217,6 +234,7 @@ pub fn run_fleet_agent_server(
 ) -> Result<(), String> {
     // Run the fleet peer relay agent until interrupted.
     let mut state = load_fleet_agent_state(state_path);
+    clear_fleet_agent_on_identity_change(&mut state, robot_name);
     state.robot_name = robot_name.to_string();
     state.token = token.or(state.token);
     save_fleet_agent_state(state_path, &state)?;
@@ -254,12 +272,13 @@ pub fn spawn_test_fleet_agent(
         ..FleetAgentState::default()
     };
     let shared = Arc::new(Mutex::new(state));
+    let state_path = fleet_agent_state_path_for(robot_name);
     let handle = thread::spawn(move || {
         for connection in listener.incoming() {
             let Ok(stream) = connection else { continue };
             handle_connection(
                 Arc::clone(&shared),
-                PathBuf::from(".spanda/test-fleet-agent-state.json"),
+                state_path.clone(),
                 stream,
                 None,
             );

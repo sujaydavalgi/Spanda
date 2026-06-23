@@ -5,11 +5,10 @@ use crate::remote::DeployAgentEntry;
 use crate::types::{CertificationProofSummary, DeployAssignment};
 use serde::{Deserialize, Serialize};
 use spanda_deploy_http::{
-    http_response, parse_http_request, read_plain_request, serve_tls_connection,
+    parse_http_request, read_plain_request, serve_tls_connection,
     write_plain_response, DeployAgentTls, HttpRequest, HttpResponse,
 };
 use std::fs;
-use std::io::Write;
 use std::net::{TcpListener, TcpStream};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
@@ -95,6 +94,21 @@ fn unauthorized(request: &HttpRequest, state: &AgentState) -> bool {
         (Some(expected), Some(provided)) => expected != provided,
         (Some(_), None) => true,
         _ => false,
+    }
+}
+
+fn clear_agent_deployment_on_identity_change(state: &mut AgentState, new_target: &str) {
+    // Drop stale rollout fields when the on-disk identity does not match startup target.
+    if !state.target.is_empty() && state.target != new_target {
+        state.current_version = "0.0.0".into();
+        state.previous_version = None;
+        state.program = None;
+        state.program_hash = None;
+        state.require_hash = false;
+        state.require_signature = false;
+        state.require_certify = false;
+        state.trusted_public_key = None;
+        state.token = None;
     }
 }
 
@@ -254,14 +268,24 @@ fn handle_connection(
     let raw = match read_plain_request(&mut stream) {
         Ok(raw) => raw,
         Err(_) => {
-            let _ = stream
-                .write_all(http_response(400, r#"{"ok":false,"error":"bad request"}"#).as_bytes());
+            let _ = write_plain_response(
+                &mut stream,
+                &HttpResponse {
+                    status: 400,
+                    body: r#"{"ok":false,"error":"bad request"}"#.into(),
+                },
+            );
             return;
         }
     };
     let Ok(request) = parse_http_request(&raw) else {
-        let _ = stream
-            .write_all(http_response(400, r#"{"ok":false,"error":"bad request"}"#).as_bytes());
+        let _ = write_plain_response(
+            &mut stream,
+            &HttpResponse {
+                status: 400,
+                body: r#"{"ok":false,"error":"bad request"}"#.into(),
+            },
+        );
         return;
     };
     let response = {
@@ -315,6 +339,7 @@ pub fn run_deploy_agent_server(options: &DeployAgentServerOptions) -> Result<(),
     let target = target.as_str();
     let state_path = state_path.as_path();
     let mut state = load_agent_state(state_path);
+    clear_agent_deployment_on_identity_change(&mut state, target);
     state.target = target.to_string();
     state.token = token.clone().or(state.token);
     state.require_hash = *require_hash || state.require_hash;
@@ -368,12 +393,13 @@ pub fn spawn_test_agent_with_options(
         ..AgentState::default()
     };
     let shared = Arc::new(Mutex::new(state));
+    let state_path = agent_state_path_for(target);
     let handle = thread::spawn(move || {
         for connection in listener.incoming() {
             let Ok(stream) = connection else { continue };
             handle_connection(
                 Arc::clone(&shared),
-                PathBuf::from(".spanda/test-agent-state.json"),
+                state_path.clone(),
                 stream,
                 None,
             );
