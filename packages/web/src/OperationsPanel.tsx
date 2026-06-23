@@ -2,7 +2,11 @@ import { useCallback, useState } from "react";
 import {
   evaluateReadinessSource,
   type ReadinessReport,
-} from "./readiness-local.js";
+} from "@spanda/core/readiness.js";
+import {
+  readinessDashboardFromReports,
+  type ReadinessDashboard,
+} from "@spanda/core/operational.js";
 import { fetchAgentReadiness } from "./readiness-agent.js";
 
 type Props = {
@@ -18,6 +22,7 @@ function statusClass(status: string): string {
 
 export function OperationsPanel({ source }: Props) {
   const [report, setReport] = useState<ReadinessReport | null>(null);
+  const [dashboard, setDashboard] = useState<ReadinessDashboard | null>(null);
   const [agentUrl, setAgentUrl] = useState("");
   const [agentReport, setAgentReport] = useState<ReadinessReport | null>(null);
   const [busy, setBusy] = useState(false);
@@ -33,6 +38,8 @@ export function OperationsPanel({ source }: Props) {
         injectHealthFaults: injectFaults,
       });
       setReport(result);
+      setDashboard(readinessDashboardFromReports([result]));
+      setAgentReport(null);
     } catch (e) {
       setError(String(e));
       setReport(null);
@@ -68,6 +75,7 @@ export function OperationsPanel({ source }: Props) {
         target: readiness.target,
         robots: readiness.robots ?? [],
       });
+      setDashboard(null);
     } catch (e) {
       setError(String(e));
       setAgentReport(null);
@@ -141,6 +149,32 @@ export function OperationsPanel({ source }: Props) {
               </>
             )}
           </dl>
+        </div>
+      )}
+
+      {dashboard && !agentReport && (
+        <div className="panel">
+          <h2>Fleet dashboard</h2>
+          <dl>
+            <dt>Overall score</dt>
+            <dd>{dashboard.overall_score}/100</dd>
+            <dt>Mission ready</dt>
+            <dd>{dashboard.mission_ready_count}</dd>
+            <dt>Degraded</dt>
+            <dd>{dashboard.degraded_count}</dd>
+            <dt>Not ready</dt>
+            <dd>{dashboard.not_ready_count}</dd>
+          </dl>
+          {dashboard.top_issues.length > 0 && (
+            <>
+              <h3>Top issues</h3>
+              <ul>
+                {dashboard.top_issues.map((issue, i) => (
+                  <li key={i}>{issue}</li>
+                ))}
+              </ul>
+            </>
+          )}
         </div>
       )}
 

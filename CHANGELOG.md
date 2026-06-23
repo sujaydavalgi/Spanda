@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Readiness polish:** CI smoke (`scripts/readiness_smoke.sh`), agent `/v1/readiness` integration tests, `spanda deploy|fleet agent readiness` CLI, TypeScript fallbacks for all operational commands (`src/operational.ts`), span-aware LSP readiness diagnostics, `POST /v1/program` on deploy agents, bundled `root_cause_analysis` example, and fleet dashboard aggregates in the web Operations panel.
+
 - **Readiness gap closure (phases 1–4):** `--target`, `--runtime`, `--inject-health-faults`, and `--agent-json` on `spanda readiness`; `spanda check --readiness-json` for IDE diagnostics; `spanda demo readiness`; bundled showcase examples synced to the CLI crate.
 - **Agent readiness API:** `GET /v1/readiness` on deploy and fleet agents (`?runtime=true`, `?inject_health_faults=true`); TypeScript CLI fallback via `src/readiness.ts` when the native binary is unavailable.
 - **Operations dashboard:** `packages/web` Operations view with local readiness scoring and live agent fetch.

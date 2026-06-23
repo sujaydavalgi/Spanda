@@ -24,6 +24,8 @@ spanda demo readiness
 - **`--runtime`** — evaluate against live hardware monitor signals (health checks use runtime fault/event state).
 - **`--inject-health-faults`** — simulate degraded sensors for what-if analysis (pairs with `--runtime`).
 - **`GET /v1/readiness`** on deploy and fleet agents; query `runtime=true` and `inject_health_faults=true` for on-device evaluation.
+- **`POST /v1/program`** on deploy and fleet agents to upload `.sd` source for live readiness.
+- **Remote CLI:** `spanda deploy agent readiness <Robot@Hardware>` and `spanda fleet agent readiness <RobotName>`.
 - **`--agent-json`** on `spanda readiness` — same JSON envelope as agent `GET /v1/readiness` (for scripts, CI, and local parity checks).
 - **Web playground** — switch to **Operations** view in `packages/web` for local scoring or agent fetch.
 

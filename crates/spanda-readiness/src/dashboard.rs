@@ -1,4 +1,4 @@
-//! Dashboard data models for future operational UI.
+//! Dashboard data models for operational UI and fleet aggregates.
 
 use serde::{Deserialize, Serialize};
 

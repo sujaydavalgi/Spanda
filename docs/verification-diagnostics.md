@@ -35,6 +35,18 @@ spanda verify examples/security/remote_signed_kill_switch.sd --health
 
 ---
 
+## CLI: `spanda check --readiness-json`
+
+Emits operational readiness alongside type-check results (requires a successful check):
+
+```bash
+spanda check examples/showcase/readiness/rover.sd --readiness-json --json
+```
+
+Readiness diagnostics use categories such as `readiness:hardware`, `readiness:health`, and `readiness:capabilities`, with spans on deploy targets, health checks, missions, or robot blocks when available.
+
+---
+
 ## Verify flags
 
 Combine with hardware verification:

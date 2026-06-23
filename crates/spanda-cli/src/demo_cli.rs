@@ -97,7 +97,13 @@ fn read_source(path: &Path) -> String {
 }
 
 fn spanda_bin() -> String {
-    env::var("SPANDA_BIN").unwrap_or_else(|_| "spanda".into())
+    if let Ok(bin) = env::var("SPANDA_BIN") {
+        return bin;
+    }
+    if let Ok(exe) = env::current_exe() {
+        return exe.to_string_lossy().into_owned();
+    }
+    "spanda".into()
 }
 
 fn run_spanda(subcommand: &str, file: &Path, extra: &[&str]) {
@@ -128,6 +134,11 @@ fn run_spanda_args(args: &[&str]) {
     if !status.success() {
         process::exit(status.code().unwrap_or(1));
     }
+}
+
+fn run_spanda_args_allow_fail(args: &[&str]) {
+    let spanda = spanda_bin();
+    let _ = Command::new(&spanda).args(args).status();
 }
 
 fn expect_check_fail(file: &Path) {
@@ -275,7 +286,7 @@ fn demo_readiness(root: &Path) {
     ]);
 
     println!("→ Runtime readiness with injected health faults");
-    run_spanda_args(&[
+    run_spanda_args_allow_fail(&[
         "readiness",
         readiness_sd.to_str().unwrap(),
         "--target",
@@ -283,6 +294,7 @@ fn demo_readiness(root: &Path) {
         "--runtime",
         "--inject-health-faults",
     ]);
+    println!("(non-ready score is expected when health faults are injected)");
 
     println!("\nDemo complete. See examples/showcase/readiness/rover.sd and docs/readiness.md");
 }
