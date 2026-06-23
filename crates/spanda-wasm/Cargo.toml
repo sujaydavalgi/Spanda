@@ -12,6 +12,7 @@ spanda-driver = { path = "../spanda-driver" }
 spanda-error = { path = "../spanda-error" }
 spanda-format = { path = "../spanda-format" }
 spanda-hardware = { path = "../spanda-hardware" }
+getrandom = { version = "0.2", features = ["js"] }
 wasm-bindgen = "0.2"
 serde = { version = "1", features = ["derive"] }
 serde-wasm-bindgen = "0.6"
