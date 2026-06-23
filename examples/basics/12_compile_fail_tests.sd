@@ -1,0 +1,21 @@
+// Basics 12 — expect_compile_error blocks in test bodies
+//
+//   spanda check examples/basics/12_compile_fail_tests.sd
+//   spanda test examples/basics/12_compile_fail_tests.sd
+//
+// Docs: docs/testing.md
+
+test "rejects bad assignment at compile time" {
+    expect_compile_error {
+        let x: Int = "not an int";
+    }
+    assert(true);
+}
+
+robot TestRover {
+    actuator wheels: DifferentialDrive;
+
+    behavior run() {
+        wheels.stop();
+    }
+}

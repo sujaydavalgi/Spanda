@@ -1,0 +1,27 @@
+// Feature: live OpenAI ai_model provider (mock fallback without OPENAI_API_KEY)
+//
+//   spanda check examples/features/live_openai.sd
+//   OPENAI_API_KEY=sk-... spanda run examples/features/live_openai.sd
+//   ./scripts/live_ai_golden_path.sh
+//
+// Docs: docs/live-ai-provider.md
+
+robot LiveOpenAI {
+    sensor lidar: Lidar on "/scan";
+    ai_model planner: LLM {
+        provider: "openai";
+        model: "gpt-4o-mini";
+    }
+    actuator wheels: DifferentialDrive;
+
+    safety {
+        max_speed = 1.0 m/s;
+    }
+
+    behavior run() {
+        let scan = lidar.read();
+        let proposal = planner.reason(prompt: "Plan a safe stop", input: scan);
+        let action = safety.validate(proposal);
+        wheels.execute(action);
+    }
+}

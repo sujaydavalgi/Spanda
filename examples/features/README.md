@@ -32,7 +32,8 @@ spanda run examples/features/enum_payload.sd
 | Behavior `requires` / `ensures` | `basics/09_behavior_contracts.sd` |
 | State machines + `enter` | `basics/10_state_machine.sd` |
 | `observe` / fusion | `basics/11_observe_and_fusion.sd`, `types/fusion.sd` |
-| `world_model` + fusion hook | [`world_model_observe.sd`](./world_model_observe.sd), `world_model_belief.sd` |
+| `world_model` + fusion hook | [`world_model_observe.sd`](./world_model_observe.sd), [`world_model_belief.sd`](./world_model_belief.sd) |
+| `expect_compile_error` tests | `basics/12_compile_fail_tests.sd` |
 
 ---
 
@@ -63,6 +64,10 @@ spanda run examples/features/enum_payload.sd
 | Agent goals | `types/goals.sd` |
 | Agent memory | `types/memory.sd` |
 | Skills + capabilities | [`features/agent_capabilities.sd`](./agent_capabilities.sd) |
+| Agent `can[]` default-deny | [`features/agent_can_deny.sd`](./agent_can_deny.sd) |
+| Live OpenAI `ai_model` | [`features/live_openai.sd`](./live_openai.sd) |
+| Live Anthropic `ai_model` | [`features/live_anthropic.sd`](./live_anthropic.sd) |
+| Live ONNX `ai_model` | [`features/live_onnx.sd`](./live_onnx.sd) |
 | Jetson / edge vision | `jetson_inspection.sd` |
 
 ---
@@ -77,6 +82,8 @@ spanda run examples/features/enum_payload.sd
 | Event `on` triggers | `integration/triggers_minimal.sd` |
 | Full trigger catalog | `triggers_demo.sd` |
 | `while` trigger | [`features/while_trigger.sd`](./while_trigger.sd) |
+| Typed handler returns | [`features/typed_handler_returns.sd`](./typed_handler_returns.sd) |
+| DAP `every` debug entry | `integration/debugger_every.sd` |
 | `spawn` / `join` | [`features/join_and_spawn.sd`](./join_and_spawn.sd) |
 | `parallel` blocks | [`features/parallel_block.sd`](./parallel_block.sd), `concurrency.sd` |
 | Channels / `select` | `integration/concurrency_minimal.sd` |
@@ -122,6 +129,9 @@ spanda run examples/features/enum_payload.sd
 | `requires_hardware` | [`features/requires_hardware.sd`](./requires_hardware.sd) |
 | `requires_network` | [`features/requires_network.sd`](./requires_network.sd) |
 | Full compatibility matrix | `hardware/full_compat.sd`, `showcase/hardware_compatibility.sd` |
+| Capability + health + kill switch | [`hardware/capability_verification.sd`](../hardware/capability_verification.sd) |
+| Fleet health `require` | [`features/fleet_health_require.sd`](./fleet_health_require.sd) |
+| Kill switch + handler | [`features/kill_switch.sd`](./kill_switch.sd) |
 | Fault simulation | [`features/simulate_fault.sd`](./simulate_fault.sd) |
 | HAL / SoC (ESP32, Pi, STM32) | `esp32_sensors.sd`, `raspberry_pi_hal.sd`, `stm32_motor_control.sd` |
 | Vendor sensors | `environmental_sensors.sd`, `ouster_os1.sd` |
@@ -154,6 +164,8 @@ spanda run examples/features/enum_payload.sd
 | Feature | Example |
 |---------|---------|
 | Capabilities + signed topics | `std/security.sd` |
+| Remote-signed kill switch | `security/remote_signed_kill_switch.sd` |
+| Secure comm demos | `security/secure_robot_to_robot.sd` |
 | Audit records | `std/audit_log.sd` |
 | Device identity | `std/device_identity.sd` |
 | Provenance | `std/provenance.sd` |

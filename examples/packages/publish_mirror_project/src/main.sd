@@ -1,0 +1,23 @@
+// Publish mirror demo — validate and mirror to registry/packages/
+//
+//   cd examples/packages/publish_mirror_project
+//   spanda publish
+//
+// On success, bundle is copied to registry/packages/publish-mirror-demo/0.1.0/
+// Maintainers: ./scripts/build-registry.sh to refresh index signatures
+//
+// Docs: docs/packages.md, docs/registry.md
+
+robot MirrorDemo {
+    sensor telemetry: GPS;
+    actuator wheels: DifferentialDrive;
+
+    safety {
+        max_speed = 0.5 m/s;
+    }
+
+    behavior run() {
+        let _ = telemetry.read();
+        wheels.stop();
+    }
+}

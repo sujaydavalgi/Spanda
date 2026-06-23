@@ -1,0 +1,11 @@
+[package]
+name = "publish-mirror-demo"
+version = "0.1.0"
+description = "Minimal package for spanda publish mirror workflow"
+license = "Apache-2.0"
+
+[capabilities]
+required = ["telemetry.read"]
+
+[safety]
+level = "experimental"

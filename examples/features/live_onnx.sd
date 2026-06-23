@@ -1,0 +1,26 @@
+// Feature: ONNX ai_model provider (mock fallback without SPANDA_ONNX_MODEL_PATH)
+//
+//   spanda check examples/features/live_onnx.sd
+//   SPANDA_ONNX_MODEL_PATH=/path/to/model.onnx spanda run examples/features/live_onnx.sd
+//
+// Docs: docs/live-ai-provider.md
+
+robot LiveOnnx {
+    sensor lidar: Lidar on "/scan";
+    ai_model planner: LLM {
+        provider: "onnx";
+        model: "local-planner";
+    }
+    actuator wheels: DifferentialDrive;
+
+    safety {
+        max_speed = 1.0 m/s;
+    }
+
+    behavior run() {
+        let scan = lidar.read();
+        let proposal = planner.reason(prompt: "Plan a safe stop", input: scan);
+        let action = safety.validate(proposal);
+        wheels.execute(action);
+    }
+}

@@ -1,0 +1,49 @@
+// Feature: fleet health_check with require clauses (Phase 35 runtime)
+//
+//   spanda check examples/features/fleet_health_require.sd
+//   spanda health robot examples/features/fleet_health_require.sd --json
+//   spanda verify examples/features/fleet_health_require.sd --health
+//   spanda sim examples/features/fleet_health_require.sd --inject-health-faults
+//
+// Docs: docs/fleet-health.md, docs/health-checks.md
+
+fleet WarehouseFleet {
+    RoverA;
+    RoverB;
+}
+
+health_check FleetHealth for fleet WarehouseFleet {
+    require at_least 80% robots Healthy;
+    require no robot Unsafe;
+    check rover.status == Healthy;
+}
+
+health_policy FleetPolicy {
+    on Critical { enter degraded_mode; }
+}
+
+robot RoverA {
+    sensor gps: GPS;
+    actuator wheels: DifferentialDrive;
+
+    safety {
+        max_speed = 1.0 m/s;
+    }
+
+    every 100ms {
+        let tick = true;
+    }
+}
+
+robot RoverB {
+    sensor gps: GPS;
+    actuator wheels: DifferentialDrive;
+
+    safety {
+        max_speed = 1.0 m/s;
+    }
+
+    every 100ms {
+        let tick = true;
+    }
+}

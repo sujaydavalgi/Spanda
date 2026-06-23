@@ -1,0 +1,30 @@
+// Feature: kill switch declaration + on kill_switch handler
+//
+//   spanda check examples/features/kill_switch.sd
+//   spanda sim examples/features/kill_switch.sd --trigger-kill-switch EmergencyStop
+//
+// Docs: docs/kill-switch.md
+
+kill_switch EmergencyStop {
+    priority: critical;
+    action {
+        stop_all_actuators();
+        audit.record("kill_switch_activated");
+    }
+}
+
+robot Rover {
+    actuator wheels: DifferentialDrive;
+
+    safety {
+        max_speed = 1.0 m/s;
+    }
+
+    on kill_switch EmergencyStop {
+        stop_all_actuators();
+    }
+
+    behavior run() {
+        wheels.stop();
+    }
+}

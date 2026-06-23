@@ -1,0 +1,28 @@
+// IoT: Modbus register read via in-file module (mirrors spanda-modbus package dispatch)
+//
+//   spanda check examples/iot/modbus_dispatch.sd
+//   SPANDA_LIVE_MODBUS=1 spanda run examples/iot/modbus_dispatch.sd
+//   ./scripts/live_iot_golden_path.sh
+//
+// Package equivalent: packages/registry/spanda-modbus/
+// Docs: docs/iot.md
+
+module iot.modbus;
+
+export fn read_register(address: Int) -> Int {
+    return 0;
+}
+
+robot FactoryCell {
+    actuator valve: DifferentialDrive;
+
+    safety {
+        max_speed = 0.5 m/s;
+    }
+
+    behavior poll_sensors() {
+        let temperature = read_register(40001);
+        let _ = temperature;
+        valve.stop();
+    }
+}

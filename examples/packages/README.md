@@ -19,6 +19,7 @@ cd examples/packages/local_dependency && spanda test
 | [`local_dependency/`](local_dependency/) | Path dependency between packages |
 | [`robot_driver_package/`](robot_driver_package/) | Driver module layout |
 | [`ai_provider_package/`](ai_provider_package/) | Custom AI provider scaffold |
+| [`publish_mirror_project/`](publish_mirror_project/) | `spanda publish` mirror to `registry/packages/` |
 
 ---
 

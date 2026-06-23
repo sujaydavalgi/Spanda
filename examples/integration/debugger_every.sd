@@ -1,0 +1,20 @@
+// Integration: minimal robot for DAP debugging of every trigger bodies
+//
+//   spanda check examples/integration/debugger_every.sd
+//   spanda debug examples/integration/debugger_every.sd --break 12
+//
+// VS Code: set breakpoint inside every { } and press F5 (Spanda debug config)
+// Docs: docs/debugging.md
+
+robot DebugRover {
+    actuator wheels: DifferentialDrive;
+
+    safety {
+        max_speed = 1.0 m/s;
+    }
+
+    every 50ms {
+        wheels.stop();
+        wheels.stop();
+    }
+}

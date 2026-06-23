@@ -51,12 +51,18 @@ Work through tiers in order, or jump via [features/README.md](features/README.md
 | Triggers & concurrency | [`triggers_demo.sd`](triggers_demo.sd), [`concurrency.sd`](concurrency.sd) | [triggers.md](../docs/triggers.md) |
 | Communication & fleet | [`communication/`](communication/) | [concurrency.md](../docs/concurrency.md) |
 | Hardware & deploy | [`hardware/`](hardware/) | [hardware-compatibility.md](../docs/hardware-compatibility.md) |
+| Health & capabilities | [`hardware/capability_verification.sd`](hardware/capability_verification.sd) | [health-checks.md](../docs/health-checks.md) |
+| IoT & live bridges | [`iot/`](iot/) | [iot.md](../docs/iot.md) |
+| Live AI providers | [`features/live_openai.sd`](features/live_openai.sd) | [live-ai-provider.md](../docs/live-ai-provider.md) |
+| Testing & compile-fail | [`basics/12_compile_fail_tests.sd`](basics/12_compile_fail_tests.sd) | [testing.md](../docs/testing.md) |
+| Verification diagnostics | [`hardware/capability_verification.sd`](hardware/capability_verification.sd) | [verification-diagnostics.md](../docs/verification-diagnostics.md) |
 | Robotics platform | [`robotics/`](robotics/) | [robotics-platform.md](../docs/robotics-platform.md) |
 | Regex | [`regex/`](regex/) | [regex.md](../docs/regex.md) |
 | Security | [`security/`](security/) | [secure-communication.md](../docs/secure-communication.md) |
 | FFI & ROS2 | [`ffi_*.sd`](ffi_python_extern.sd), [`ros2_bridge.sd`](ros2_bridge.sd) | [ffi-and-ecosystem.md](../docs/ffi-and-ecosystem.md) |
 | Adapter bridges | [`adapters/`](adapters/) | [ros2-golden-path.md](../docs/ros2-golden-path.md) |
 | Package layouts | [`packages/`](packages/) | [packages.md](../docs/packages.md) |
+| Publish mirror workflow | [`packages/publish_mirror_project/`](packages/publish_mirror_project/) | [registry.md](../docs/registry.md) |
 | Standard library | [`std/`](std/) | [standard-library.md](../docs/standard-library.md) |
 | Type snippets | [`types/`](types/) | [spanda-type-system.md](../docs/spanda-type-system.md) |
 | Modules | [`modules/`](modules/) | [spanda-language.md](../docs/spanda-language.md) |

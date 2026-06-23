@@ -1,0 +1,36 @@
+// Feature: remote_signed kill switch with robot identity (runtime signature required)
+//
+//   spanda check examples/security/remote_signed_kill_switch.sd
+//   spanda verify examples/security/remote_signed_kill_switch.sd --health
+//   spanda sim ... --trigger-kill-switch EmergencyStop   # fails without signature JSON
+//
+// Docs: docs/kill-switch.md, docs/verification-diagnostics.md
+
+kill_switch EmergencyStop {
+    priority: critical;
+    remote_signed;
+    action {
+        stop_all_actuators();
+        enter emergency_mode;
+    }
+}
+
+robot Rover {
+    identity RobotIdentity {
+        id: "rover-1";
+        public_key: "demo-key";
+    }
+    actuator wheels: DifferentialDrive;
+
+    safety {
+        max_speed = 1.0 m/s;
+    }
+
+    on kill_switch EmergencyStop {
+        stop_all_actuators();
+    }
+
+    behavior run() {
+        wheels.stop();
+    }
+}

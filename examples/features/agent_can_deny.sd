@@ -1,0 +1,35 @@
+// Feature: empty agent can[] default-deny for propose_motion (Phase 32)
+//
+//   spanda check examples/features/agent_can_deny.sd
+//   spanda run examples/features/agent_can_deny.sd   # expect runtime capability denial
+//
+// Docs: docs/agentic-programming.md, docs/typed-handler-io.md
+
+robot DenyRover {
+    sensor lidar: Lidar on "/scan";
+    ai_model planner: LLM {
+        provider: "mock";
+        model: "test";
+    }
+    actuator wheels: DifferentialDrive;
+
+    safety {
+        max_speed = 1.0 m/s;
+    }
+
+    agent Restricted {
+        uses planner;
+        can [];
+
+        plan {
+            let scan = lidar.read();
+            let proposal = planner.reason(prompt: "go", input: scan);
+            let action = safety.validate(proposal);
+            wheels.execute(action);
+        }
+    }
+
+    behavior run() {
+        Restricted.plan();
+    }
+}

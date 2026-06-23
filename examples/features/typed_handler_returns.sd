@@ -1,0 +1,39 @@
+// Feature: typed return annotations on behavior, task, trigger, and event handlers
+//
+//   spanda check examples/features/typed_handler_returns.sd
+//
+// Docs: docs/typed-handler-io.md
+
+robot TypedRover {
+    actuator wheels: DifferentialDrive;
+
+    safety {
+        max_speed = 1.0 m/s;
+    }
+
+    event Alert;
+
+    behavior status() -> Bool {
+        return true;
+    }
+
+    task Monitor every 50ms -> Bool {
+        return true;
+    }
+
+    every 100ms -> Bool {
+        return true;
+    }
+
+    when true -> Bool {
+        return true;
+    }
+
+    on Alert -> Bool {
+        return true;
+    }
+
+    behavior run() {
+        wheels.stop();
+    }
+}

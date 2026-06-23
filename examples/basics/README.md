@@ -19,6 +19,7 @@ Progressive Spanda examples from a minimal robot to full deployment workflows.
 | 09 | [09_behavior_contracts.sd](./09_behavior_contracts.sd) | `requires` / `ensures` on behaviors |
 | 10 | [10_state_machine.sd](./10_state_machine.sd) | `state_machine`, `enter StateName` |
 | 11 | [11_observe_and_fusion.sd](./11_observe_and_fusion.sd) | `observe { }`, `fusion.read()` |
+| 12 | [12_compile_fail_tests.sd](./12_compile_fail_tests.sd) | `expect_compile_error { }` — run with `spanda test` |
 
 Try each file:
 
@@ -34,6 +35,7 @@ spanda test examples/basics/07_in_language_tests.sd
 |------|--------|
 | [triggers_minimal.sd](../integration/triggers_minimal.sd) | Event triggers + periodic task |
 | [concurrency_minimal.sd](../integration/concurrency_minimal.sd) | `channel`, `spawn`, `select` |
+| [debugger_every.sd](../integration/debugger_every.sd) | DAP entry into `every` trigger bodies |
 | [verify_walkthrough.sd](../integration/verify_walkthrough.sd) | `hardware`, `deploy`, `verify { }` |
 
 ## Tier 3 — End-to-end scenarios (`end_to_end/`)
@@ -58,7 +60,8 @@ See [end_to_end/README.md](../end_to_end/README.md) for the full catalog.
 | `realtime/` | Deadlines, watchdogs, degraded modes |
 | `regex/` | Pattern triggers and validation |
 | `communication/` | Topics, services, fleet |
-| `hardware/` | Deploy and compatibility |
+| `hardware/` | Deploy, capabilities, health — [README](../hardware/README.md) |
+| `iot/` | IoT package dispatch — [README](../iot/README.md) |
 | `modules/` | Cross-file imports |
 | `types/` | Type-system snippets |
 | `std/` | Standard library samples |

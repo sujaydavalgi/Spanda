@@ -1,4 +1,12 @@
-// Capability verification example
+// Capability verification example (Phase 27 flagship)
+//
+//   spanda check examples/hardware/capability_verification.sd
+//   spanda check examples/hardware/capability_verification.sd --verification-json
+//   spanda verify examples/hardware/capability_verification.sd --health --capabilities --traceability
+//   spanda health robot examples/hardware/capability_verification.sd --json
+//   spanda sim examples/hardware/capability_verification.sd --inject-health-faults
+//
+// Docs: docs/capability-traceability.md, docs/health-checks.md, docs/kill-switch.md
 
 hardware RoverV1 {
     sensors [GPS, Lidar];
