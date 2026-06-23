@@ -67,15 +67,16 @@ function defaultDeployTarget(program: Program): string | undefined {
   const deployments = program.deployments ?? [];
   const first = deployments[0];
   if (!first || first.kind !== "DeployDecl") return undefined;
+  if (!first.targets?.length) return undefined;
   return first.targets[0];
 }
 
 function lineColumnForFactor(program: Program, factor: string): { line: number; column: number } {
-  const robot = program.robots[0];
-  const deploy = program.deployments[0];
-  const health = program.healthChecks[0];
-  const fleet = program.fleets[0];
-  const missionRobot = program.robots.find((r) => r.mission);
+  const robot = program.robots?.[0];
+  const deploy = program.deployments?.[0];
+  const health = program.healthChecks?.[0];
+  const fleet = program.fleets?.[0];
+  const missionRobot = program.robots?.find((r) => r.mission);
   if (factor === "Health" && health) {
     return { line: health.span.start.line, column: health.span.start.column };
   }
@@ -155,7 +156,7 @@ export function evaluateReadinessTs(
   const issues: ReadinessIssue[] = [];
   const factors: ReadinessFactorScore[] = [];
 
-  const hwErrors = hw.items.filter((i: { severity: string }) => i.severity === "error");
+  const hwErrors = hw.items.filter((i) => i.severity === "error");
   const hwScore = hw.compatible && hwErrors.length === 0 ? 100 : hw.compatible ? 85 : 40;
   factors.push(factorRow("Hardware", hwScore, weightFor("Hardware")));
   for (const item of hwErrors) {
