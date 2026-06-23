@@ -26,7 +26,7 @@ import {
   type VerifyResult,
 } from "../rust-bridge.js";
 import { securityCheck, securityAudit, reportHasErrors } from "../security/index.js";
-import { evaluateReadinessSource } from "../readiness.js";
+import { evaluateAgentReadinessJson, evaluateReadinessSource } from "../readiness.js";
 import {
   applyRollout,
   buildDeployPlan,
@@ -1828,7 +1828,16 @@ function handleReadinessNative(
   const target = typeof flags.get("target") === "string" ? (flags.get("target") as string) : undefined;
   const includeRuntime = flags.has("runtime") || flags.has("inject-health-faults");
   const injectHealthFaults = flags.has("inject-health-faults");
-  const report = evaluateReadinessSource(source, { target, includeRuntime, injectHealthFaults });
+  const options = { target, includeRuntime, injectHealthFaults };
+
+  if (flags.has("agent-json")) {
+    const body = evaluateAgentReadinessJson(source, options);
+    console.log(body);
+    const parsed = JSON.parse(body) as { mission_ready?: boolean };
+    process.exit(parsed.mission_ready ? 0 : 1);
+  }
+
+  const report = evaluateReadinessSource(source, options);
   if (flags.has("json")) {
     console.log(JSON.stringify(report, null, 2));
   } else {

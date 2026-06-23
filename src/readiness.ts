@@ -188,6 +188,34 @@ export function evaluateReadinessSource(
   return evaluateReadinessTs(program, options);
 }
 
+/** Agent-shaped readiness JSON (`GET /v1/readiness` envelope). */
+export function evaluateAgentReadinessJson(
+  source: string,
+  options: ReadinessOptions = {},
+): string {
+  // Build the same JSON payload deploy and fleet agents return over HTTP.
+  //
+  // Parameters:
+  // - `source` — deployed `.sd` program text
+  // - `options` — target, runtime, and fault-injection flags
+  //
+  // Returns:
+  // JSON string `{"ok":true,"mission_ready":...,"readiness":...}`.
+  //
+  // Options:
+  // None.
+  //
+  // Example:
+  // const body = evaluateAgentReadinessJson(programText, { includeRuntime: true });
+
+  const report = evaluateReadinessSource(source, options);
+  return JSON.stringify({
+    ok: true,
+    mission_ready: report.mission_ready,
+    readiness: report,
+  });
+}
+
 /** Map readiness issues to verification-style diagnostics for LSP/check JSON. */
 export function readinessDiagnostics(
   source: string,

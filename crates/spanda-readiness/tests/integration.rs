@@ -3,9 +3,10 @@
 use spanda_lexer::tokenize;
 use spanda_parser::parse;
 use spanda_readiness::{
-    analyze_failure, audit_program, build_runtime_context, evaluate_fleet_readiness,
-    evaluate_readiness, evaluate_readiness_with_runtime, readiness_options_from_flags,
-    readiness_traceability, verify_approvals, verify_fleet, verify_mission, ReadinessOptions,
+    analyze_failure, audit_program, build_runtime_context, evaluate_agent_readiness_json,
+    evaluate_fleet_readiness, evaluate_readiness, evaluate_readiness_with_runtime,
+    readiness_options_from_flags, readiness_traceability, verify_approvals, verify_fleet,
+    verify_mission, ReadinessOptions,
 };
 
 fn parse_source(source: &str) -> spanda_ast::nodes::Program {
@@ -50,6 +51,16 @@ robot GateBot {
 "#;
 
 const FLEET: &str = include_str!("../../../examples/showcase/fleet_readiness/warehouse.sd");
+
+#[test]
+fn agent_readiness_json_matches_http_envelope() {
+    let json =
+        evaluate_agent_readiness_json(ROVER, None, false, false).expect("agent readiness json");
+    let value: serde_json::Value = serde_json::from_str(&json).expect("parse json");
+    assert_eq!(value.get("ok").and_then(|v| v.as_bool()), Some(true));
+    assert!(value.get("mission_ready").is_some());
+    assert!(value.get("readiness").is_some());
+}
 
 #[test]
 fn readiness_engine_produces_score() {

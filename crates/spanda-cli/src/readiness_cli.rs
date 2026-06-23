@@ -18,6 +18,7 @@ struct ParsedReadinessCli {
     format: ReportFormat,
     file: String,
     options: ReadinessOptions,
+    agent_json: bool,
 }
 
 fn read_file(path: &str) -> String {
@@ -57,11 +58,16 @@ fn parse_readiness_cli(args: &[String]) -> ParsedReadinessCli {
     let mut inject_health_faults = false;
     let mut simulate = false;
     let mut strict = false;
+    let mut agent_json = false;
     let mut file: Option<String> = None;
     let mut i = 0usize;
     while i < args.len() {
         match args[i].as_str() {
-            "--json" | "--markdown" | "--html" => {}
+            "--json" | "--markdown" | "--html" | "--agent-json" => {
+                if args[i].as_str() == "--agent-json" {
+                    agent_json = true;
+                }
+            }
             "--target" => {
                 i += 1;
                 if i >= args.len() {
@@ -103,6 +109,7 @@ fn parse_readiness_cli(args: &[String]) -> ParsedReadinessCli {
         format,
         file,
         options,
+        agent_json,
     }
 }
 
@@ -116,10 +123,34 @@ fn evaluate_with_options(
     evaluate_readiness_with_runtime(program, options, runtime.as_ref())
 }
 
-/// `spanda readiness <file.sd> [--target T] [--runtime] [--inject-health-faults] [--json]`
+/// `spanda readiness <file.sd> [--target T] [--runtime] [--inject-health-faults] [--json|--agent-json]`
 pub fn cmd_readiness(args: &[String]) {
     let parsed = parse_readiness_cli(args);
     let source = read_file(&parsed.file);
+
+    // Emit the same JSON envelope as deploy/fleet `GET /v1/readiness`.
+    if parsed.agent_json {
+        let body = evaluate_agent_readiness_json(
+            &source,
+            parsed.options.target.as_deref(),
+            parsed.options.include_runtime,
+            parsed.options.inject_health_faults,
+        )
+        .unwrap_or_else(|e| {
+            eprintln!("{e}");
+            process::exit(1);
+        });
+        println!("{body}");
+        let mission_ready = serde_json::from_str::<serde_json::Value>(&body)
+            .ok()
+            .and_then(|value| value.get("mission_ready").and_then(|m| m.as_bool()))
+            .unwrap_or(false);
+        if !mission_ready {
+            process::exit(1);
+        }
+        return;
+    }
+
     let program = parse_program(&source);
     let report = evaluate_with_options(&program, &parsed.options);
     println!("{}", format_readiness(&report, parsed.format));
@@ -321,11 +352,43 @@ pub fn cmd_verify_approval(args: &[String]) {
     }
 }
 
+/// Agent-shaped readiness JSON for CLI and service mirrors (`GET /v1/readiness`).
+pub fn evaluate_agent_readiness_json(
+    source: &str,
+    target: Option<&str>,
+    include_runtime: bool,
+    inject_health_faults: bool,
+) -> Result<String, String> {
+    // Delegate to the shared readiness crate used by deploy and fleet agents.
+    //
+    // Parameters:
+    // - `source` — deployed `.sd` program text
+    // - `target` — optional hardware/deploy profile override
+    // - `include_runtime` — fold live runtime health into the score
+    // - `inject_health_faults` — simulate degraded sensors (requires runtime)
+    //
+    // Returns:
+    // JSON `{"ok":true,"mission_ready":...,"readiness":...}` or an error string.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // let body = evaluate_agent_readiness_json(program, Some("RoverV1"), true, false)?;
+
+    spanda_readiness::evaluate_agent_readiness_json(
+        source,
+        target,
+        include_runtime,
+        inject_health_faults,
+    )
+}
+
 /// Top-level readiness dispatch for subcommands.
 pub fn readiness_dispatch(args: &[String]) {
     if args.is_empty() {
         eprintln!(
-            "Usage: spanda readiness <file.sd> [--target <profile>] [--runtime] [--inject-health-faults] [--json|--markdown|--html]"
+            "Usage: spanda readiness <file.sd> [--target <profile>] [--runtime] [--inject-health-faults] [--json|--agent-json|--markdown|--html]"
         );
         process::exit(1);
     }

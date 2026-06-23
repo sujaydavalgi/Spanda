@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Readiness gap closure (phases 1–4):** `--target`, `--runtime`, and `--inject-health-faults` on `spanda readiness`; `spanda check --readiness-json` for IDE diagnostics; `spanda demo readiness`; bundled showcase examples synced to the CLI crate.
+- **Readiness gap closure (phases 1–4):** `--target`, `--runtime`, `--inject-health-faults`, and `--agent-json` on `spanda readiness`; `spanda check --readiness-json` for IDE diagnostics; `spanda demo readiness`; bundled showcase examples synced to the CLI crate.
 - **Agent readiness API:** `GET /v1/readiness` on deploy and fleet agents (`?runtime=true`, `?inject_health_faults=true`); TypeScript CLI fallback via `src/readiness.ts` when the native binary is unavailable.
 - **Operations dashboard:** `packages/web` Operations view with local readiness scoring and live agent fetch.
 - **LSP readiness diagnostics:** readiness issues surface in the language server via native CLI or TypeScript fallback.

@@ -14,6 +14,7 @@ spanda readiness examples/showcase/readiness/rover.sd --target RoverV1
 spanda readiness examples/showcase/readiness/rover.sd --runtime
 spanda readiness examples/showcase/readiness/rover.sd --runtime --inject-health-faults
 spanda readiness examples/showcase/readiness/rover.sd --json
+spanda readiness examples/showcase/readiness/rover.sd --agent-json
 spanda check examples/showcase/readiness/rover.sd --readiness-json --json
 spanda demo readiness
 ```
@@ -23,6 +24,7 @@ spanda demo readiness
 - **`--runtime`** — evaluate against live hardware monitor signals (health checks use runtime fault/event state).
 - **`--inject-health-faults`** — simulate degraded sensors for what-if analysis (pairs with `--runtime`).
 - **`GET /v1/readiness`** on deploy and fleet agents; query `runtime=true` and `inject_health_faults=true` for on-device evaluation.
+- **`--agent-json`** on `spanda readiness` — same JSON envelope as agent `GET /v1/readiness` (for scripts, CI, and local parity checks).
 - **Web playground** — switch to **Operations** view in `packages/web` for local scoring or agent fetch.
 
 Example output:
