@@ -114,11 +114,9 @@ fn clear_agent_deployment_on_identity_change(state: &mut AgentState, new_target:
 
 fn query_flag(path: &str, key: &str) -> bool {
     path.split('?').nth(1).is_some_and(|query| {
-        query.split('&').any(|pair| {
-            pair == key
-                || pair == format!("{key}=true")
-                || pair == format!("{key}=1")
-        })
+        query
+            .split('&')
+            .any(|pair| pair == key || pair == format!("{key}=true") || pair == format!("{key}=1"))
     })
 }
 
