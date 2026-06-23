@@ -116,6 +116,45 @@ pub fn agent_health(entry: &FleetAgentEntry) -> Result<bool, String> {
     Ok(body.get("ok").and_then(|v| v.as_bool()).unwrap_or(false))
 }
 
+/// Fetch live readiness report from a fleet agent (`GET /v1/readiness`).
+pub fn agent_readiness(
+    entry: &FleetAgentEntry,
+    runtime: bool,
+    inject_health_faults: bool,
+) -> Result<serde_json::Value, String> {
+    let mut url = agent_endpoint(&entry.url, "/v1/readiness")?;
+    let mut query = Vec::new();
+    if runtime {
+        query.push("runtime=true");
+    }
+    if inject_health_faults {
+        query.push("inject_health_faults=true");
+    }
+    if !query.is_empty() {
+        url.push('?');
+        url.push_str(&query.join("&"));
+    }
+    let response = http_request("GET", &url, None, entry.token.as_deref())?;
+    decode_response(response)
+}
+
+/// Push program source to a fleet agent (`POST /v1/program`).
+pub fn agent_upload_program(entry: &FleetAgentEntry, program: &str) -> Result<(), String> {
+    let url = agent_endpoint(&entry.url, "/v1/program")?;
+    let payload = serde_json::json!({ "program": program }).to_string();
+    let response = http_request("POST", &url, Some(&payload), entry.token.as_deref())?;
+    let body: serde_json::Value = decode_response(response)?;
+    if body.get("ok").and_then(|v| v.as_bool()).unwrap_or(false) {
+        Ok(())
+    } else {
+        Err(body
+            .get("error")
+            .and_then(|v| v.as_str())
+            .unwrap_or("program upload failed")
+            .to_string())
+    }
+}
+
 pub fn relay_peer_delivery(
     entry: &FleetAgentEntry,
     delivery: &PeerDelivery,

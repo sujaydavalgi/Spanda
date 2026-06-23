@@ -127,6 +127,28 @@ pub fn agent_health(entry: &DeployAgentEntry) -> Result<bool, String> {
     Ok(body.get("ok").and_then(|v| v.as_bool()).unwrap_or(false))
 }
 
+/// Fetch live readiness report from a deploy agent (`GET /v1/readiness`).
+pub fn agent_readiness(
+    entry: &DeployAgentEntry,
+    runtime: bool,
+    inject_health_faults: bool,
+) -> Result<serde_json::Value, String> {
+    let mut url = agent_endpoint(&entry.url, "/v1/readiness")?;
+    let mut query = Vec::new();
+    if runtime {
+        query.push("runtime=true");
+    }
+    if inject_health_faults {
+        query.push("inject_health_faults=true");
+    }
+    if !query.is_empty() {
+        url.push('?');
+        url.push_str(&query.join("&"));
+    }
+    let response = http_request("GET", &url, None, entry.token.as_deref())?;
+    decode_response(response)
+}
+
 pub fn agent_status(entry: &DeployAgentEntry) -> Result<AgentStatusResponse, String> {
     let url = agent_endpoint(&entry.url, "/v1/status")?;
     let response = http_request("GET", &url, None, entry.token.as_deref())?;

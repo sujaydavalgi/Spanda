@@ -17,6 +17,7 @@ rustls = { version = "0.23", default-features = false, features = ["ring", "std"
 spanda-audit = { path = "../spanda-audit" }
 spanda-ast = { path = "../spanda-ast" }
 spanda-deploy-http = { path = "../spanda-deploy-http" }
+spanda-readiness = { path = "../spanda-readiness" }
 
 [dev-dependencies]
 spanda-driver = { path = "../spanda-driver" }

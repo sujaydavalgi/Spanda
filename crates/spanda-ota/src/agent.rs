@@ -112,6 +112,18 @@ fn clear_agent_deployment_on_identity_change(state: &mut AgentState, new_target:
     }
 }
 
+fn query_flag(path: &str, key: &str) -> bool {
+    path.split('?').nth(1).is_some_and(|query| {
+        query.split('&').any(|pair| {
+            pair == key || pair == &format!("{key}=true") || pair == &format!("{key}=1")
+        })
+    })
+}
+
+fn readiness_path_base(path: &str) -> &str {
+    path.split('?').next().unwrap_or(path)
+}
+
 pub fn handle_agent_request(state: &mut AgentState, request: HttpRequest) -> HttpResponse {
     // Route deploy agent protocol requests to local state transitions.
     if unauthorized(&request, state) {
@@ -121,11 +133,38 @@ pub fn handle_agent_request(state: &mut AgentState, request: HttpRequest) -> Htt
         };
     }
 
-    match (request.method.as_str(), request.path.as_str()) {
+    match (request.method.as_str(), readiness_path_base(&request.path)) {
         ("GET", "/v1/health") => HttpResponse {
             status: 200,
             body: r#"{"ok":true,"agent":"spanda-deploy-agent","version":"0.1.0"}"#.into(),
         },
+        ("GET", "/v1/readiness") => {
+            let Some(program) = state.program.as_deref() else {
+                return HttpResponse {
+                    status: 503,
+                    body: r#"{"ok":false,"error":"no program deployed on agent"}"#.into(),
+                };
+            };
+            let target = if state.target.is_empty() {
+                None
+            } else {
+                Some(state.target.as_str())
+            };
+            let include_runtime = query_flag(&request.path, "runtime");
+            let inject = query_flag(&request.path, "inject_health_faults");
+            match spanda_readiness::evaluate_agent_readiness_json(
+                program,
+                target,
+                include_runtime,
+                inject,
+            ) {
+                Ok(body) => HttpResponse { status: 200, body },
+                Err(err) => HttpResponse {
+                    status: 500,
+                    body: format!(r#"{{"ok":false,"error":"{err}"}}"#),
+                },
+            }
+        }
         ("GET", "/v1/status") => HttpResponse {
             status: 200,
             body: serde_json::to_string(&serde_json::json!({

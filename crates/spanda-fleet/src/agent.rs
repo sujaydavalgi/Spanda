@@ -23,6 +23,8 @@ pub struct FleetAgentState {
     #[serde(default)]
     pub token: Option<String>,
     #[serde(default)]
+    pub program: Option<String>,
+    #[serde(default)]
     pub last_peer_messages: Vec<String>,
 }
 
@@ -70,6 +72,21 @@ fn clear_fleet_agent_on_identity_change(state: &mut FleetAgentState, new_robot_n
     }
 }
 
+fn query_flag(path: &str, key: &str) -> bool {
+    path.split('?').nth(1).is_some_and(|query| {
+        query.split('&').any(|pair| {
+            pair == key
+                || pair == format!("{key}=true")
+                || pair == format!("{key}=1")
+                || pair.starts_with(&format!("{key}=true"))
+        })
+    })
+}
+
+fn readiness_path_base(path: &str) -> &str {
+    path.split('?').next().unwrap_or(path)
+}
+
 pub fn handle_fleet_agent_request(
     state: &mut FleetAgentState,
     request: HttpRequest,
@@ -82,17 +99,59 @@ pub fn handle_fleet_agent_request(
         };
     }
 
-    match (request.method.as_str(), request.path.as_str()) {
+    match (request.method.as_str(), readiness_path_base(&request.path)) {
         ("GET", "/v1/health") => HttpResponse {
             status: 200,
             body: r#"{"ok":true,"agent":"spanda-fleet-agent","version":"0.1.0"}"#.into(),
         },
+        ("GET", "/v1/readiness") => {
+            let Some(program) = state.program.as_deref() else {
+                return HttpResponse {
+                    status: 503,
+                    body: r#"{"ok":false,"error":"no program deployed on fleet agent"}"#.into(),
+                };
+            };
+            let include_runtime = query_flag(&request.path, "runtime");
+            let inject = query_flag(&request.path, "inject_health_faults");
+            match spanda_readiness::evaluate_agent_readiness_json(
+                program,
+                Some(&state.robot_name),
+                include_runtime,
+                inject,
+            ) {
+                Ok(body) => HttpResponse { status: 200, body },
+                Err(err) => HttpResponse {
+                    status: 500,
+                    body: format!(r#"{{"ok":false,"error":"{err}"}}"#),
+                },
+            }
+        }
+        ("POST", "/v1/program") => {
+            let Ok(payload) = serde_json::from_str::<serde_json::Value>(&request.body) else {
+                return HttpResponse {
+                    status: 400,
+                    body: r#"{"ok":false,"error":"invalid program payload"}"#.into(),
+                };
+            };
+            let Some(program) = payload.get("program").and_then(|v| v.as_str()) else {
+                return HttpResponse {
+                    status: 400,
+                    body: r#"{"ok":false,"error":"program field required"}"#.into(),
+                };
+            };
+            state.program = Some(program.to_string());
+            HttpResponse {
+                status: 200,
+                body: r#"{"ok":true}"#.into(),
+            }
+        }
         ("GET", "/v1/status") => HttpResponse {
             status: 200,
             body: serde_json::to_string(&serde_json::json!({
                 "ok": true,
                 "robot_name": state.robot_name,
                 "last_peer_messages": state.last_peer_messages,
+                "has_program": state.program.is_some(),
                 "healthy": true,
             }))
             .unwrap_or_else(|_| "{}".into()),

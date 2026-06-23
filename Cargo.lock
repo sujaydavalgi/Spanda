@@ -1372,12 +1372,13 @@ dependencies = [
 name = "spanda-certify"
 version = "0.4.0"
 dependencies = [
+ "hex",
  "serde",
+ "sha2",
  "spanda-ast",
  "spanda-driver",
  "spanda-error",
  "spanda-hardware",
- "spanda-ota",
 ]
 
 [[package]]
@@ -1577,6 +1578,7 @@ dependencies = [
  "spanda-ast",
  "spanda-deploy-http",
  "spanda-driver",
+ "spanda-readiness",
  "spanda-runtime",
 ]
 
@@ -1723,6 +1725,7 @@ dependencies = [
  "spanda-audit",
  "spanda-deploy-http",
  "spanda-driver",
+ "spanda-readiness",
 ]
 
 [[package]]
@@ -1781,8 +1784,8 @@ dependencies = [
  "spanda-ast",
  "spanda-capability",
  "spanda-certify",
- "spanda-driver",
  "spanda-error",
+ "spanda-hal",
  "spanda-hardware",
  "spanda-lexer",
  "spanda-parser",
