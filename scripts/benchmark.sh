@@ -11,7 +11,7 @@ RUNS="${BENCH_RUNS:-5}"
 
 if [[ ! -x "${SPANDA}" ]]; then
   echo "Building spanda CLI…"
-  cargo build -p spanda-cli --release
+  cargo build -p spanda --release
   SPANDA="${ROOT}/target/release/spanda"
 fi
 

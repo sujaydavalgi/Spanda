@@ -5,7 +5,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SOURCE="${ROOT}/examples/showcase/world_model_patrol.sd"
 
-cargo build -p spanda-cli --release --quiet --target-dir "${ROOT}/target"
+cargo build -p spanda --release --quiet --target-dir "${ROOT}/target"
 SPANDA="${ROOT}/target/release/spanda"
 
 echo "== check world_model_patrol showcase =="

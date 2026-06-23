@@ -1,0 +1,43 @@
+// Health monitoring showcase — robot health checks + fault injection
+//
+//   spanda check examples/showcase/health_monitoring/rover.sd
+//   spanda health robot examples/showcase/health_monitoring/rover.sd --json
+//   spanda sim examples/showcase/health_monitoring/rover.sd --inject-health-faults
+
+robot PatrolRover {
+  sensor gps: GPS;
+  sensor lidar: Lidar;
+  actuator wheels: DifferentialDrive;
+
+  safety {
+    max_speed = 0.8 m/s;
+    stop_if lidar.nearest_distance < 0.5 m;
+  }
+
+  mode caution_mode { wheels.drive(linear: 0.1 m/s, angular: 0.0 rad/s); }
+  mode degraded_mode { wheels.stop(); }
+
+  every 50ms {
+    let scan = lidar.read();
+    let _ = scan;
+  }
+
+  behavior patrol() {
+    loop every 100ms {
+      wheels.drive(linear: 0.3 m/s, angular: 0.0 rad/s);
+    }
+  }
+}
+
+health_check RoverHealth for robot PatrolRover {
+  check gps.status == Healthy;
+  check lidar.status == Healthy;
+  check wheels.status == Healthy;
+}
+
+health_policy RoverPolicy {
+  on Degraded { enter caution_mode; }
+  on Critical { enter degraded_mode; }
+  on Failed { emergency_stop; }
+  on Unsafe { emergency_stop; }
+}

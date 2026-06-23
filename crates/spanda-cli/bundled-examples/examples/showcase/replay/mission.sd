@@ -1,0 +1,38 @@
+// Replay showcase — record a mission trace and play it back
+//
+// Record:
+//   spanda sim examples/showcase/replay/mission.sd --record
+//
+// Replay:
+//   spanda replay examples/showcase/replay/mission.trace
+//   spanda replay examples/showcase/replay/mission.trace --deterministic
+
+robot ReplayPatrol {
+  sensor lidar: Lidar on "/scan";
+  actuator wheels: DifferentialDrive;
+
+  twin Shadow {
+    replay true;
+    mirror pose;
+  }
+
+  safety {
+    max_speed = 0.8 m/s;
+    stop_if lidar.nearest_distance < 0.5 m;
+  }
+
+  task sense every 20ms {
+    let scan = lidar.read();
+    let _ = scan;
+  }
+
+  behavior patrol() {
+    loop every 50ms {
+      wheels.drive(linear: 0.3 m/s, angular: 0.0 rad/s);
+    }
+  }
+}
+
+simulate_compatibility {
+  fault LidarFailure;
+}

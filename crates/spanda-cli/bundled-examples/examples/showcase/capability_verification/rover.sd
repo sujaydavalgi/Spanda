@@ -1,0 +1,55 @@
+// Capability verification showcase — exposure, traceability, minimum hardware
+//
+//   spanda check examples/showcase/capability_verification/rover.sd
+//   spanda verify examples/showcase/capability_verification/rover.sd --capabilities --traceability
+//   spanda health robot examples/showcase/capability_verification/rover.sd --json
+
+hardware RoverV1 {
+  sensors [ GPS, Lidar ];
+  actuators [ DifferentialDrive ];
+  connectivity [ WiFi, LTE ];
+}
+
+requires_capability gps_navigation {
+  any_of sensors [ GPS, GNSS ];
+  any_of actuators [ DifferentialDrive ];
+}
+
+robot Rover {
+  uses hardware RoverV1;
+  sensor gps: GPS;
+  sensor lidar: Lidar;
+  actuator wheels: DifferentialDrive;
+
+  exposes capabilities [
+    autonomous_navigation,
+    gps_navigation,
+    obstacle_avoidance,
+    telemetry_streaming
+  ];
+
+  mission Patrol {
+    requires capabilities [ gps_navigation, obstacle_avoidance ];
+    patrol_loop;
+  }
+
+  behavior patrol_loop() {
+    loop every 100ms {
+      let scan = lidar.read();
+      let _ = scan;
+      wheels.drive(linear: 0.2 m/s, angular: 0.0 rad/s);
+    }
+  }
+}
+
+health_check RoverHealth for robot Rover {
+  check gps.status == Healthy;
+  check wheels.emergency_stop_supported == true;
+}
+
+health_policy SafetyPolicy {
+  on Critical { enter degraded_mode; }
+  on Unsafe { emergency_stop; }
+}
+
+deploy Rover to RoverV1;

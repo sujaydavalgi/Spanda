@@ -19,7 +19,7 @@ if [[ -n "${SPANDA_BIN:-}" && -x "${SPANDA_BIN}" ]]; then
 elif [[ -x "$ROOT/target/release/spanda" ]]; then
   SPANDA=("$ROOT/target/release/spanda")
 else
-  SPANDA=(cargo run -q -p spanda-cli --)
+  SPANDA=(cargo run -q -p spanda --)
 fi
 
 declare -a CHECKED_PROJECT_PATHS=()

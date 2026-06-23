@@ -26,7 +26,7 @@ if ! python3 -c "import rclpy" 2>/dev/null; then
 fi
 
 echo "== build spanda-cli with live-transport =="
-cargo build -p spanda-cli --release --features live-transport
+cargo build -p spanda --release --features live-transport
 SPANDA="${ROOT}/target/release/spanda"
 
 echo "== check ros2 cmd_vel ping example =="

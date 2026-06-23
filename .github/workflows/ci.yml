@@ -32,7 +32,7 @@ jobs:
       - run: cargo build -p spanda-core --no-default-features
       - run: cargo run -q -p spanda-package --bin registry-index-maintain -- --verify
       - run: cargo test --workspace
-      - run: cargo build -p spanda-cli --release
+      - run: cargo build -p spanda --release
       - run: chmod +x scripts/check_all_examples.sh
       - run: SPANDA_BIN=${{ github.workspace }}/target/release/spanda ./scripts/check_all_examples.sh
 
@@ -52,7 +52,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: cargo build -p spanda-cli --release
+      - run: cargo build -p spanda --release
       - run: chmod +x examples/robotics/golden_path_deploy.sh
       - run: ./examples/robotics/golden_path_deploy.sh
         env:
@@ -77,7 +77,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: cargo build -p spanda-cli --release
+      - run: cargo build -p spanda --release
       - run: chmod +x scripts/twin_cloud_golden_path.sh
       - run: ./scripts/twin_cloud_golden_path.sh
         env:
@@ -130,7 +130,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: cargo build -p spanda-cli --release
+      - run: cargo build -p spanda --release
       - run: chmod +x scripts/ledger_golden_path.sh
       - run: ./scripts/ledger_golden_path.sh
         env:
@@ -143,7 +143,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: cargo build -p spanda-cli --release
+      - run: cargo build -p spanda --release
       - run: chmod +x scripts/self_host_lexer_golden_path.sh
       - run: ./scripts/self_host_lexer_golden_path.sh
         env:
@@ -156,7 +156,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: cargo build -p spanda-cli --release
+      - run: cargo build -p spanda --release
       - run: chmod +x scripts/world_model_golden_path.sh
       - run: ./scripts/world_model_golden_path.sh
         env:
@@ -169,7 +169,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: cargo build -p spanda-cli --release
+      - run: cargo build -p spanda --release
       - run: chmod +x scripts/killer_demo_golden_path.sh
       - run: ./scripts/killer_demo_golden_path.sh
         env:
@@ -182,7 +182,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: cargo build -p spanda-cli --release
+      - run: cargo build -p spanda --release
       - run: chmod +x scripts/showcase_smoke.sh
       - run: ./scripts/showcase_smoke.sh
         env:
@@ -195,11 +195,24 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: cargo build -p spanda-cli --release
+      - run: cargo build -p spanda --release
       - run: chmod +x scripts/live_ai_golden_path.sh
       - run: ./scripts/live_ai_golden_path.sh
         env:
           PATH: ${{ github.workspace }}/target/release:${{ env.PATH }}
+
+  live-iot-golden-path:
+    runs-on: ubuntu-latest
+    needs: rust
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: chmod +x scripts/live_iot_golden_path.sh
+      - run: ./scripts/live_iot_golden_path.sh
 
   registry-golden-path:
     runs-on: ubuntu-latest
@@ -208,7 +221,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: cargo build -p spanda-cli --release
+      - run: cargo build -p spanda --release
       - run: chmod +x scripts/registry_golden_path.sh
       - run: ./scripts/registry_golden_path.sh
         env:
@@ -221,7 +234,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: cargo build -p spanda-cli --release
+      - run: cargo build -p spanda --release
       - run: chmod +x scripts/ci_verify_golden_path.sh
       - run: ./scripts/ci_verify_golden_path.sh
         env:
@@ -308,7 +321,7 @@ jobs:
           cache: npm
       - uses: dtolnay/rust-toolchain@stable
       - run: npm ci
-      - run: cargo build -p spanda-cli --release
+      - run: cargo build -p spanda --release
       - run: npm run build --workspace=@spanda/lsp
       - run: npm test -- tests/lsp.test.ts
 

@@ -10,7 +10,7 @@ UNSAFE="${ROOT}/examples/showcase/ai_safety_violation.sd"
 SAFE="${ROOT}/examples/showcase/killer_demo.sd"
 
 if [[ ! -x "${SPANDA}" ]]; then
-  cargo build -p spanda-cli --release
+  cargo build -p spanda --release
   SPANDA="${ROOT}/target/release/spanda"
 fi
 

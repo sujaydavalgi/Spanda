@@ -87,7 +87,7 @@ pub fn deploy_usage_lines() -> &'static str {
      spanda deploy agent start [--bind <addr>] [--target <Robot@Hardware>] [--token <t>] [--tls-cert <pem>] [--tls-key <pem>] [--require-hash] [--require-signature] [--require-certify] [--trust-key <material>]\n\
      spanda deploy agent register <Robot@Hardware> <http(s)://host:port> [--token <t>]\n\
      spanda deploy agent list [--json]\n\
-     spanda deploy --target wasm [--out <file.json>] <file.sd>"
+     spanda deploy --target wasm|native [--out <file>] [--target-triple <triple>] [--hal-profile <name>] <file.sd>"
 }
 
 fn usage() {

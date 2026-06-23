@@ -15,7 +15,7 @@ if ! command -v clang >/dev/null 2>&1; then
   exit 0
 fi
 
-cargo build -p spanda-cli --release --features llvm
+cargo build -p spanda --release --features llvm
 "${SPANDA}" check "${SOURCE}"
 "${SPANDA}" llvm-ir "${SOURCE}" --target-triple "${TRIPLE}" --out "${OUT}.ll"
 test -f "${OUT}.ll"

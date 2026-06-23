@@ -37,7 +37,7 @@ MOSQUITTO_PID=$!
 sleep 1
 
 echo "== build spanda-cli with live-mqtt =="
-cargo build -p spanda-cli --release --features live-mqtt
+cargo build -p spanda --release --features live-mqtt
 SPANDA="${ROOT}/target/release/spanda"
 
 echo "== check mqtt_live example =="

@@ -1,0 +1,25 @@
+// Safe path: ActionProposal → safety.validate() → SafeAction → actuator
+// Run: spanda check examples/showcase/unsafe_ai/safe.sd
+
+robot SafeBot {
+  sensor lidar: Lidar on "/scan";
+  actuator wheels: DifferentialDrive;
+
+  ai_model planner: LLM {
+    provider: "mock";
+    model: "safe-planner";
+    temperature: 0.0;
+  }
+
+  safety {
+    max_speed = 0.5 m/s;
+    stop_if lidar.nearest_distance < 0.5 m;
+  }
+
+  behavior patrol() {
+    let scan = lidar.read();
+    let proposal = planner.reason(prompt: "Drive safely", input: scan);
+    let action = safety.validate(proposal);
+    wheels.execute(action);
+  }
+}

@@ -5,7 +5,7 @@ cd "$ROOT"
 export CARGO_TARGET_DIR="${CARGO_TARGET_DIR:-$ROOT/target}"
 
 echo "Building spanda-core + spanda-cli (target: $CARGO_TARGET_DIR)..."
-cargo build -p spanda-cli --release
+cargo build -p spanda --release
 
 echo "Building spanda-node (N-API)..."
 if command -v npm >/dev/null 2>&1; then

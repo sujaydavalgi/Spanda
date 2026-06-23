@@ -6,6 +6,15 @@ use std::env;
 use std::path::{Path, PathBuf};
 use std::process::{self, Command};
 
+fn bundled_examples_root() -> Option<PathBuf> {
+    let bundled = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("bundled-examples");
+    if bundled.join("examples/showcase/README.md").is_file() {
+        Some(bundled)
+    } else {
+        None
+    }
+}
+
 fn repo_root() -> PathBuf {
     // Resolve the Spanda repository root for bundled showcase examples.
     //
@@ -13,13 +22,17 @@ fn repo_root() -> PathBuf {
     // None.
     //
     // Returns:
-    // Path to repo root, or current working directory if not found.
+    // Path to repo root, or bundled examples root, or current working directory.
     //
     // Options:
     // Honors `SPANDA_ROOT` when set.
     //
     // Example:
     // let root = repo_root();
+
+    if let Some(bundled) = bundled_examples_root() {
+        return bundled;
+    }
 
     if let Ok(root) = env::var("SPANDA_ROOT") {
         let path = PathBuf::from(root);

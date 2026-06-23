@@ -11,7 +11,7 @@ if ! command -v c++ >/dev/null 2>&1 && ! command -v g++ >/dev/null 2>&1; then
 fi
 
 echo "== build spanda-cli with cpp-native =="
-cargo build -p spanda-cli --release --features cpp-native
+cargo build -p spanda --release --features cpp-native
 SPANDA="${ROOT}/target/release/spanda"
 
 echo "== check ffi_cpp_extern example =="

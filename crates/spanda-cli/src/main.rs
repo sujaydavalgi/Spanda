@@ -4,6 +4,7 @@ mod certify_cli;
 mod demo_cli;
 mod deploy_ota;
 mod package;
+mod ros2_cli;
 mod swarm_cli;
 mod trace_cli;
 
@@ -52,7 +53,7 @@ fn run_options_for_file(file: &str, opts: RunOptions) -> RunOptions {
 #[cfg(not(feature = "llvm"))]
 fn llvm_unavailable() -> ! {
     eprintln!("LLVM commands require the `llvm` feature (enabled by default)");
-    eprintln!("Rebuild with: cargo build -p spanda-cli --features llvm");
+    eprintln!("Rebuild with: cargo build -p spanda --features llvm");
     process::exit(1);
 }
 
@@ -155,6 +156,8 @@ fn usage() {
            spanda compile-native [--out <binary>] [--target-triple <triple>] [--hal-profile <name>] <file.sd>\n\n\
          Demo commands:\n\
            spanda demo <rover|safety|verify|fleet|health>\n\n\
+         ROS 2 commands:\n\
+           spanda ros2 check [--json]\n\n\
          Package commands:\n\
            spanda init [name] [--description <text>]\n\
            spanda build [--project <dir>]\n\
@@ -1332,6 +1335,11 @@ fn main() {
     // Compute args for the following logic.
     let args: Vec<String> = env::args().collect();
 
+    if args.len() >= 2 && (args[1] == "--version" || args[1] == "-V") {
+        println!("spanda {}", env!("CARGO_PKG_VERSION"));
+        return;
+    }
+
     // Take the branch when len equals "--help" || args[1] == "-h".
     if args.len() < 2 || args[1] == "--help" || args[1] == "-h" {
         usage();
@@ -1341,6 +1349,18 @@ fn main() {
 
     if command == "demo" {
         demo_cli::demo_dispatch(&args[2..]);
+        let _ = io::stdout().flush();
+        return;
+    }
+
+    if command == "ros2" {
+        match args.get(2).map(String::as_str) {
+            Some("check") => ros2_cli::ros2_dispatch(&args[3..]),
+            _ => {
+                eprintln!("Usage: spanda ros2 check [--json]");
+                process::exit(1);
+            }
+        }
         let _ = io::stdout().flush();
         return;
     }
@@ -1979,14 +1999,54 @@ fn main() {
                 usage();
                 process::exit(1);
             });
-
-            // Take the branch when codegen target differs from Wasm.
-            if codegen_target != CodegenTarget::Wasm {
-                eprintln!("deploy currently supports --target wasm only");
-                process::exit(1);
-            }
             let source = read_source(&file);
 
+            if codegen_target == CodegenTarget::Native {
+                #[cfg(feature = "llvm")]
+                {
+                    match lower_to_sir(&source) {
+                        Ok(sir) => {
+                            let workspace = std::env::current_dir().unwrap_or_else(|_| ".".into());
+                            let output = out_path.map(std::path::PathBuf::from).unwrap_or_else(|| {
+                                workspace.join("target/spanda-native/spanda-program")
+                            });
+                            match compile_native(
+                                &sir,
+                                &CompileNativeOptions {
+                                    output,
+                                    clang: None,
+                                    workspace_root: workspace,
+                                    target_triple,
+                                    hal_profile,
+                                },
+                            ) {
+                                Ok(result) => {
+                                    println!("✓ wrote LLVM IR to {}", result.llvm_ir_path.display());
+                                    println!(
+                                        "✓ linked native binary to {}",
+                                        result.executable.display()
+                                    );
+                                }
+                                Err(e) => {
+                                    eprintln!("Native deploy failed: {e}");
+                                    process::exit(1);
+                                }
+                            }
+                        }
+                        Err(e) => {
+                            eprintln!("Error: {e}");
+                            process::exit(1);
+                        }
+                    }
+                }
+                #[cfg(not(feature = "llvm"))]
+                {
+                    llvm_unavailable();
+                }
+            } else if codegen_target != CodegenTarget::Wasm {
+                eprintln!("deploy supports --target wasm or --target native");
+                process::exit(1);
+            } else {
             // Match on wasm deploy manifest and handle each case.
             match wasm_deploy_manifest(&source) {
                 Ok(manifest) => {
@@ -2005,6 +2065,7 @@ fn main() {
                     eprintln!("Error: {e}");
                     process::exit(1);
                 }
+            }
             }
         }
         "ir" => {

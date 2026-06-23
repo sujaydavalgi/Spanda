@@ -23,7 +23,7 @@ export PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1
 cargo test -p spanda-bridge --features python-native native_py_add_when_available -- --nocapture
 
 echo "== build spanda-cli with python-native =="
-cargo build -p spanda-cli --release --features python-native
+cargo build -p spanda --release --features python-native
 SPANDA="${ROOT}/target/release/spanda"
 
 echo "== check and run ffi_python_extern (in-process) =="

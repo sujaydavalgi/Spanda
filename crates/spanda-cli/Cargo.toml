@@ -1,6 +1,12 @@
 [package]
-name = "spanda-cli"
+name = "spanda"
 version.workspace = true
+include = [
+    "src/**/*",
+    "bundled-examples/**/*",
+    "Cargo.toml",
+    "README.md",
+]
 edition.workspace = true
 repository.workspace = true
 license.workspace = true

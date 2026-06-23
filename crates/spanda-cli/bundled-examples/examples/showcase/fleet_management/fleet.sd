@@ -1,0 +1,65 @@
+// Fleet management showcase — fleet, health, communication, safety
+//
+//   spanda check examples/showcase/fleet_management/fleet.sd
+//   spanda fleet run examples/showcase/fleet_management/fleet.sd
+//   spanda verify examples/showcase/fleet_management/fleet.sd --health
+
+fleet Warehouse {
+  PickerA;
+  PickerB;
+}
+
+health_check FleetHealth for fleet Warehouse {
+  require at_least 80% robots Healthy;
+  require no robot Unsafe;
+}
+
+health_policy FleetPolicy {
+  on Critical { enter fleet_hold; }
+}
+
+robot PickerA {
+  sensor lidar: Lidar on "/scan";
+  actuator wheels: DifferentialDrive;
+
+  safety {
+    max_speed = 0.8 m/s;
+    stop_if lidar.nearest_distance < 0.5 m;
+  }
+
+  behavior pick() {
+    loop every 200ms {
+      wheels.drive(linear: 0.15 m/s, angular: 0.0 rad/s);
+    }
+  }
+}
+
+robot PickerB {
+  sensor lidar: Lidar on "/scan";
+  actuator wheels: DifferentialDrive;
+
+  safety {
+    max_speed = 0.8 m/s;
+    stop_if lidar.nearest_distance < 0.5 m;
+  }
+
+  behavior pick() {
+    loop every 200ms {
+      wheels.drive(linear: 0.15 m/s, angular: 0.0 rad/s);
+    }
+  }
+}
+
+robot Coordinator {
+  topic fleet_status: String publish on "/fleet/status";
+
+  mode fleet_hold { }
+
+  behavior coordinate() {
+    let members = fleet.members("Warehouse");
+    let _ = members;
+    loop every 500ms {
+      publish fleet_status with "Warehouse active";
+    }
+  }
+}

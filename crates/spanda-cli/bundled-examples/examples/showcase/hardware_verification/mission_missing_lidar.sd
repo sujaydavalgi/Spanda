@@ -1,0 +1,27 @@
+// Mission requires obstacle_avoidance (Lidar) — robot lacks Lidar → verify fails
+// Run: spanda verify examples/showcase/hardware_verification/mission_missing_lidar.sd
+
+requires_hardware {
+  sensors [ Lidar ];
+}
+
+hardware ScoutNoLidar {
+  cpu: CortexA55;
+  memory: 2 GB;
+  sensors [ Camera, IMU ];
+  actuators [ DifferentialDrive ];
+  timing { min_period: 20 ms; }
+}
+
+robot ObstaclePatrol {
+  sensor camera: Camera on "/camera";
+  actuator wheels: DifferentialDrive;
+
+  behavior patrol() {
+    loop every 100ms {
+      wheels.drive(linear: 0.2 m/s, angular: 0.0 rad/s);
+    }
+  }
+}
+
+deploy ObstaclePatrol to ScoutNoLidar;

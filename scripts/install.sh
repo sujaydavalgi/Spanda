@@ -15,8 +15,11 @@ fi
 echo "→ Building and installing spanda CLI…"
 cargo install --path crates/spanda-cli --locked --force
 
+echo "→ Syncing bundled showcase examples (for spanda demo without a clone)…"
+# Bundled examples ship inside the spanda crate; reinstall picks them up.
+
 if command -v spanda >/dev/null 2>&1; then
-  echo "✓ $(spanda --version 2>/dev/null || echo 'spanda installed')"
+  echo "✓ spanda $(spanda --version 2>/dev/null || true)"
 else
   echo "Add ~/.cargo/bin to your PATH if spanda is not found."
 fi

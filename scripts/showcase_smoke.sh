@@ -8,7 +8,7 @@ cd "$ROOT"
 SPANDA="${SPANDA_BIN:-$ROOT/target/release/spanda}"
 
 if [[ ! -x "${SPANDA}" ]]; then
-  cargo build -p spanda-cli --release
+  cargo build -p spanda --release
   SPANDA="${ROOT}/target/release/spanda"
 fi
 

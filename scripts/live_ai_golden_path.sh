@@ -10,7 +10,7 @@ SOURCE="${ROOT}/examples/ffi_openai_live.sd"
 BRIDGE="${ROOT}/scripts/spanda_python_bridge.py"
 
 if [[ ! -x "${SPANDA}" ]]; then
-  cargo build -p spanda-cli --release
+  cargo build -p spanda --release
   SPANDA="${ROOT}/target/release/spanda"
 fi
 
