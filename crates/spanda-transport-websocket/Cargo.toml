@@ -15,7 +15,7 @@ spanda-ast = { path = "../spanda-ast" }
 spanda-runtime = { path = "../spanda-runtime" }
 spanda-security = { path = "../spanda-security" }
 spanda-transport = { path = "../spanda-transport", default-features = false }
-tungstenite = { version = "0.24", optional = true, default-features = false, features = ["rustls-tls-webpki-roots"] }
+tungstenite = { version = "0.24", optional = true, default-features = false, features = ["rustls-tls-webpki-roots", "handshake"] }
 
 [features]
 default = []

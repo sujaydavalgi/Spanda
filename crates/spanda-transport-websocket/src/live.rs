@@ -4,8 +4,10 @@ use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, VecDeque};
 use std::net::TcpStream;
 use std::sync::Mutex;
-use std::time::Duration;
+use tungstenite::stream::MaybeTlsStream;
 use tungstenite::{connect, Message, WebSocket};
+
+type WsStream = WebSocket<MaybeTlsStream<TcpStream>>;
 
 #[derive(Serialize, Deserialize)]
 struct WireEnvelope {
@@ -13,8 +15,9 @@ struct WireEnvelope {
     payload: String,
 }
 
+#[derive(Debug)]
 pub struct LiveWebsocketBridge {
-    socket: Mutex<WebSocket<TcpStream>>,
+    socket: Mutex<WsStream>,
     inbound: Mutex<HashMap<String, VecDeque<String>>>,
 }
 
@@ -34,9 +37,6 @@ impl LiveWebsocketBridge {
             Err(_) => return,
         };
 
-        let _ = guard
-            .get_ref()
-            .set_read_timeout(Some(Duration::from_millis(50)));
         while let Ok(Message::Text(text)) = guard.read() {
             if let Ok(frame) = serde_json::from_str::<WireEnvelope>(&text) {
                 if let Ok(mut map) = self.inbound.lock() {

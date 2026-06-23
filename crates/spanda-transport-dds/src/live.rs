@@ -13,6 +13,7 @@ struct DdsWireEnvelope {
     payload: String,
 }
 
+#[derive(Debug)]
 pub struct LiveDdsBridge {
     socket: UdpSocket,
     group: Ipv4Addr,
@@ -77,7 +78,8 @@ impl LiveDdsBridge {
         let dest = SocketAddr::from((self.group, self.port));
         self.socket
             .send_to(&bytes, dest)
-            .map_err(|e| format!("dds publish failed: {e}"))
+            .map_err(|e| format!("dds publish failed: {e}"))?;
+        Ok(())
     }
 
     pub fn subscribe(&self, _topic: &str) -> Result<(), String> {
