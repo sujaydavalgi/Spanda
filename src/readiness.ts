@@ -63,10 +63,19 @@ const RUNTIME_FAULTS = ["GPSDegraded", "CameraOffline", "RobotHealthCritical"];
 
 const weightFor = (key: keyof typeof DEFAULT_WEIGHTS): number => DEFAULT_WEIGHTS[key];
 
+function isValidDeployDecl(
+  candidate: Program["deployments"] extends Array<infer T> ? T : unknown,
+): candidate is Extract<
+  Program["deployments"] extends Array<infer T> ? T : never,
+  { kind: "DeployDecl"; targets?: string[] }
+> {
+  return !!candidate && typeof candidate === "object" && "kind" in candidate && candidate.kind === "DeployDecl";
+}
+
 function defaultDeployTarget(program: Program): string | undefined {
   const deployments = program.deployments ?? [];
   const first = deployments[0];
-  if (!first || typeof first !== "object" || !("kind" in first) || first.kind !== "DeployDecl") {
+  if (!isValidDeployDecl(first)) {
     return undefined;
   }
   if (!first.targets?.length) return undefined;
