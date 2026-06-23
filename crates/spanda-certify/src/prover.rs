@@ -1,12 +1,12 @@
 //! Structured certification proof artifacts for CI and audit workflows.
 
+use crate::artifact::hash_program_artifact;
 use crate::verify::verify_certification_proof;
 use serde::{Deserialize, Serialize};
 use spanda_ast::foundations::DeployDecl;
 use spanda_ast::nodes::Program;
 use spanda_ast::robotics_decl::CertifyDecl;
 use spanda_hardware::{CompatItem, CompatSeverity};
-use spanda_ota::hash_program_artifact;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct CertificationEntry {

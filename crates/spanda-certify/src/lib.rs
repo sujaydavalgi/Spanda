@@ -1,8 +1,11 @@
 //! Spanda certification runtime gate, proof checklist, and audit artifacts.
 //!
+pub mod artifact;
 pub mod prover;
 pub mod runtime;
 pub mod verify;
+
+pub use artifact::hash_program_artifact;
 
 pub use prover::{
     build_certification_proof, build_certification_proof_summary, CertificationEntry,
