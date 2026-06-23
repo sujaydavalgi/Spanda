@@ -66,7 +66,9 @@ const weightFor = (key: keyof typeof DEFAULT_WEIGHTS): number => DEFAULT_WEIGHTS
 function defaultDeployTarget(program: Program): string | undefined {
   const deployments = program.deployments ?? [];
   const first = deployments[0];
-  if (!first || first.kind !== "DeployDecl") return undefined;
+  if (!first || typeof first !== "object" || !("kind" in first) || first.kind !== "DeployDecl") {
+    return undefined;
+  }
   if (!first.targets?.length) return undefined;
   return first.targets[0];
 }
@@ -117,6 +119,10 @@ function weightedTotal(factors: ReadinessFactorScore[]): number {
   return Math.round((weighted * 100) / sum);
 }
 
+const HEALTH_SCORE_NO_CHECKS_OR_FAULTS = 85;
+const HEALTH_SCORE_RUNTIME_FAULTS = 55;
+const HEALTH_SCORE_HEALTHY = 100;
+
 function healthScoreFromProgram(
   program: Program,
   runtimeFaults: string[],
@@ -124,7 +130,7 @@ function healthScoreFromProgram(
   const issues: ReadinessIssue[] = [];
   const checks = program.healthChecks ?? [];
   if (checks.length === 0 && runtimeFaults.length === 0) {
-    return { score: 85, issues };
+    return { score: HEALTH_SCORE_NO_CHECKS_OR_FAULTS, issues };
   }
   if (runtimeFaults.length > 0) {
     for (const fault of runtimeFaults) {
@@ -135,9 +141,9 @@ function healthScoreFromProgram(
         suggested_action: "Review health policy reactions",
       });
     }
-    return { score: 55, issues };
+    return { score: HEALTH_SCORE_RUNTIME_FAULTS, issues };
   }
-  return { score: 100, issues };
+  return { score: HEALTH_SCORE_HEALTHY, issues };
 }
 
 /** Evaluate readiness from parsed program (TypeScript mirror). */
