@@ -69,7 +69,7 @@ deploy R to Tiny;
 
   it("warns when deploy targets lack certification metadata", () => {
     const source = readFileSync(
-      join(import.meta.dirname, "..", "examples/robotics/ota_deployment.sd"),
+      join(examplesDir, "..", "robotics", "ota_deployment.sd"),
       "utf8",
     );
     const program = parse(tokenize(source));
