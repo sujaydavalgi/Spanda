@@ -177,4 +177,44 @@ simulate_compatibility { fault SatelliteOutage; }
     const result = verifyHardwareProgram(program);
     expect(result.items.some((i) => i.category === "connectivity" && i.severity === "error")).toBe(true);
   });
+
+  it("fails verify when NetworkOutage removes required network connectivity", () => {
+    const program = parse(
+      tokenize(`
+requires_connectivity { network: required; }
+hardware NetBot {
+  connectivity [ WiFi6 ];
+  sensors [ GPS ];
+  actuators [ DifferentialDrive ];
+  timing { min_period: 10 ms; }
+  resource: 10 W;
+}
+robot R { actuator wheels: DifferentialDrive; }
+deploy R to NetBot;
+simulate_compatibility { fault NetworkOutage; }
+`),
+    );
+    const result = verifyHardwareProgram(program);
+    expect(result.items.some((i) => i.category === "connectivity" && i.severity === "error")).toBe(true);
+  });
+
+  it("does not fail connectivity when SatelliteOutage affects optional satellite link", () => {
+    const program = parse(
+      tokenize(`
+requires_connectivity { satellite: optional; }
+hardware RemoteOptional {
+  connectivity [ Satellite, WiFi6 ];
+  sensors [ GPS ];
+  actuators [ DifferentialDrive ];
+  timing { min_period: 10 ms; }
+  resource: 10 W;
+}
+robot R { actuator wheels: DifferentialDrive; }
+deploy R to RemoteOptional;
+simulate_compatibility { fault SatelliteOutage; }
+`),
+    );
+    const result = verifyHardwareProgram(program);
+    expect(result.items.some((i) => i.category === "connectivity" && i.severity === "error")).toBe(false);
+  });
 });
