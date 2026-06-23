@@ -82,6 +82,9 @@ export function remoteFetch(url: string, init: RequestInit = {}): Promise<Respon
       controller.abort(reason);
     };
     upstreamSignal.addEventListener("abort", upstreamAbortHandler, { once: true });
+    if (upstreamSignal.aborted) {
+      upstreamAbortHandler();
+    }
   }
 
   return fetch(url, { ...restInit, signal: controller.signal }).finally(() => {
