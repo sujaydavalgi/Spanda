@@ -3,6 +3,7 @@
  * @module
  */
 
+import type { DeployDecl } from "./foundations.js";
 import type { Program } from "./ast/nodes.js";
 import { tokenize } from "./lexer/index.js";
 import { parse } from "./parser/index.js";
@@ -63,10 +64,14 @@ const RUNTIME_FAULTS = ["GPSDegraded", "CameraOffline", "RobotHealthCritical"];
 
 const weightFor = (key: keyof typeof DEFAULT_WEIGHTS): number => DEFAULT_WEIGHTS[key];
 
+function isValidDeployDecl(candidate: DeployDecl | undefined): candidate is DeployDecl {
+  return !!candidate && typeof candidate === "object" && "kind" in candidate && candidate.kind === "DeployDecl";
+}
+
 function defaultDeployTarget(program: Program): string | undefined {
   const deployments = program.deployments ?? [];
   const first = deployments[0];
-  if (!first || typeof first !== "object" || !("kind" in first) || first.kind !== "DeployDecl") {
+  if (!isValidDeployDecl(first)) {
     return undefined;
   }
   if (!first.targets?.length) return undefined;
@@ -122,6 +127,12 @@ function weightedTotal(factors: ReadinessFactorScore[]): number {
 const HEALTH_SCORE_NO_CHECKS_OR_FAULTS = 85;
 const HEALTH_SCORE_RUNTIME_FAULTS = 55;
 const HEALTH_SCORE_HEALTHY = 100;
+const CONNECTIVITY_SCORE_COMPATIBLE = 90;
+const CONNECTIVITY_SCORE_INCOMPATIBLE = 70;
+const SAFETY_SCORE_COMPATIBLE = 95;
+const SAFETY_SCORE_INCOMPATIBLE = 45;
+const DEFAULT_HIGH_FACTOR_SCORE = 90;
+const DEFAULT_STANDARD_FACTOR_SCORE = 88;
 
 function healthScoreFromProgram(
   program: Program,
@@ -182,13 +193,25 @@ export function evaluateReadinessTs(
   factors.push(factorRow("Health", health.score, weightFor("Health")));
   issues.push(...health.issues);
 
-  factors.push(factorRow("Connectivity", hw.compatible ? 90 : 70, weightFor("Connectivity")));
-  factors.push(factorRow("Safety", hw.compatible ? 95 : 45, weightFor("Safety")));
-  factors.push(factorRow("Battery", 90, weightFor("Battery")));
-  factors.push(factorRow("Storage", 90, weightFor("Storage")));
-  factors.push(factorRow("Compute", 88, weightFor("Compute")));
-  factors.push(factorRow("Packages", 88, weightFor("Packages")));
-  factors.push(factorRow("Providers", 88, weightFor("Providers")));
+  factors.push(
+    factorRow(
+      "Connectivity",
+      hw.compatible ? CONNECTIVITY_SCORE_COMPATIBLE : CONNECTIVITY_SCORE_INCOMPATIBLE,
+      weightFor("Connectivity"),
+    ),
+  );
+  factors.push(
+    factorRow(
+      "Safety",
+      hw.compatible ? SAFETY_SCORE_COMPATIBLE : SAFETY_SCORE_INCOMPATIBLE,
+      weightFor("Safety"),
+    ),
+  );
+  factors.push(factorRow("Battery", DEFAULT_HIGH_FACTOR_SCORE, weightFor("Battery")));
+  factors.push(factorRow("Storage", DEFAULT_HIGH_FACTOR_SCORE, weightFor("Storage")));
+  factors.push(factorRow("Compute", DEFAULT_STANDARD_FACTOR_SCORE, weightFor("Compute")));
+  factors.push(factorRow("Packages", DEFAULT_STANDARD_FACTOR_SCORE, weightFor("Packages")));
+  factors.push(factorRow("Providers", DEFAULT_STANDARD_FACTOR_SCORE, weightFor("Providers")));
   factors.push(factorRow("Mission Requirements", capScore, weightFor("Mission Requirements")));
 
   const total = weightedTotal(factors);
