@@ -34,16 +34,24 @@ swarm ReconLeader {
 }
 "#;
     let program = compile(source).expect("compile").program;
-    thread::sleep(Duration::from_millis(30));
     let mut state = SwarmState::default();
-    let result = coordinate_swarms_mesh(
-        &program,
-        "swarm_leader.sd",
-        &mut state,
-        &format!("http://127.0.0.1:{mesh_port}"),
-        None,
-    );
-    assert!(result.success);
+    let deadline = std::time::Instant::now() + Duration::from_secs(2);
+    let result = loop {
+        let result = coordinate_swarms_mesh(
+            &program,
+            "swarm_leader.sd",
+            &mut state,
+            &format!("http://127.0.0.1:{mesh_port}"),
+            None,
+        );
+        if result.success {
+            break result;
+        }
+        if std::time::Instant::now() >= deadline {
+            panic!("mesh/agent did not become ready before timeout");
+        }
+        thread::sleep(Duration::from_millis(20));
+    };
     let leader = result
         .swarms
         .iter()
@@ -67,7 +75,7 @@ fn swarm_round_robin_relays_peer_links_via_mesh() {
     let (mesh_port, _mesh) = spawn_test_fleet_mesh(&registry).expect("spawn mesh");
     let source = r#"
 robot ScoutA {
-  robot ScoutB;
+  peer ScoutB;
   mission Patrol { navigate; inspect; }
 }
 robot ScoutB {
