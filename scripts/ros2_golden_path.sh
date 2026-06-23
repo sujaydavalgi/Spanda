@@ -12,8 +12,10 @@ OUT="${TMPDIR:-/tmp}/spanda-ros2-golden.txt"
 
 if [[ -z "${ROS_DISTRO:-}" ]]; then
   if [[ -f /opt/ros/humble/setup.bash ]]; then
+    set +u
     # shellcheck disable=SC1091
     source /opt/ros/humble/setup.bash
+    set -u
   else
     echo "ROS 2 not sourced and /opt/ros/humble/setup.bash missing; skip ROS2 golden path" >&2
     exit 0
