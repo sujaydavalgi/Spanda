@@ -46,9 +46,11 @@ export function remoteFetch(url: string, init: RequestInit = {}): Promise<Respon
   const controller = new AbortController();
   const { signal: upstreamSignal, ...restInit } = init;
   let upstreamAbortHandler: (() => void) | undefined;
+  let upstreamAbortListenerAttached = false;
   const detachUpstreamAbortListener = () => {
-    if (upstreamSignal && upstreamAbortHandler) {
+    if (upstreamSignal && upstreamAbortHandler && upstreamAbortListenerAttached) {
       upstreamSignal.removeEventListener("abort", upstreamAbortHandler);
+      upstreamAbortListenerAttached = false;
     }
   };
   const resolveAbortReason = (signal: AbortSignal): unknown =>
@@ -78,6 +80,7 @@ export function remoteFetch(url: string, init: RequestInit = {}): Promise<Respon
       controller.abort(resolveAbortReason(upstreamSignal));
     };
     upstreamSignal.addEventListener("abort", upstreamAbortHandler, { once: true });
+    upstreamAbortListenerAttached = true;
   }
 
   return fetch(url, { ...restInit, signal: controller.signal }).finally(() => {
