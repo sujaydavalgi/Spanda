@@ -66,9 +66,7 @@ pub fn ros2_dispatch(args: &[String]) {
     let bridge = env::var("SPANDA_PYTHON_BRIDGE").unwrap_or_else(|_| {
         format!(
             "{}/scripts/spanda_python_bridge.py",
-            env::current_dir()
-                .unwrap_or_else(|_| ".".into())
-                .display()
+            env::current_dir().unwrap_or_else(|_| ".".into()).display()
         )
     });
     let bridge_ok = std::path::Path::new(&bridge).is_file();
@@ -98,7 +96,10 @@ pub fn ros2_dispatch(args: &[String]) {
     };
 
     if json {
-        println!("{}", serde_json::to_string_pretty(&response).unwrap_or_default());
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&response).unwrap_or_default()
+        );
     } else {
         for item in &response.items {
             let mark = if item.ok { "✓" } else { "✗" };

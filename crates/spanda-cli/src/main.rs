@@ -2007,9 +2007,10 @@ fn main() {
                     match lower_to_sir(&source) {
                         Ok(sir) => {
                             let workspace = std::env::current_dir().unwrap_or_else(|_| ".".into());
-                            let output = out_path.map(std::path::PathBuf::from).unwrap_or_else(|| {
-                                workspace.join("target/spanda-native/spanda-program")
-                            });
+                            let output =
+                                out_path.map(std::path::PathBuf::from).unwrap_or_else(|| {
+                                    workspace.join("target/spanda-native/spanda-program")
+                                });
                             match compile_native(
                                 &sir,
                                 &CompileNativeOptions {
@@ -2021,7 +2022,10 @@ fn main() {
                                 },
                             ) {
                                 Ok(result) => {
-                                    println!("✓ wrote LLVM IR to {}", result.llvm_ir_path.display());
+                                    println!(
+                                        "✓ wrote LLVM IR to {}",
+                                        result.llvm_ir_path.display()
+                                    );
                                     println!(
                                         "✓ linked native binary to {}",
                                         result.executable.display()
@@ -2047,25 +2051,25 @@ fn main() {
                 eprintln!("deploy supports --target wasm or --target native");
                 process::exit(1);
             } else {
-            // Match on wasm deploy manifest and handle each case.
-            match wasm_deploy_manifest(&source) {
-                Ok(manifest) => {
-                    // Take this path when let Some(ref out) = out path.
-                    if let Some(ref out) = out_path {
-                        fs::write(out, &manifest).unwrap_or_else(|e| {
-                            eprintln!("Error writing {out}: {e}");
-                            process::exit(1);
-                        });
-                        println!("✓ wrote wasm deploy manifest to {out}");
-                    } else {
-                        print!("{manifest}");
+                // Match on wasm deploy manifest and handle each case.
+                match wasm_deploy_manifest(&source) {
+                    Ok(manifest) => {
+                        // Take this path when let Some(ref out) = out path.
+                        if let Some(ref out) = out_path {
+                            fs::write(out, &manifest).unwrap_or_else(|e| {
+                                eprintln!("Error writing {out}: {e}");
+                                process::exit(1);
+                            });
+                            println!("✓ wrote wasm deploy manifest to {out}");
+                        } else {
+                            print!("{manifest}");
+                        }
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {e}");
+                        process::exit(1);
                     }
                 }
-                Err(e) => {
-                    eprintln!("Error: {e}");
-                    process::exit(1);
-                }
-            }
             }
         }
         "ir" => {

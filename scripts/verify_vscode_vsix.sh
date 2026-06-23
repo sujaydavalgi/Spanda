@@ -12,5 +12,7 @@ fi
 ./scripts/bundle-vscode-extension.sh
 cd editor/vscode
 npm run package
-test -f spanda-vscode-0.1.0.vsix
-echo "✓ VS Code VSIX built: editor/vscode/spanda-vscode-0.1.0.vsix"
+VERSION="$(node -p "require('./package.json').version")"
+VSIX="spanda-vscode-${VERSION}.vsix"
+test -f "$VSIX"
+echo "✓ VS Code VSIX built: editor/vscode/$VSIX"
