@@ -703,9 +703,47 @@ connection.onDefinition((params: DefinitionParams): Location | null => {
   };
 });
 
+const KEYWORD_HOVER: Record<string, string> = {
+  ActionProposal:
+    "**ActionProposal** — untrusted AI/vision output. Must pass through `safety.validate()` before actuators.",
+  SafeAction:
+    "**SafeAction** — safety-approved motion command. Required for `actuator.execute()`.",
+  "safety.validate":
+    "Wrap an `ActionProposal` to produce a `SafeAction` before driving hardware.",
+  deploy:
+    "`deploy Robot to HardwareProfile` — checked by `spanda verify` before field deploy.",
+  "spanda verify":
+    "Hardware compatibility check: sensors, memory, timing, connectivity, capabilities.",
+  health_check:
+    "`health_check Name for robot Robot { check metric == Healthy; }`",
+  kill_switch:
+    "Emergency stop declaration; use `on kill_switch` handlers for runtime reaction.",
+};
+
+function keywordHover(doc: TextDocument, line: number, column: number): string | null {
+  const lines = doc.getText().split("\n");
+  const text = lines[line] ?? "";
+  const words = Object.keys(KEYWORD_HOVER).sort((a, b) => b.length - a.length);
+  for (const word of words) {
+    const idx = text.indexOf(word);
+    if (idx < 0) continue;
+    const start = idx;
+    const end = idx + word.length;
+    if (column >= start && column <= end) {
+      return KEYWORD_HOVER[word] ?? null;
+    }
+  }
+  return null;
+}
+
 connection.onHover((params: HoverParams): Hover | null => {
   const doc = documents.get(params.textDocument.uri);
   if (!doc) return null;
+
+  const keyword = keywordHover(doc, params.position.line, params.position.character);
+  if (keyword) {
+    return { contents: { kind: MarkupKind.Markdown, value: keyword } };
+  }
 
   const markdown = lookupHover(
     doc.getText(),
@@ -784,6 +822,29 @@ connection.onCodeAction((params: CodeActionParams): CodeAction[] => {
   if (!doc) return [];
   const items = verificationCache.get(params.textDocument.uri) ?? [];
   const actions: CodeAction[] = [];
+  for (const diag of params.context.diagnostics ?? []) {
+    if (
+      diag.message.includes("ActionProposal") &&
+      diag.message.includes("SafeAction")
+    ) {
+      const line = diag.range.start.line;
+      actions.push({
+        title: "Insert safety.validate() before execute",
+        kind: CodeActionKind.QuickFix,
+        diagnostics: [diag],
+        edit: {
+          changes: {
+            [params.textDocument.uri]: [
+              {
+                range: { start: { line, character: 0 }, end: { line, character: 0 } },
+                newText: "    let action = safety.validate(proposal);\n",
+              },
+            ],
+          },
+        },
+      });
+    }
+  }
   for (const item of items) {
     if (!item.suggested_fix) continue;
     const itemLine = Math.max(0, item.line - 1);
