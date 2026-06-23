@@ -220,6 +220,60 @@ pub fn framework_packages() -> &'static [FrameworkPackage] {
             category: super::category::PackageCategory::Ai,
             import_paths: &["ai.openai"],
         },
+        FrameworkPackage {
+            name: "spanda-anthropic",
+            description: "Anthropic Claude live AI provider",
+            category: super::category::PackageCategory::Ai,
+            import_paths: &["ai.anthropic"],
+        },
+        FrameworkPackage {
+            name: "spanda-onnx",
+            description: "ONNX local inference provider",
+            category: super::category::PackageCategory::Ai,
+            import_paths: &["ai.onnx"],
+        },
+        FrameworkPackage {
+            name: "spanda-iot-core",
+            description: "IoT device, telemetry, command, and shadow contracts",
+            category: super::category::PackageCategory::Hardware,
+            import_paths: &["iot.device", "iot.telemetry", "iot.command", "iot.shadow"],
+        },
+        FrameworkPackage {
+            name: "spanda-opcua",
+            description: "OPC-UA industrial protocol adapter",
+            category: super::category::PackageCategory::Hardware,
+            import_paths: &["iot.opcua"],
+        },
+        FrameworkPackage {
+            name: "spanda-modbus",
+            description: "Modbus IoT protocol adapter",
+            category: super::category::PackageCategory::Hardware,
+            import_paths: &["iot.modbus"],
+        },
+        FrameworkPackage {
+            name: "spanda-zigbee",
+            description: "Zigbee mesh protocol adapter",
+            category: super::category::PackageCategory::Hardware,
+            import_paths: &["iot.zigbee"],
+        },
+        FrameworkPackage {
+            name: "spanda-lora",
+            description: "LoRa long-range protocol adapter",
+            category: super::category::PackageCategory::Hardware,
+            import_paths: &["iot.lora"],
+        },
+        FrameworkPackage {
+            name: "spanda-matter",
+            description: "Matter smart-home protocol adapter",
+            category: super::category::PackageCategory::Hardware,
+            import_paths: &["iot.matter"],
+        },
+        FrameworkPackage {
+            name: "spanda-canbus",
+            description: "CAN bus vehicle/industrial protocol adapter",
+            category: super::category::PackageCategory::Hardware,
+            import_paths: &["iot.canbus"],
+        },
     ]
 }
 

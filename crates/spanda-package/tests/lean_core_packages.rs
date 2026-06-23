@@ -9,29 +9,19 @@ use std::path::Path;
 #[test]
 fn official_packages_registered_in_framework_list() {
     let names: Vec<_> = framework_packages().iter().map(|p| p.name).collect();
-    for pkg in [
-        "spanda-ble",
-        "spanda-cellular",
-        "spanda-cloud",
-        "spanda-dds",
-        "spanda-fleet",
-        "spanda-gazebo",
-        "spanda-gps",
-        "spanda-ledger",
-        "spanda-maintenance",
-        "spanda-moveit",
-        "spanda-mqtt",
-        "spanda-nav",
-        "spanda-openai",
-        "spanda-opencv",
-        "spanda-ota",
-        "spanda-ros2",
-        "spanda-slam",
-        "spanda-webots",
-        "spanda-wifi",
-        "spanda-yolo",
-    ] {
-        assert!(names.contains(&pkg), "missing framework entry for {pkg}");
+    let registry_root =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../packages/registry");
+    let hosted: Vec<String> = std::fs::read_dir(&registry_root)
+        .expect("packages/registry")
+        .filter_map(|entry| entry.ok())
+        .filter(|entry| entry.path().join("spanda.toml").is_file())
+        .map(|entry| entry.file_name().to_string_lossy().into_owned())
+        .collect();
+    for pkg in hosted {
+        assert!(
+            names.contains(&pkg.as_str()),
+            "missing framework entry for {pkg}"
+        );
     }
 }
 

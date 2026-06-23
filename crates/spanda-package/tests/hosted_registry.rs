@@ -8,31 +8,20 @@ fn repo_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 
-const OFFICIAL_HOSTED: &[&str] = &[
-    "spanda-ble",
-    "spanda-cellular",
-    "spanda-cloud",
-    "spanda-dds",
-    "spanda-fleet",
-    "spanda-gazebo",
-    "spanda-gps",
-    "spanda-ledger",
-    "spanda-maintenance",
-    "spanda-moveit",
-    "spanda-mqtt",
-    "spanda-nav",
-    "spanda-openai",
-    "spanda-opencv",
-    "spanda-ota",
-    "spanda-ros2",
-    "spanda-slam",
-    "spanda-webots",
-    "spanda-wifi",
-    "spanda-yolo",
-];
+fn hosted_scaffold_names() -> Vec<String> {
+    let mut names: Vec<String> = fs::read_dir(repo_root().join("packages/registry"))
+        .expect("packages/registry")
+        .filter_map(|entry| entry.ok())
+        .filter(|entry| entry.path().join("spanda.toml").is_file())
+        .map(|entry| entry.file_name().to_string_lossy().into_owned())
+        .collect();
+    names.sort();
+    names
+}
 
 #[test]
-fn hosted_registry_index_lists_twenty_official_packages() {
+fn hosted_registry_index_lists_all_official_packages() {
+    let expected = hosted_scaffold_names();
     let index_path = repo_root().join("registry/index.json");
     let body = fs::read_to_string(&index_path).expect("registry/index.json");
     let entries: Vec<RemoteRegistryEntry> =
@@ -40,11 +29,11 @@ fn hosted_registry_index_lists_twenty_official_packages() {
 
     assert_eq!(
         entries.len(),
-        OFFICIAL_HOSTED.len(),
+        expected.len(),
         "hosted index should list all official packages"
     );
 
-    for name in OFFICIAL_HOSTED {
+    for name in &expected {
         assert!(
             entries.iter().any(|entry| entry.name == *name),
             "missing hosted index entry for {name}"
@@ -94,21 +83,14 @@ fn file_url_fetches_local_registry_index() {
 
 #[test]
 fn hosted_packages_match_registry_scaffolds() {
-    let scaffolds: Vec<String> = fs::read_dir(repo_root().join("packages/registry"))
-        .expect("packages/registry")
-        .filter_map(|entry| entry.ok())
-        .filter(|entry| entry.path().join("spanda.toml").is_file())
-        .map(|entry| entry.file_name().to_string_lossy().into_owned())
-        .collect();
+    let scaffolds = hosted_scaffold_names();
 
     assert!(
-        scaffolds.len() >= OFFICIAL_HOSTED.len(),
-        "packages/registry should contain at least one scaffold per hosted package (got {} scaffolds, {} hosted)",
-        scaffolds.len(),
-        OFFICIAL_HOSTED.len()
+        !scaffolds.is_empty(),
+        "packages/registry should contain hosted package scaffolds"
     );
 
-    for name in OFFICIAL_HOSTED {
+    for name in &scaffolds {
         let scaffold = repo_root()
             .join("packages/registry")
             .join(name)
