@@ -66,7 +66,9 @@ const weightFor = (key: keyof typeof DEFAULT_WEIGHTS): number => DEFAULT_WEIGHTS
 function defaultDeployTarget(program: Program): string | undefined {
   const deployments = program.deployments ?? [];
   const first = deployments[0];
-  if (!first || first.kind !== "DeployDecl") return undefined;
+  if (!first || typeof first !== "object" || !("kind" in first) || first.kind !== "DeployDecl") {
+    return undefined;
+  }
   if (!first.targets?.length) return undefined;
   return first.targets[0];
 }
