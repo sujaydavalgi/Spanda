@@ -10,10 +10,20 @@ It composes existing platform gates — hardware verification, capability verifi
 
 ```bash
 spanda readiness examples/showcase/readiness/rover.sd
+spanda readiness examples/showcase/readiness/rover.sd --target RoverV1
+spanda readiness examples/showcase/readiness/rover.sd --runtime
+spanda readiness examples/showcase/readiness/rover.sd --runtime --inject-health-faults
 spanda readiness examples/showcase/readiness/rover.sd --json
-spanda readiness examples/showcase/readiness/rover.sd --markdown
-spanda readiness examples/showcase/readiness/rover.sd --html
+spanda check examples/showcase/readiness/rover.sd --readiness-json --json
+spanda demo readiness
 ```
+
+### Runtime and agent readiness
+
+- **`--runtime`** — evaluate against live hardware monitor signals (health checks use runtime fault/event state).
+- **`--inject-health-faults`** — simulate degraded sensors for what-if analysis (pairs with `--runtime`).
+- **`GET /v1/readiness`** on deploy and fleet agents; query `runtime=true` and `inject_health_faults=true` for on-device evaluation.
+- **Web playground** — switch to **Operations** view in `packages/web` for local scoring or agent fetch.
 
 Example output:
 
