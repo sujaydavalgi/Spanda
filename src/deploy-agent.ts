@@ -7,6 +7,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 import { createServer as createHttpsServer } from "node:https";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
+import { evaluateReadinessSource } from "./readiness.js";
 
 export type AgentState = {
   target: string;
@@ -108,13 +109,34 @@ async function handleRequest(
   }
 
   const url = req.url ?? "/";
-  if (req.method === "GET" && url === "/v1/health") {
+  const parsedUrl = new URL(url, "http://localhost");
+  const path = parsedUrl.pathname;
+
+  if (req.method === "GET" && path === "/v1/health") {
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ ok: true, agent: "spanda-deploy-agent", version: "0.1.0" }));
     return;
   }
 
-  if (req.method === "GET" && url === "/v1/status") {
+  if (req.method === "GET" && path === "/v1/readiness") {
+    if (!state.program) {
+      res.writeHead(503, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ ok: false, error: "no program deployed on agent" }));
+      return;
+    }
+    const includeRuntime = parsedUrl.searchParams.get("runtime") === "true";
+    const injectHealthFaults = parsedUrl.searchParams.get("inject_health_faults") === "true";
+    const report = evaluateReadinessSource(state.program, {
+      target: state.target || undefined,
+      includeRuntime: includeRuntime,
+      injectHealthFaults,
+    });
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ ok: true, mission_ready: report.mission_ready, readiness: report }));
+    return;
+  }
+
+  if (req.method === "GET" && path === "/v1/status") {
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(
       JSON.stringify({
@@ -130,7 +152,7 @@ async function handleRequest(
     return;
   }
 
-  if (req.method === "POST" && url === "/v1/rollout") {
+  if (req.method === "POST" && path === "/v1/rollout") {
     const body = await readBody(req);
     const payload = JSON.parse(body) as {
       target?: string;

@@ -26,6 +26,7 @@ import {
   type VerifyResult,
 } from "../rust-bridge.js";
 import { securityCheck, securityAudit, reportHasErrors } from "../security/index.js";
+import { evaluateReadinessSource } from "../readiness.js";
 import {
   applyRollout,
   buildDeployPlan,
@@ -1798,23 +1799,46 @@ function handleReadinessNative(
   positional: string[],
   flags: Map<string, string | boolean>,
 ): void {
-  // Delegate operational readiness commands to the native Spanda CLI.
-  if (!isCliAvailable()) {
+  if (isCliAvailable()) {
+    const args = [command, ...positional];
+    for (const [key, value] of flags) {
+      if (value === true) {
+        args.push(`--${key}`);
+      } else if (typeof value === "string") {
+        args.push(`--${key}`, value);
+      }
+    }
+    const result = runNativeCli(args);
+    if (result.stdout) process.stdout.write(result.stdout);
+    if (result.stderr) process.stderr.write(result.stderr);
+    process.exit(result.status ?? 1);
+  }
+
+  if (command !== "readiness") {
     console.error(`Native CLI required for: spanda ${command}`);
     process.exit(1);
   }
-  const args = [command, ...positional];
-  for (const [key, value] of flags) {
-    if (value === true) {
-      args.push(`--${key}`);
-    } else if (typeof value === "string") {
-      args.push(`--${key}`, value);
+
+  const file = positional[0];
+  if (!file) {
+    console.error("Missing file path");
+    process.exit(1);
+  }
+  const source = readFileSync(resolve(file), "utf-8");
+  const target = typeof flags.get("target") === "string" ? (flags.get("target") as string) : undefined;
+  const includeRuntime = flags.has("runtime") || flags.has("inject-health-faults");
+  const injectHealthFaults = flags.has("inject-health-faults");
+  const report = evaluateReadinessSource(source, { target, includeRuntime, injectHealthFaults });
+  if (flags.has("json")) {
+    console.log(JSON.stringify(report, null, 2));
+  } else {
+    console.log(`Mission Ready: ${report.mission_ready ? "YES" : "NO"}`);
+    console.log(`Score: ${report.score.total}/${report.score.maximum}`);
+    for (const issue of report.issues) {
+      console.log(`* ${issue.message}`);
     }
   }
-  const result = runNativeCli(args);
-  if (result.stdout) process.stdout.write(result.stdout);
-  if (result.stderr) process.stderr.write(result.stderr);
-  process.exit(result.status ?? 1);
+  process.exit(report.mission_ready ? 0 : 1);
 }
 
 function printError(err: unknown): void {

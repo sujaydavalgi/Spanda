@@ -121,6 +121,22 @@ export async function agentHealth(entry: DeployAgentEntry): Promise<boolean> {
   return body.ok === true;
 }
 
+export async function agentReadiness(
+  entry: DeployAgentEntry,
+  runtime = false,
+  injectHealthFaults = false,
+): Promise<{ ok: boolean; mission_ready?: boolean; readiness?: unknown }> {
+  const query = new URLSearchParams();
+  if (runtime) query.set("runtime", "true");
+  if (injectHealthFaults) query.set("inject_health_faults", "true");
+  const suffix = query.toString() ? `?${query.toString()}` : "";
+  const response = await agentFetch(entry, "GET", `/v1/readiness${suffix}`);
+  if (!response.ok) {
+    throw new Error(`agent readiness HTTP ${response.status}`);
+  }
+  return (await response.json()) as { ok: boolean; mission_ready?: boolean; readiness?: unknown };
+}
+
 export async function agentStatus(entry: DeployAgentEntry): Promise<AgentStatusResponse> {
   const response = await agentFetch(entry, "GET", "/v1/status");
   if (!response.ok) {

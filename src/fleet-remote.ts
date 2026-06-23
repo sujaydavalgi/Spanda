@@ -122,6 +122,33 @@ export async function fleetAgentHealth(entry: FleetAgentEntry): Promise<boolean>
   return body.ok === true;
 }
 
+export async function fleetAgentReadiness(
+  entry: FleetAgentEntry,
+  runtime = false,
+  injectHealthFaults = false,
+): Promise<{ ok: boolean; mission_ready?: boolean; readiness?: unknown }> {
+  const query = new URLSearchParams();
+  if (runtime) query.set("runtime", "true");
+  if (injectHealthFaults) query.set("inject_health_faults", "true");
+  const suffix = query.toString() ? `?${query.toString()}` : "";
+  const response = await agentFetch(entry, "GET", `/v1/readiness${suffix}`);
+  if (!response.ok) {
+    throw new Error(`fleet agent readiness HTTP ${response.status}`);
+  }
+  return (await response.json()) as { ok: boolean; mission_ready?: boolean; readiness?: unknown };
+}
+
+export async function fleetAgentUploadProgram(entry: FleetAgentEntry, program: string): Promise<void> {
+  const response = await agentFetch(entry, "POST", "/v1/program", JSON.stringify({ program }));
+  if (!response.ok) {
+    throw new Error(`fleet agent program upload HTTP ${response.status}`);
+  }
+  const body = (await response.json()) as { ok?: boolean };
+  if (!body.ok) {
+    throw new Error("fleet agent program upload failed");
+  }
+}
+
 export async function relayPeerDelivery(
   entry: FleetAgentEntry,
   delivery: PeerDelivery,

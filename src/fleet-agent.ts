@@ -7,10 +7,12 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 import { createServer as createHttpsServer } from "node:https";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
+import { evaluateReadinessSource } from "./readiness.js";
 
 export type FleetAgentState = {
   robotName: string;
   token?: string;
+  program?: string;
   lastPeerMessages?: string[];
 };
 
@@ -56,6 +58,7 @@ export function loadFleetAgentState(text: string | null): FleetAgentState {
     return {
       robotName: parsed.robotName ?? parsed.robot_name ?? "",
       token: parsed.token,
+      program: parsed.program,
       lastPeerMessages: parsed.lastPeerMessages ?? parsed.last_peer_messages ?? [],
     };
   } catch {
@@ -102,26 +105,63 @@ async function handleRequest(
   }
 
   const url = req.url ?? "/";
-  if (req.method === "GET" && url === "/v1/health") {
+  const parsedUrl = new URL(url, "http://localhost");
+  const path = parsedUrl.pathname;
+
+  if (req.method === "GET" && path === "/v1/health") {
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ ok: true, agent: "spanda-fleet-agent", version: "0.1.0" }));
     return;
   }
 
-  if (req.method === "GET" && url === "/v1/status") {
+  if (req.method === "GET" && path === "/v1/readiness") {
+    if (!state.program) {
+      res.writeHead(503, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ ok: false, error: "no program deployed on fleet agent" }));
+      return;
+    }
+    const includeRuntime = parsedUrl.searchParams.get("runtime") === "true";
+    const injectHealthFaults = parsedUrl.searchParams.get("inject_health_faults") === "true";
+    const report = evaluateReadinessSource(state.program, {
+      target: state.robotName || undefined,
+      includeRuntime,
+      injectHealthFaults,
+    });
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ ok: true, mission_ready: report.mission_ready, readiness: report }));
+    return;
+  }
+
+  if (req.method === "POST" && path === "/v1/program") {
+    const body = await readBody(req);
+    const payload = JSON.parse(body) as { program?: string };
+    if (!payload.program) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ ok: false, error: "program field required" }));
+      return;
+    }
+    state.program = payload.program;
+    writeFleetAgentStateToDisk(state, statePath);
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ ok: true }));
+    return;
+  }
+
+  if (req.method === "GET" && path === "/v1/status") {
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(
       JSON.stringify({
         ok: true,
         robot_name: state.robotName,
         last_peer_messages: state.lastPeerMessages ?? [],
+        has_program: Boolean(state.program),
         healthy: true,
       }),
     );
     return;
   }
 
-  if (req.method === "POST" && url === "/v1/peer") {
+  if (req.method === "POST" && path === "/v1/peer") {
     const body = await readBody(req);
     const payload = JSON.parse(body) as {
       from_robot?: string;
