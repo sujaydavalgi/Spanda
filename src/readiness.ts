@@ -244,8 +244,6 @@ export function evaluateAgentReadinessJson(
   });
 }
 
-}
-
 function mapSeverityToDiagnostic(severity: ReadinessSeverity): string {
   switch (severity) {
     case "Critical":
