@@ -34,16 +34,24 @@ swarm ReconLeader {
 }
 "#;
     let program = compile(source).expect("compile").program;
-    thread::sleep(Duration::from_millis(30));
     let mut state = SwarmState::default();
-    let result = coordinate_swarms_mesh(
-        &program,
-        "swarm_leader.sd",
-        &mut state,
-        &format!("http://127.0.0.1:{mesh_port}"),
-        None,
-    );
-    assert!(result.success);
+    let deadline = std::time::Instant::now() + Duration::from_secs(2);
+    let result = loop {
+        let result = coordinate_swarms_mesh(
+            &program,
+            "swarm_leader.sd",
+            &mut state,
+            &format!("http://127.0.0.1:{mesh_port}"),
+            None,
+        );
+        if result.success {
+            break result;
+        }
+        if std::time::Instant::now() >= deadline {
+            panic!("mesh/agent did not become ready before timeout");
+        }
+        thread::sleep(Duration::from_millis(20));
+    };
     let leader = result
         .swarms
         .iter()
