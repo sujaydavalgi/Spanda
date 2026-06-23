@@ -617,6 +617,14 @@ pub enum ValidateRuleDecl {
     },
 }
 
+/// Human-in-the-loop approval requirement on a mission.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct MissionApprovalReq {
+    pub actor: String,
+    pub actions: Vec<String>,
+    pub span: Span,
+}
+
 /// Mission declaration for power budgeting and step-based execution.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind")]
@@ -630,6 +638,8 @@ pub enum MissionDecl {
         steps: Vec<String>,
         #[serde(default)]
         required_capabilities: Vec<String>,
+        #[serde(default)]
+        required_approvals: Vec<MissionApprovalReq>,
         span: Span,
     },
 }

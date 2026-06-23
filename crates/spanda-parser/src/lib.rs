@@ -2003,6 +2003,7 @@ impl Parser {
         let mut duration_hours = None;
         let mut steps = Vec::new();
         let mut required_capabilities = Vec::new();
+        let mut required_approvals = Vec::new();
 
         // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
@@ -2012,17 +2013,42 @@ impl Parser {
                 duration_hours = Some(self.parse_duration_hours()?);
                 self.expect(TokenType::Semicolon, "Expected ';' after duration")?;
             } else if self.check(TokenType::Requires) {
-                self.advance();
-                let cap_kw =
-                    self.expect(TokenType::Ident, "Expected 'capabilities' after requires")?;
-                if cap_kw.lexeme != "capabilities" {
+                let req_start = self.advance();
+                let req_kw = self.expect(
+                    TokenType::Ident,
+                    "Expected 'capabilities' or 'approval' after requires",
+                )?;
+                if req_kw.lexeme == "capabilities" {
+                    required_capabilities = self.parse_hardware_type_list("capabilities")?;
+                } else if req_kw.lexeme == "approval" {
+                    let actor = self.expect(TokenType::Ident, "Expected approval actor name")?;
+                    self.expect(TokenType::For, "Expected 'for:' after approval actor")?;
+                    self.expect(TokenType::Colon, "Expected ':' after 'for'")?;
+                    let mut actions = Vec::new();
+                    while self.check(TokenType::Ident) {
+                        actions.push(self.advance().lexeme);
+                        if self.check(TokenType::Comma) {
+                            self.advance();
+                        } else {
+                            break;
+                        }
+                    }
+                    let req_end = self.peek().clone();
+                    required_approvals.push(spanda_ast::foundations::MissionApprovalReq {
+                        actor: actor.lexeme,
+                        actions,
+                        span: self.span_from(&req_start, &req_end),
+                    });
+                    if self.check(TokenType::Semicolon) {
+                        self.advance();
+                    }
+                } else {
                     return Err(SpandaError::Parse {
-                        message: "Expected 'capabilities' after requires".into(),
-                        line: cap_kw.line,
-                        column: cap_kw.column,
+                        message: "Expected 'capabilities' or 'approval' after requires".into(),
+                        line: req_kw.line,
+                        column: req_kw.column,
                     });
                 }
-                required_capabilities = self.parse_hardware_type_list("capabilities")?;
             } else {
                 let step = self.parse_label("Expected mission step name")?;
                 self.expect(TokenType::Semicolon, "Expected ';' after mission step")?;
@@ -2030,10 +2056,16 @@ impl Parser {
             }
         }
         let end = self.expect(TokenType::Rbrace, "Expected '}' to close mission")?;
-        if duration_hours.is_none() && steps.is_empty() && required_capabilities.is_empty() {
+        if duration_hours.is_none()
+            && steps.is_empty()
+            && required_capabilities.is_empty()
+            && required_approvals.is_empty()
+        {
             let t = self.peek();
             return Err(SpandaError::Parse {
-                message: "mission block requires duration or at least one step".into(),
+                message:
+                    "mission block requires duration, step, capability, or approval requirement"
+                        .into(),
                 line: t.line,
                 column: t.column,
             });
@@ -2043,6 +2075,7 @@ impl Parser {
             duration_hours,
             steps,
             required_capabilities,
+            required_approvals,
             span: self.span_from(&start, &end),
         })
     }
