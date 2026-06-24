@@ -60,5 +60,32 @@
       "}"
     ],
     "description": "Robot health check block"
+  },
+  "Recovery policy": {
+    "prefix": "recoverypolicy",
+    "body": [
+      "recovery_policy ${1:FleetRecovery} {",
+      "  on ${2:robot.failed} {",
+      "    pause mission;",
+      "    reassign mission;",
+      "  }",
+      "}"
+    ],
+    "description": "Recovery policy with fleet handoff actions"
+  },
+  "Continuity policy": {
+    "prefix": "continuitypolicy",
+    "body": [
+      "continuity_policy ${1:FleetContinuity} {",
+      "  on robot.failed {",
+      "    resume from checkpoint;",
+      "    reassign mission;",
+      "  }",
+      "  on battery.critical {",
+      "    hot takeover;",
+      "  }",
+      "}"
+    ],
+    "description": "Mission continuity policy with resume and hot takeover branches"
   }
 }

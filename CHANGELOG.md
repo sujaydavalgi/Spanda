@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Official package:** `spanda-mission-continuity` (`assurance.continuity`).
 - **Recovery handoff bridge:** fleet recovery `reassign mission` actions also relay continuity takeover when `SPANDA_FLEET_MESH_URL` is set.
 - **Continuity man page and docs:** `spanda man continuity`; README and getting-started continuity section; roadmap/feature-status sync.
+- **LSP continuity quick-fixes:** readiness/recovery/continuity diagnostics cached for code actions; VS Code snippets for `continuitypolicy` and `recoverypolicy`.
 - **Continuity examples:** `examples/showcase/continuity/`, `takeover/`, `delegation/`, `swarm_takeover/`, `fleet_succession/`.
 - **Docs:** [mission-continuity.md](docs/mission-continuity.md).
 - **Platform maturity roadmap:** [docs/platform-maturity-roadmap.md](docs/platform-maturity-roadmap.md) — classification, architecture impact, dependency mapping, priorities, documentation plan, risk analysis, and phased implementation for 16 adoption/trust/operations areas; tamper detection deep dive (architecture, trust model, detection strategies, response policies, demos, gaps).

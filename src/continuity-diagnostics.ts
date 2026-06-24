@@ -165,7 +165,7 @@ export function collectContinuityDiagnostics(program: Program): ContinuityDiagno
       severity: "warning",
       category: "continuity:policy",
       suggested_fix:
-        "Add continuity_policy with on robot.failed { resume from checkpoint; reassign mission; }",
+        "continuity_policy FleetContinuity {\n    on robot.failed {\n        resume from checkpoint;\n        reassign mission;\n    }\n}",
     });
   }
 
@@ -178,7 +178,7 @@ export function collectContinuityDiagnostics(program: Program): ContinuityDiagno
       severity: "info",
       category: "continuity:handoff",
       suggested_fix:
-        "Pair recovery reassign with continuity_policy for checkpoint resume and successor selection",
+        "continuity_policy FleetContinuity {\n    on robot.failed {\n        resume from checkpoint;\n        reassign mission;\n    }\n}",
     });
   }
 
@@ -190,7 +190,7 @@ export function collectContinuityDiagnostics(program: Program): ContinuityDiagno
         column: policy.span.start.column,
         severity: "warning",
         category: "continuity:policy",
-        suggested_fix: "Add on robot.failed { resume from checkpoint; } branches",
+        suggested_fix: "on robot.failed { resume from checkpoint; reassign mission; }",
       });
       continue;
     }
@@ -217,8 +217,7 @@ export function collectContinuityDiagnostics(program: Program): ContinuityDiagno
             column: branch.span.start.column,
             severity: "warning",
             category: "continuity:approval",
-            suggested_fix:
-              'Add topic approval: Approval subscribe on "/ops/approval"; or mission requires approval Operator',
+            suggested_fix: 'topic approval: Approval subscribe on "/ops/approval";',
           });
         }
       }

@@ -124,6 +124,47 @@ type CompatItem = {
 
 const verificationCache = new Map<string, CompatItem[]>();
 
+const CONTINUITY_POLICY_SNIPPET = `continuity_policy FleetContinuity {
+    on robot.failed {
+        resume from checkpoint;
+        reassign mission;
+    }
+}`;
+
+const CONTINUITY_BRANCH_SNIPPET = `    on robot.failed {
+        resume from checkpoint;
+        reassign mission;
+    }`;
+
+const APPROVAL_TOPIC_SNIPPET = `topic approval: Approval subscribe on "/ops/approval";`;
+
+function diagnosticSource(category?: string): string {
+  if (category?.startsWith("kill")) return "spanda-verify";
+  if (category?.startsWith("readiness:")) return "spanda-readiness";
+  if (category?.startsWith("recovery:")) return "spanda-recovery";
+  if (category?.startsWith("continuity:")) return "spanda-continuity";
+  return "spanda-compat";
+}
+
+function quickFixInsert(item: CompatItem): string | null {
+  const category = item.category ?? "";
+  if (category === "continuity:policy") {
+    if (item.message.includes("without continuity_policy")) {
+      return `${CONTINUITY_POLICY_SNIPPET}\n\n`;
+    }
+    if (item.message.includes("has no on branches")) {
+      return `${CONTINUITY_BRANCH_SNIPPET}\n`;
+    }
+  }
+  if (category === "continuity:approval" || category === "recovery:approval") {
+    return `${APPROVAL_TOPIC_SNIPPET}\n`;
+  }
+  if (category === "continuity:handoff") {
+    return `${CONTINUITY_POLICY_SNIPPET}\n\n`;
+  }
+  return item.suggested_fix ? `${item.suggested_fix}\n` : null;
+}
+
 const COMM_KEYWORDS = [
   "message",
   "subscribe",
@@ -906,7 +947,7 @@ function validate(textDocument: TextDocument): Diagnostic[] {
   const compatItems = verifySource(source);
   const verificationItems = verificationSource(source);
   const readinessItems = readinessSource(source);
-  verificationCache.set(textDocument.uri, verificationItems);
+  verificationCache.set(textDocument.uri, [...verificationItems, ...readinessItems]);
   const typeDiags = typeErrors.map(
     (d): Diagnostic => ({
       severity: DiagnosticSeverity.Error,
@@ -929,11 +970,7 @@ function validate(textDocument: TextDocument): Diagnostic[] {
         end: { line: Math.max(0, d.line - 1), character: Math.max(0, d.column + 20) },
       },
       message: `${prefix}${d.message}`,
-      source: d.category?.startsWith("kill")
-        ? "spanda-verify"
-        : d.category?.startsWith("readiness:")
-          ? "spanda-readiness"
-          : "spanda-compat",
+      source: diagnosticSource(d.category),
     };
   });
   return [...typeDiags, ...compatDiags];
@@ -1216,7 +1253,8 @@ connection.onCodeAction((params: CodeActionParams): CodeAction[] => {
     }
   }
   for (const item of items) {
-    if (!item.suggested_fix) continue;
+    const fixText = quickFixInsert(item);
+    if (!fixText) continue;
     const itemLine = Math.max(0, item.line - 1);
     const itemColumn = Math.max(0, item.column - 1);
     const overlaps = params.range.start.line === itemLine
@@ -1234,7 +1272,7 @@ connection.onCodeAction((params: CodeActionParams): CodeAction[] => {
                 start: { line: itemLine, character: itemColumn },
                 end: { line: itemLine, character: itemColumn },
               },
-              newText: `${item.suggested_fix}\n`,
+              newText: fixText,
             },
           ],
         },

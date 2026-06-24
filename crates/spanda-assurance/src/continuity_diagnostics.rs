@@ -200,7 +200,7 @@ pub fn collect_continuity_diagnostics(program: &Program) -> Vec<VerificationDiag
             severity: "warning".into(),
             category: "continuity:policy".into(),
             suggested_fix: Some(
-                "Add continuity_policy with on robot.failed { resume from checkpoint; reassign mission; }"
+                "continuity_policy FleetContinuity {\n    on robot.failed {\n        resume from checkpoint;\n        reassign mission;\n    }\n}"
                     .into(),
             ),
         });
@@ -233,7 +233,7 @@ pub fn collect_continuity_diagnostics(program: &Program) -> Vec<VerificationDiag
             severity: "info".into(),
             category: "continuity:handoff".into(),
             suggested_fix: Some(
-                "Pair recovery reassign with continuity_policy for checkpoint resume and successor selection"
+                "continuity_policy FleetContinuity {\n    on robot.failed {\n        resume from checkpoint;\n        reassign mission;\n    }\n}"
                     .into(),
             ),
         });
@@ -252,7 +252,7 @@ pub fn collect_continuity_diagnostics(program: &Program) -> Vec<VerificationDiag
                 column: span.start.column,
                 severity: "warning".into(),
                 category: "continuity:policy".into(),
-                suggested_fix: Some("Add on robot.failed { resume from checkpoint; } branches".into()),
+                suggested_fix: Some("on robot.failed { resume from checkpoint; reassign mission; }".into()),
             });
             continue;
         }
@@ -283,7 +283,7 @@ pub fn collect_continuity_diagnostics(program: &Program) -> Vec<VerificationDiag
                         severity: "warning".into(),
                         category: "continuity:approval".into(),
                         suggested_fix: Some(
-                            "Add topic approval: Approval subscribe on \"/ops/approval\"; or mission requires approval Operator"
+                            "topic approval: Approval subscribe on \"/ops/approval\";"
                                 .into(),
                         ),
                     });

@@ -27,7 +27,7 @@ spanda demo readiness
 - **`POST /v1/program`** on deploy and fleet agents to upload `.sd` source for live readiness.
 - **Remote CLI:** `spanda deploy agent readiness <Robot@Hardware>` and `spanda fleet agent readiness <RobotName>`.
 - **`--agent-json`** on `spanda readiness` — same JSON envelope as agent `GET /v1/readiness` (for scripts, CI, and local parity checks).
-- **`spanda check --readiness-json`** — merges operational readiness diagnostics with **recovery-policy** diagnostics (`recovery:policy`, `recovery:approval`, `recovery:fleet`). See [verification-diagnostics.md](./verification-diagnostics.md).
+- **`spanda check --readiness-json`** — merges operational readiness diagnostics with **recovery-policy** diagnostics (`recovery:policy`, `recovery:approval`, `recovery:fleet`) and **continuity-policy** diagnostics (`continuity:policy`, `continuity:fleet`, `continuity:approval`, `continuity:handoff`). See [verification-diagnostics.md](./verification-diagnostics.md).
 - **Web playground** — switch to **Operations** view in `packages/web` for local scoring or agent fetch.
 
 Example output:
