@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Mission continuity framework:** `spanda-assurance` continuity module with `MissionContinuityManager`, `MissionDelegationManager`, `TakeoverCoordinator`, `SuccessionPlanner`, `MissionCheckpointManager`, `MissionStateTransferManager`, `MissionRecoveryPlanner`, and `ContinuationDecisionEngine`; takeover modes (resume, restart, partial restart, shadow/hot/cold/human); state transfer models; successor ranking with trust/readiness gates.
+- **Continuity CLI:** `spanda continuity`, `spanda takeover`, `spanda delegate`, `spanda succession` with `--failed`, `--progress`, `--trigger`, `--scope`, and report formats.
+- **Continuity examples:** `examples/showcase/continuity/`, `takeover/`, `delegation/`, `swarm_takeover/`, `fleet_succession/`.
+- **Docs:** [mission-continuity.md](docs/mission-continuity.md).
 - **Platform maturity roadmap:** [docs/platform-maturity-roadmap.md](docs/platform-maturity-roadmap.md) — classification, architecture impact, dependency mapping, priorities, documentation plan, risk analysis, and phased implementation for 16 adoption/trust/operations areas; tamper detection deep dive (architecture, trust model, detection strategies, response policies, demos, gaps).
 - **Platform maturity topic guides:** dependency graphs, threat modeling, drift detection, policy engine, compliance profiles, explainability, chaos engineering, resource estimation, readiness trends, package trust, deployment gates, scorecards, tamper detection, integrity verification, trust framework, spoofing detection, security assurance.
 - **Roadmap sync:** [docs/roadmap.md](docs/roadmap.md) Platform Maturity section; [docs/product-strategy.md](docs/product-strategy.md) maturity focus; [docs/README.md](docs/README.md) index entries.

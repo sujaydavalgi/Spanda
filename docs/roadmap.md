@@ -103,6 +103,23 @@ See [self-healing.md](./self-healing.md), [recovery-policies.md](./recovery-poli
 
 ---
 
+## Mission continuity
+
+**Mission continuity, delegation, takeover, and succession** — checkpoint resume, state transfer, successor ranking, safety-gated takeover.
+
+| Item | Status |
+|------|--------|
+| Continuity framework (`MissionContinuityManager`, `TakeoverCoordinator`, `SuccessionPlanner`, …) | **Stable** |
+| Takeover modes (resume, restart, partial, shadow, hot, cold, human) | **Stable** |
+| State transfer (`MissionStateSnapshot`, `MissionContextTransfer`) | **Stable** |
+| CLI (`continuity`, `takeover`, `delegate`, `succession`) | **Stable** |
+| Runtime takeover dispatch on fleet agents | **Future** |
+| Language `continuity_policy` declarations | **Future** |
+
+See [mission-continuity.md](./mission-continuity.md).
+
+---
+
 ## Language
 
 **Spanda Language (`.sd`)** — syntax, types, robot primitives, units, safety types.

@@ -36,6 +36,11 @@ Set `SPANDA_ROOT` to the repository root if examples are not found.
 | [`assurance/`](./assurance/) | Mission assurance declarations and CLI (`spanda demo assurance`) |
 | [`assurance/rover.sd`](./assurance/rover.sd) | Flagship assurance program — learned anomaly, state estimation, resilience |
 | [`fleet_management/`](./fleet_management/) | Fleet, health requirements, coordination |
+| [`continuity/`](./continuity/) | Mission continuity — checkpoint resume |
+| [`takeover/`](./takeover/) | Hot takeover on failure |
+| [`delegation/`](./delegation/) | Mission ownership transfer |
+| [`swarm_takeover/`](./swarm_takeover/) | Swarm member lost |
+| [`fleet_succession/`](./fleet_succession/) | Fleet successor ranking |
 | [`replay/`](./replay/) | Record, replay, fault injection |
 
 ---
