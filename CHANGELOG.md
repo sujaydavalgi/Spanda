@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Recovery runtime dispatch:** validated recovery actions execute at runtime (mode transitions, speed caps, connectivity restart, mission pause, fleet coordination) with assurance gating.
+- **Self-healing docs sync:** man page (`spanda-recovery`), CLI overview, fleet-distributed recovery HTTP APIs, verification/readiness diagnostic categories, feature-status matrix, and deploy-http `fleet_recovery` module docs. validated recovery actions execute at runtime (mode transitions, speed caps, connectivity restart, mission pause, fleet coordination) with assurance gating.
 - **Recovery knowledge store:** persistent `.spanda/recovery_knowledge.json` records outcomes; planner and `evaluate_recovery` use merged knowledge when policies are absent; `spanda recovery knowledge` inspects the store.
 - **Operator approval hooks:** `SPANDA_OPERATOR_APPROVAL`, `SPANDA_GRANT_RECOVERY_APPROVAL`, `Approval` comm-topic polling, `RunOptions.inbound_comm_messages` test hook, and mission `requires approval Operator` runtime gating for high-risk recovery and mission steps.
 - **Fleet recovery mesh signal:** runtime publishes `/fleet/recovery` Command messages and relays to fleet mesh (`POST /v1/fleet/recovery`) when `SPANDA_FLEET_MESH_URL` is set; mesh coordinator fans out `fleet_recovery` peer deliveries to registered agents; agents expose `recovery_active` on `/v1/status`.

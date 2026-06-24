@@ -56,7 +56,7 @@ Platform overview: [platform-overview.md](./platform-overview.md)
 | **Lean-core workspace** | 50+ focused Rust crates; `spanda-core` facade; CLI/bindings use workspace deps directly ([crates/README.md](../crates/README.md)) |
 | **Verification & DX** | `spanda-capability` — traceability, minimum-hardware, health analysis; `spanda-readiness` — operational readiness, mission verification, safety reports; `spanda check --verification-json`; LSP verification diagnostics and quick-fixes |
 | **Health & kill switch** | `health_check`, `health_policy`, fleet `require` runtime; `kill_switch`, `remote_signed`, `on kill_switch` handlers |
-| **Self-healing & recovery** | `recovery_policy`, recovery planner, validation gates, audit/traceability; runtime dispatch (modes, speed caps, fleet mesh relay); CLI `heal`, `recover`, `recovery-report`, `recovery knowledge`, `sim --inject-failure`; mission operator approval gating |
+| **Self-healing & recovery** | `recovery_policy`, recovery planner, validation gates, audit/traceability; runtime dispatch (modes, speed caps, fleet mesh relay); CLI `heal`, `recover`, `recovery-report`, `recovery knowledge`, `sim --inject-failure`; fleet agent interpreter + assurance recovery; mission operator approval gating |
 | **Mission assurance** | `knowledge_model`, `state_estimator`, `anomaly_detector`, `on anomaly`, `prognostics`, `mitigation`, `resilience_policy`, `assurance_case`; CLI `assure`, `anomaly scan`, `diagnose`, `state estimate`, `prognostics`, `mission verify`, `resilience check`, `mitigation plan`; `spanda demo assurance` |
 | **Weighted sensor fusion** | `observe { }`, `state_estimator`, `fusion.read()` with type-weighted confidence; `spanda-fusion` package |
 | **Learned anomaly runtime** | `learned backend assurance.anomaly`; EMA volatility; optional ONNX (`SPANDA_ANOMALY_ONNX_MODEL_PATH`) |
@@ -152,7 +152,8 @@ See [tier-3-experimental.md](./tier-3-experimental.md) and [tier-3-golden-paths.
 | observe / fusion | **Stable** | Weighted fusion by sensor type; `state_estimator` runtime bindings |
 | mission assurance (static + CLI) | **Stable** | `spanda-assurance` crate; 8 official packages |
 | self-healing & recovery (static + CLI) | **Stable** | Recovery planner, validation gates, audit, knowledge store |
-| self-healing runtime dispatch | **Experimental** | Assurance-gated actions, Approval polling, fleet mesh relay (`SPANDA_FLEET_MESH_URL`), mission approval gating, fleet agent assurance recovery on deployed programs |
+| self-healing runtime dispatch | **Experimental** | Assurance-gated actions, Approval polling, fleet mesh relay (`SPANDA_FLEET_MESH_URL`), mission approval gating, fleet agent interpreter + assurance recovery on deployed programs (`recovery_engine` on `/v1/status`) |
+| recovery diagnostics (CLI + LSP) | **Stable** | `spanda check --readiness-json` merges `recovery:*` categories; TS mirror in `scripts/lsp-readiness.mts` |
 | learned anomaly backends | **Experimental** | Runtime `scan_learned`; ONNX optional |
 | verify { } behavioral assertions | **Stable** | |
 | hardware / deploy | **Stable** | Rust verify CLI |

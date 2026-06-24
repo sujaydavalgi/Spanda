@@ -12,6 +12,7 @@ Man-page style CLI reference (markdown). Regenerate with `python3 scripts/genera
 | [spanda-fmt](./spanda-fmt.md) | `spanda fmt` |
 | [spanda-lint](./spanda-lint.md) | `spanda lint` |
 | [spanda-reference](./spanda-reference.md) | `spanda reference` |
+| [spanda-recovery](./spanda-recovery.md) | `spanda heal`, `recover`, `recovery` |
 | [spanda-replay](./spanda-replay.md) | `spanda replay` |
 | [spanda-run](./spanda-run.md) | `spanda run` |
 | [spanda-sim](./spanda-sim.md) | `spanda sim` |

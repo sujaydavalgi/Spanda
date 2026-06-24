@@ -93,3 +93,10 @@ Recovery outcomes are recorded to `.spanda/recovery_knowledge.json` for future r
 ## Example
 
 See `examples/showcase/self_healing/rover.sd`.
+
+## Related
+
+- [recovery-policies.md](./recovery-policies.md) — `recovery_policy` syntax
+- [fleet-distributed.md](./fleet-distributed.md) — mesh and fleet agent recovery HTTP APIs
+- [verification-diagnostics.md](./verification-diagnostics.md) — `recovery:*` diagnostic categories
+- [man/spanda-recovery.md](./man/spanda-recovery.md) — CLI man page

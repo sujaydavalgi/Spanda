@@ -45,6 +45,18 @@ spanda check examples/showcase/readiness/rover.sd --readiness-json --json
 
 Readiness diagnostics use categories such as `readiness:hardware`, `readiness:health`, and `readiness:capabilities`, with spans on deploy targets, health checks, missions, or robot blocks when available.
 
+**Recovery-policy diagnostics** (merged into the same JSON when check succeeds):
+
+| Category | Checks |
+|----------|--------|
+| `recovery:policy` | Health/anomaly without `recovery_policy`; empty policy branches |
+| `recovery:approval` | High-risk actions without Approval topic or operator path |
+| `recovery:fleet` | Fleet triggers declared without a `fleet` block |
+
+The TypeScript LSP fallback (`scripts/lsp-readiness.mts`) mirrors recovery diagnostics when the native CLI is unavailable.
+
+See [self-healing.md](./self-healing.md).
+
 ---
 
 ## Verify flags
@@ -88,4 +100,5 @@ Golden path: `./scripts/ci_verify_golden_path.sh`
 
 - [testing.md](./testing.md) — `expect_compile_error` and `spanda test`
 - [typed-handler-io.md](./typed-handler-io.md) — handler return type validation
+- [self-healing.md](./self-healing.md) — recovery workflow and fleet agent recovery APIs
 - [feature-status.md](./feature-status.md) — stable vs experimental matrix

@@ -64,6 +64,55 @@ spanda deploy rollback --remote program.sd
 
 See [phase-18-security-hardening.md](./phase-18-security-hardening.md) for token requirements on non-loopback binds.
 
+## Fleet recovery (mesh + agents)
+
+When programs declare `recovery_policy` and robots are registered on the mesh, runtime recovery actions can relay through the coordinator:
+
+```bash
+export SPANDA_FLEET_MESH_URL=http://coordinator:9700
+export SPANDA_FLEET_MESH_TOKEN="$FLEET_TOKEN"
+spanda run coordinator.sd   # publishes /fleet/recovery and POSTs to mesh when env is set
+```
+
+### Mesh coordinator
+
+| Endpoint | Description |
+|----------|-------------|
+| `POST /v1/fleet/recovery` | Relay recovery action to registered fleet agents (`fleet_recovery` peer topic) |
+
+Request body (JSON):
+
+```json
+{
+  "action": "enter degraded_mode",
+  "fleet_name": "PatrolFleet",
+  "from_robot": "RoverAlpha",
+  "members": ["RoverAlpha", "RoverBeta"]
+}
+```
+
+### Fleet agent (deployed program)
+
+Upload program source, then trigger or receive recovery:
+
+| Endpoint | Description |
+|----------|-------------|
+| `POST /v1/program` | Upload `.sd` source (`{"program": "..."}`) |
+| `POST /v1/recovery/execute` | Direct recovery trigger (`{"action": "pause mission"}`) |
+| `POST /v1/recovery/ack` | Clear active recovery state |
+| `GET /v1/status` | Agent state including recovery fields |
+
+Recovery fields on `GET /v1/status`:
+
+- `recovery_engine` — `interpreter` (live runtime dispatch), `assurance` (plan/validate fallback), or `fallback`
+- `recovery_validation` — `PASS`, `PARTIAL`, or `FAIL`
+- `recovery_active`, `recovery_actions_applied`, `recovery_mode`, `mission_paused`
+- `last_recovery_runtime_logs`, `last_recovery_evidence`
+
+Deployed agents prefer **interpreter recovery** (`execute_recovery_on_program`) for mode transitions, speed caps, mission pause, and connectivity restart. Set `SPANDA_OPERATOR_APPROVAL=1` when testing high-risk actions without Approval topics.
+
+See [self-healing.md](./self-healing.md).
+
 ## Golden path
 
 ```bash

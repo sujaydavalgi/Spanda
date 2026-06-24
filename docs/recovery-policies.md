@@ -57,6 +57,8 @@ recovery_policy FleetRecovery {
 }
 ```
 
+Mesh relay: set `SPANDA_FLEET_MESH_URL` on the coordinator runtime; the mesh coordinator exposes `POST /v1/fleet/recovery`. Deployed fleet agents load programs via `POST /v1/program` and run interpreter-backed recovery (`recovery_engine: interpreter`) or assurance fallback. See [fleet-distributed.md](./fleet-distributed.md) and [self-healing.md](./self-healing.md).
+
 ## Example
 
 See `examples/showcase/self_healing/rover.sd` and `examples/resilience/degraded_mode_recovery.sd`.

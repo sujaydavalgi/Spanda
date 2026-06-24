@@ -26,6 +26,21 @@
 | `spanda demo health` | Health checks + fault injection |
 | `spanda demo readiness` | Operational go/no-go scoring |
 | `spanda demo assurance` | Mission assurance CLI suite |
+| `spanda demo self-healing` | Recovery policies, heal/recover/sim, fleet recovery |
+
+## Self-healing & recovery
+
+| Command | Description |
+|---------|-------------|
+| `spanda heal <file.sd>` | Full recovery evaluation (plan → validate → audit) |
+| `spanda recover <file.sd> [--failure gps]` | Recovery for a specific failure kind |
+| `spanda recovery-report <file.sd>` | Recovery plans and assurance evidence |
+| `spanda recovery knowledge <file.sd>` | Merged policy + persisted knowledge store |
+| `spanda sim <file.sd> --inject-failure gps` | Simulated failure + recovery |
+| `spanda analyze-failure <file.sd> --with-recovery` | Failure impacts + recovery plans |
+| `spanda check <file.sd> --readiness-json` | Readiness + recovery-policy diagnostics |
+
+Guide: [self-healing.md](../self-healing.md) · Man page: [spanda-recovery.md](../man/spanda-recovery.md)
 
 ## Mission assurance & readiness
 

@@ -544,7 +544,7 @@ spanda sim examples/showcase/self_healing/rover.sd --inject-failure gps
 spanda analyze-failure examples/showcase/self_healing/rover.sd --with-recovery
 ```
 
-Fleet recovery with mesh relay (`SPANDA_FLEET_MESH_URL`): [self-healing.md](./self-healing.md) · [`examples/showcase/fleet_recovery/`](../examples/showcase/fleet_recovery/fleet.sd)
+| Fleet recovery with mesh relay (`SPANDA_FLEET_MESH_URL`): [self-healing.md](./self-healing.md) · [fleet-distributed.md](./fleet-distributed.md) · [`examples/showcase/fleet_recovery/`](../examples/showcase/fleet_recovery/fleet.sd)
 
 ---
 

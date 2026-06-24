@@ -1902,6 +1902,7 @@ The Spanda CLI drives the autonomous systems platform: check, verify, simulate, 
 - [`sim`](./man/spanda-sim.md)
 - [`replay`](./man/spanda-replay.md)
 - [`fleet`](./man/spanda-fleet.md)
+- [`heal` / `recover` / `recovery`](./man/spanda-recovery.md)
 - [`fmt`](./man/spanda-fmt.md)
 - [`lint`](./man/spanda-lint.md)
 - [`doc`](./man/spanda-doc.md)
