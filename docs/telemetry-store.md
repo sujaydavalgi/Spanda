@@ -9,7 +9,7 @@ Append-only local storage for device metrics, sensor readings, and task heartbea
 | `device` | `iot.telemetry.publish`, IoT hub dispatch | Each published device metric |
 | `sensor` | Robot `sensor.read()` / fusion inputs | Each sensor read during runtime |
 | `heartbeat` | Task scheduler watchdog heartbeats | Latest index on every tick; history throttled (5s per task) |
-| `health` | Reserved for health transitions | Planned hook |
+| `health` | Health status transitions (overall + per-check) | Runtime health polling |
 
 Runtime scheduler metrics (`--metrics-json`) remain in-memory execution telemetry. Mission traces (`--record`) are separate replay artifacts.
 
@@ -68,6 +68,6 @@ spanda telemetry heartbeats
 
 Implementation: `crates/spanda-telemetry-store` (`TelemetryEvent`, `PersistentTelemetryStore`).
 
-IoT in-memory hub remains the hot path for `latest()` queries during simulation; the JSONL store is the durable audit trail for post-run analysis.
+TypeScript mirror: `src/telemetry-store.ts` records sensor reads and task heartbeats when `persistTelemetry` is set on `run()` or `SPANDA_TELEMETRY_STORE=1`. Health events are recorded from the Rust runtime; use the native CLI for full parity.
 
 See also [iot.md](./iot.md), [watchdogs.md](./watchdogs.md), [replay.md](./replay.md).
