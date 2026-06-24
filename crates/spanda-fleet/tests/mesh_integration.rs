@@ -360,3 +360,79 @@ fn mesh_coordinator_ingests_and_merges_fleet_telemetry() {
     assert!(merged.body.contains("rover-b"));
     assert!(merged.body.contains("spanda.robot.id"));
 }
+
+#[test]
+fn swarm_continuity_handoff_relays_through_mesh() {
+    let (port_b, _agent_b) = spawn_test_fleet_agent("ScoutB", None).expect("spawn ScoutB");
+    let mut registry = FleetAgentRegistry::default();
+    register_fleet_agent(
+        &mut registry,
+        "ScoutB".into(),
+        format!("http://127.0.0.1:{port_b}"),
+        None,
+    )
+    .expect("register ScoutB");
+    let (mesh_port, _mesh) = spawn_test_fleet_mesh(&registry).expect("spawn mesh");
+    thread::sleep(Duration::from_millis(30));
+    let fleet_program = r#"
+hardware RoverV1 {
+    sensors [GPS];
+    actuators [DifferentialDrive];
+    connectivity [WiFi];
+}
+continuity_policy SwarmContinuity {
+    on swarm.failed { resume from checkpoint; reassign mission; }
+}
+fleet Recon { ScoutA; ScoutB; ScoutC; }
+swarm ReconSwarm { fleet Recon; policy round_robin; }
+robot ScoutA {
+    sensor gps: GPS;
+    actuator wheels: DifferentialDrive;
+    safety { max_speed = 1.0 m/s; }
+    behavior patrol() { wheels.drive(0.3 m/s); }
+}
+robot ScoutB {
+    sensor gps: GPS;
+    actuator wheels: DifferentialDrive;
+    safety { max_speed = 1.0 m/s; }
+    behavior patrol() { wheels.drive(0.3 m/s); }
+}
+robot ScoutC {
+    sensor gps: GPS;
+    actuator wheels: DifferentialDrive;
+    safety { max_speed = 1.0 m/s; }
+    behavior patrol() { wheels.drive(0.3 m/s); }
+}
+"#;
+    let program_payload = serde_json::json!({ "program": fleet_program }).to_string();
+    let deploy = http_request(
+        "POST",
+        &format!("http://127.0.0.1:{port_b}/v1/program"),
+        Some(&program_payload),
+        None,
+    )
+    .expect("deploy program");
+    assert_eq!(deploy.status, 200);
+    let compiled = compile(fleet_program).expect("compile swarm continuity program");
+    let handoff = spanda_fleet::plan_swarm_member_continuity(
+        &compiled.program,
+        "ReconSwarm",
+        "ScoutA",
+        55.0,
+        Some("Patrol"),
+    )
+    .expect("continuity handoff planned");
+    let request = spanda_fleet::continuity_request_from_handoff(
+        &handoff,
+        "Recon",
+        &["ScoutB".into()],
+    );
+    let resp = relay_continuity_via_mesh(
+        &format!("http://127.0.0.1:{mesh_port}"),
+        &request,
+        None,
+    )
+    .expect("mesh swarm continuity");
+    assert!(resp.ok);
+    assert_eq!(resp.relayed, 1);
+}

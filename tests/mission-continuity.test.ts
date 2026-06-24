@@ -7,7 +7,7 @@ import {
   planTakeoverTs,
   type ContinuityContext,
 } from "../src/mission-continuity.js";
-import { loadCheckpoint, recordCheckpoint } from "../src/continuity-checkpoint.js";
+import { loadCheckpoint, persistCheckpoint, loadCheckpointStore, saveCheckpointStore, recordCheckpoint } from "../src/continuity-checkpoint.js";
 
 const warehouseSource = `
 hardware RoverV1 {
@@ -93,9 +93,9 @@ describe("mission continuity TS mirror", () => {
     expect(report.selected).toBeTruthy();
   });
 
-  it("persists checkpoints in TS store mirror", () => {
-    const store = recordCheckpoint(
-      { entries: {} },
+  it("persists checkpoints to disk in TS store mirror", () => {
+    const path = `.spanda/test-checkpoints-${Date.now()}.json`;
+    persistCheckpoint(
       "WarehouseInventoryScan",
       "ScannerAlpha",
       {
@@ -105,8 +105,14 @@ describe("mission continuity TS mirror", () => {
         progress_percent: 72,
         checkpoints: [],
       },
+      path,
     );
-    const loaded = loadCheckpoint(store, "WarehouseInventoryScan", "ScannerAlpha");
+    const loaded = loadCheckpoint(
+      loadCheckpointStore(path),
+      "WarehouseInventoryScan",
+      "ScannerAlpha",
+    );
     expect(loaded?.progress_percent).toBe(72);
+    saveCheckpointStore({ entries: {} }, path);
   });
 });

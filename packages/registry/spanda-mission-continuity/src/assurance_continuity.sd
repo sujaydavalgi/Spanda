@@ -1,5 +1,22 @@
 module assurance.continuity;
 
+/// Provider hook: whether a handoff should resume from a persisted checkpoint.
+export fn should_resume_from_checkpoint(progress_percent: Float) -> Int {
+    if progress_percent > 0.0 {
+        return 1;
+    }
+    return 0;
+}
+
+/// Provider hook: validate that a successor entity name is non-empty.
+export fn validate_successor(successor: String) -> Int {
+    if successor == "" {
+        return 0;
+    }
+    return 1;
+}
+
+/// Provider entry used by package smoke tests.
 export fn verify() -> Int {
-  return 1;
+    return 1;
 }
