@@ -143,6 +143,8 @@ Candidates blocked when untrusted, compromised, tampered, or not mission-ready.
 
 ## `continuity_policy` syntax
 
+See [continuity-policies.md](./continuity-policies.md) for the full policy reference (triggers, actions, diagnostics, and fleet pairing).
+
 ```spanda
 continuity_policy WarehouseContinuity {
     on robot.failed {
@@ -188,8 +190,11 @@ Agent status reports `continuity_engine`, `continuity_successor`, `mission_progr
 | `continuity:fleet` | error | Fleet/swarm trigger without a `fleet` declaration |
 | `continuity:approval` | warning | Hot/cold/human takeover without an Approval topic |
 | `continuity:handoff` | info | Recovery reassigns mission but no `continuity_policy` defines takeover mode |
+| `continuity:mission` | warning | Resume/checkpoint actions without a `mission_plan` |
 
 Rust: `spanda_assurance::collect_continuity_diagnostics`. TypeScript: `collectContinuityDiagnostics` in `src/continuity-diagnostics.ts`.
+
+Policy syntax guide: [continuity-policies.md](./continuity-policies.md).
 
 ---
 

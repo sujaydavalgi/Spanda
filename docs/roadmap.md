@@ -118,11 +118,11 @@ See [self-healing.md](./self-healing.md), [recovery-policies.md](./recovery-poli
 | TypeScript continuity diagnostics (LSP fallback) | **Stable** |
 | `spanda demo continuity` + showcase examples | **Stable** |
 | Official package `spanda-mission-continuity` (`assurance.continuity`) | **Stable** |
+| Language `continuity_policy` declarations | **Stable** |
 | Runtime takeover dispatch on fleet agents | **Experimental** |
 | Recovery reassign → continuity mesh relay | **Experimental** |
-| Language `continuity_policy` declarations | **Experimental** |
 
-See [mission-continuity.md](./mission-continuity.md).
+See [mission-continuity.md](./mission-continuity.md) and [continuity-policies.md](./continuity-policies.md).
 
 ---
 

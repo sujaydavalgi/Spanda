@@ -61,10 +61,11 @@ Readiness diagnostics use categories such as `readiness:hardware`, `readiness:he
 | `continuity:fleet` | Fleet/swarm triggers without a `fleet` block |
 | `continuity:approval` | Hot/cold/human takeover without Approval topic |
 | `continuity:handoff` | Recovery reassign without paired `continuity_policy` |
+| `continuity:mission` | Resume/checkpoint actions without `mission_plan` |
 
 The TypeScript LSP fallback (`scripts/lsp-readiness.mts`) mirrors recovery and continuity diagnostics when the native CLI is unavailable. The LSP exposes **quick-fix** actions for `continuity:*` and `recovery:*` categories when `suggested_fix` contains insertable Spanda snippets.
 
-See [self-healing.md](./self-healing.md) and [mission-continuity.md](./mission-continuity.md).
+See [self-healing.md](./self-healing.md), [mission-continuity.md](./mission-continuity.md), and [continuity-policies.md](./continuity-policies.md).
 
 ---
 

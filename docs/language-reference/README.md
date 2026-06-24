@@ -18,6 +18,7 @@ Structured reference for the Spanda (`.sd`) language. For a single generated doc
 | [Health checks](./health-checks.md) | Health policies and readiness |
 | [Packages](./packages.md) | `spanda.toml`, dependencies, registry |
 | [Recovery](./recovery.md) | Heal, recover, resilience policies |
+| [Continuity](./continuity.md) | Takeover, delegation, succession policies |
 | [Examples](./examples.md) | Runnable demos and golden paths |
 
 ## API documentation

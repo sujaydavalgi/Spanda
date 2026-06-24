@@ -74,6 +74,7 @@
 | [recovery-planning.md](./recovery-planning.md) | **Recovery planner and failure classification** |
 | [recovery-assurance.md](./recovery-assurance.md) | **Recovery evidence and assurance integration** |
 | [recovery-policies.md](./recovery-policies.md) | **`recovery_policy` syntax and operating modes** |
+| [continuity-policies.md](./continuity-policies.md) | **`continuity_policy` syntax, takeover modes, and fleet handoff** |
 | [mission-continuity.md](./mission-continuity.md) | **Mission continuity, takeover, delegation, and succession** |
 | [assurance-cases.md](./assurance-cases.md) | **Assurance cases and evidence linking** |
 | [mission-verification.md](./mission-verification.md) | **Mission achievability and approval verification** |

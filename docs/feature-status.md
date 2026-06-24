@@ -159,7 +159,7 @@ See [tier-3-experimental.md](./tier-3-experimental.md) and [tier-3-golden-paths.
 | mission continuity runtime dispatch | **Experimental** | Fleet agent interpreter + assurance takeover on `/v1/continuity/execute` and `fleet_takeover` peer topic; mesh `POST /v1/fleet/continuity`; recovery reassign also relays continuity |
 | self-healing runtime dispatch | **Experimental** | Assurance-gated actions, Approval polling, fleet mesh relay (`SPANDA_FLEET_MESH_URL`), mission approval gating, fleet agent interpreter + assurance recovery on deployed programs (`recovery_engine` on `/v1/status`) |
 | recovery diagnostics (CLI + LSP) | **Stable** | `spanda check --readiness-json` merges `recovery:*` categories; TS mirror in `scripts/lsp-readiness.mts` |
-| continuity diagnostics (CLI + LSP) | **Stable** | `spanda check --readiness-json` merges `continuity:*` categories; TS mirror in `src/continuity-diagnostics.ts` |
+| continuity diagnostics (CLI + LSP) | **Stable** | `spanda check --readiness-json` merges `continuity:*` categories including `continuity:mission`; TS mirror in `src/continuity-diagnostics.ts` |
 | learned anomaly backends | **Experimental** | Runtime `scan_learned`; ONNX optional |
 | verify { } behavioral assertions | **Stable** | |
 | hardware / deploy | **Stable** | Rust verify CLI |
