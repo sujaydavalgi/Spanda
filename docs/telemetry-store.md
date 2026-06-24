@@ -17,6 +17,8 @@ Append-only local storage for device metrics, sensor readings, and task heartbea
 
 Runtime scheduler metrics are also captured as a `runtime_metrics` event at the end of each persisted run. Mission traces (`--record`) can be linked via the `session` end event's `mission_trace_path`.
 
+During an active run, every recorded event is tagged with `session_id` so `spanda telemetry list --session <id>` returns exactly that run's sensor reads, heartbeats, and publishes (legacy events without `session_id` still match by timestamp window).
+
 ## Enable persistence
 
 Per run:

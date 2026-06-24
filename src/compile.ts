@@ -21,7 +21,7 @@ import {
   certificationRuntimeEnabledFromEnv,
   enforceCertificationRuntime,
 } from "./certify-runtime.js";
-import { configureSessionPersist } from "./telemetry-store.js";
+import { configureSessionPersist, beginRunSession, endRunSession } from "./telemetry-store.js";
 
 export type CompileBackend = "typescript" | "rust-native" | "rust-cli";
 
@@ -443,6 +443,9 @@ export function run(program: Program, options: RunOptions): RobotState {
 
   // const result = run(program, options);
   configureSessionPersist(options.persistTelemetry ?? false);
+  if (options.persistTelemetry) {
+    beginRunSession(options.traceSource);
+  }
   if (options.enforceCertify || certificationRuntimeEnabledFromEnv()) {
     enforceCertificationRuntime(program, true);
   }
@@ -458,7 +461,11 @@ export function run(program: Program, options: RunOptions): RobotState {
     secure: options.secure,
     injectSecurityFaults: options.injectSecurityFaults,
   });
-  return interpreter.run(program, options.entryBehavior);
+  const state = interpreter.run(program, options.entryBehavior);
+  if (options.persistTelemetry) {
+    endRunSession();
+  }
+  return state;
 }
 
 export async function runSource(source: string, options: RunOptions): Promise<RobotState> {

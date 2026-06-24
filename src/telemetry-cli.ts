@@ -164,12 +164,27 @@ function matchesQuery(event: TelemetryEvent, query: TelemetryQuery): boolean {
 
 function queryEvents(query: TelemetryQuery): TelemetryEvent[] {
   const all = readAllEvents();
-  const window = query.sessionId ? sessionTimeWindow(all, query.sessionId) : null;
   let events = all.filter((event) => {
-    if (window) {
-      const [startMs, endMs] = window;
-      if (event.timestamp_ms < startMs || event.timestamp_ms > endMs) {
-        return false;
+    if (query.sessionId) {
+      const eventSession =
+        event.kind === "session" || event.kind === "runtime_metrics"
+          ? event.session_id
+          : "session_id" in event
+            ? event.session_id
+            : undefined;
+      if (eventSession) {
+        if (eventSession !== query.sessionId) {
+          return false;
+        }
+      } else {
+        const window = sessionTimeWindow(all, query.sessionId);
+        if (!window) {
+          return false;
+        }
+        const [startMs, endMs] = window;
+        if (event.timestamp_ms < startMs || event.timestamp_ms > endMs) {
+          return false;
+        }
       }
     }
     return matchesQuery(event, query);

@@ -15,6 +15,7 @@ export type TelemetryEvent =
       value: unknown;
       timestamp_ms: number;
       robot_id?: string;
+      session_id?: string;
     }
   | {
       kind: "sensor";
@@ -23,12 +24,14 @@ export type TelemetryEvent =
       value: unknown;
       timestamp_ms: number;
       robot_id?: string;
+      session_id?: string;
     }
   | {
       kind: "heartbeat";
       task_name: string;
       timestamp_ms: number;
       robot_id?: string;
+      session_id?: string;
     }
   | {
       kind: "device_heartbeat";
@@ -36,11 +39,27 @@ export type TelemetryEvent =
       timestamp_ms: number;
       robot_id?: string;
       protocol?: string;
+      session_id?: string;
     }
   | {
       kind: "health";
       target: string;
       status: string;
+      timestamp_ms: number;
+      session_id?: string;
+    }
+  | {
+      kind: "session";
+      session_id: string;
+      phase: string;
+      source?: string;
+      mission_trace_path?: string;
+      timestamp_ms: number;
+    }
+  | {
+      kind: "runtime_metrics";
+      session_id: string;
+      metrics: unknown;
       timestamp_ms: number;
     };
 
@@ -50,6 +69,7 @@ type HeartbeatIndex = {
 };
 
 let sessionPersist = false;
+let activeSessionId: string | undefined;
 const lastHeartbeatHistory = new Map<string, number>();
 const lastDeviceHeartbeatHistory = new Map<string, number>();
 
@@ -79,6 +99,40 @@ export function envPersistEnabled(): boolean {
 
 export function configureSessionPersist(enabled: boolean): void {
   sessionPersist = enabled;
+  if (!enabled) {
+    activeSessionId = undefined;
+  }
+}
+
+export function beginRunSession(source?: string): string {
+  if (!persistEnabled()) {
+    return "";
+  }
+  const stem = source?.replace(/\.sd$/, "").split("/").pop() ?? "program";
+  const sessionId = `${stem}-${Date.now()}`;
+  activeSessionId = sessionId;
+  appendEvent({
+    kind: "session",
+    session_id: sessionId,
+    phase: "start",
+    source,
+    timestamp_ms: Date.now(),
+  });
+  return sessionId;
+}
+
+export function endRunSession(missionTracePath?: string, timestampMs = Date.now()): void {
+  if (!persistEnabled() || !activeSessionId) {
+    return;
+  }
+  appendEvent({
+    kind: "session",
+    session_id: activeSessionId,
+    phase: "end",
+    mission_trace_path: missionTracePath,
+    timestamp_ms: timestampMs,
+  });
+  activeSessionId = undefined;
 }
 
 export function persistEnabled(): boolean {
@@ -96,9 +150,16 @@ function appendEvent(event: TelemetryEvent): void {
   if (!persistEnabled()) {
     return;
   }
+  const stamped =
+    activeSessionId &&
+    event.kind !== "session" &&
+    event.kind !== "runtime_metrics" &&
+    !("session_id" in event && event.session_id)
+      ? { ...event, session_id: activeSessionId }
+      : event;
   const storePath = resolveStorePath();
   ensureParent(storePath);
-  appendFileSync(storePath, `${JSON.stringify(event)}\n`, "utf8");
+  appendFileSync(storePath, `${JSON.stringify(stamped)}\n`, "utf8");
 }
 
 function readHeartbeatIndex(path: string): HeartbeatIndex {

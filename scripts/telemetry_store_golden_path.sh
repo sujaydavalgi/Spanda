@@ -30,6 +30,10 @@ echo "== telemetry session + runtime metrics =="
 SESSIONS="$("${SPANDA[@]}" telemetry list --kind session --limit 2)"
 echo "${SESSIONS}"
 echo "${SESSIONS}" | grep -q '\[session\]'
+SESSION_ID="$(echo "${SESSIONS}" | sed -n 's/.*\[session\].* \([^ ]*\) phase=start.*/\1/p' | head -1)"
+FILTERED="$("${SPANDA[@]}" telemetry list --session "${SESSION_ID}" --kind sensor --limit 1)"
+echo "${FILTERED}"
+echo "${FILTERED}" | grep -q "session=${SESSION_ID}"
 METRICS="$("${SPANDA[@]}" telemetry list --kind runtime_metrics --limit 1)"
 echo "${METRICS}"
 echo "${METRICS}" | grep -q '\[runtime_metrics\]'
