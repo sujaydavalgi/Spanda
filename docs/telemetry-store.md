@@ -75,6 +75,8 @@ spanda telemetry latest [--device <id> [--metric <name>] | --sensor <id> | --tas
 spanda telemetry heartbeats [--json]
 spanda telemetry devices [--json]
 spanda telemetry stats [--json]
+spanda telemetry sessions [--json]
+spanda telemetry replay --session <id> [--from T+mm:ss] [--deterministic] [--playback] [--json]
 spanda telemetry export [--out <file.jsonl>]
 spanda telemetry prometheus [--out <file.prom>]
 spanda telemetry otlp [--out <file.json>]
@@ -86,6 +88,8 @@ spanda telemetry serve [--bind <addr>] [--once]
 ```bash
 spanda sim examples/end_to_end/validated_telemetry.sd --persist-telemetry --record
 spanda telemetry list --kind session --json
+spanda telemetry sessions --json
+spanda telemetry replay --session <id> --deterministic
 spanda telemetry list --kind runtime_metrics --json
 spanda telemetry stats
 spanda telemetry list --kind sensor --json

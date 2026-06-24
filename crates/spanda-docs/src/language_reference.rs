@@ -921,12 +921,12 @@ const CLI_COMMANDS: &[CliCommand] = &[
     CliCommand {
         name: "spanda-telemetry",
         section: 1,
-        synopsis: "spanda telemetry list|latest|heartbeats|devices|stats|export|prometheus|otlp|serve [flags]",
+        synopsis: "spanda telemetry list|latest|heartbeats|devices|stats|export|prometheus|otlp|serve|sessions|replay [flags]",
         description: "Query the persistent telemetry store written by `--persist-telemetry` or `SPANDA_TELEMETRY_STORE=1`.",
-        options: "`list` — filter by device, sensor, task, session, kind, since, limit\n`latest` — most recent device metric, sensor read, task heartbeat, or device liveness\n`heartbeats` / `devices` — index sidecar for tasks and devices\n`stats` — event counts (includes session and runtime_metrics)\n`export` — copy JSONL log\n`prometheus` — Prometheus text exposition\n`otlp` — OTLP/JSON metrics export\n`serve` — HTTP server (`/metrics`, `/otlp/v1/metrics`, `/healthz`)",
-        examples: "spanda telemetry stats\nspanda telemetry prometheus\nspanda telemetry serve --bind 127.0.0.1:9090",
+        options: "`list` — filter by device, sensor, task, session, kind, since, limit\n`latest` — most recent device metric, sensor read, task heartbeat, or device liveness\n`heartbeats` / `devices` — index sidecar for tasks and devices\n`stats` — event counts (includes session and runtime_metrics)\n`sessions` — list persisted run sessions with linked mission traces\n`replay` — replay the mission trace linked to a session (`--record` runs)\n`export` — copy JSONL log\n`prometheus` — Prometheus text exposition\n`otlp` — OTLP/JSON metrics export\n`serve` — HTTP server (`/metrics`, `/otlp/v1/metrics`, `/healthz`)",
+        examples: "spanda telemetry stats\nspanda telemetry sessions --json\nspanda telemetry replay --session rover-123 --deterministic",
         exit_status: "0 on success; 1 when the store cannot be read.",
-        files: "`.spanda/telemetry-store.jsonl`, `.spanda/telemetry-heartbeats.json` (override with `SPANDA_TELEMETRY_STORE_PATH`).",
+        files: "`.spanda/telemetry-store.jsonl` or `.spanda/telemetry-store.db` when `SPANDA_TELEMETRY_BACKEND=sqlite` (override with `SPANDA_TELEMETRY_STORE_PATH`).",
         see_also: "spanda-run(1), spanda-sim(1)",
     },
     CliCommand {
