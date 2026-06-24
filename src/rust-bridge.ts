@@ -63,7 +63,14 @@ function cliPath(): string | null {
   // const result = cliPath();
   const release = join(repoRoot, "target/release/spanda");
   const debug = join(repoRoot, "target/debug/spanda");
-  const candidates = [release, debug].filter((p) => existsSync(p));
+  const cargoTarget = process.env.CARGO_TARGET_DIR;
+  const candidates = [
+    ...(cargoTarget
+      ? [join(cargoTarget, "release/spanda"), join(cargoTarget, "debug/spanda")]
+      : []),
+    release,
+    debug,
+  ].filter((p) => existsSync(p));
 
   // continue when length equals 0.
   if (candidates.length === 0) return null;
@@ -118,7 +125,7 @@ export function checkViaCli(source: string): CheckResult {
       diagnostics: [{ message: "Rust CLI not built (run: npm run build:rust)", line: 1, column: 1 }],
     };
   }
-  const tmp = join(repoRoot, ".spanda-check-tmp.sd");
+  const tmp = join(repoRoot, `.spanda-check-${process.pid}-${Date.now()}.sd`);
   writeFileSync(tmp, source);
   const result = spawnSync(bin, ["check", "--json", tmp], { encoding: "utf-8" });
 
@@ -175,7 +182,7 @@ export function verifyViaCli(
       ],
     };
   }
-  const tmp = join(repoRoot, ".spanda-verify-tmp.sd");
+  const tmp = join(repoRoot, `.spanda-verify-${process.pid}-${Date.now()}.sd`);
   writeFileSync(tmp, source);
   const result = spawnSync(bin, ["verify", tmp, "--json", ...args], { encoding: "utf-8" });
 
@@ -225,7 +232,7 @@ export function runViaCli(source: string): RunResult {
   if (!bin) {
     throw new Error("Rust CLI not built (run: npm run build:rust)");
   }
-  const tmp = join(repoRoot, ".spanda-run-tmp.sd");
+  const tmp = join(repoRoot, `.spanda-run-${process.pid}-${Date.now()}.sd`);
   writeFileSync(tmp, source);
   const result = spawnSync(bin, ["run", "--json", tmp], { encoding: "utf-8" });
 
@@ -267,7 +274,10 @@ function withTempSource(
   suffix: string,
   run: (file: string) => SpawnSyncReturns<string>,
 ): SpawnSyncReturns<string> {  // Compute tmp for the following logic.
-  const tmp = join(repoRoot, suffix);
+  const tmp = join(
+    repoRoot,
+    `${suffix.replace(/\.sd$/, "")}-${process.pid}-${Date.now()}.sd`,
+  );
   writeFileSync(tmp, source);
   const result = run(tmp);
 
