@@ -83,6 +83,7 @@ fn mesh_coordinator_relays_fleet_recovery_to_agents() {
     .expect("agent status");
     assert!(status.body.contains("reassign mission"));
     assert!(status.body.contains("last_recovery_commands"));
+    assert!(status.body.contains("recovery_active"));
 }
 
 #[test]

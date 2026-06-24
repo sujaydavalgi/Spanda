@@ -28,6 +28,8 @@ pub struct FleetAgentState {
     pub last_peer_messages: Vec<String>,
     #[serde(default)]
     pub last_recovery_commands: Vec<String>,
+    #[serde(default)]
+    pub recovery_active: Option<String>,
 }
 
 pub fn default_fleet_agent_state_path() -> PathBuf {
@@ -154,6 +156,7 @@ pub fn handle_fleet_agent_request(
                 "robot_name": state.robot_name,
                 "last_peer_messages": state.last_peer_messages,
                 "last_recovery_commands": state.last_recovery_commands,
+                "recovery_active": state.recovery_active,
                 "has_program": state.program.is_some(),
                 "healthy": true,
             }))
@@ -220,6 +223,7 @@ pub fn handle_fleet_agent_request(
             state.last_peer_messages.push(message);
             if payload.topic == "fleet_recovery" {
                 state.last_recovery_commands.push(payload.step.clone());
+                state.recovery_active = Some(payload.step.clone());
             }
             HttpResponse {
                 status: 200,
