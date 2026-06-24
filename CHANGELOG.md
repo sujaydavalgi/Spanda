@@ -28,6 +28,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **README split:** Slim root [README.md](README.md); expanded content moved to [docs/overview/](docs/overview/README.md) subpages.
 - **Overview subpages:** Platform structure, components, architecture, layers, library, packages, web playground, and CLI reference under `docs/overview/`.
 
+### Changed
+
+- **Overview doc dedup:** Overview subpages link to canonical guides instead of repeating prose and tables; README and docs index consolidate navigation through [docs/overview/README.md](docs/overview/README.md).
+
 ### Fixed
 
 - **Resilience readiness:** `spanda resilience check` infers deploy target from `deploy … to` so readiness scores match `spanda readiness`.
