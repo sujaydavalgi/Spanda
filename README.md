@@ -21,11 +21,11 @@ Spanda helps answer:
 - Can it run safely?
 - Can it recover?
 - Can it continue?
-- **Who can take over when a robot or fleet member fails mid-mission?**
 - Can it be trusted?
 - Why should this deployment be trusted?
 - Why did it behave this way?
 - What happened when something failed?
+- Who can take over when a robot or fleet member fails mid-mission?
 - What evidence supports deployment?
 
 **Signature capabilities:** Safety-Typed AI · Mission Contracts · Readiness Engine · Continuity & Takeover · Trust Framework · Explainability & Audit Trail — see [docs/differentiation-roadmap.md](docs/differentiation-roadmap.md).
