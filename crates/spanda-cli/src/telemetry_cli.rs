@@ -1,8 +1,8 @@
 //! CLI commands for querying the persistent telemetry store.
 
 use spanda_telemetry_store::{
-    global_store, render_prometheus, resolve_store_path, TelemetryEvent, TelemetryQuery,
-    TelemetryStats,
+    global_store, render_otlp_json, render_prometheus, resolve_store_path,
+    run_telemetry_server, TelemetryEvent, TelemetryQuery, TelemetryServeOptions, TelemetryStats,
 };
 use std::fs;
 use std::path::PathBuf;
@@ -17,6 +17,8 @@ pub fn cmd_telemetry(sub: &str, args: &[String]) {
         "heartbeats" => cmd_heartbeats(args),
         "devices" => cmd_devices(args),
         "prometheus" => cmd_prometheus(args),
+        "otlp" => cmd_otlp(args),
+        "serve" => cmd_serve(args),
         other => {
             eprintln!("Unknown telemetry subcommand: {other}");
             usage();
@@ -34,8 +36,62 @@ fn usage() {
          spanda telemetry stats [--json]\n\
          spanda telemetry heartbeats [--json]\n\
          spanda telemetry devices [--json]\n\
-         spanda telemetry prometheus [--out <file.prom>]"
+         spanda telemetry prometheus [--out <file.prom>]\n\
+         spanda telemetry otlp [--out <file.json>]\n\
+         spanda telemetry serve [--bind <addr>] [--once]"
     );
+}
+
+fn cmd_otlp(args: &[String]) {
+    let mut out: Option<PathBuf> = None;
+    for (index, arg) in args.iter().enumerate() {
+        if arg == "--out" {
+            out = args.get(index + 1).map(PathBuf::from);
+        }
+    }
+    let store = global_store().lock().unwrap();
+    let body = render_otlp_json(&store).unwrap_or_else(|error| {
+        eprintln!("telemetry otlp failed: {error}");
+        process::exit(1);
+    });
+    if let Some(path) = out {
+        if let Some(parent) = path.parent() {
+            let _ = fs::create_dir_all(parent);
+        }
+        fs::write(&path, &body).unwrap_or_else(|error| {
+            eprintln!("telemetry otlp failed: {error}");
+            process::exit(1);
+        });
+        println!("Exported OTLP metrics to {}", path.display());
+        return;
+    }
+    print!("{body}");
+}
+
+fn cmd_serve(args: &[String]) {
+    let mut options = TelemetryServeOptions::default();
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--bind" => {
+                i += 1;
+                if let Some(bind) = args.get(i) {
+                    options.bind = bind.clone();
+                }
+            }
+            "--once" => options.once = true,
+            other => {
+                eprintln!("Unknown telemetry serve flag: {other}");
+                usage();
+                process::exit(1);
+            }
+        }
+        i += 1;
+    }
+    if let Err(error) = run_telemetry_server(&options) {
+        eprintln!("telemetry serve failed: {error}");
+        process::exit(1);
+    }
 }
 
 fn cmd_prometheus(args: &[String]) {

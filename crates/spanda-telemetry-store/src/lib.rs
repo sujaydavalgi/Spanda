@@ -5,13 +5,17 @@
 //! or `SPANDA_TELEMETRY_STORE=1`.
 
 pub mod error;
+pub mod otlp;
 pub mod prometheus;
 pub mod record;
+pub mod serve;
 pub mod store;
 
 pub use error::{TelemetryStoreError, TelemetryStoreResult};
 pub use record::{HeartbeatIndex, TelemetryEvent};
+pub use otlp::render_otlp_json;
 pub use prometheus::render_prometheus;
+pub use serve::{run_telemetry_server, TelemetryServeOptions};
 pub use store::{
     append_event, begin_run_session, configure_session_persist, default_heartbeat_index_path,
     default_store_path, end_run_session, env_persist_enabled, global_store, is_heartbeat_metric,
