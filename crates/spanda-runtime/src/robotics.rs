@@ -140,6 +140,18 @@ impl MissionRuntime {
         }
     }
 
+    pub fn restart(&mut self) {
+        self.step_index = 0;
+        self.state = MissionState::Running;
+    }
+
+    pub fn restart_current_step(&mut self) {
+        if self.step_index > 0 {
+            self.step_index -= 1;
+        }
+        self.state = MissionState::Running;
+    }
+
     pub fn advance(&mut self) -> Option<String> {
         // Description:
         //     Advance.

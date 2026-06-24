@@ -884,19 +884,20 @@ fn condition_matches_trigger(condition: &str, trigger_key: &str) -> bool {
 fn mode_from_actions(actions: &[String]) -> Option<TakeoverMode> {
     for action in actions {
         let a = action.to_lowercase();
-        if a.contains("hot takeover") {
+        let normalized = a.replace(' ', "");
+        if normalized.contains("hottakeover") || a.contains("hot takeover") {
             return Some(TakeoverMode::HotTakeover);
         }
-        if a.contains("shadow") {
+        if normalized.contains("shadowtakeover") || a.contains("shadow") {
             return Some(TakeoverMode::ShadowTakeover);
         }
-        if a.contains("cold takeover") {
+        if normalized.contains("coldtakeover") || a.contains("cold takeover") {
             return Some(TakeoverMode::ColdTakeover);
         }
-        if a.contains("human takeover") || a.contains("operator") {
+        if normalized.contains("humantakeover") || a.contains("human takeover") || a.contains("operator") {
             return Some(TakeoverMode::HumanTakeover);
         }
-        if a.contains("partial restart") {
+        if normalized.contains("partialrestart") || a.contains("partial restart") {
             return Some(TakeoverMode::PartialRestart);
         }
         if a.contains("restart") {

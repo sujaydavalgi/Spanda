@@ -5,7 +5,9 @@ use super::super::super::simulator::{create_default_simulator, SimulatorConfig};
 use super::{Interpreter, RobotBackend};
 use serde::{Deserialize, Serialize};
 use spanda_assurance::{
-    plan_takeover, parse_trigger, ContinuityContext, SuccessionScope, TakeoverReport,
+    default_checkpoint_store_path, load_checkpoint, load_checkpoint_store, plan_takeover,
+    parse_trigger, record_checkpoint, save_checkpoint_store,
+    ContinuityContext, SuccessionScope, TakeoverMode, TakeoverReport,
 };
 use spanda_ast::nodes::Program;
 use spanda_comm::CommBus;
@@ -16,9 +18,41 @@ use spanda_error::SpandaError;
 use spanda_runtime::robotics::MissionState;
 use spanda_runtime::value::RuntimeValue;
 use std::cell::RefCell;
+use std::path::PathBuf;
 use std::rc::Rc;
 
 impl<B: RobotBackend> Interpreter<B> {
+    fn checkpoint_store_path(&self) -> PathBuf {
+        std::env::var("SPANDA_CONTINUITY_CHECKPOINTS")
+            .map(PathBuf::from)
+            .unwrap_or_else(|_| default_checkpoint_store_path())
+    }
+
+    fn persist_takeover_checkpoint(&self, report: &TakeoverReport) {
+        let mut store = load_checkpoint_store(&self.checkpoint_store_path());
+        record_checkpoint(
+            &mut store,
+            &report.mission,
+            &report.failed_entity,
+            report.state_transfer.snapshot.clone(),
+        );
+        if let Err(err) = save_checkpoint_store(&self.checkpoint_store_path(), &store) {
+            self.log(format!("continuity: checkpoint persist failed: {err}"));
+        } else {
+            self.log(format!(
+                "continuity: checkpoint persisted for '{}' at {:.0}%",
+                report.failed_entity, report.state_transfer.snapshot.progress_percent
+            ));
+        }
+    }
+
+    fn loaded_progress_percent(&self, report: &TakeoverReport) -> f64 {
+        let store = load_checkpoint_store(&self.checkpoint_store_path());
+        load_checkpoint(&store, &report.mission, &report.failed_entity)
+            .map(|snap| snap.progress_percent)
+            .unwrap_or(report.state_transfer.snapshot.progress_percent)
+    }
+
     fn pause_mission_for_continuity(&mut self) {
         let Some(RuntimeValue::MissionControl { mut runtime }) = self.env.get("mission").cloned()
         else {
@@ -48,6 +82,36 @@ impl<B: RobotBackend> Interpreter<B> {
             .define("mission", RuntimeValue::MissionControl { runtime });
     }
 
+    fn restart_mission_from_beginning(&mut self) {
+        let Some(RuntimeValue::MissionControl { mut runtime }) = self.env.get("mission").cloned()
+        else {
+            return;
+        };
+        runtime.restart();
+        self.env
+            .define("mission", RuntimeValue::MissionControl { runtime });
+        self.log("continuity: mission restarted from beginning".into());
+    }
+
+    fn partial_restart_mission_at_progress(&mut self, progress_percent: f64) {
+        let Some(RuntimeValue::MissionControl { mut runtime }) = self.env.get("mission").cloned()
+        else {
+            return;
+        };
+        if !runtime.steps.is_empty() {
+            let idx = ((progress_percent / 100.0) * runtime.steps.len() as f64).floor() as usize;
+            runtime.step_index = idx.min(runtime.steps.len().saturating_sub(1));
+        }
+        runtime.restart_current_step();
+        let step_index = runtime.step_index;
+        self.env
+            .define("mission", RuntimeValue::MissionControl { runtime });
+        self.log(format!(
+            "continuity: partial restart at step index {} ({:.0}%)",
+            step_index, progress_percent
+        ));
+    }
+
     /// Dispatch takeover side effects for the local robot role in a fleet handoff.
     pub(super) fn dispatch_continuity_takeover(
         &mut self,
@@ -57,27 +121,85 @@ impl<B: RobotBackend> Interpreter<B> {
         let name = robot_name.unwrap_or_default();
         if name == report.failed_entity {
             self.pause_mission_for_continuity();
+            self.persist_takeover_checkpoint(report);
             self.log(format!(
                 "continuity: failed robot '{name}' paused pending handoff"
             ));
             return Ok(());
         }
-        if name == report.successor || name.is_empty() {
-            self.resume_mission_at_progress(report.state_transfer.snapshot.progress_percent);
-            self.log(format!(
-                "continuity: successor '{}' resuming at {:.0}%",
-                report.successor, report.state_transfer.snapshot.progress_percent
-            ));
-            self.record_mission_event(
-                "continuity_takeover",
-                serde_json::json!({
-                    "successor": report.successor,
-                    "failed": report.failed_entity,
-                    "mode": format!("{:?}", report.mode),
-                    "progress": report.state_transfer.snapshot.progress_percent,
-                }),
-            );
+        if name != report.successor && !name.is_empty() {
+            return Ok(());
         }
+
+        let progress = self.loaded_progress_percent(report);
+        match report.mode {
+            TakeoverMode::Resume => {
+                self.resume_mission_at_progress(progress);
+                self.log(format!(
+                    "continuity: successor '{}' resuming from checkpoint at {:.0}%",
+                    report.successor, progress
+                ));
+            }
+            TakeoverMode::Restart => {
+                self.restart_mission_from_beginning();
+                self.log(format!(
+                    "continuity: successor '{}' restarting mission",
+                    report.successor
+                ));
+            }
+            TakeoverMode::PartialRestart => {
+                self.partial_restart_mission_at_progress(progress);
+                self.log(format!(
+                    "continuity: successor '{}' partial restart at {:.0}%",
+                    report.successor, progress
+                ));
+            }
+            TakeoverMode::ShadowTakeover => {
+                self.log(format!(
+                    "continuity: shadow takeover — successor '{}' synchronized at {:.0}%",
+                    report.successor, progress
+                ));
+                self.resume_mission_at_progress(progress);
+            }
+            TakeoverMode::HotTakeover => {
+                self.log(format!(
+                    "continuity: hot takeover — successor '{}' immediate resume at {:.0}%",
+                    report.successor, progress
+                ));
+                self.resume_mission_at_progress(progress);
+            }
+            TakeoverMode::ColdTakeover => {
+                self.log(format!(
+                    "continuity: cold takeover — successor '{}' initializing from persisted checkpoint",
+                    report.successor
+                ));
+                self.resume_mission_at_progress(progress);
+            }
+            TakeoverMode::HumanTakeover => {
+                if self.operator_approval_granted("human takeover") {
+                    self.log(format!(
+                        "continuity: human takeover approved — successor '{}' resuming at {:.0}%",
+                        report.successor, progress
+                    ));
+                    self.resume_mission_at_progress(progress);
+                } else {
+                    self.pause_mission_for_continuity();
+                    self.log(
+                        "continuity: human takeover awaiting operator approval (set SPANDA_OPERATOR_APPROVAL=1)"
+                            .into(),
+                    );
+                }
+            }
+        }
+        self.record_mission_event(
+            "continuity_takeover",
+            serde_json::json!({
+                "successor": report.successor,
+                "failed": report.failed_entity,
+                "mode": format!("{:?}", report.mode),
+                "progress": progress,
+            }),
+        );
         Ok(())
     }
 
@@ -200,9 +322,12 @@ impl<B: RobotBackend> Interpreter<B> {
                 }
             })
             .unwrap_or(0.0);
+        let checkpoint_store = load_checkpoint_store(&self.checkpoint_store_path());
+        let checkpoint_count = checkpoint_store.entries.len();
         ContinuityExecutionSnapshot {
             mission_paused,
             mission_progress_percent,
+            checkpoint_count,
         }
     }
 }
@@ -212,6 +337,7 @@ impl<B: RobotBackend> Interpreter<B> {
 pub struct ContinuityExecutionSnapshot {
     pub mission_paused: bool,
     pub mission_progress_percent: f64,
+    pub checkpoint_count: usize,
 }
 
 /// Run assurance-gated takeover through the live interpreter dispatcher.
@@ -245,6 +371,7 @@ pub fn execute_continuity_on_program(
             mission_progress_percent: snapshot.mission_progress_percent,
             handoff_from: Some(context.failed_entity.clone()),
             mission_paused: snapshot.mission_paused,
+            checkpoint_count: snapshot.checkpoint_count,
         })
     })();
     if options.grant_operator_approval {

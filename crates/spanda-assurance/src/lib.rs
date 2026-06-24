@@ -6,6 +6,7 @@
 pub mod analyze;
 pub mod anomaly;
 pub mod continuity;
+pub mod continuity_checkpoint;
 pub mod continuity_diagnostics;
 pub mod diagnosis;
 pub mod evidence;
@@ -54,6 +55,10 @@ pub use recovery::{
     RecoveryEvidence, RecoveryKnowledgeBase, RecoveryKnowledgeEntry, RecoveryLevel, RecoveryPlan,
     RecoveryPlanner, RecoveryPolicySpec, RecoveryReadiness, RecoveryReport, RecoveryResult,
     RecoveryStatus, RecoveryStrategy, RecoveryTraceChain, SafeRecoveryAction,
+};
+pub use continuity_checkpoint::{
+    default_checkpoint_store_path, load_checkpoint, load_checkpoint_store, record_checkpoint,
+    save_checkpoint_store, ContinuityCheckpointStore,
 };
 pub use continuity_diagnostics::collect_continuity_diagnostics;
 pub use recovery_diagnostics::collect_recovery_diagnostics;

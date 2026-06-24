@@ -185,4 +185,6 @@ pub struct ContinuityRunResult {
     pub mission_progress_percent: f64,
     pub handoff_from: Option<String>,
     pub mission_paused: bool,
+    #[serde(default)]
+    pub checkpoint_count: usize,
 }
