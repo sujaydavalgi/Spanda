@@ -26,7 +26,7 @@ pub fn cmd_telemetry(sub: &str, args: &[String]) {
 fn usage() {
     eprintln!(
         "Usage:\n\
-         spanda telemetry list [--device <id>] [--sensor <id>] [--task <name>] [--kind device|sensor|heartbeat|device_heartbeat|health] [--since <ms>] [--limit <n>] [--json]\n\
+         spanda telemetry list [--device <id>] [--sensor <id>] [--task <name>] [--session <id>] [--kind device|sensor|heartbeat|device_heartbeat|health|session|runtime_metrics] [--since <ms>] [--limit <n>] [--json]\n\
          spanda telemetry latest [--device <id> [--metric <name>] | --sensor <id> | --task <name>] [--json]\n\
          spanda telemetry export [--out <file.jsonl>]\n\
          spanda telemetry stats [--json]\n\
@@ -161,6 +161,8 @@ fn cmd_stats(args: &[String]) {
     println!("Heartbeat events: {}", stats.heartbeat_events);
     println!("Device heartbeat events: {}", stats.device_heartbeat_events);
     println!("Health events: {}", stats.health_events);
+    println!("Session events: {}", stats.session_events);
+    println!("Runtime metrics events: {}", stats.runtime_metrics_events);
     println!("Tracked tasks: {}", stats.tracked_tasks);
     println!("Tracked devices: {}", stats.tracked_devices);
 }
@@ -250,6 +252,10 @@ fn parse_query_args(args: &[String]) -> ParsedQueryArgs {
             "--kind" => {
                 i += 1;
                 query.kind = args.get(i).cloned();
+            }
+            "--session" => {
+                i += 1;
+                query.session_id = args.get(i).cloned();
             }
             "--since" => {
                 i += 1;
@@ -341,5 +347,33 @@ fn print_event(event: &TelemetryEvent) {
             status,
             timestamp_ms,
         } => println!("[health] {timestamp_ms}ms {target} -> {status}"),
+        TelemetryEvent::Session {
+            session_id,
+            phase,
+            source,
+            mission_trace_path,
+            timestamp_ms,
+        } => println!(
+            "[session] {timestamp_ms}ms {session_id} phase={phase}{}{}",
+            source
+                .as_ref()
+                .map(|value| format!(" source={value}"))
+                .unwrap_or_default(),
+            mission_trace_path
+                .as_ref()
+                .map(|value| format!(" trace={value}"))
+                .unwrap_or_default()
+        ),
+        TelemetryEvent::RuntimeMetrics {
+            session_id,
+            metrics,
+            timestamp_ms,
+        } => println!(
+            "[runtime_metrics] {timestamp_ms}ms session={session_id} keys={}",
+            metrics
+                .as_object()
+                .map(|object| object.len())
+                .unwrap_or(0)
+        ),
     }
 }
