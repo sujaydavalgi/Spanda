@@ -15,7 +15,7 @@ Rust workspace layout for the lean-core platform (Phases 1–35 complete).
 | **FFI & bridge** | `spanda-bridge`, `spanda-ffi` | Python/C++ subprocess bridges, live AI/IoT |
 | **Tooling** | `spanda-format`, `spanda-lint`, `spanda-codegen`, `spanda-docs` | fmt, lint, codegen, docgen |
 | **Packages** | `spanda-package`, `spanda-providers` | Manifest, registry fetch, provider dispatch |
-| **Official packages** | `packages/registry/*` | 37 hosted `.sd` packages (ROS2, MQTT, GPS, mission assurance, …) |
+| **Official packages** | `packages/registry/*` | 38 hosted `.sd` packages (ROS2, MQTT, GPS, mission assurance, mission continuity, …) |
 | **TypeScript mirror** | `src/`, `packages/lsp` | Parser/typecheck parity, LSP, Vitest |
 
 **Dependency rule:** Only `spanda-core` pulls the full facade graph. `spanda-cli`, `spanda-node`, `spanda-wasm`, and `spanda-dap` depend on workspace crates directly.

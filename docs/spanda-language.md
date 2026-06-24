@@ -532,7 +532,7 @@ robot Rover {
 
 ## Mission assurance and autonomous operations
 
-Program-level declarations for knowledge models, state estimation, anomaly detection, prognostics, mitigation, mode management, mission planning, resilience, and assurance evidence. See [mission-assurance.md](./mission-assurance.md), [knowledge-models.md](./knowledge-models.md), [anomaly-detection.md](./anomaly-detection.md), [diagnostics.md](./diagnostics.md), [prognostics.md](./prognostics.md), [resilience.md](./resilience.md), and [assurance-cases.md](./assurance-cases.md).
+Program-level declarations for knowledge models, state estimation, anomaly detection, prognostics, mitigation, mode management, mission planning, resilience, continuity policies, and assurance evidence. See [mission-assurance.md](./mission-assurance.md), [mission-continuity.md](./mission-continuity.md), [continuity-policies.md](./continuity-policies.md), [knowledge-models.md](./knowledge-models.md), [anomaly-detection.md](./anomaly-detection.md), [diagnostics.md](./diagnostics.md), [prognostics.md](./prognostics.md), [resilience.md](./resilience.md), and [assurance-cases.md](./assurance-cases.md).
 
 ```spanda
 knowledge_model RoverModel {
@@ -580,13 +580,21 @@ resilience_policy RoverResilience {
     strategy graceful_degradation;
 }
 
+continuity_policy WarehouseContinuity {
+  on robot_failed {
+    takeover hot;
+    resume from checkpoint;
+    transfer state to successor;
+  }
+}
+
 assurance_case RoverSafetyCase {
     evidence hardware_verification;
     evidence health_checks;
 }
 ```
 
-CLI: `spanda assure`, `spanda anomaly scan`, `spanda state estimate`, `spanda diagnose`, `spanda prognostics`, `spanda mission verify`, `spanda resilience check`, `spanda mitigation plan`.
+CLI: `spanda assure`, `spanda anomaly scan`, `spanda state estimate`, `spanda diagnose`, `spanda prognostics`, `spanda mission verify`, `spanda resilience check`, `spanda mitigation plan`, `spanda continuity`, `spanda takeover`, `spanda delegate`, `spanda succession`.
 
 Compile-fail tests inside `test` blocks:
 

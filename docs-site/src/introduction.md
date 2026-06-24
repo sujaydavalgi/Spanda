@@ -19,6 +19,7 @@ Platform overview: [Platform overview](../../docs/platform-overview.md)
 | Hardware profiles | [Hardware Compatibility](../../docs/hardware-compatibility.md) |
 | Capabilities & traceability | [Capability Traceability](../../docs/capability-traceability.md) |
 | Health monitoring | [Health Checks](../../docs/health-checks.md) |
+| Mission continuity | [Mission Continuity](../../docs/mission-continuity.md) |
 | Tests | [Test Plan](../../docs/test-plan.md) |
 
 Build locally:

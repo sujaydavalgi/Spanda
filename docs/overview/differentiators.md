@@ -14,7 +14,7 @@
 
 5. **Health-aware runtime** — `health_check`, fleet `require` clauses, and policies during operation.
 
-6. **Package-based extensibility** — Lean core; official packages (ROS2, MQTT, GPS, vision, fleet, mission assurance) via the provider registry.
+6. **Package-based extensibility** — Lean core; official packages (ROS2, MQTT, GPS, vision, fleet, mission assurance, mission continuity) via the provider registry.
 
 ## Capability matrix
 
@@ -33,8 +33,9 @@
 | **Cooperative concurrency** | `spawn`, `join`, `parallel`, channels, `select` |
 | **Simulation built in** | `spanda run` / `spanda sim` without hardware |
 | **Digital twins** | `twin { mirror …; replay true; }` |
-| **Platform packages** | **37** hosted packages; `spanda install`, provider dispatch |
+| **Platform packages** | **38** hosted packages; `spanda install`, provider dispatch |
 | **Mission assurance** | `knowledge_model`, `state_estimator`, `anomaly_detector`, …; `spanda demo assurance` |
+| **Mission continuity** | `continuity_policy`, takeover/delegation/succession; `spanda continuity`, `spanda demo continuity` |
 | **Weighted sensor fusion** | `observe { }`, `state_estimator`, `fusion.read()`; `spanda-fusion` package |
 | **Learned anomaly detection** | `learned backend assurance.anomaly`; optional ONNX |
 | **World models** | `world_model { }` + `fusion.read()` belief hook |

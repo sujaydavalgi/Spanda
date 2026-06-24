@@ -226,6 +226,8 @@ Output includes:
 
 This is a single-process fleet simulation today; true multi-process orchestration (one subprocess per deploy target) is planned separately.
 
+For fleet **recovery** and **mission continuity** (takeover, delegation, succession) across deployed agents, see [fleet-distributed.md](./fleet-distributed.md), [self-healing.md](./self-healing.md), and [mission-continuity.md](./mission-continuity.md). CLI: `spanda demo self-healing`, `spanda demo continuity`.
+
 ## TypeScript interpreter parity
 
 The npm `spanda` package mirrors the Rust concurrency surface in the TypeScript interpreter:

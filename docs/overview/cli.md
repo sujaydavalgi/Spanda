@@ -27,6 +27,7 @@
 | `spanda demo readiness` | Operational go/no-go scoring |
 | `spanda demo assurance` | Mission assurance CLI suite |
 | `spanda demo self-healing` | Recovery policies, heal/recover/sim, fleet recovery |
+| `spanda demo continuity` | Takeover, delegation, succession, checkpoint resume |
 
 ## Self-healing & recovery
 
@@ -38,9 +39,23 @@
 | `spanda recovery knowledge <file.sd>` | Merged policy + persisted knowledge store |
 | `spanda sim <file.sd> --inject-failure gps` | Simulated failure + recovery |
 | `spanda analyze-failure <file.sd> --with-recovery` | Failure impacts + recovery plans |
-| `spanda check <file.sd> --readiness-json` | Readiness + recovery-policy diagnostics |
+| `spanda check <file.sd> --readiness-json` | Readiness + recovery + continuity policy diagnostics |
 
 Guide: [self-healing.md](../self-healing.md) · Man page: [spanda-recovery.md](../man/spanda-recovery.md)
+
+## Mission continuity
+
+| Command | Description |
+|---------|-------------|
+| `spanda continuity <file.sd>` | Full continuity evaluation (takeover mode, successor, state transfer) |
+| `spanda takeover <file.sd>` | Plan hot/cold/shadow/human takeover for a failed robot |
+| `spanda delegate <file.sd>` | Plan mission ownership transfer to another robot |
+| `spanda succession <file.sd>` | Rank fleet/swarm successors for handoff |
+| `spanda demo continuity` | Showcase continuity, takeover, delegate, succession |
+
+Common flags: `--failed`, `--progress`, `--trigger`, `--successor` / `--to`, `--scope fleet|swarm|robot`, `--json` / `--markdown` / `--html`.
+
+Guide: [mission-continuity.md](../mission-continuity.md) · [continuity-policies.md](../continuity-policies.md) · Man page: [spanda-continuity.md](../man/spanda-continuity.md)
 
 ## Mission assurance & readiness
 
@@ -75,4 +90,4 @@ Guide: [self-healing.md](../self-healing.md) · Man page: [spanda-recovery.md](.
 
 **Replay:** `--from T+mm:ss`, `--deterministic`, `--playback`
 
-Topic guides: [realtime.md](../realtime.md) · [replay.md](../replay.md) · [mission-assurance.md](../mission-assurance.md)
+Topic guides: [realtime.md](../realtime.md) · [replay.md](../replay.md) · [mission-assurance.md](../mission-assurance.md) · [mission-continuity.md](../mission-continuity.md)

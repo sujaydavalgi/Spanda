@@ -39,6 +39,7 @@ Expanded home linked from the root [README.md](../../README.md). For hands-on st
 | Packages (full) | [packages.md](../packages.md) · [registry.md](../registry.md) |
 | Feature status | [feature-status.md](../feature-status.md) |
 | Mission assurance | [mission-assurance.md](../mission-assurance.md) |
+| Mission continuity | [mission-continuity.md](../mission-continuity.md) · [continuity-policies.md](../continuity-policies.md) |
 | Full doc index | [docs/README.md](../README.md) |
 | Tutorials | [tutorials/README.md](../tutorials/README.md) |
 | Roadmap | [roadmap.md](../roadmap.md) |

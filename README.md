@@ -19,6 +19,7 @@ Spanda helps answer:
 - Is the system healthy enough to deploy?
 - Why should this deployment be trusted?
 - What happened when something failed?
+- **Who can take over when a robot or fleet member fails mid-mission?**
 
 Repository: [github.com/Davalgi/Spanda](https://github.com/Davalgi/Spanda)
 
@@ -208,7 +209,13 @@ Three primary stories for new visitors. Other demos (`fleet`, `health`, `readine
 **For safety / reliability engineers**
 
 - Try assurance and readiness: `spanda demo assurance` or the [Readiness / Assurance / Diagnosis](#3-readiness--assurance--diagnosis) commands above
-- Read traceability and safety: [docs/mission-assurance.md](docs/mission-assurance.md) · [docs/capability-traceability.md](docs/capability-traceability.md) · [docs/safety-reporting.md](docs/safety-reporting.md)
+- Try mission continuity: `spanda demo continuity` — takeover, delegation, and succession when robots fail mid-mission
+- Read traceability and safety: [docs/mission-assurance.md](docs/mission-assurance.md) · [docs/mission-continuity.md](docs/mission-continuity.md) · [docs/capability-traceability.md](docs/capability-traceability.md) · [docs/safety-reporting.md](docs/safety-reporting.md)
+
+**For fleet operators**
+
+- Try self-healing and continuity: `spanda demo self-healing` and `spanda demo continuity`
+- Read fleet mesh APIs: [docs/fleet-distributed.md](docs/fleet-distributed.md) · [docs/self-healing.md](docs/self-healing.md) · [docs/continuity-policies.md](docs/continuity-policies.md)
 
 **For contributors**
 
@@ -335,7 +342,7 @@ Full index: [docs/README.md](docs/README.md)
 
 | Resource | Link |
 |----------|------|
-| **Language reference (topics)** | [docs/language-reference/](docs/language-reference/README.md) — syntax, types, agents, safety, packages, recovery |
+| **Language reference (topics)** | [docs/language-reference/](docs/language-reference/README.md) — syntax, types, agents, safety, packages, recovery, continuity |
 | **Generated language API** | [docs/spanda-reference.md](docs/spanda-reference.md) — keywords, `std.*`, builtins, CLI |
 | **CLI man pages** | [docs/man/](docs/man/README.md) — `spanda man <command>` or browse markdown |
 | **Rust & TypeScript API** | [docs/api-reference.md](docs/api-reference.md) — crates, modules, types (`cargo doc --workspace --no-deps`) |

@@ -254,6 +254,7 @@ spanda check examples/showcase/ai_safety_violation.sd   # expect compile error
 | `digital_twin_demo.sd` | `spanda run examples/showcase/digital_twin_demo.sd` |
 | `assurance/rover.sd` | `spanda demo assurance` |
 | `self_healing/rover.sd` | `spanda demo self-healing` |
+| `continuity/warehouse.sd` | `spanda demo continuity` |
 | `readiness/rover.sd` | `spanda readiness examples/showcase/readiness/rover.sd --json` |
 | `triggers_demo.sd` | `spanda run examples/triggers_demo.sd --trace-triggers` |
 

@@ -45,7 +45,7 @@ Platform overview: [platform-overview.md](./platform-overview.md)
 | **Fleet mesh coordinator** | `spanda fleet mesh start` + `fleet orchestrate --mesh-url` — centralized multi-host peer relay |
 | **Adapter package verify** | `spanda verify-adapter` — validate `[adapter]` provides/requires against registry metadata |
 | **Tooling** | Native CLI (`check`, `verify`, `run`, `sim`, `fleet`, `deploy`, `fmt`, `lint`, `doc`), package manager (`init`, `build`, `test`, `install`), **prebuilt installable packages** (Linux/macOS/Windows via GitHub Releases) |
-| **Showcase demos** | `spanda demo {rover,safety,verify,fleet,health,readiness,assurance,self-healing}`; `examples/showcase/*` |
+| **Showcase demos** | `spanda demo {rover,safety,verify,fleet,health,readiness,assurance,self-healing,continuity}`; `examples/showcase/*` |
 | **Security / audit** | Capabilities, secrets, signed messages, audit records |
 | **Secure communication** | `secure_comm`, encrypted buses, trusted-source publish/receive enforcement, AES-GCM wire frames, TLS session + rustls PEM validation, `spanda security check|audit`, TS runtime parity |
 | **Digital twins** | `twin`, mirror fields, replay buffer, `twin sync` telemetry |
@@ -153,7 +153,7 @@ See [tier-3-experimental.md](./tier-3-experimental.md) and [tier-3-golden-paths.
 | state machine / events | **Stable** | |
 | twin / replay | **Experimental** | Replay buffer; live sync simulated |
 | observe / fusion | **Stable** | Weighted fusion by sensor type; `state_estimator` runtime bindings |
-| mission assurance (static + CLI) | **Stable** | `spanda-assurance` crate; 8 official packages |
+| mission assurance (static + CLI) | **Stable** | `spanda-assurance` crate; 9 official packages (includes `spanda-mission-continuity`) |
 | self-healing & recovery (static + CLI) | **Stable** | Recovery planner, validation gates, audit, knowledge store |
 | mission continuity (static + CLI + diagnostics) | **Stable** | `spanda-assurance` continuity module; CLI `continuity`, `takeover`, `delegate`, `succession`; `continuity:*` diagnostics in check JSON and LSP |
 | mission continuity runtime dispatch | **Experimental** | Fleet agent interpreter + assurance takeover on `/v1/continuity/execute` and `fleet_takeover` peer topic; mesh `POST /v1/fleet/continuity`; recovery reassign also relays continuity |

@@ -29,6 +29,7 @@
 - [Health Checks](../../docs/language-reference/health-checks.md)
 - [Packages](../../docs/language-reference/packages.md)
 - [Recovery](../../docs/language-reference/recovery.md)
+- [Continuity](../../docs/language-reference/continuity.md)
 - [Full Generated Reference](../../docs/spanda-reference.md)
 
 # API Reference
@@ -58,6 +59,9 @@
 - [Kill Switch](../../docs/kill-switch.md)
 - [Health Checks](../../docs/health-checks.md)
 - [Fleet Health](../../docs/fleet-health.md)
+- [Mission Continuity](../../docs/mission-continuity.md)
+- [Continuity Policies](../../docs/continuity-policies.md)
+- [Self-Healing](../../docs/self-healing.md)
 - [Native Deploy](../../docs/native-deploy.md)
 - [ROS 2 Golden Path](../../docs/ros2-golden-path.md)
 

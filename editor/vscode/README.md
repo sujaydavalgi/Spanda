@@ -28,6 +28,8 @@ Or build from source: `cargo build -p spanda-cli -p spanda-dap --release`
 | Syntax highlighting | Automatic for `.sd` files |
 | Type diagnostics | LSP → `spanda check` |
 | Verify diagnostics | LSP → `spanda verify` (warnings/errors in Problems panel) |
+| Readiness / recovery / continuity quick-fixes | LSP caches `spanda check --readiness-json` diagnostics; code actions for missing `recovery_policy`, `continuity_policy`, and operator approval |
+| Snippets | `continuitypolicy`, `recoverypolicy`, and other Spanda declarations |
 | Deploy target autocomplete | Type `deploy Robot to ` — suggests `RoverV1`, `JetsonOrin`, … |
 | Verify with picker | Command Palette → **Spanda: Verify Deploy Target…** |
 | Debug | F5 with Spanda debug configuration — steps through `behavior`, `task every`, and `every` triggers via `spanda-dap` |

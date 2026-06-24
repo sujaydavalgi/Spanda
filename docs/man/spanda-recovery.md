@@ -67,4 +67,4 @@ spanda demo self-healing
 
 ## SEE ALSO
 
-[self-healing.md](../self-healing.md), [recovery-policies.md](../recovery-policies.md), [spanda-check(1)](./spanda-check.md), [spanda-sim(1)](./spanda-sim.md), [spanda(1)](./spanda.md)
+[self-healing.md](../self-healing.md), [recovery-policies.md](../recovery-policies.md), [mission-continuity.md](../mission-continuity.md), [spanda-continuity(1)](./spanda-continuity.md), [spanda-check(1)](./spanda-check.md), [spanda-sim(1)](./spanda-sim.md), [spanda(1)](./spanda.md)

@@ -162,6 +162,7 @@ Write (.sd)  →  check  →  verify  →  sim  →  deploy  →  operate
  Language    type/units   hardware   safety   target    health
              safety       capability  replay   fleet    readiness
                                        assurance replay
+                                       continuity takeover
 ```
 
 1. **Build** — Author robot programs in `.sd` with safety rules and deployment targets.
@@ -169,9 +170,9 @@ Write (.sd)  →  check  →  verify  →  sim  →  deploy  →  operate
 3. **Simulate** — `spanda sim` before hardware is available; inject faults.
 4. **Assure** — `spanda assure` / `anomaly scan` / `state estimate` for mission assurance reports (optional `spanda demo assurance`).
 5. **Deploy** — `deploy Robot to Profile`; optional native codegen (experimental) or interpreter on edge.
-6. **Operate** — Health policies, readiness scoring, fleet coordination, mission replay for incidents.
+6. **Operate** — Health policies, readiness scoring, fleet coordination, mission continuity (takeover/delegation/succession), self-healing recovery, and mission replay for incidents.
 
-Flagship walkthrough: [killer-demo.md](./killer-demo.md) · Platform demo: [examples/showcase/autonomous_rover/README.md](../examples/showcase/autonomous_rover/README.md) · Mission assurance: [examples/showcase/assurance/README.md](../examples/showcase/assurance/README.md).
+Flagship walkthrough: [killer-demo.md](./killer-demo.md) · Platform demo: [examples/showcase/autonomous_rover/README.md](../examples/showcase/autonomous_rover/README.md) · Mission assurance: [examples/showcase/assurance/README.md](../examples/showcase/assurance/README.md) · Mission continuity: [examples/showcase/continuity/README.md](../examples/showcase/continuity/README.md).
 
 ---
 
@@ -192,6 +193,8 @@ See [product-strategy.md](./product-strategy.md) for competitive positioning and
 | [product-strategy.md](./product-strategy.md) | Priorities, pillars, release scope |
 | [roadmap.md](./roadmap.md) | Roadmap by platform area |
 | [mission-assurance.md](./mission-assurance.md) | Mission assurance CLI, packages, and examples |
+| [mission-continuity.md](./mission-continuity.md) | Mission continuity, takeover, delegation, succession |
+| [continuity-policies.md](./continuity-policies.md) | `continuity_policy` syntax and validation |
 | [platform-positioning-migration.md](./platform-positioning-migration.md) | Messaging migration notes |
 | [architecture.md](./architecture.md) | Compiler pipeline and crate map |
 | [lean-core.md](./lean-core.md) | Lean-core workspace design |
