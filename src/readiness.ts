@@ -75,7 +75,7 @@ const RUNTIME_FAULTS = ["GPSDegraded", "CameraOffline", "RobotHealthCritical"];
 const weightFor = (key: keyof typeof DEFAULT_WEIGHTS): number => DEFAULT_WEIGHTS[key];
 
 function isValidDeployDecl(candidate: DeployDecl | undefined): candidate is DeployDecl {
-  return !!candidate && typeof candidate === "object" && "kind" in candidate && candidate.kind === "DeployDecl";
+  return !!candidate && "kind" in candidate && candidate.kind === "DeployDecl";
 }
 
 function defaultDeployTarget(program: Program): string | undefined {
@@ -153,8 +153,9 @@ export function evaluateReadinessTs(
   const issues: ReadinessIssue[] = [];
   const factors: ReadinessFactorScore[] = [];
 
+  const isHardwareCompatible = hw.compatible === true;
   const hwErrors = hw.items.filter((i) => i.severity === "error");
-  const hwScore = hw.compatible && hwErrors.length === 0 ? 100 : hw.compatible ? 85 : 40;
+  const hwScore = isHardwareCompatible && hwErrors.length === 0 ? 100 : isHardwareCompatible ? 85 : 40;
   factors.push(factorRow("Hardware", hwScore, weightFor("Hardware")));
   for (const item of hwErrors) {
     issues.push({
@@ -164,7 +165,7 @@ export function evaluateReadinessTs(
     });
   }
 
-  const capScore = hw.compatible ? 90 : 50;
+  const capScore = isHardwareCompatible ? 90 : 50;
   factors.push(factorRow("Capabilities", capScore, weightFor("Capabilities")));
 
   const runtimeFaults =
@@ -176,14 +177,14 @@ export function evaluateReadinessTs(
   factors.push(
     factorRow(
       "Connectivity",
-      hw.compatible ? CONNECTIVITY_SCORE_COMPATIBLE : CONNECTIVITY_SCORE_INCOMPATIBLE,
+      isHardwareCompatible ? CONNECTIVITY_SCORE_COMPATIBLE : CONNECTIVITY_SCORE_INCOMPATIBLE,
       weightFor("Connectivity"),
     ),
   );
   factors.push(
     factorRow(
       "Safety",
-      hw.compatible ? SAFETY_SCORE_COMPATIBLE : SAFETY_SCORE_INCOMPATIBLE,
+      isHardwareCompatible ? SAFETY_SCORE_COMPATIBLE : SAFETY_SCORE_INCOMPATIBLE,
       weightFor("Safety"),
     ),
   );
@@ -196,7 +197,7 @@ export function evaluateReadinessTs(
 
   const total = weightedTotal(factors);
   const hasHigh = issues.some((i) => i.severity === "High" || i.severity === "Critical");
-  const mission_ready = total >= 80 && (hw.compatible ?? false) && !hasHigh;
+  const mission_ready = total >= 80 && isHardwareCompatible && !hasHigh;
   const status: ReadinessStatus = mission_ready
     ? issues.length > 0
       ? "Degraded"
