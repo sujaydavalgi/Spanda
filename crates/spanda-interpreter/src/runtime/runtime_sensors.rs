@@ -7,6 +7,7 @@ use super::{
 use spanda_ast::nodes::UnitKind;
 use spanda_error::SpandaError;
 use spanda_lib_registry::{get_sensor_driver, read_with_driver, DriverContext, SimState};
+use spanda_runtime::fusion::{parse_fusion_input, weight_for_sensor_type, weighted_confidence};
 use std::collections::HashMap;
 
 impl<B: RobotBackend> Interpreter<B> {
@@ -80,41 +81,58 @@ impl<B: RobotBackend> Interpreter<B> {
 
     pub(super) fn read_fused_observation(
         &mut self,
-        sensors: &[String],
+        input_paths: &[String],
         estimator: Option<&str>,
     ) -> Result<RuntimeValue, SpandaError> {
-        // Read fused observation.
+        // Fuse live sensor readings using weighted confidence by sensor type.
         //
         // Parameters:
         // - `self` — method receiver
-        // - `sensors` — sensor names to fuse for this estimator
+        // - `input_paths` — sensor names or dotted paths (`gps.fix`)
+        // - `estimator` — optional state_estimator name for attribution
         //
         // Returns:
-        // Success value on completion, or an error.
+        // `FusedObservation` with pose, confidence, and `state_estimate`.
         //
         // Options:
         // None.
         //
         // Example:
-        // let result = instance.read_fused_observation(sensors);
+        // let fused = fusion.read();
 
         let mut fields = HashMap::new();
+        let mut sensor_types = Vec::new();
+        let mut sources = Vec::new();
 
-        // Process each sensor.
-        for sensor_name in sensors {
+        // Read each declared fusion input and record its sensor type weight.
+        for input_path in input_paths {
+            let (sensor_name, field) = parse_fusion_input(input_path);
             let sensor_val = self.env.get(sensor_name).cloned().ok_or_else(|| {
                 RuntimeError::new(format!("Unknown observe sensor '{sensor_name}'"), 0)
                     .into_spanda()
             })?;
+            let sensor_type = if let RuntimeValue::Sensor { sensor_type, .. } = &sensor_val {
+                sensor_type.clone()
+            } else {
+                "Unknown".into()
+            };
+            sensor_types.push(sensor_type.clone());
             let reading = self.read_sensor_value(&sensor_val)?;
-            fields.insert(sensor_name.clone(), reading);
+            fields.insert(sensor_name.to_string(), reading);
+            sources.push(if let Some(field) = field {
+                format!("{sensor_name}.{field}")
+            } else {
+                sensor_name.to_string()
+            });
+            let _ = weight_for_sensor_type(&sensor_type);
         }
+
         let state = self.backend.get_state();
         fields.insert("pose".into(), pose_from_state(&state.pose));
         fields.insert(
             "count".into(),
             RuntimeValue::Number {
-                value: sensors.len() as f64,
+                value: input_paths.len() as f64,
                 unit: UnitKind::None,
             },
         );
@@ -126,16 +144,18 @@ impl<B: RobotBackend> Interpreter<B> {
                 },
             );
         }
-        let confidence = if sensors.is_empty() {
-            0.0
-        } else {
-            (sensors.len() as f64 / 4.0).min(1.0)
-        };
+        let confidence = weighted_confidence(&sensor_types.iter().map(String::as_str).collect::<Vec<_>>());
         fields.insert(
             "confidence".into(),
             RuntimeValue::Number {
                 value: confidence,
                 unit: UnitKind::None,
+            },
+        );
+        fields.insert(
+            "sources".into(),
+            RuntimeValue::String {
+                value: sources.join(", "),
             },
         );
         fields.insert(
@@ -154,6 +174,10 @@ impl<B: RobotBackend> Interpreter<B> {
                             unit: UnitKind::None,
                         },
                     ),
+                    (
+                        "sources".into(),
+                        fields.get("sources").cloned().unwrap_or(RuntimeValue::Null),
+                    ),
                 ]),
             },
         );
@@ -162,9 +186,9 @@ impl<B: RobotBackend> Interpreter<B> {
             fields,
         };
         if self.world_model_fusion_hook {
-            let confidence = self.world_model.update(&fused);
+            let belief = self.world_model.update(&fused);
             self.log(format!(
-                "world_model: fused observation -> belief {confidence:.2}"
+                "world_model: fused observation -> belief {belief:.2}"
             ));
         }
         Ok(fused)

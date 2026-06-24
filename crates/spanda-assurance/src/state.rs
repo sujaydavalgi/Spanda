@@ -3,6 +3,7 @@
 use crate::types::{BeliefState, Confidence, SensorFusionState, StateEstimate};
 use spanda_ast::assurance_decl::StateEstimatorDecl;
 use spanda_ast::nodes::Program;
+use spanda_runtime::fusion::preview_fusion_inputs;
 
 /// State estimation assurance report.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
@@ -26,7 +27,7 @@ pub fn evaluate_state_assurance(program: &Program) -> StateAssuranceReport {
     }
 }
 
-/// Extract state estimators and synthesize fusion state snapshots.
+/// Extract state estimators and build weighted fusion previews.
 pub fn extract_sensor_fusion(program: &Program) -> Vec<SensorFusionState> {
     let Program::Program {
         state_estimators, ..
@@ -40,14 +41,15 @@ pub fn extract_sensor_fusion(program: &Program) -> Vec<SensorFusionState> {
                 output_type,
                 ..
             } = decl;
+            let preview = preview_fusion_inputs(program, inputs, output_type);
             SensorFusionState {
                 estimator: name.clone(),
                 inputs: inputs.clone(),
                 fused: Some(StateEstimate {
                     name: output_type.clone(),
-                    value: "synthetic".into(),
-                    confidence: Confidence(0.85),
-                    sources: inputs.clone(),
+                    value: preview.summary,
+                    confidence: Confidence(preview.confidence),
+                    sources: preview.sources,
                 }),
             }
         })

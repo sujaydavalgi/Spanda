@@ -1,5 +1,6 @@
 //! Spanda runtime kernel primitives extracted for the Phase 4 lean-core split.
 //!
+pub mod fusion;
 pub mod classification;
 pub mod environment;
 pub mod error;
@@ -21,6 +22,10 @@ pub mod twin;
 pub mod value;
 pub mod world_model;
 
+pub use fusion::{
+    parse_fusion_input, preview_fusion_inputs, sensor_type_index, weight_for_sensor_type,
+    weighted_confidence, FusionPreview,
+};
 pub use classification::{
     module_classifications, official_package_names, ModuleClassification, ModuleOwnership,
 };

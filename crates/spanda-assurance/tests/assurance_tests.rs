@@ -218,4 +218,8 @@ robot R {
     assert_eq!(report.estimators.len(), 1);
     assert!(report.passed);
     assert_eq!(report.belief.estimates.len(), 1);
+    assert!(report.estimators[0]
+        .fused
+        .as_ref()
+        .is_some_and(|f| f.value.contains("weighted")));
 }

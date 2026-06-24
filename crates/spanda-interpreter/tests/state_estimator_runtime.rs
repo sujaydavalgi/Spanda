@@ -25,6 +25,7 @@ robot Rover {
     behavior fuse() {
         let fused = fusion.read();
         let _ = fused.state_estimate;
+        let _ = fused.sources;
     }
 }
 "#;
@@ -45,5 +46,12 @@ robot Rover {
             .any(|line| line.contains("state_estimator: aliased fusion binding")),
         "expected fusion alias log, got: {:?}",
         result.logs
+    );
+    assert!(
+        result.events.iter().any(|e| e.contains("fusion"))
+            || result.logs.iter().any(|l| l.contains("fusion")),
+        "expected fusion activity, got logs {:?} events {:?}",
+        result.logs,
+        result.events
     );
 }

@@ -23,7 +23,7 @@ state_estimator RoverState {
 
 `spanda state estimate <file.sd>` runs static analysis:
 
-- Extracts estimator inputs and synthetic fused snapshots
+- Extracts estimator inputs and **weighted fusion previews** (by sensor type)
 - Builds an aggregate belief state
 - Validates non-empty inputs
 
@@ -31,7 +31,7 @@ Results are also included in `spanda assure` JSON under `state`.
 
 ## Runtime
 
-At robot setup, each `state_estimator` registers a `SensorFusion` binding. A single estimator aliases `fusion` (same as `observe { }`). `fusion.read()` / `{Name}.read()` include an `estimator` field when fused from a named declaration.
+At robot setup, each `state_estimator` registers a `SensorFusion` binding. A single estimator aliases `fusion` (same as `observe { }`). `fusion.read()` / `{Name}.read()` perform **weighted fusion** by sensor type (GPS, Lidar, IMU, …), include `sources` and `estimator` fields, and populate `state_estimate.confidence`.
 
 ## Example
 

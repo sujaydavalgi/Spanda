@@ -594,10 +594,16 @@ impl<B: RobotBackend> Interpreter<B> {
         if let RuntimeValue::SensorFusion {
             ref sensors,
             ref estimator,
+            ref fusion_inputs,
         } = target
         {
             if property == "read" {
-                return self.read_fused_observation(sensors, estimator.as_deref());
+                let paths = if fusion_inputs.is_empty() {
+                    sensors.as_slice()
+                } else {
+                    fusion_inputs.as_slice()
+                };
+                return self.read_fused_observation(paths, estimator.as_deref());
             }
         }
 

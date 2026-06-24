@@ -154,6 +154,8 @@ pub enum RuntimeValue {
     SensorFusion {
         sensors: Vec<String>,
         estimator: Option<String>,
+        /// Full fusion input paths from `state_estimator` (e.g. `gps.fix`); empty for `observe { }`.
+        fusion_inputs: Vec<String>,
     },
     MissionControl {
         runtime: MissionRuntime,

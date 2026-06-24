@@ -503,16 +503,47 @@ function validateModes(program: Program): string[] {
 }
 
 export function evaluateStateAssuranceTs(program: Program): StateAssuranceReport {
-  const estimators = (program.stateEstimators ?? []).map((decl) => ({
-    estimator: decl.name,
-    inputs: decl.inputs,
-    fused: {
-      name: decl.outputType,
-      value: "synthetic",
-      confidence: 0.85,
-      sources: decl.inputs,
-    },
-  }));
+  const sensorTypes = new Map<string, string>();
+  for (const robot of program.robots ?? []) {
+    for (const sensor of robot.sensors ?? []) {
+      sensorTypes.set(sensor.name, sensor.sensorType);
+    }
+  }
+  const weight = (sensorType: string): number => {
+    switch (sensorType) {
+      case "GPS":
+      case "GNSS":
+        return 0.35;
+      case "Lidar":
+        return 0.25;
+      case "IMU":
+        return 0.2;
+      case "Camera":
+        return 0.15;
+      default:
+        return 0.1;
+    }
+  };
+  const estimators = (program.stateEstimators ?? []).map((decl) => {
+    const types = decl.inputs.map((input) => {
+      const sensor = input.split(".")[0] ?? input;
+      return sensorTypes.get(sensor) ?? "Unknown";
+    });
+    const total = types.reduce((sum, t) => sum + weight(t), 0);
+    const confidence = types.length
+      ? Math.min(1, total / Math.max(0.35, types.length * 0.35))
+      : 0;
+    return {
+      estimator: decl.name,
+      inputs: decl.inputs,
+      fused: {
+        name: decl.outputType,
+        value: `weighted ${decl.outputType} (${decl.inputs.join(" + ")})`,
+        confidence,
+        sources: decl.inputs,
+      },
+    };
+  });
   const belief = {
     estimates: estimators.flatMap((e) => (e.fused ? [e.fused] : [])),
   };
