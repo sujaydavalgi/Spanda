@@ -37,17 +37,30 @@ spanda run rover.sd
 
 ## Storage layout
 
+### JSONL (default)
+
 | File | Purpose |
 |------|---------|
 | `.spanda/telemetry-store.jsonl` | Append-only event log (JSONL) |
 | `.spanda/telemetry-heartbeats.json` | Latest heartbeat timestamp per task and device |
 
+### SQLite
+
+Set `SPANDA_TELEMETRY_BACKEND=sqlite` to use an indexed SQLite database instead of JSONL:
+
+| File | Purpose |
+|------|---------|
+| `.spanda/telemetry-store.db` | SQLite database (`telemetry_events` + `heartbeat_liveness` tables) |
+
+Heartbeat liveness is stored in the `heartbeat_liveness` table (no JSON sidecar in SQLite mode).
+
 Override paths:
 
 | Variable | Purpose |
 |----------|---------|
-| `SPANDA_TELEMETRY_STORE_PATH` | Event log file |
-| `SPANDA_TELEMETRY_HEARTBEAT_PATH` | Heartbeat index file |
+| `SPANDA_TELEMETRY_BACKEND` | `sqlite` for SQLite; omit for JSONL (default) |
+| `SPANDA_TELEMETRY_STORE_PATH` | Event log file (`.jsonl`) or database (`.db`) |
+| `SPANDA_TELEMETRY_HEARTBEAT_PATH` | Heartbeat index file (JSONL mode only) |
 | `SPANDA_TELEMETRY_MAX_EVENTS` | Trim oldest events when the log exceeds this count |
 
 Files live under `.spanda/` (gitignored) like deploy and fleet state.
@@ -77,6 +90,12 @@ spanda telemetry list --kind sensor --json
 spanda telemetry latest --device TelemetryRover --metric /telemetry
 spanda telemetry heartbeats
 spanda telemetry devices
+```
+
+```bash
+export SPANDA_TELEMETRY_BACKEND=sqlite
+spanda run rover.sd --persist-telemetry
+spanda telemetry stats
 ```
 
 Or run the scripted golden path: `./scripts/telemetry_store_golden_path.sh`
