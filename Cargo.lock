@@ -1987,6 +1987,7 @@ dependencies = [
  "rusqlite",
  "serde",
  "serde_json",
+ "spanda-deploy-http",
  "spanda-runtime",
  "tempfile",
  "thiserror 2.0.18",

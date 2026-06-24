@@ -44,7 +44,7 @@ spanda-hardware = { path = "../spanda-hardware" }
 spanda-capability = { path = "../spanda-capability" }
 spanda-readiness = { path = "../spanda-readiness" }
 spanda-assurance = { path = "../spanda-assurance" }
-spanda-telemetry-store = { path = "../spanda-telemetry-store" }
+spanda-telemetry-store = { path = "../spanda-telemetry-store", features = ["sqlite", "push"] }
 spanda-lint = { path = "../spanda-lint" }
 spanda-llvm = { path = "../spanda-llvm", optional = true }
 spanda-modules = { path = "../spanda-modules" }

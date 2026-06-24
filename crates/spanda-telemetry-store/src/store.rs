@@ -117,6 +117,8 @@ pub fn end_run_session(
             timestamp_ms,
         })?;
     }
+    #[cfg(feature = "push")]
+    crate::push::maybe_auto_push_after_session();
     Ok(())
 }
 

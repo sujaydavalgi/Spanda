@@ -9,6 +9,8 @@ pub mod error;
 pub mod memory;
 pub mod otlp;
 pub mod prometheus;
+#[cfg(feature = "push")]
+pub mod push;
 pub mod record;
 pub mod serve;
 #[cfg(feature = "sqlite")]
@@ -22,6 +24,12 @@ pub use memory::{
 };
 pub use record::{HeartbeatIndex, TelemetryEvent};
 pub use otlp::{render_otlp_from_events, render_otlp_json};
+#[cfg(feature = "push")]
+pub use push::{
+    env_auto_push_enabled, env_otlp_endpoint, env_otlp_token, env_push_interval_ms,
+    maybe_auto_push_after_session, push_global_store, push_otlp_json, run_otlp_push_loop,
+    OtlpPushOptions,
+};
 pub use prometheus::{render_prometheus, render_prometheus_from_events};
 pub use serve::{run_telemetry_server, TelemetryServeOptions};
 pub use store::{
