@@ -255,6 +255,7 @@ pub fn evaluate_readiness_with_runtime(
     let Program::Program {
         assurance_cases,
         knowledge_models,
+        state_estimators,
         anomaly_detectors,
         anomaly_handlers,
         mitigations,
@@ -295,6 +296,20 @@ pub fn evaluate_readiness_with_runtime(
             message: "Knowledge model has empty components".into(),
             suggested_action: None,
         });
+    }
+    for est in state_estimators {
+        let spanda_ast::assurance_decl::StateEstimatorDecl::StateEstimatorDecl {
+            name, inputs, ..
+        } = est;
+        if inputs.is_empty() {
+            assurance_score = assurance_score.saturating_sub(15);
+            issues.push(ReadinessIssue {
+                factor: "Assurance".into(),
+                severity: ReadinessSeverity::Medium,
+                message: format!("State estimator '{name}' has no inputs"),
+                suggested_action: Some("Add sensor inputs to state_estimator".into()),
+            });
+        }
     }
     if !anomaly_detectors.is_empty() {
         let handler_names: std::collections::HashSet<_> = anomaly_handlers

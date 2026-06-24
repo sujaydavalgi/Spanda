@@ -1,7 +1,7 @@
 //! Span lookup for readiness diagnostics in the IDE.
 
 use spanda_ast::assurance_decl::{
-    AnomalyDetectorDecl, AssuranceCaseDecl, KnowledgeModelDecl,
+    AnomalyDetectorDecl, AssuranceCaseDecl, KnowledgeModelDecl, StateEstimatorDecl,
 };
 use spanda_ast::foundations::{DeployDecl, HealthCheckDecl};
 use spanda_ast::nodes::Program;
@@ -41,6 +41,16 @@ pub fn line_column_for_issue(program: &Program, issue: &ReadinessIssue) -> (u32,
                 return span;
             }
         }
+        if let Some(name) = extract_quoted_name(&issue.message, "State estimator '") {
+            if let Some(span) = state_estimator_span(program, &name) {
+                return span;
+            }
+        }
+        if issue.message.contains("State estimator") {
+            if let Some(span) = first_empty_state_estimator(program) {
+                return span;
+            }
+        }
         if let Some(span) = assurance_span(program) {
             return span;
         }
@@ -57,6 +67,7 @@ fn extract_quoted_name(message: &str, prefix: &str) -> Option<String> {
 fn assurance_span(program: &Program) -> Option<(u32, u32)> {
     first_assurance_case_span(program)
         .or_else(|| first_knowledge_model_span(program))
+        .or_else(|| first_state_estimator_span(program))
         .or_else(|| first_anomaly_detector_span(program))
         .or_else(|| first_mitigation_span(program))
 }
@@ -130,6 +141,38 @@ fn first_mitigation_span(program: &Program) -> Option<(u32, u32)> {
     mitigations.first().map(|decl| {
         let spanda_ast::assurance_decl::MitigationDecl::MitigationDecl { span, .. } = decl;
         span_coords(span)
+    })
+}
+
+fn first_state_estimator_span(program: &Program) -> Option<(u32, u32)> {
+    let Program::Program { state_estimators, .. } = program;
+    state_estimators.first().map(|decl| {
+        let StateEstimatorDecl::StateEstimatorDecl { span, .. } = decl;
+        span_coords(span)
+    })
+}
+
+fn first_empty_state_estimator(program: &Program) -> Option<(u32, u32)> {
+    let Program::Program { state_estimators, .. } = program;
+    state_estimators.iter().find_map(|decl| {
+        let StateEstimatorDecl::StateEstimatorDecl { inputs, span, .. } = decl;
+        if inputs.is_empty() {
+            Some(span_coords(span))
+        } else {
+            None
+        }
+    })
+}
+
+fn state_estimator_span(program: &Program, name: &str) -> Option<(u32, u32)> {
+    let Program::Program { state_estimators, .. } = program;
+    state_estimators.iter().find_map(|decl| {
+        let StateEstimatorDecl::StateEstimatorDecl { span, name: est, .. } = decl;
+        if est == name {
+            Some(span_coords(span))
+        } else {
+            None
+        }
     })
 }
 
