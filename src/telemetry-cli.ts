@@ -216,6 +216,44 @@ function formatEvent(event: TelemetryEvent): string {
   }
 }
 
+type TelemetrySessionSummary = {
+  session_id: string;
+  source?: string;
+  start_ms: number;
+  end_ms?: number;
+  mission_trace_path?: string;
+  event_count: number;
+};
+
+function listSessions(): TelemetrySessionSummary[] {
+  const events = readAllEvents();
+  const summaries = new Map<string, TelemetrySessionSummary>();
+  for (const event of events) {
+    if (event.kind !== "session") {
+      continue;
+    }
+    const existing = summaries.get(event.session_id) ?? {
+      session_id: event.session_id,
+      start_ms: event.timestamp_ms,
+      event_count: 0,
+    };
+    if (event.phase === "start") {
+      existing.start_ms = event.timestamp_ms;
+      existing.source = event.source;
+    } else if (event.phase === "end") {
+      existing.end_ms = event.timestamp_ms;
+      if (event.mission_trace_path) {
+        existing.mission_trace_path = event.mission_trace_path;
+      }
+    }
+    summaries.set(event.session_id, existing);
+  }
+  for (const summary of summaries.values()) {
+    summary.event_count = queryEvents({ sessionId: summary.session_id }).length;
+  }
+  return [...summaries.values()].sort((left, right) => right.start_ms - left.start_ms);
+}
+
 function computeStats(): TelemetryStats {
   const events = readAllEvents();
   const index = readHeartbeatIndex();
@@ -588,6 +626,27 @@ export function runTelemetryCli(sub: string, args: string[]): number {
       }
       case "serve":
         console.error("telemetry serve requires the native Rust CLI");
+        return 1;
+      case "sessions": {
+        const json = args.includes("--json");
+        const sessions = listSessions();
+        if (json) {
+          console.log(JSON.stringify(sessions, null, 2));
+        } else if (sessions.length === 0) {
+          console.log("No telemetry sessions recorded");
+        } else {
+          for (const session of sessions) {
+            console.log(
+              `${session.session_id} start=${session.start_ms}ms end=${session.end_ms ?? "open"} events=${session.event_count}${session.source ? ` source=${session.source}` : ""}${session.mission_trace_path ? ` trace=${session.mission_trace_path}` : ""}`,
+            );
+          }
+        }
+        return 0;
+      }
+      case "replay":
+        console.error(
+          "telemetry replay requires the native Rust CLI (mission trace replay)",
+        );
         return 1;
       default:
         console.error(`Unknown telemetry subcommand: ${sub}`);
