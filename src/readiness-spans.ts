@@ -4,6 +4,7 @@
  */
 
 import type { Program } from "./ast/nodes.js";
+import type { ReadinessIssue } from "./readiness.js";
 
 type Spanned = { span: { start: { line: number; column: number } } };
 
@@ -35,23 +36,52 @@ function firstRobotSafetySpan(program: Program): Spanned | undefined {
   return undefined;
 }
 
+function firstAssuranceCaseSpan(program: Program): Spanned | undefined {
+  return program.assuranceCases?.[0];
+}
+
+function firstAssuranceCaseWithoutEvidence(program: Program): Spanned | undefined {
+  return program.assuranceCases?.find((c) => c.evidence.length === 0);
+}
+
+function firstKnowledgeModelSpan(program: Program): Spanned | undefined {
+  return program.knowledgeModels?.[0];
+}
+
+function firstEmptyKnowledgeModel(program: Program): Spanned | undefined {
+  return program.knowledgeModels?.find((m) => m.components.length === 0);
+}
+
+function firstAnomalyDetectorSpan(program: Program): Spanned | undefined {
+  return program.anomalyDetectors?.[0];
+}
+
+function anomalyDetectorSpan(program: Program, name: string): Spanned | undefined {
+  return program.anomalyDetectors?.find((d) => d.name === name);
+}
+
+function firstMitigationSpan(program: Program): Spanned | undefined {
+  return program.mitigations?.[0];
+}
+
+function assuranceSpan(program: Program): { line: number; column: number } | undefined {
+  const node =
+    firstAssuranceCaseSpan(program) ??
+    firstKnowledgeModelSpan(program) ??
+    firstAnomalyDetectorSpan(program) ??
+    firstMitigationSpan(program);
+  return node ? atSpan(node) : undefined;
+}
+
+function extractQuotedName(message: string, prefix: string): string | undefined {
+  if (!message.startsWith(prefix)) return undefined;
+  const rest = message.slice(prefix.length);
+  const end = rest.indexOf("'");
+  return end >= 0 ? rest.slice(0, end) : undefined;
+}
+
 /** Resolve a display line/column for a readiness issue factor. */
 export function lineColumnForFactor(program: Program, factor: string): { line: number; column: number } {
-  // Map readiness factors to AST spans, matching crates/spanda-readiness/src/spans.rs.
-  //
-  // Parameters:
-  // - `program` — parsed `.sd` program
-  // - `factor` — readiness factor label from a report issue
-  //
-  // Returns:
-  // Best-effort source location for IDE diagnostics.
-  //
-  // Options:
-  // None.
-  //
-  // Example:
-  // const span = lineColumnForFactor(program, "Health");
-
   switch (factor) {
     case "Hardware":
     case "Battery":
@@ -78,7 +108,34 @@ export function lineColumnForFactor(program: Program, factor: string): { line: n
       const fleet = program.fleets?.[0];
       return fleet ? atSpan(fleet) : { line: 1, column: 1 };
     }
+    case "Assurance":
+      return assuranceSpan(program) ?? { line: 1, column: 1 };
     default:
       return { line: 1, column: 1 };
   }
+}
+
+/** Resolve a precise line/column for a readiness issue using message context. */
+export function lineColumnForIssue(
+  program: Program,
+  issue: ReadinessIssue,
+): { line: number; column: number } {
+  if (issue.factor === "Assurance") {
+    const detectorName = extractQuotedName(issue.message, "Anomaly detector '");
+    if (detectorName) {
+      const detector = anomalyDetectorSpan(program, detectorName);
+      if (detector) return atSpan(detector);
+    }
+    if (issue.message.includes("Assurance case")) {
+      const decl = firstAssuranceCaseWithoutEvidence(program);
+      if (decl) return atSpan(decl);
+    }
+    if (issue.message.includes("Knowledge model")) {
+      const decl = firstEmptyKnowledgeModel(program);
+      if (decl) return atSpan(decl);
+    }
+    const fallback = assuranceSpan(program);
+    if (fallback) return fallback;
+  }
+  return lineColumnForFactor(program, issue.factor);
 }

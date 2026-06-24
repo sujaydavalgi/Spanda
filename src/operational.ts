@@ -16,6 +16,22 @@ import {
   type ReadinessOptions,
 } from "./readiness.js";
 import { readFileSync } from "node:fs";
+import {
+  assureProgramTs,
+  scanAnomaliesTs,
+  evaluatePrognosticsTs,
+  checkResilienceTs,
+  verifyMissionAssuranceTs,
+  extractMitigationsTs,
+  diagnoseProgramTs,
+  formatAssuranceReport,
+  formatAnomalyReport,
+  formatPrognosticsReport,
+  formatResilienceReport,
+  formatMissionAssuranceReport,
+  formatMitigationReport,
+  formatDiagnosisReport,
+} from "./assurance.js";
 
 export type MissionVerificationReport = {
   achievable: boolean;
@@ -119,7 +135,7 @@ export type RootCauseReport = {
 
 export type { ReadinessDashboard } from "./readiness.js";
 export { readinessDashboardFromReports } from "./readiness.js";
-export { lineColumnForFactor } from "./readiness-spans.js";
+export { lineColumnForFactor, lineColumnForIssue } from "./readiness-spans.js";
 
 const FAILURE_SCENARIOS: Array<[string, string, string, string]> = [
   ["GPS", "Navigation degraded; position uncertainty increases", "Switch to visual odometry", "High"],
@@ -503,6 +519,50 @@ export function runOperationalCommand(
     };
   }
 
+  if (command === "anomaly" && positional[0] === "scan") {
+    const file = positional[1];
+    if (!file) throw new Error("Missing file path");
+    const program = parseProgramSource(readFileSync(file, "utf-8"));
+    const report = scanAnomaliesTs(program);
+    return {
+      exitCode: report.passed ? 0 : 1,
+      output: json ? JSON.stringify(report, null, 2) : formatAnomalyReport(report),
+    };
+  }
+
+  if (command === "mission" && positional[0] === "verify") {
+    const file = positional[1];
+    if (!file) throw new Error("Missing file path");
+    const program = parseProgramSource(readFileSync(file, "utf-8"));
+    const report = verifyMissionAssuranceTs(program, target);
+    return {
+      exitCode: report.passed ? 0 : 1,
+      output: json ? JSON.stringify(report, null, 2) : formatMissionAssuranceReport(report),
+    };
+  }
+
+  if (command === "resilience" && positional[0] === "check") {
+    const file = positional[1];
+    if (!file) throw new Error("Missing file path");
+    const program = parseProgramSource(readFileSync(file, "utf-8"));
+    const report = checkResilienceTs(program, options);
+    return {
+      exitCode: report.passed ? 0 : 1,
+      output: json ? JSON.stringify(report, null, 2) : formatResilienceReport(report),
+    };
+  }
+
+  if (command === "mitigation" && positional[0] === "plan") {
+    const file = positional[1];
+    if (!file) throw new Error("Missing file path");
+    const program = parseProgramSource(readFileSync(file, "utf-8"));
+    const report = extractMitigationsTs(program);
+    return {
+      exitCode: 0,
+      output: json ? JSON.stringify(report, null, 2) : formatMitigationReport(report),
+    };
+  }
+
   const file = positional[0];
   if (!file) throw new Error("Missing file path");
   const source = readFileSync(file, "utf-8");
@@ -541,10 +601,31 @@ export function runOperationalCommand(
       };
     }
     case "diagnose": {
-      const report = diagnoseTraceTs(file);
+      if (file.endsWith(".trace") || file.endsWith(".json")) {
+        const report = diagnoseTraceTs(file);
+        return {
+          exitCode: 0,
+          output: json ? JSON.stringify(report, null, 2) : formatRootCause(report),
+        };
+      }
+      const report = diagnoseProgramTs(program);
       return {
-        exitCode: 0,
-        output: json ? JSON.stringify(report, null, 2) : formatRootCause(report),
+        exitCode: report.passed ? 0 : 1,
+        output: json ? JSON.stringify(report, null, 2) : formatDiagnosisReport(report),
+      };
+    }
+    case "assure": {
+      const summary = assureProgramTs(program, file);
+      return {
+        exitCode: summary.passed ? 0 : 1,
+        output: json ? JSON.stringify(summary, null, 2) : formatAssuranceReport(summary.assurance),
+      };
+    }
+    case "prognostics": {
+      const report = evaluatePrognosticsTs(program);
+      return {
+        exitCode: report.passed ? 0 : 1,
+        output: json ? JSON.stringify(report, null, 2) : formatPrognosticsReport(report),
       };
     }
     case "audit": {

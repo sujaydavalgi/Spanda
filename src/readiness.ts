@@ -11,7 +11,7 @@ import {
   verifyHardwareProgram,
   type VerifyHardwareTsOptions,
 } from "./hardware-verify.js";
-import { lineColumnForFactor } from "./readiness-spans.js";
+import { lineColumnForIssue } from "./readiness-spans.js";
 
 export type ReadinessSeverity = "Critical" | "High" | "Medium" | "Low" | "Info";
 export type ReadinessStatus = "Ready" | "Degraded" | "NotReady" | "Unknown";
@@ -67,7 +67,8 @@ const DEFAULT_WEIGHTS = {
   Compute: 6,
   Packages: 8,
   Providers: 8,
-  "Mission Requirements": 10,
+  "Mission Requirements": 2,
+  Assurance: 8,
 } as const;
 
 const RUNTIME_FAULTS = ["GPSDegraded", "CameraOffline", "RobotHealthCritical"];
@@ -195,6 +196,55 @@ export function evaluateReadinessTs(
   factors.push(factorRow("Providers", DEFAULT_STANDARD_FACTOR_SCORE, weightFor("Providers")));
   factors.push(factorRow("Mission Requirements", capScore, weightFor("Mission Requirements")));
 
+  let assuranceScore = 100;
+  const assuranceCases = program.assuranceCases ?? [];
+  const knowledgeModels = program.knowledgeModels ?? [];
+  const anomalyDetectors = program.anomalyDetectors ?? [];
+  const anomalyHandlers = program.anomalyHandlers ?? [];
+  const mitigations = program.mitigations ?? [];
+
+  if (assuranceCases.length > 0) {
+    const allHaveEvidence = assuranceCases.every((c) => c.evidence.length > 0);
+    if (!allHaveEvidence) {
+      assuranceScore -= 40;
+      issues.push({
+        factor: "Assurance",
+        severity: "High",
+        message: "Assurance case missing evidence links",
+        suggested_action: "Add evidence to assurance_case declarations",
+      });
+    }
+  }
+  if (
+    knowledgeModels.length > 0 &&
+    knowledgeModels.some((m) => m.components.length === 0)
+  ) {
+    assuranceScore -= 20;
+    issues.push({
+      factor: "Assurance",
+      severity: "Medium",
+      message: "Knowledge model has empty components",
+    });
+  }
+  if (anomalyDetectors.length > 0) {
+    const handlerNames = new Set(anomalyHandlers.map((h) => h.detector));
+    for (const det of anomalyDetectors) {
+      if (!handlerNames.has(det.name)) {
+        assuranceScore -= 10;
+        issues.push({
+          factor: "Assurance",
+          severity: "Low",
+          message: `Anomaly detector '${det.name}' has no on anomaly handler`,
+          suggested_action: "Add on anomaly handler",
+        });
+      }
+    }
+  }
+  if (mitigations.length === 0 && anomalyDetectors.length > 0) {
+    assuranceScore -= 10;
+  }
+  factors.push(factorRow("Assurance", assuranceScore, weightFor("Assurance")));
+
   const total = weightedTotal(factors);
   const hasHigh = issues.some((i) => i.severity === "High" || i.severity === "Critical");
   const mission_ready = total >= 80 && isHardwareCompatible && !hasHigh;
@@ -284,7 +334,7 @@ export function readinessDiagnostics(
   const program = parse(tokenize(source));
   const report = evaluateReadinessTs(program, options);
   return report.issues.map((issue) => {
-    const span = lineColumnForFactor(program, issue.factor);
+    const span = lineColumnForIssue(program, issue);
     return {
       message: issue.message,
       line: span.line,
