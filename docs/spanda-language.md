@@ -530,6 +530,59 @@ robot Rover {
 }
 ```
 
+## Mission assurance and autonomous operations
+
+Program-level declarations for knowledge models, state estimation, anomaly detection, prognostics, mitigation, mode management, mission planning, resilience, and assurance evidence. See [mission-assurance.md](./mission-assurance.md), [knowledge-models.md](./knowledge-models.md), [anomaly-detection.md](./anomaly-detection.md), [diagnostics.md](./diagnostics.md), [prognostics.md](./prognostics.md), [resilience.md](./resilience.md), and [assurance-cases.md](./assurance-cases.md).
+
+```spanda
+knowledge_model RoverModel {
+    component gps;
+    component wheels;
+    dependency navigation requires [gps, wheels];
+}
+
+state_estimator RoverState {
+    inputs [gps.fix, imu.data];
+    output StateEstimate;
+}
+
+anomaly_detector NavigationAnomaly {
+    expected gps.accuracy <= 3 m;
+}
+
+on anomaly NavigationAnomaly severity High {
+    diagnose root_cause;
+    enter degraded_mode;
+}
+
+prognostics BatteryPrognostics {
+    predict battery.remaining_useful_life;
+    warn_if remaining_useful_life < 30 min;
+}
+
+mitigation GPSLostMitigation {
+    if gps.failed {
+        switch_to visual_odometry;
+        enter degraded_mode;
+    }
+}
+
+operating_mode DegradedMode {
+    degraded;
+}
+
+resilience_policy RoverResilience {
+    strategy graceful_degradation;
+}
+
+assurance_case RoverSafetyCase {
+    evidence hardware_verification;
+    evidence health_checks;
+}
+```
+
+CLI: `spanda assure`, `spanda anomaly scan`, `spanda diagnose`, `spanda prognostics`, `spanda mission verify`, `spanda resilience check`, `spanda mitigation plan`.
+
 Compile-fail tests inside `test` blocks:
 
 ```spanda
