@@ -10,6 +10,7 @@ mod readiness_cli;
 mod recovery_cli;
 mod ros2_cli;
 mod swarm_cli;
+mod telemetry_cli;
 mod trace_cli;
 
 use serde::Serialize;
@@ -174,8 +175,8 @@ fn usage() {
            spanda verify [--json] [--target <HardwareProfile>] [--all-targets] [--simulate] [--strict-certify] <file.sd>\n\
            spanda certify prove [--json] [--strict] [--out <file.json>] <file.sd>\n\
            spanda compatibility [--json] [--target <HardwareProfile>] [--all-targets] [--simulate] [--strict-certify] <file.sd>\n\
-           spanda run [--json] [--verbose] [--twin-export <replay.json>] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] [--trace-providers] [--trace-realtime] [--metrics-json] [--record] [--enforce-certify] <file.sd>\n\
-           spanda sim [--json] [--replay] [--twin-export <replay.json>] [--trace-realtime] [--metrics-json] [--record] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] [--trace-providers] [--enforce-certify] <file.sd>\n\
+           spanda run [--json] [--verbose] [--twin-export <replay.json>] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] [--trace-providers] [--trace-realtime] [--metrics-json] [--record] [--persist-telemetry] [--enforce-certify] <file.sd>\n\
+           spanda sim [--json] [--replay] [--twin-export <replay.json>] [--trace-realtime] [--metrics-json] [--record] [--persist-telemetry] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] [--trace-providers] [--enforce-certify] <file.sd>\n\
            spanda replay <mission.trace> [--from T+mm:ss] [--deterministic] [--playback]\n\
            spanda twin export <file.sd> --out <replay.json>\n\
            spanda fleet run [--json] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] <file.sd>\n\
@@ -1746,6 +1747,13 @@ fn main() {
         return;
     }
 
+    if command == "telemetry" {
+        let sub = args.get(2).map(String::as_str).unwrap_or("");
+        telemetry_cli::cmd_telemetry(sub, &args[3..]);
+        let _ = io::stdout().flush();
+        return;
+    }
+
     if command == "hardware" && args.get(2).map(String::as_str) == Some("capabilities") {
         trace_cli::cmd_hardware_capabilities(&args[3..]);
         let _ = io::stdout().flush();
@@ -1824,6 +1832,7 @@ fn main() {
     let mut readiness_json = false;
     let mut trigger_kill_switch: Option<String> = None;
     let mut inject_health_faults = false;
+    let mut persist_telemetry = false;
     let mut inject_failure: Option<String> = None;
     let mut i = 2;
 
@@ -1854,6 +1863,7 @@ fn main() {
                 json = true;
             }
             "--record" => record_trace = true,
+            "--persist-telemetry" => persist_telemetry = true,
             "--secure" => secure_mode = true,
             "--inject-security-faults" => inject_security_faults = true,
             "--enforce-certify" => enforce_certify = true,
@@ -2164,6 +2174,7 @@ fn main() {
                     enforce_certify,
                     trigger_kill_switch,
                     inject_health_faults,
+                    persist_telemetry,
                     ..Default::default()
                 },
             );
