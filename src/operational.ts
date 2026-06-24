@@ -36,7 +36,9 @@ import {
 } from "./assurance.js";
 import {
   evaluateRecoveryTs,
+  formatRecoveryKnowledge,
   formatRecoveryReport,
+  loadMergedRecoveryKnowledge,
   simulateFailureRecoveryTs,
   type RecoveryContext,
 } from "./recovery.js";
@@ -603,6 +605,17 @@ export function runOperationalCommand(
     return {
       exitCode: report.passed ? 0 : 1,
       output: json ? JSON.stringify(report, null, 2) : formatRecoveryReport(report),
+    };
+  }
+
+  if (command === "recovery" && positional[0] === "knowledge") {
+    const file = positional[1];
+    if (!file) throw new Error("Missing file path");
+    const program = parseProgramSource(readFileSync(file, "utf-8"));
+    const kb = loadMergedRecoveryKnowledge(program);
+    return {
+      exitCode: 0,
+      output: json ? JSON.stringify(kb, null, 2) : formatRecoveryKnowledge(kb),
     };
   }
 

@@ -3,6 +3,8 @@
  * @module
  */
 
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import type { Program } from "./ast/nodes.js";
 import { evaluateReadinessTs, type ReadinessOptions } from "./readiness.js";
 
@@ -69,6 +71,85 @@ export type RecoveryReport = {
   readiness: RecoveryReadiness;
   passed: boolean;
 };
+
+export type RecoveryKnowledgeEntry = {
+  failure_pattern: string;
+  recovery_pattern: string;
+  success_rate: number;
+  recommendation: string;
+};
+
+export type RecoveryKnowledgeBase = {
+  entries: RecoveryKnowledgeEntry[];
+};
+
+function defaultKnowledgeStorePath(): string {
+  return join(process.cwd(), ".spanda", "recovery_knowledge.json");
+}
+
+export function loadRecoveryKnowledgeStore(path = defaultKnowledgeStorePath()): RecoveryKnowledgeBase {
+  if (!existsSync(path)) return { entries: [] };
+  try {
+    return JSON.parse(readFileSync(path, "utf-8")) as RecoveryKnowledgeBase;
+  } catch {
+    return { entries: [] };
+  }
+}
+
+export function bestKnowledgeEntry(
+  kb: RecoveryKnowledgeBase,
+  issue: string,
+): RecoveryKnowledgeEntry | undefined {
+  const lower = issue.toLowerCase();
+  return kb.entries
+    .filter(
+      (e) =>
+        lower.includes(e.failure_pattern.toLowerCase()) ||
+        e.failure_pattern.toLowerCase().includes(lower),
+    )
+    .sort((a, b) => b.success_rate - a.success_rate)[0];
+}
+
+export function loadMergedRecoveryKnowledge(program: Program): RecoveryKnowledgeBase {
+  const persisted = loadRecoveryKnowledgeStore();
+  const staticEntries: RecoveryKnowledgeEntry[] = [];
+  for (const policy of extractPolicies(program)) {
+    for (const [condition, actions] of policy.triggers) {
+      if (actions[0]) {
+        staticEntries.push({
+          failure_pattern: condition,
+          recovery_pattern: actions[0],
+          success_rate: 0.5,
+          recommendation: `Policy ${policy.name}`,
+        });
+      }
+    }
+  }
+  const merged = [...staticEntries];
+  for (const entry of persisted.entries) {
+    const existing = merged.find((e) => e.failure_pattern === entry.failure_pattern);
+    if (existing) {
+      existing.success_rate = (existing.success_rate + entry.success_rate) / 2;
+      if (entry.success_rate > existing.success_rate) {
+        existing.recovery_pattern = entry.recovery_pattern;
+        existing.recommendation = entry.recommendation;
+      }
+    } else {
+      merged.push(entry);
+    }
+  }
+  return { entries: merged };
+}
+
+export function formatRecoveryKnowledge(kb: RecoveryKnowledgeBase): string {
+  if (kb.entries.length === 0) return "No recovery knowledge entries.\n";
+  return kb.entries
+    .map(
+      (e) =>
+        `${e.failure_pattern} -> ${e.recovery_pattern} (${Math.round(e.success_rate * 100)}% success)\n  ${e.recommendation}`,
+    )
+    .join("\n");
+}
 
 function classifyFailure(issue: string): string {
   const lower = issue.toLowerCase();
@@ -139,6 +220,11 @@ function actionsForIssue(program: Program, issue: string): PlannedRecoveryAction
     }
   }
   if (actions.length > 0) return actions;
+  const knowledge = loadMergedRecoveryKnowledge(program);
+  const entry = bestKnowledgeEntry(knowledge, issue);
+  if (entry) {
+    return [parseAction(entry.recovery_pattern, 1)];
+  }
   if (lower.includes("gps")) {
     return [
       "switch_to visual_odometry",
