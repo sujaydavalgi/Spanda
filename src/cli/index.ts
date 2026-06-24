@@ -60,6 +60,7 @@ import {
 import { startDeployAgentServer } from "../deploy-agent.js";
 import { buildCertificationProof } from "../certify-prover.js";
 import { defaultFleetMeshUrl } from "../fleet-mesh.js";
+import { runTelemetryCli } from "../telemetry-cli.js";
 import {
   defaultFleetAgentsPath,
   fleetAgentHealth,
@@ -820,7 +821,6 @@ function handleTelemetry(
   flags: Map<string, string | boolean>,
   json: boolean,
 ): void {
-  requireNative("Telemetry commands require the native Rust CLI.");
   const sub = positional[0];
   if (!sub) {
     console.error(
@@ -828,7 +828,7 @@ function handleTelemetry(
     );
     process.exit(1);
   }
-  const args = ["telemetry", sub, ...positional.slice(1)];
+  const args = [...positional.slice(1)];
   if (json) {
     args.push("--json");
   }
@@ -841,14 +841,18 @@ function handleTelemetry(
       args.push(value);
     }
   }
-  const result = runNativeCli(args);
-  if (result.stdout) {
-    process.stdout.write(result.stdout);
+  const nativeArgs = ["telemetry", sub, ...args];
+  const native = runNativeCli(nativeArgs);
+  if (native.status === 0) {
+    if (native.stdout) {
+      process.stdout.write(native.stdout);
+    }
+    if (native.stderr) {
+      process.stderr.write(native.stderr);
+    }
+    process.exit(0);
   }
-  if (result.stderr) {
-    process.stderr.write(result.stderr);
-  }
-  process.exit(result.status ?? 1);
+  process.exit(runTelemetryCli(sub, args));
 }
 
 function handleRun(
