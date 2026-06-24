@@ -253,6 +253,7 @@ spanda check examples/showcase/ai_safety_violation.sd   # expect compile error
 | `communication_demo.sd` | `spanda run examples/showcase/communication_demo.sd` |
 | `digital_twin_demo.sd` | `spanda run examples/showcase/digital_twin_demo.sd` |
 | `assurance/rover.sd` | `spanda demo assurance` |
+| `self_healing/rover.sd` | `spanda demo self-healing` |
 | `readiness/rover.sd` | `spanda readiness examples/showcase/readiness/rover.sd --json` |
 | `triggers_demo.sd` | `spanda run examples/triggers_demo.sd --trace-triggers` |
 
@@ -521,6 +522,29 @@ Topic examples:
 Learned anomaly with optional ONNX: `SPANDA_ANOMALY_ONNX_MODEL_PATH=/path/to/model.onnx` — see [anomaly-detection.md](./anomaly-detection.md).
 
 Operational readiness (composes with assurance): [readiness.md](./readiness.md)
+
+---
+
+## Self-healing & recovery (optional)
+
+Safety-first recovery: detect → diagnose → plan → validate → execute → verify → audit. Policies declare conditional actions; the runtime never bypasses safety validation or operator approval.
+
+```bash
+spanda demo self-healing
+```
+
+Or step through the showcase rover:
+
+```bash
+spanda check examples/showcase/self_healing/rover.sd --readiness-json
+spanda heal examples/showcase/self_healing/rover.sd
+spanda recover examples/showcase/self_healing/rover.sd --failure gps
+spanda recovery knowledge examples/showcase/self_healing/rover.sd
+spanda sim examples/showcase/self_healing/rover.sd --inject-failure gps
+spanda analyze-failure examples/showcase/self_healing/rover.sd --with-recovery
+```
+
+Fleet recovery with mesh relay (`SPANDA_FLEET_MESH_URL`): [self-healing.md](./self-healing.md) · [`examples/showcase/fleet_recovery/`](../examples/showcase/fleet_recovery/fleet.sd)
 
 ---
 

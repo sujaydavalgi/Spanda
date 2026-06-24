@@ -69,7 +69,7 @@
 | [diagnostics.md](./diagnostics.md) | **Fault diagnosis and `spanda diagnose`** |
 | [prognostics.md](./prognostics.md) | **Prognostics, RUL, and degradation warnings** |
 | [resilience.md](./resilience.md) | **Resilience policies and recovery** |
-| [self-healing.md](./self-healing.md) | **Self-healing framework and recovery workflow** |
+| [self-healing.md](./self-healing.md) | **Self-healing framework, recovery workflow, fleet mesh** |
 | [self-correction.md](./self-correction.md) | **Self-correction actions and safety gates** |
 | [recovery-planning.md](./recovery-planning.md) | **Recovery planner and failure classification** |
 | [recovery-assurance.md](./recovery-assurance.md) | **Recovery evidence and assurance integration** |

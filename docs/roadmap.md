@@ -43,6 +43,24 @@ See [mission-assurance.md](./mission-assurance.md), [state-estimation.md](./stat
 
 ---
 
+## Self-healing & recovery
+
+**Safety-first recovery** — `recovery_policy`, validation gates, knowledge store, runtime dispatch, fleet mesh relay.
+
+| Item | Status |
+|------|--------|
+| `recovery_policy` syntax + `RecoveryPlanner` | **Stable** |
+| CLI (`heal`, `recover`, `recovery-report`, `recovery knowledge`, `sim --inject-failure`) | **Stable** |
+| Recovery diagnostics (`spanda check --readiness-json`) | **Stable** |
+| Runtime dispatch (modes, speed caps, connectivity, mission pause) | **Experimental** |
+| Operator approval (env, Approval topics, mission `requires approval`) | **Experimental** |
+| Fleet mesh recovery (`POST /v1/fleet/recovery`, `SPANDA_FLEET_MESH_URL`) | **Experimental** |
+| `spanda demo self-healing` | **Stable** |
+
+See [self-healing.md](./self-healing.md), [recovery-policies.md](./recovery-policies.md).
+
+---
+
 ## Language
 
 **Spanda Language (`.sd`)** — syntax, types, robot primitives, units, safety types.
