@@ -558,8 +558,36 @@ struct CliCommand {
     description: &'static str,
     options: &'static str,
     examples: &'static str,
+    exit_status: &'static str,
+    files: &'static str,
     see_also: &'static str,
 }
+
+/// Registered CLI command names (for man-page lint and tests).
+pub const CLI_COMMAND_NAMES: &[&str] = &[
+    "spanda",
+    "spanda-check",
+    "spanda-verify",
+    "spanda-run",
+    "spanda-sim",
+    "spanda-replay",
+    "spanda-test",
+    "spanda-readiness",
+    "spanda-assure",
+    "spanda-diagnose",
+    "spanda-heal",
+    "spanda-fleet",
+    "spanda-package",
+    "spanda-trace",
+    "spanda-security",
+    "spanda-fmt",
+    "spanda-lint",
+    "spanda-doc",
+    "spanda-man",
+    "spanda-reference",
+    "spanda-codegen",
+    "spanda-debug",
+];
 
 const CLI_COMMANDS: &[CliCommand] = &[
     CliCommand {
@@ -569,6 +597,8 @@ const CLI_COMMANDS: &[CliCommand] = &[
         description: "Type-check and parse a Spanda program or project.",
         options: "`--json` — machine-readable diagnostics\n`--project` — check all modules in the current project",
         examples: "spanda check examples/rover.sd\nspanda check --project",
+        exit_status: "0 on success; 1 on parse, type, or lint errors.",
+        files: "`spanda.toml` — project manifest when using `--project`",
         see_also: "spanda-verify(1), spanda-run(1)",
     },
     CliCommand {
@@ -578,6 +608,8 @@ const CLI_COMMANDS: &[CliCommand] = &[
         description: "Verify hardware compatibility and safety constraints for a deploy target.",
         options: "`--target` — hardware profile name\n`--all-targets` — compatibility matrix\n`--simulate` — include simulator checks\n`--json` — JSON report",
         examples: "spanda verify robot.sd --target RoverV1\nspanda verify robot.sd --all-targets --simulate",
+        exit_status: "0 when compatible; 1 on verification failures or errors.",
+        files: "Hardware profile definitions in the program or `hardware/` package paths.",
         see_also: "spanda-check(1), spanda-run(1)",
     },
     CliCommand {
@@ -587,6 +619,8 @@ const CLI_COMMANDS: &[CliCommand] = &[
         description: "Execute a Spanda program on the interpreter backend.",
         options: "`--trace-scheduler`, `--trace-tasks`, `--trace-triggers`, `--trace-events` — scheduler telemetry\n`--trace-realtime`, `--metrics-json` — realtime metrics\n`--record` — write mission trace",
         examples: "spanda run examples/rover.sd\nspanda run robot.sd --trace-realtime --metrics-json",
+        exit_status: "0 on successful execution; 1 on runtime or compile errors.",
+        files: "Mission traces when using `--record` (default: `mission.trace`).",
         see_also: "spanda-sim(1), spanda-replay(1)",
     },
     CliCommand {
@@ -596,6 +630,8 @@ const CLI_COMMANDS: &[CliCommand] = &[
         description: "Run a program in the built-in simulator with optional trace recording.",
         options: "`--replay` — replay mode\n`--wall-clock` — real-time pacing\n`--record` — mission trace output",
         examples: "spanda sim examples/rover.sd --record\nspanda sim robot.sd --wall-clock",
+        exit_status: "0 on successful simulation; 1 on errors.",
+        files: "Mission traces when using `--record`.",
         see_also: "spanda-run(1), spanda-replay(1)",
     },
     CliCommand {
@@ -605,7 +641,64 @@ const CLI_COMMANDS: &[CliCommand] = &[
         description: "Replay or deterministically verify a recorded mission trace.",
         options: "`--from` — start offset\n`--deterministic` — verify reproducibility\n`--playback` — frame-by-frame playback",
         examples: "spanda replay mission.trace --deterministic\nspanda replay mission.trace --playback --from T+00:30",
+        exit_status: "0 when replay succeeds or deterministic check passes; 1 otherwise.",
+        files: "Input mission trace file (`.trace`).",
         see_also: "spanda-sim(1), spanda-run(1)",
+    },
+    CliCommand {
+        name: "spanda-test",
+        section: 1,
+        synopsis: "spanda test [--project <dir>]",
+        description: "Run in-language `test` blocks and package test suites for a Spanda project.",
+        options: "`--project` — project root (default: current directory)",
+        examples: "spanda test\nspanda test --project examples/rover",
+        exit_status: "0 when all tests pass; 1 on failures.",
+        files: "`spanda.toml`, `spanda.lock`, project `.sd` sources.",
+        see_also: "spanda-check(1), spanda-package(1)",
+    },
+    CliCommand {
+        name: "spanda-readiness",
+        section: 1,
+        synopsis: "spanda readiness [--json] [--readiness-json] <file.sd>",
+        description: "Evaluate operational readiness: health, safety, fleet, and deployment gates.",
+        options: "`--json` / `--readiness-json` — structured readiness report",
+        examples: "spanda readiness robot.sd --readiness-json",
+        exit_status: "0 when ready; 1 when blocking issues are found.",
+        files: "Readiness reports may reference `spanda.toml` safety metadata.",
+        see_also: "spanda-verify(1), spanda-assure(1)",
+    },
+    CliCommand {
+        name: "spanda-assure",
+        section: 1,
+        synopsis: "spanda assure [--json] <file.sd>",
+        description: "Run assurance workflows: anomaly coverage, prognostics, and assurance cases.",
+        options: "`--json` — machine-readable assurance report",
+        examples: "spanda assure robot.sd --json",
+        exit_status: "0 when assurance checks pass; 1 on gaps or violations.",
+        files: "Assurance metadata in program declarations.",
+        see_also: "spanda-readiness(1), spanda-diagnose(1)",
+    },
+    CliCommand {
+        name: "spanda-diagnose",
+        section: 1,
+        synopsis: "spanda diagnose [--json] <file.sd> [<mission.trace>]",
+        description: "Diagnose failures from static analysis and optional mission traces.",
+        options: "`--json` — structured diagnosis report",
+        examples: "spanda diagnose robot.sd\nspanda diagnose robot.sd mission.trace",
+        exit_status: "0 when diagnosis completes; 1 on errors.",
+        files: "Optional mission trace input.",
+        see_also: "spanda-assure(1), spanda-heal(1)",
+    },
+    CliCommand {
+        name: "spanda-heal",
+        section: 1,
+        synopsis: "spanda heal [--json] <file.sd>",
+        description: "Execute self-healing and recovery policies declared in the program.",
+        options: "`--json` — recovery report",
+        examples: "spanda heal robot.sd --json",
+        exit_status: "0 when recovery succeeds; 1 on unrecoverable faults.",
+        files: "Recovery policies in `.sd` source.",
+        see_also: "spanda-diagnose(1), spanda-recovery(1)",
     },
     CliCommand {
         name: "spanda-fleet",
@@ -614,7 +707,42 @@ const CLI_COMMANDS: &[CliCommand] = &[
         description: "Run a multi-robot fleet program with peer communication.",
         options: "Same trace flags as `spanda run`.",
         examples: "spanda fleet run examples/communication/multi_robot_fleet.sd",
+        exit_status: "0 on successful fleet run; 1 on errors.",
+        files: "Fleet mesh state when using remote agents.",
         see_also: "spanda-run(1)",
+    },
+    CliCommand {
+        name: "spanda-package",
+        section: 1,
+        synopsis: "spanda <init|build|test|add|remove|install|publish|registry> [options]",
+        description: "Manage Spanda packages: manifests, dependencies, builds, and registry operations.",
+        options: "See `spanda init`, `build`, `test`, `add`, `remove`, `install`, `publish`, `registry search`, `registry info`.",
+        examples: "spanda init my-robot\nspanda add std.robotics\nspanda publish",
+        exit_status: "0 on success; 1 on manifest, lockfile, or registry errors.",
+        files: "`spanda.toml`, `spanda.lock`, `packages/` registry mirror.",
+        see_also: "spanda-check(1), spanda-test(1)",
+    },
+    CliCommand {
+        name: "spanda-trace",
+        section: 1,
+        synopsis: "spanda trace [--json] [--out <file>] <file.sd>",
+        description: "Record scheduler, task, trigger, and event traces from a program run.",
+        options: "`--out` — trace output path\n`--json` — structured trace summary",
+        examples: "spanda trace robot.sd --out mission.trace",
+        exit_status: "0 on success; 1 on runtime errors.",
+        files: "Output trace file (`.trace`).",
+        see_also: "spanda-replay(1), spanda-run(1)",
+    },
+    CliCommand {
+        name: "spanda-security",
+        section: 1,
+        synopsis: "spanda security <check|audit> [--json] <file.sd>",
+        description: "Validate security policies, identities, and audit configuration.",
+        options: "`check` — static security validation\n`audit` — audit log review\n`--json` — machine-readable report",
+        examples: "spanda security check robot.sd --json\nspanda security audit robot.sd",
+        exit_status: "0 when policies pass; 1 on violations.",
+        files: "Security metadata in program and `spanda.toml` when present.",
+        see_also: "spanda-verify(1), spanda-readiness(1)",
     },
     CliCommand {
         name: "spanda-fmt",
@@ -623,6 +751,8 @@ const CLI_COMMANDS: &[CliCommand] = &[
         description: "Format Spanda source to canonical style.",
         options: "`--json` — report whether the file changed",
         examples: "spanda fmt examples/rover.sd",
+        exit_status: "0 on success; 1 on parse errors.",
+        files: "In-place `.sd` source file.",
         see_also: "spanda-check(1)",
     },
     CliCommand {
@@ -632,25 +762,42 @@ const CLI_COMMANDS: &[CliCommand] = &[
         description: "Run linter rules beyond parse/type checking.",
         options: "`--json` — structured lint report",
         examples: "spanda lint robot.sd",
+        exit_status: "0 when no lint issues; 1 when issues are found.",
+        files: "Input `.sd` source file.",
         see_also: "spanda-check(1)",
     },
     CliCommand {
         name: "spanda-doc",
         section: 1,
-        synopsis: "spanda doc [--json] [--out <file.md>] <file.sd>",
-        description: "Generate JavaDoc-style API docs for a single `.sd` module.",
-        options: "`--out` — write markdown to file instead of stdout",
-        examples: "spanda doc module.sd --out module-api.md",
-        see_also: "spanda-reference(1)",
+        synopsis: "spanda doc [--json] [--html] [--out <file>] <file.sd|dir/>",
+        description: "Generate JavaDoc-style API docs for `.sd` modules (markdown or HTML).",
+        options: "`--out` — write output file or directory\n`--html` — emit HTML instead of markdown\n`--json` — wrap output in JSON",
+        examples: "spanda doc module.sd --out module-api.md\nspanda doc --html examples/",
+        exit_status: "0 on success; 1 on lex/parse errors.",
+        files: "Output docs under `--out` or stdout.",
+        see_also: "spanda-reference(1), spanda-man(1)",
+    },
+    CliCommand {
+        name: "spanda-man",
+        section: 1,
+        synopsis: "spanda man [<command>] [--roff]",
+        description: "Display man-page style documentation for Spanda CLI commands.",
+        options: "`--roff` — emit roff for Unix `man` viewers\nNo argument — list available pages",
+        examples: "spanda man\nspanda man verify\nspanda man run --roff",
+        exit_status: "0 on success; 1 when the command page is not found.",
+        files: "Man pages are generated from compiler metadata into `docs/man/`.",
+        see_also: "spanda-reference(1), spanda-doc(1)",
     },
     CliCommand {
         name: "spanda-reference",
         section: 1,
-        synopsis: "spanda reference [--json] [--out <file.md>]",
-        description: "Emit the full Spanda language reference (this document).",
-        options: "`--out` — write to file\n`--json` — wrap markdown in JSON",
-        examples: "spanda reference --out docs/spanda-reference.md",
-        see_also: "spanda-doc(1)",
+        synopsis: "spanda reference [--json] [--out <file.md>] [--man-dir <dir>]",
+        description: "Emit the full Spanda language reference and optional man pages.",
+        options: "`--out` — write reference markdown\n`--man-dir` — write man pages\n`--json` — wrap markdown in JSON",
+        examples: "spanda reference --out docs/spanda-reference.md --man-dir docs/man",
+        exit_status: "0 on success.",
+        files: "`docs/spanda-reference.md`, `docs/man/` when generating.",
+        see_also: "spanda-doc(1), spanda-man(1)",
     },
     CliCommand {
         name: "spanda-codegen",
@@ -659,6 +806,8 @@ const CLI_COMMANDS: &[CliCommand] = &[
         description: "Generate deployable artifacts from a Spanda program.",
         options: "`--target` — output format",
         examples: "spanda codegen --target wasm robot.sd --out robot.wasm",
+        exit_status: "0 on success; 1 on codegen errors.",
+        files: "Generated artifact at `--out`.",
         see_also: "spanda-deploy(1), spanda-compile-native(1)",
     },
     CliCommand {
@@ -668,6 +817,8 @@ const CLI_COMMANDS: &[CliCommand] = &[
         description: "Start an interactive debug session.",
         options: "`--break` — initial breakpoint line",
         examples: "spanda debug robot.sd --break 42",
+        exit_status: "0 on clean exit; 1 on errors.",
+        files: "Debug session uses source `.sd` file.",
         see_also: "spanda-run(1)",
     },
 ];
@@ -727,6 +878,12 @@ fn render_single_man(cmd: &CliCommand) -> String {
     out.push_str("```bash\n");
     out.push_str(cmd.examples);
     out.push_str("\n```\n\n");
+    out.push_str("**EXIT STATUS**\n\n");
+    out.push_str(cmd.exit_status);
+    out.push_str("\n\n");
+    out.push_str("**FILES**\n\n");
+    out.push_str(cmd.files);
+    out.push_str("\n\n");
     out.push_str("**SEE ALSO**\n\n");
     out.push_str(cmd.see_also);
     out.push_str("\n\n");
@@ -792,6 +949,12 @@ pub fn generate_cli_man_pages() -> Vec<(String, String)> {
         body.push_str("```bash\n");
         body.push_str(cmd.examples);
         body.push_str("\n```\n\n");
+        body.push_str("## EXIT STATUS\n\n");
+        body.push_str(cmd.exit_status);
+        body.push_str("\n\n");
+        body.push_str("## FILES\n\n");
+        body.push_str(cmd.files);
+        body.push_str("\n\n");
         body.push_str("## SEE ALSO\n\n");
         body.push_str(cmd.see_also);
         body.push_str(

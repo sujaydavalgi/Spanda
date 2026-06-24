@@ -9,6 +9,7 @@ authors.workspace = true
 homepage.workspace = true
 
 [dependencies]
+serde = { version = "1", features = ["derive"] }
 spanda-ast = { path = "../spanda-ast" }
 spanda-error = { path = "../spanda-error" }
 spanda-lexer = { path = "../spanda-lexer" }
