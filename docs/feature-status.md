@@ -162,10 +162,10 @@ See [tier-3-experimental.md](./tier-3-experimental.md) and [tier-3-golden-paths.
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Native CLI (full) | **Stable** | check, verify, run, sim, replay, fleet, fmt, lint, doc, package |
+| Native CLI (full) | **Stable** | check, verify, run, sim, replay, fleet, fmt, lint, doc, man, reference, package |
 | Prebuilt packages | **Stable** | Linux/macOS/Windows archives, shell/PowerShell installers, Windows MSI, Homebrew formula; see [installation.md](./installation.md) |
 | TypeScript CLI | **Stable** | Delegates to Rust when built |
-| Formatter / linter / docgen | **Stable** | Rust |
+| Formatter / linter / docgen | **Stable** | `///` doc comments in `.sd`; `spanda doc` (markdown/HTML/JSON); `spanda man`; [man pages](./man/README.md) |
 | LSP | **Experimental** | VS Code extension scaffold; CI builds VSIX on push |
 | DAP debugger | **Experimental** | VS Code + `spanda-dap`; `every` trigger entry (Phase 35) |
 | N-API | **Experimental** | check, run, verify, sir, fmt |

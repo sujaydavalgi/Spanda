@@ -118,7 +118,8 @@ More samples: [docs/overview/code-samples.md](docs/overview/code-samples.md) · 
 | Feature status | [docs/feature-status.md](docs/feature-status.md) |
 | Mission assurance | [docs/mission-assurance.md](docs/mission-assurance.md) |
 | Architecture | [docs/overview/architecture.md](docs/overview/architecture.md) (pipeline) · [docs/architecture.md](docs/architecture.md) (full) |
-| CLI reference | [docs/overview/cli.md](docs/overview/cli.md) · [docs/spanda-reference.md](docs/spanda-reference.md) |
+| CLI reference | [docs/overview/cli.md](docs/overview/cli.md) · [docs/spanda-reference.md](docs/spanda-reference.md) · [docs/man/](docs/man/README.md) |
+| Language reference | [docs/language-reference/](docs/language-reference/README.md) · [docs/spanda-reference.md](docs/spanda-reference.md) |
 | Packages & registry | [docs/overview/packages.md](docs/overview/packages.md) · [docs/packages.md](docs/packages.md) |
 | Roadmap | [docs/roadmap.md](docs/roadmap.md) |
 

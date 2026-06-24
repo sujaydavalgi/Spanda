@@ -548,8 +548,42 @@ spanda analyze-failure examples/showcase/self_healing/rover.sd --with-recovery
 
 ---
 
+## Documentation
+
+Generate API docs from `.sd` source (JavaDoc-style `///` comments are included):
+
+```bash
+spanda doc src/main.sd
+spanda doc --html src/main.sd --out api.html
+spanda doc examples/ --out target/api-docs
+```
+
+View CLI manual pages:
+
+```bash
+spanda man              # list commands
+spanda man verify       # man-page style help
+spanda man run --roff   # roff for Unix man viewers
+```
+
+Full language reference and topic guides:
+
+- [language-reference/](./language-reference/README.md) — syntax, types, agents, safety, packages
+- [spanda-reference.md](./spanda-reference.md) — generated keywords, stdlib, builtins
+- [man/](./man/README.md) — all CLI man pages
+
+Regenerate reference and man pages after compiler changes:
+
+```bash
+python3 scripts/generate_spanda_reference.py
+cargo doc --workspace --no-deps   # Rust crate API docs
+```
+
+---
+
 ## Next steps
 
+- [language-reference/](./language-reference/README.md) — structured language topics
 - [spanda-language.md](./spanda-language.md) — full language reference
 - [mission-assurance.md](./mission-assurance.md) — knowledge, state, anomaly, resilience CLI
 - [readiness.md](./readiness.md) — operational go/no-go scoring
