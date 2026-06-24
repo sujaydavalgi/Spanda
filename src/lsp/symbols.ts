@@ -39,19 +39,34 @@ export type SymbolIndex = {
 };
 
 function addSymbol(index: SymbolIndex, sym: SpandaSymbol): void {
-  // AddSymbol.
+  // Description:
+  //     AddSymbol.
   //
-  // Parameters:
-  // - `index` — input value
-  // - `sym` — input value
+  // Inputs:
+  //     index: SymbolIndex
+  //         Caller-supplied index.
+  //     sym: SpandaSymbol
+  //         Caller-supplied sym.
   //
-  // Returns:
-  // Nothing.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     None.
   //
   // Example:
+  //     const result = addSymbol(index, sym);
+  // Description:
+  //     AddSymbol.
+  //
+  // Inputs:
+  //     index: SymbolIndex
+  //         Caller-supplied index.
+  //     sym: SpandaSymbol
+  //         Caller-supplied sym.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+  //     const result = addSymbol(index, sym);
 
   // const result = addSymbol(index, sym);
   index.symbols.push(sym);
@@ -61,18 +76,32 @@ function addSymbol(index: SymbolIndex, sym: SpandaSymbol): void {
 }
 
 export function buildSymbolIndex(program: Program): SymbolIndex {
-  // BuildSymbolIndex.
+  // Description:
+  //     BuildSymbolIndex.
   //
-  // Parameters:
-  // - `program` — input value
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
   //
-  // Returns:
-  // `SymbolIndex`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: SymbolIndex
+  //         Return value from `buildSymbolIndex`.
   //
   // Example:
+  //     const result = buildSymbolIndex(program);
+  // Description:
+  //     BuildSymbolIndex.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     result: SymbolIndex
+  //         Return value from `buildSymbolIndex`.
+  //
+  // Example:
+  //     const result = buildSymbolIndex(program);
 
   // const result = buildSymbolIndex(program);
   const index: SymbolIndex = { symbols: [], byName: new Map() };
@@ -245,18 +274,32 @@ export function buildSymbolIndex(program: Program): SymbolIndex {
 }
 
 export function indexSource(source: string): SymbolIndex {
-  // IndexSource.
+  // Description:
+  //     IndexSource.
   //
-  // Parameters:
-  // - `source` — input value
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
   //
-  // Returns:
-  // `SymbolIndex`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: SymbolIndex
+  //         Return value from `indexSource`.
   //
   // Example:
+  //     const result = indexSource(source);
+  // Description:
+  //     IndexSource.
+  //
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //
+  // Outputs:
+  //     result: SymbolIndex
+  //         Return value from `indexSource`.
+  //
+  // Example:
+  //     const result = indexSource(source);
 
   // const result = indexSource(source);
   return buildSymbolIndex(parse(tokenize(source)));
@@ -267,20 +310,40 @@ export function symbolAtPosition(
   line: number,
   column: number,
 ): SpandaSymbol | null {
-  // SymbolAtPosition.
+  // Description:
+  //     SymbolAtPosition.
   //
-  // Parameters:
-  // - `index` — input value
-  // - `line` — input value
-  // - `column` — input value
+  // Inputs:
+  //     index: SymbolIndex
+  //         Caller-supplied index.
+  //     line: number
+  //         Caller-supplied line.
+  //     column: number
+  //         Caller-supplied column.
   //
-  // Returns:
-  // `Some` / non-null value on success, otherwise `None` / null.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: SpandaSymbol | null
+  //         Return value from `symbolAtPosition`.
   //
   // Example:
+  //     const result = symbolAtPosition(index, line, column);
+  // Description:
+  //     SymbolAtPosition.
+  //
+  // Inputs:
+  //     index: SymbolIndex
+  //         Caller-supplied index.
+  //     line: number
+  //         Caller-supplied line.
+  //     column: number
+  //         Caller-supplied column.
+  //
+  // Outputs:
+  //     result: SpandaSymbol | null
+  //         Return value from `symbolAtPosition`.
+  //
+  // Example:
+  //     const result = symbolAtPosition(index, line, column);
 
   // const result = symbolAtPosition(index, line, column);
   for (const sym of index.symbols) {
@@ -304,20 +367,40 @@ export function lookupDefinition(
   name: string,
   kind?: SymbolKind,
 ): SpandaSymbol | null {
-  // LookupDefinition.
+  // Description:
+  //     LookupDefinition.
   //
-  // Parameters:
-  // - `index` — input value
-  // - `name` — input value
-  // - `kind?` — optional input
+  // Inputs:
+  //     index: SymbolIndex
+  //         Caller-supplied index.
+  //     name: string
+  //         Caller-supplied name.
+  //     kind?: SymbolKind
+  //         Caller-supplied kind?.
   //
-  // Returns:
-  // `Some` / non-null value on success, otherwise `None` / null.
-  //
-  // Options:
-  // - `kind?` — optional parameter
+  // Outputs:
+  //     result: SpandaSymbol | null
+  //         Return value from `lookupDefinition`.
   //
   // Example:
+  //     const result = lookupDefinition(index, name, kind?);
+  // Description:
+  //     LookupDefinition.
+  //
+  // Inputs:
+  //     index: SymbolIndex
+  //         Caller-supplied index.
+  //     name: string
+  //         Caller-supplied name.
+  //     kind?: SymbolKind
+  //         Caller-supplied kind?.
+  //
+  // Outputs:
+  //     result: SpandaSymbol | null
+  //         Return value from `lookupDefinition`.
+  //
+  // Example:
+  //     const result = lookupDefinition(index, name, kind?);
 
   // const result = lookupDefinition(index, name, kind?);
   const candidates = index.byName.get(name);
@@ -333,20 +416,40 @@ export function lookupDefinition(
 }
 
 export function wordAtPosition(source: string, line: number, column: number): string | null {
-  // WordAtPosition.
+  // Description:
+  //     WordAtPosition.
   //
-  // Parameters:
-  // - `source` — input value
-  // - `line` — input value
-  // - `column` — input value
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //     line: number
+  //         Caller-supplied line.
+  //     column: number
+  //         Caller-supplied column.
   //
-  // Returns:
-  // `Some` / non-null value on success, otherwise `None` / null.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: string | null
+  //         Return value from `wordAtPosition`.
   //
   // Example:
+  //     const result = wordAtPosition(source, line, column);
+  // Description:
+  //     WordAtPosition.
+  //
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //     line: number
+  //         Caller-supplied line.
+  //     column: number
+  //         Caller-supplied column.
+  //
+  // Outputs:
+  //     result: string | null
+  //         Return value from `wordAtPosition`.
+  //
+  // Example:
+  //     const result = wordAtPosition(source, line, column);
 
   // const result = wordAtPosition(source, line, column);
   const lines = source.split("\n");
@@ -394,20 +497,40 @@ export function resolveDefinition(
   line: number,
   column: number,
 ): SpandaSymbol | null {
-  // ResolveDefinition.
+  // Description:
+  //     ResolveDefinition.
   //
-  // Parameters:
-  // - `source` — input value
-  // - `line` — input value
-  // - `column` — input value
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //     line: number
+  //         Caller-supplied line.
+  //     column: number
+  //         Caller-supplied column.
   //
-  // Returns:
-  // `Some` / non-null value on success, otherwise `None` / null.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: SpandaSymbol | null
+  //         Return value from `resolveDefinition`.
   //
   // Example:
+  //     const result = resolveDefinition(source, line, column);
+  // Description:
+  //     ResolveDefinition.
+  //
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //     line: number
+  //         Caller-supplied line.
+  //     column: number
+  //         Caller-supplied column.
+  //
+  // Outputs:
+  //     result: SpandaSymbol | null
+  //         Return value from `resolveDefinition`.
+  //
+  // Example:
+  //     const result = resolveDefinition(source, line, column);
 
   // const result = resolveDefinition(source, line, column);
   const index = indexSource(source);
@@ -434,18 +557,32 @@ export function resolveDefinition(
 }
 
 export function formatHover(sym: SpandaSymbol): string {
-  // FormatHover.
+  // Description:
+  //     FormatHover.
   //
-  // Parameters:
-  // - `sym` — input value
+  // Inputs:
+  //     sym: SpandaSymbol
+  //         Caller-supplied sym.
   //
-  // Returns:
-  // Text result.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: string
+  //         Return value from `formatHover`.
   //
   // Example:
+  //     const result = formatHover(sym);
+  // Description:
+  //     FormatHover.
+  //
+  // Inputs:
+  //     sym: SpandaSymbol
+  //         Caller-supplied sym.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `formatHover`.
+  //
+  // Example:
+  //     const result = formatHover(sym);
 
   // const result = formatHover(sym);
   const header = `**${sym.kind}** \`${sym.name}\``;

@@ -131,6 +131,21 @@ export type MissionAssuranceSummary = {
 };
 
 function evidenceKind(source: string): string {
+  // Description:
+  //     EvidenceKind.
+  //
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `evidenceKind`.
+  //
+  // Example:
+
+  //     const result = evidenceKind(source);
+
   if (source.includes("hardware")) return "Hardware";
   if (source.includes("capability") || source.includes("traceability")) return "Capability";
   if (source.includes("health")) return "Health";
@@ -140,6 +155,23 @@ function evidenceKind(source: string): string {
 }
 
 function buildSafetyCase(program: Program, sourceLabel: string): AssuranceReport["safety_case"] {
+  // Description:
+  //     BuildSafetyCase.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     sourceLabel: string
+  //         Caller-supplied sourceLabel.
+  //
+  // Outputs:
+  //     result: AssuranceReport["safety_case"]
+  //         Return value from `buildSafetyCase`.
+  //
+  // Example:
+
+  //     const result = buildSafetyCase(program, sourceLabel);
+
   const hw = verifyHardwareProgram(program);
   const known_risks = hw.items.filter((i) => i.severity === "warning").map((i) => i.message);
   return {
@@ -154,6 +186,23 @@ function buildSafetyCase(program: Program, sourceLabel: string): AssuranceReport
 }
 
 function verifyMissionForAssurance(program: Program, target?: string): MissionVerificationReport[] {
+  // Description:
+  //     VerifyMissionForAssurance.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     target?: string
+  //         Caller-supplied target?.
+  //
+  // Outputs:
+  //     result: MissionVerificationReport[]
+  //         Return value from `verifyMissionForAssurance`.
+  //
+  // Example:
+
+  //     const result = verifyMissionForAssurance(program, target?);
+
   const hw = verifyHardwareProgram(program, { target, allTargets: !target });
   const reports: MissionVerificationReport[] = [];
 
@@ -194,6 +243,23 @@ function verifyMissionForAssurance(program: Program, target?: string): MissionVe
 }
 
 export function buildAssuranceReport(program: Program, sourceLabel: string): AssuranceReport {
+  // Description:
+  //     BuildAssuranceReport.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     sourceLabel: string
+  //         Caller-supplied sourceLabel.
+  //
+  // Outputs:
+  //     result: AssuranceReport
+  //         Return value from `buildAssuranceReport`.
+  //
+  // Example:
+
+  //     const result = buildAssuranceReport(program, sourceLabel);
+
   const cases = (program.assuranceCases ?? []).map((decl) => ({
     name: decl.name,
     evidence: decl.evidence.map((e) => ({
@@ -232,7 +298,22 @@ export function buildAssuranceReport(program: Program, sourceLabel: string): Ass
   };
 }
 
-export function learnedModelsTs(program: Program): Array<{ detector: string; backend: string }> {
+export function learnedModelsTs(program: Program): Array<{
+  // Description:
+  //     LearnedModelsTs.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     result: Array<
+  //         Return value from `learnedModelsTs`.
+  //
+  // Example:
+
+ // const result = learnedModelsTs(program);
+ detector: string; backend: string }> {
   const importBackend = (program.imports ?? []).find(
     (imp) => imp.path.includes("assurance.anomaly") || imp.path.endsWith("anomaly"),
   )?.path;
@@ -247,6 +328,21 @@ export function learnedModelsTs(program: Program): Array<{ detector: string; bac
 }
 
 export function scanAnomaliesTs(program: Program): AnomalyReport {
+  // Description:
+  //     ScanAnomaliesTs.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     result: AnomalyReport
+  //         Return value from `scanAnomaliesTs`.
+  //
+  // Example:
+
+  //     const result = scanAnomaliesTs(program);
+
   const detectors = (program.anomalyDetectors ?? []).map((decl) => ({
     detector: decl.name,
     rules: decl.expected.map((e) => `${e.metric} ${e.operator} ${e.threshold}`),
@@ -286,6 +382,21 @@ export function scanAnomaliesTs(program: Program): AnomalyReport {
 }
 
 export function evaluatePrognosticsTs(program: Program): PrognosticsReport {
+  // Description:
+  //     EvaluatePrognosticsTs.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     result: PrognosticsReport
+  //         Return value from `evaluatePrognosticsTs`.
+  //
+  // Example:
+
+  //     const result = evaluatePrognosticsTs(program);
+
   const models: PrognosticsReport["models"] = [];
   const rul_predictions: PrognosticsReport["rul_predictions"] = [];
   const warnings: string[] = [];
@@ -329,6 +440,23 @@ export function checkResilienceTs(
   program: Program,
   options: ReadinessOptions = {},
 ): ResilienceReport {
+  // Description:
+  //     CheckResilienceTs.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     options: ReadinessOptions = {}
+  //         Caller-supplied options.
+  //
+  // Outputs:
+  //     result: ResilienceReport
+  //         Return value from `checkResilienceTs`.
+  //
+  // Example:
+
+  //     const result = checkResilienceTs(program, options);
+
   const policies = (program.resiliencePolicies ?? []).map((decl) => ({
     name: decl.name,
     strategies: decl.strategies.map((s) => ({ name: s, description: `Strategy: ${s}` })),
@@ -357,6 +485,23 @@ export function verifyMissionAssuranceTs(
   program: Program,
   target?: string,
 ): MissionAssuranceReport {
+  // Description:
+  //     VerifyMissionAssuranceTs.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     target?: string
+  //         Caller-supplied target?.
+  //
+  // Outputs:
+  //     result: MissionAssuranceReport
+  //         Return value from `verifyMissionAssuranceTs`.
+  //
+  // Example:
+
+  //     const result = verifyMissionAssuranceTs(program, target?);
+
   const plans = (program.missionPlans ?? []).map((decl) => ({
     name: decl.name,
     steps: decl.steps.map((s) => s.name),
@@ -396,6 +541,21 @@ export function verifyMissionAssuranceTs(
 }
 
 export function extractMitigationsTs(program: Program): MitigationReport {
+  // Description:
+  //     ExtractMitigationsTs.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     result: MitigationReport
+  //         Return value from `extractMitigationsTs`.
+  //
+  // Example:
+
+  //     const result = extractMitigationsTs(program);
+
   const plans = (program.mitigations ?? []).map((decl) => {
     const actions = decl.branches.flatMap((b) =>
       b.actions.map((a) => ({ description: a, condition: b.condition })),
@@ -423,6 +583,21 @@ export function extractMitigationsTs(program: Program): MitigationReport {
 }
 
 export function diagnoseProgramTs(program: Program): DiagnosisReport {
+  // Description:
+  //     DiagnoseProgramTs.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     result: DiagnosisReport
+  //         Return value from `diagnoseProgramTs`.
+  //
+  // Example:
+
+  //     const result = diagnoseProgramTs(program);
+
   const static_diagnoses = (program.mitigations ?? []).map((mit) => ({
     subject: mit.name,
     root_causes: mit.branches.map((b) => ({
@@ -461,6 +636,21 @@ export function diagnoseProgramTs(program: Program): DiagnosisReport {
 }
 
 function validateKnowledgeModels(program: Program): string[] {
+  // Description:
+  //     ValidateKnowledgeModels.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     result: string[]
+  //         Return value from `validateKnowledgeModels`.
+  //
+  // Example:
+
+  //     const result = validateKnowledgeModels(program);
+
   const issues: string[] = [];
   const models = program.knowledgeModels ?? [];
   for (const model of models) {
@@ -482,6 +672,21 @@ function validateKnowledgeModels(program: Program): string[] {
 }
 
 function validateStateEstimators(program: Program): string[] {
+  // Description:
+  //     ValidateStateEstimators.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     result: string[]
+  //         Return value from `validateStateEstimators`.
+  //
+  // Example:
+
+  //     const result = validateStateEstimators(program);
+
   const issues: string[] = [];
   for (const est of program.stateEstimators ?? []) {
     if (est.inputs.length === 0) {
@@ -492,6 +697,21 @@ function validateStateEstimators(program: Program): string[] {
 }
 
 function validateModes(program: Program): string[] {
+  // Description:
+  //     ValidateModes.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     result: string[]
+  //         Return value from `validateModes`.
+  //
+  // Example:
+
+  //     const result = validateModes(program);
+
   const modes = program.operatingModes ?? [];
   if (modes.length === 0) return [];
   const hasSafe = modes.some((m) => /safe/i.test(m.modeKind));
@@ -503,6 +723,21 @@ function validateModes(program: Program): string[] {
 }
 
 export function evaluateStateAssuranceTs(program: Program): StateAssuranceReport {
+  // Description:
+  //     EvaluateStateAssuranceTs.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     result: StateAssuranceReport
+  //         Return value from `evaluateStateAssuranceTs`.
+  //
+  // Example:
+
+  //     const result = evaluateStateAssuranceTs(program);
+
   const sensorTypes = new Map<string, string>();
   for (const robot of program.robots ?? []) {
     for (const sensor of robot.sensors ?? []) {
@@ -510,6 +745,21 @@ export function evaluateStateAssuranceTs(program: Program): StateAssuranceReport
     }
   }
   const weight = (sensorType: string): number => {
+    // Description:
+    //     Weight.
+    //
+    // Inputs:
+    //     sensorType: string
+    //         Caller-supplied sensorType.
+    //
+    // Outputs:
+    //     result: number
+    //         Return value from `weight`.
+    //
+    // Example:
+
+    //     const result = weight(sensorType);
+
     switch (sensorType) {
       case "GPS":
       case "GNSS":
@@ -545,6 +795,22 @@ export function evaluateStateAssuranceTs(program: Program): StateAssuranceReport
     };
   });
   const belief = {
+  // Description:
+  //     AssureProgramTs.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     sourceLabel: string
+  //         Caller-supplied sourceLabel.
+  //
+  // Outputs:
+  //     result: MissionAssuranceSummary
+  //         Return value from `assureProgramTs`.
+  //
+  // Example:
+
+    // const result = assureProgramTs(program, sourceLabel);
     estimates: estimators.flatMap((e) => (e.fused ? [e.fused] : [])),
   };
   const issues = validateStateEstimators(program);
@@ -552,6 +818,23 @@ export function evaluateStateAssuranceTs(program: Program): StateAssuranceReport
 }
 
 export function assureProgramTs(program: Program, sourceLabel: string): MissionAssuranceSummary {
+  // Description:
+  //     AssureProgramTs.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     sourceLabel: string
+  //         Caller-supplied sourceLabel.
+  //
+  // Outputs:
+  //     result: MissionAssuranceSummary
+  //         Return value from `assureProgramTs`.
+  //
+  // Example:
+
+  //     const result = assureProgramTs(program, sourceLabel);
+
   const assurance = buildAssuranceReport(program, sourceLabel);
   const anomalies = scanAnomaliesTs(program);
   const prognostics = evaluatePrognosticsTs(program);
@@ -565,6 +848,21 @@ export function assureProgramTs(program: Program, sourceLabel: string): MissionA
     assurance.passed &&
     anomalies.passed &&
     prognostics.passed &&
+  // Description:
+  //     FormatAssuranceReport.
+  //
+  // Inputs:
+  //     report: AssuranceReport
+  //         Caller-supplied report.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `formatAssuranceReport`.
+  //
+  // Example:
+
+    // const result = formatAssuranceReport(report);
+
     resilience.passed &&
     mission.passed &&
     state.passed &&
@@ -574,7 +872,22 @@ export function assureProgramTs(program: Program, sourceLabel: string): MissionA
     assurance,
     anomalies,
     prognostics,
-    resilience,
+    resi
+  // Description:
+  //     FormatAnomalyReport.
+  //
+  // Inputs:
+  //     report: AnomalyReport
+  //         Caller-supplied report.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `formatAnomalyReport`.
+  //
+  // Example:
+
+// const result = formatAnomalyReport(report);
+lience,
     mission,
     state,
     issues,
@@ -583,12 +896,57 @@ export function assureProgramTs(program: Program, sourceLabel: string): MissionA
 }
 
 export function formatAssuranceReport(report: AssuranceReport): string {
+  // Description:
+  //     FormatAssuranceReport.
+  //
+  // Inputs:
+  //     report: AssuranceReport
+  //         Caller-supplied report.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `formatAssuranceReport`.
+  //
+  // Example:
+
+  //     const result = formatAssuranceReport(report);
+
   return `Assurance Report\nPassed: ${report.passed}\nCases: ${report.cases.length}\n`;
 }
 
 export function formatAnomalyReport(report: AnomalyReport): string {
+  // Description:
+  //     FormatAnomalyReport.
+  //
+  // Inputs:
+  //     report: AnomalyReport
+  //         Caller-supplied report.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `formatAnomalyReport`.
+  //
+  // Example:
+
+  //     const result = formatAnomalyReport(report);
+
   if (report.anomalies.length === 0) {
     return `Anomaly Report\nPassed: ${report.passed}\n`;
+  // Description:
+  //     FormatPrognosticsReport.
+  //
+  // Inputs:
+  //     report: PrognosticsReport
+  //         Caller-supplied report.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `formatPrognosticsReport`.
+  //
+  // Example:
+
+  //     const result = formatPrognosticsReport(report);
+
   }
   const lines = report.anomalies.map(
     (a) => `- ${a.detector} ${a.metric} (expected ${a.expected}, observed ${a.observed})`,
@@ -597,31 +955,196 @@ export function formatAnomalyReport(report: AnomalyReport): string {
 }
 
 export function formatPrognosticsReport(report: PrognosticsReport): string {
-  const warnings =
+  // Description:
+  //     FormatPrognosticsReport.
+  //
+  // Inputs:
+  //     report: PrognosticsReport
+  //         Caller-supplied report.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `formatPrognosticsReport`.
+  //
+  // Example:
+
+  //     const result = formatPrognosticsReport(report);
+
+  const 
+  // Description:
+  //     FormatResilienceReport.
+  //
+  // Inputs:
+  //     report: ResilienceReport
+  //         Caller-supplied report.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `formatResilienceReport`.
+  //
+  // Example:
+
+// const result = formatResilienceReport(report);
+warnings =
     report.warnings.length > 0 ? `\nWarnings:\n${report.warnings.map((w) => `- ${w}`).join("\n")}` : "";
-  return `Prognostics Report\nPassed: ${report.passed}\nModels: ${report.models.length}${warnings}\n`;
+  return `Prognostics Report\nPassed: ${report.passed}\nModels: ${report.models.length}${warnings}\n
+  // Description:
+  //     FormatStateReport.
+  //
+  // Inputs:
+  //     report: StateAssuranceReport
+  //         Caller-supplied report.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `formatStateReport`.
+  //
+  // Example:
+
+// const result = formatStateReport(report);
+`;
 }
 
 export function formatResilienceReport(report: ResilienceReport): string {
+  // Description:
+  //     FormatResilienceReport.
+  //
+  // Inputs:
+  //     report: ResilienceReport
+  //         Caller-supplied report.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `formatResilienceReport`.
+  //
+  // Example:
+
+  //     const result = formatResilienceReport(report);
+
   return `Resilience Report\nPassed: ${report.passed}\nPolicies: ${report.policies.length}\nReadiness score: ${report.readiness_score}\n`;
 }
 
 export function formatStateReport(report: StateAssuranceReport): string {
-  const lines = report.estimators.map(
+  // Description:
+  //     FormatStateReport.
+  //
+  // Inputs:
+  //     report: StateAssuranceReport
+  //         Caller-supplied report.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `formatStateReport`.
+  //
+  // Example:
+
+  //     const result = formatStateReport(report);
+
+  const lines = report.est
+  // Description:
+  //     FormatMissionAssuranceReport.
+  //
+  // Inputs:
+  //     report: MissionAssuranceReport
+  //         Caller-supplied report.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `formatMissionAssuranceReport`.
+  //
+  // Example:
+
+// const result = formatMissionAssuranceReport(report);
+imators.map(
     (e) => `* ${e.estimator} inputs [${e.inputs.join(", ")}]`,
   );
-  return `State Estimation Report\nPassed: ${report.passed}\nEstimators: ${report.estimators.length}\n${lines.join("\n")}\n`;
+  return `State Estimation Report\nPassed: ${report.passed}\nEstimators: ${report.estimators.length}\n${lines.join("\n")}\
+  // Description:
+  //     FormatMitigationReport.
+  //
+  // Inputs:
+  //     report: MitigationReport
+  //         Caller-supplied report.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `formatMitigationReport`.
+  //
+  // Example:
+
+// const result = formatMitigationReport(report);
+n`;
 }
 
 export function formatMissionAssuranceReport(report: MissionAssuranceReport): string {
-  return `Mission Assurance\nPassed: ${report.passed}\nPlans: ${report.plans.length}\nStatus: ${report.execution.status}\n`;
+  // Description:
+  //     FormatMissionAssuranceReport.
+  //
+  // Inputs:
+  //     report: MissionAssuranceReport
+  //         Caller-supplied report.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `formatMissionAssuranceReport`.
+  //
+  // Example:
+
+  //     const result = formatMissionAssuranceReport(report);
+
+  return `Mission Assurance\nPassed: ${report.passed}\nPlans: ${repor
+  // Description:
+  //     FormatDiagnosisReport.
+  //
+  // Inputs:
+  //     report: DiagnosisReport
+  //         Caller-supplied report.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `formatDiagnosisReport`.
+  //
+  // Example:
+
+// const result = formatDiagnosisReport(report);
+t.plans.length}\nStatus: ${report.execution.status}\n`;
 }
 
 export function formatMitigationReport(report: MitigationReport): string {
+  // Description:
+  //     FormatMitigationReport.
+  //
+  // Inputs:
+  //     report: MitigationReport
+  //         Caller-supplied report.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `formatMitigationReport`.
+  //
+  // Example:
+
+  //     const result = formatMitigationReport(report);
+
   return `Mitigation Plan\nPassed: ${report.passed}\nPlans: ${report.plans.length}\n`;
 }
 
 export function formatDiagnosisReport(report: DiagnosisReport): string {
+  // Description:
+  //     FormatDiagnosisReport.
+  //
+  // Inputs:
+  //     report: DiagnosisReport
+  //         Caller-supplied report.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `formatDiagnosisReport`.
+  //
+  // Example:
+
+  //     const result = formatDiagnosisReport(report);
+
   const lines = report.static_diagnoses.map(
     (d) => `${d.subject}: ${d.root_causes.map((r) => r.description).join("; ")}`,
   );

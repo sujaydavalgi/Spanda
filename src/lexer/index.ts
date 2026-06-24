@@ -499,18 +499,32 @@ const UNIT_SUFFIXES: UnitLexeme[] = [
 ];
 
 export function tokenize(source: string): Token[] {
-  // Tokenize.
+  // Description:
+  //     Tokenize.
   //
-  // Parameters:
-  // - `source` — input value
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
   //
-  // Returns:
-  // `Token[]`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: Token[]
+  //         Return value from `tokenize`.
   //
   // Example:
+  //     const result = tokenize(source);
+  // Description:
+  //     Tokenize.
+  //
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //
+  // Outputs:
+  //     result: Token[]
+  //         Return value from `tokenize`.
+  //
+  // Example:
+  //     const result = tokenize(source);
 
   // const result = tokenize(source);
   const tokens: Token[] = [];
@@ -883,78 +897,148 @@ export function tokenize(source: string): Token[] {
 }
 
 function isHexDigit(ch: string): boolean {
-  // IsHexDigit.
+  // Description:
+  //     IsHexDigit.
   //
-  // Parameters:
-  // - `ch` — input value
+  // Inputs:
+  //     ch: string
+  //         Caller-supplied ch.
   //
-  // Returns:
-  // `true` or `false`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: boolean
+  //         Return value from `isHexDigit`.
   //
   // Example:
+  //     const result = isHexDigit(ch);
+  // Description:
+  //     IsHexDigit.
+  //
+  // Inputs:
+  //     ch: string
+  //         Caller-supplied ch.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `isHexDigit`.
+  //
+  // Example:
+  //     const result = isHexDigit(ch);
 
   // const result = isHexDigit(ch);
   return isDigit(ch) || (ch >= "a" && ch <= "f") || (ch >= "A" && ch <= "F");
 }
 
 function isDigit(ch: string): boolean {
-  // IsDigit.
+  // Description:
+  //     IsDigit.
   //
-  // Parameters:
-  // - `ch` — input value
+  // Inputs:
+  //     ch: string
+  //         Caller-supplied ch.
   //
-  // Returns:
-  // `true` or `false`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: boolean
+  //         Return value from `isDigit`.
   //
   // Example:
+  //     const result = isDigit(ch);
+  // Description:
+  //     IsDigit.
+  //
+  // Inputs:
+  //     ch: string
+  //         Caller-supplied ch.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `isDigit`.
+  //
+  // Example:
+  //     const result = isDigit(ch);
 
   // const result = isDigit(ch);
   return ch >= "0" && ch <= "9";
 }
 
 function isIdentStart(ch: string): boolean {
-  // IsIdentStart.
+  // Description:
+  //     IsIdentStart.
   //
-  // Parameters:
-  // - `ch` — input value
+  // Inputs:
+  //     ch: string
+  //         Caller-supplied ch.
   //
-  // Returns:
-  // `true` or `false`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: boolean
+  //         Return value from `isIdentStart`.
   //
   // Example:
+  //     const result = isIdentStart(ch);
+  // Description:
+  //     IsIdentStart.
+  //
+  // Inputs:
+  //     ch: string
+  //         Caller-supplied ch.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `isIdentStart`.
+  //
+  // Example:
+  //     const result = isIdentStart(ch);
 
   // const result = isIdentStart(ch);
   return (ch >= "a" && ch <= "z") || (ch >= "A" && ch <= "Z") || ch === "_";
 }
 
 function isIdentChar(ch: string): boolean {
-  // IsIdentChar.
+  // Description:
+  //     IsIdentChar.
   //
-  // Parameters:
-  // - `ch` — input value
+  // Inputs:
+  //     ch: string
+  //         Caller-supplied ch.
   //
-  // Returns:
-  // `true` or `false`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: boolean
+  //         Return value from `isIdentChar`.
   //
   // Example:
+  //     const result = isIdentChar(ch);
+  // Description:
+  //     IsIdentChar.
+  //
+  // Inputs:
+  //     ch: string
+  //         Caller-supplied ch.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `isIdentChar`.
+  //
+  // Example:
+  //     const result = isIdentChar(ch);
 
   // const result = isIdentChar(ch);
   return isIdentStart(ch) || isDigit(ch);
 }
 
 function regexLiteralContext(previous: Token | undefined): boolean {
+  // Description:
+  //     RegexLiteralContext.
+  //
+  // Inputs:
+  //     previous: Token | undefined
+  //         Caller-supplied previous.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `regexLiteralContext`.
+  //
+  // Example:
+  //     const result = regexLiteralContext(previous);
+
   // Decide whether `/` starts a regex literal instead of division.
   if (!previous) {
     return true;
@@ -983,7 +1067,24 @@ function regexLiteralContext(previous: Token | undefined): boolean {
   ].includes(previous.type);
 }
 
-function lexRegexLiteral(source: string, start: number): { lexeme: string; advanceBy: number } {
+function lexRegexLiteral(source: string, start: number): {
+  // Description:
+  //     LexRegexLiteral.
+  //
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //     start: number
+  //         Caller-supplied start.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+ // const result = lexRegexLiteral(source, start);
+ lexeme: string; advanceBy: number } {
+
   // Lex a `/pattern/flags` regex literal starting at the opening slash.
   let i = start + 1;
   let escaped = false;
@@ -1012,18 +1113,32 @@ function lexRegexLiteral(source: string, start: number): { lexeme: string; advan
 }
 
 export function unitFromLexeme(lexeme: UnitLexeme): import("../ast/nodes.js").UnitKind {
-  // UnitFromLexeme.
+  // Description:
+  //     UnitFromLexeme.
   //
-  // Parameters:
-  // - `lexeme` — input value
+  // Inputs:
+  //     lexeme: UnitLexeme
+  //         Caller-supplied lexeme.
   //
-  // Returns:
-  // `import("../ast/nodes.js").UnitKind`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: import("../ast/nodes.js").UnitKind
+  //         Return value from `unitFromLexeme`.
   //
   // Example:
+  //     const result = unitFromLexeme(lexeme);
+  // Description:
+  //     UnitFromLexeme.
+  //
+  // Inputs:
+  //     lexeme: UnitLexeme
+  //         Caller-supplied lexeme.
+  //
+  // Outputs:
+  //     result: import("../ast/nodes.js").UnitKind
+  //         Return value from `unitFromLexeme`.
+  //
+  // Example:
+  //     const result = unitFromLexeme(lexeme);
 
   // const result = unitFromLexeme(lexeme);
   if (lexeme === "m/s2" || lexeme === "m/s²") return "m/s²";

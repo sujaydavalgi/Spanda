@@ -77,10 +77,40 @@ const RUNTIME_FAULTS = ["GPSDegraded", "CameraOffline", "RobotHealthCritical"];
 const weightFor = (key: keyof typeof DEFAULT_WEIGHTS): number => DEFAULT_WEIGHTS[key];
 
 function isValidDeployDecl(candidate: DeployDecl | undefined): candidate is DeployDecl {
+  // Description:
+  //     IsValidDeployDecl.
+  //
+  // Inputs:
+  //     candidate: DeployDecl | undefined
+  //         Caller-supplied candidate.
+  //
+  // Outputs:
+  //     result: candidate is DeployDecl
+  //         Return value from `isValidDeployDecl`.
+  //
+  // Example:
+
+  //     const result = isValidDeployDecl(candidate);
+
   return !!candidate && "kind" in candidate && candidate.kind === "DeployDecl";
 }
 
 function defaultDeployTarget(program: Program): string | undefined {
+  // Description:
+  //     DefaultDeployTarget.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     result: string | undefined
+  //         Return value from `defaultDeployTarget`.
+  //
+  // Example:
+
+  //     const result = defaultDeployTarget(program);
+
   const deployments = program.deployments ?? [];
   const first = deployments[0];
   if (!isValidDeployDecl(first)) {
@@ -91,6 +121,25 @@ function defaultDeployTarget(program: Program): string | undefined {
 }
 
 function factorRow(factor: string, score: number, weight: number): ReadinessFactorScore {
+  // Description:
+  //     FactorRow.
+  //
+  // Inputs:
+  //     factor: string
+  //         Caller-supplied factor.
+  //     score: number
+  //         Caller-supplied score.
+  //     weight: number
+  //         Caller-supplied weight.
+  //
+  // Outputs:
+  //     result: ReadinessFactorScore
+  //         Return value from `factorRow`.
+  //
+  // Example:
+
+  //     const result = factorRow(factor, score, weight);
+
   return {
     factor,
     score,
@@ -100,6 +149,21 @@ function factorRow(factor: string, score: number, weight: number): ReadinessFact
 }
 
 function weightedTotal(factors: ReadinessFactorScore[]): number {
+  // Description:
+  //     WeightedTotal.
+  //
+  // Inputs:
+  //     factors: ReadinessFactorScore[]
+  //         Caller-supplied factors.
+  //
+  // Outputs:
+  //     result: number
+  //         Return value from `weightedTotal`.
+  //
+  // Example:
+
+  //     const result = weightedTotal(factors);
+
   const sum = factors.reduce((acc, f) => acc + f.weight, 0);
   if (sum === 0) return 0;
   const weighted = factors.reduce((acc, f) => acc + f.weighted, 0);
@@ -119,7 +183,23 @@ const DEFAULT_STANDARD_FACTOR_SCORE = 88;
 function healthScoreFromProgram(
   program: Program,
   runtimeFaults: string[],
-): { score: number; issues: ReadinessIssue[] } {
+): {
+  // Description:
+  //     HealthScoreFromProgram.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     runtimeFaults: string[]
+  //         Caller-supplied runtimeFaults.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+ // const result = healthScoreFromProgram(program, runtimeFaults);
+ score: number; issues: ReadinessIssue[] } {
   const issues: ReadinessIssue[] = [];
   const checks = program.healthChecks ?? [];
   if (checks.length === 0 && runtimeFaults.length === 0) {
@@ -144,6 +224,23 @@ export function evaluateReadinessTs(
   program: Program,
   options: ReadinessOptions = {},
 ): ReadinessReport {
+  // Description:
+  //     EvaluateReadinessTs.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     options: ReadinessOptions = {}
+  //         Caller-supplied options.
+  //
+  // Outputs:
+  //     result: ReadinessReport
+  //         Return value from `evaluateReadinessTs`.
+  //
+  // Example:
+
+  //     const result = evaluateReadinessTs(program, options);
+
   const target = options.target ?? defaultDeployTarget(program);
   const verifyOpts: VerifyHardwareTsOptions = {
     target,
@@ -286,6 +383,23 @@ export function evaluateReadinessSource(
   source: string,
   options: ReadinessOptions = {},
 ): ReadinessReport {
+  // Description:
+  //     EvaluateReadinessSource.
+  //
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //     options: ReadinessOptions = {}
+  //         Caller-supplied options.
+  //
+  // Outputs:
+  //     result: ReadinessReport
+  //         Return value from `evaluateReadinessSource`.
+  //
+  // Example:
+
+  //     const result = evaluateReadinessSource(source, options);
+
   const program = parse(tokenize(source));
   return evaluateReadinessTs(program, options);
 }
@@ -295,20 +409,22 @@ export function evaluateAgentReadinessJson(
   source: string,
   options: ReadinessOptions = {},
 ): string {
-  // Build the same JSON payload deploy and fleet agents return over HTTP.
+  // Description:
+  //     EvaluateAgentReadinessJson.
   //
-  // Parameters:
-  // - `source` — deployed `.sd` program text
-  // - `options` — target, runtime, and fault-injection flags
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //     options: ReadinessOptions = {}
+  //         Caller-supplied options.
   //
-  // Returns:
-  // JSON string `{"ok":true,"mission_ready":...,"readiness":...}`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: string
+  //         Return value from `evaluateAgentReadinessJson`.
   //
   // Example:
-  // const body = evaluateAgentReadinessJson(programText, { includeRuntime: true });
+
+  //     const result = evaluateAgentReadinessJson(source, options);
 
   const report = evaluateReadinessSource(source, options);
   return JSON.stringify({
@@ -319,6 +435,21 @@ export function evaluateAgentReadinessJson(
 }
 
 function mapSeverityToDiagnostic(severity: ReadinessSeverity): string {
+  // Description:
+  //     MapSeverityToDiagnostic.
+  //
+  // Inputs:
+  //     severity: ReadinessSeverity
+  //         Caller-supplied severity.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `mapSeverityToDiagnostic`.
+  //
+  // Example:
+
+  //     const result = mapSeverityToDiagnostic(severity);
+
   switch (severity) {
     case "Critical":
     case "High":
@@ -337,6 +468,23 @@ export function readinessDiagnostics(
   source: string,
   options: ReadinessOptions = {},
 ): Array<{
+  // Description:
+  //     ReadinessDiagnostics.
+  //
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //     options: ReadinessOptions = {}
+  //         Caller-supplied options.
+  //
+  // Outputs:
+  //     result: Array<
+  //         Return value from `readinessDiagnostics`.
+  //
+  // Example:
+
+  //     const result = readinessDiagnostics(source, options);
+
   message: string;
   line: number;
   column: number;
@@ -361,6 +509,21 @@ export function readinessDiagnostics(
 }
 
 export function readinessDashboardFromReports(reports: ReadinessReport[]): ReadinessDashboard {
+  // Description:
+  //     ReadinessDashboardFromReports.
+  //
+  // Inputs:
+  //     reports: ReadinessReport[]
+  //         Caller-supplied reports.
+  //
+  // Outputs:
+  //     result: ReadinessDashboard
+  //         Return value from `readinessDashboardFromReports`.
+  //
+  // Example:
+
+  //     const result = readinessDashboardFromReports(reports);
+
   const mission_ready_count = reports.filter((r) => r.mission_ready).length;
   const degraded_count = reports.filter((r) => r.status === "Degraded").length;
   const not_ready_count = reports.filter((r) => r.status === "NotReady").length;

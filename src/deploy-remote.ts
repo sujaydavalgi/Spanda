@@ -21,6 +21,21 @@ import { remoteFetch } from "./http-fetch.js";
 function certificationProofPayload(
   proof?: CertificationProofSummary,
 ): Record<string, unknown> | undefined {
+  // Description:
+  //     CertificationProofPayload.
+  //
+  // Inputs:
+  //     proof?: CertificationProofSummary
+  //         Caller-supplied proof?.
+  //
+  // Outputs:
+  //     result: Record<string, unknown> | undefined
+  //         Return value from `certificationProofPayload`.
+  //
+  // Example:
+
+  //     const result = certificationProofPayload(proof?);
+
   if (!proof) return undefined;
   return {
     passed: proof.passed,
@@ -50,14 +65,57 @@ export type AgentStatusResponse = {
 };
 
 export function defaultAgentsPath(): string {
+  // Description:
+  //     DefaultAgentsPath.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `defaultAgentsPath`.
+  //
+  // Example:
+
+  //     const result = defaultAgentsPath();
+
   return process.env.SPANDA_DEPLOY_AGENTS ?? ".spanda/deploy-agents.json";
 }
 
 export function emptyAgentRegistry(): DeployAgentRegistry {
+  // Description:
+  //     EmptyAgentRegistry.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: DeployAgentRegistry
+  //         Return value from `emptyAgentRegistry`.
+  //
+  // Example:
+
+  //     const result = emptyAgentRegistry();
+
   return { agents: [] };
 }
 
 export function loadAgentRegistry(text: string | null): DeployAgentRegistry {
+  // Description:
+  //     LoadAgentRegistry.
+  //
+  // Inputs:
+  //     text: string | null
+  //         Caller-supplied text.
+  //
+  // Outputs:
+  //     result: DeployAgentRegistry
+  //         Return value from `loadAgentRegistry`.
+  //
+  // Example:
+
+  //     const result = loadAgentRegistry(text);
+
   if (!text) return emptyAgentRegistry();
   try {
     const parsed = JSON.parse(text) as DeployAgentRegistry;
@@ -68,15 +126,61 @@ export function loadAgentRegistry(text: string | null): DeployAgentRegistry {
 }
 
 export function serializeAgentRegistry(registry: DeployAgentRegistry): string {
+  // Description:
+  //     SerializeAgentRegistry.
+  //
+  // Inputs:
+  //     registry: DeployAgentRegistry
+  //         Caller-supplied registry.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `serializeAgentRegistry`.
+  //
+  // Example:
+
+  //     const result = serializeAgentRegistry(registry);
+
   return JSON.stringify(registry, null, 2);
 }
 
 export function readAgentRegistryFromDisk(path = defaultAgentsPath()): DeployAgentRegistry {
+  // Description:
+  //     ReadAgentRegistryFromDisk.
+  //
+  // Inputs:
+  //     path = defaultAgentsPath(): input value
+  //         Caller-supplied path = defaultAgentsPath().
+  //
+  // Outputs:
+  //     result: DeployAgentRegistry
+  //         Return value from `readAgentRegistryFromDisk`.
+  //
+  // Example:
+
+  //     const result = readAgentRegistryFromDisk(path = defaultAgentsPath());
+
   if (!existsSync(path)) return emptyAgentRegistry();
   return loadAgentRegistry(readFileSync(path, "utf-8"));
 }
 
 export function writeAgentRegistryToDisk(registry: DeployAgentRegistry, path = defaultAgentsPath()): void {
+  // Description:
+  //     WriteAgentRegistryToDisk.
+  //
+  // Inputs:
+  //     registry: DeployAgentRegistry
+  //         Caller-supplied registry.
+  //     path = defaultAgentsPath(): input value
+  //         Caller-supplied path = defaultAgentsPath().
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+  //     const result = writeAgentRegistryToDisk(registry, path = defaultAgentsPath());
+
   const abs = resolve(path);
   mkdirSync(dirname(abs), { recursive: true });
   writeFileSync(abs, serializeAgentRegistry(registry));
@@ -88,6 +192,27 @@ export function registerAgent(
   url: string,
   token?: string,
 ): DeployAgentRegistry {
+  // Description:
+  //     RegisterAgent.
+  //
+  // Inputs:
+  //     registry: DeployAgentRegistry
+  //         Caller-supplied registry.
+  //     target: string
+  //         Caller-supplied target.
+  //     url: string
+  //         Caller-supplied url.
+  //     token?: string
+  //         Caller-supplied token?.
+  //
+  // Outputs:
+  //     result: DeployAgentRegistry
+  //         Return value from `registerAgent`.
+  //
+  // Example:
+
+  //     const result = registerAgent(registry, target, url, token?);
+
   if (!url.startsWith("http://") && !url.startsWith("https://")) {
     throw new Error(`deploy agent URL must start with http:// or https:// (got ${url})`);
   }
@@ -98,6 +223,23 @@ export function registerAgent(
 }
 
 export function lookupAgent(registry: DeployAgentRegistry, target: string): DeployAgentEntry | undefined {
+  // Description:
+  //     LookupAgent.
+  //
+  // Inputs:
+  //     registry: DeployAgentRegistry
+  //         Caller-supplied registry.
+  //     target: string
+  //         Caller-supplied target.
+  //
+  // Outputs:
+  //     result: DeployAgentEntry | undefined
+  //         Return value from `lookupAgent`.
+  //
+  // Example:
+
+  //     const result = lookupAgent(registry, target);
+
   return registry.agents.find((entry) => entry.target === target);
 }
 
@@ -107,6 +249,27 @@ async function agentFetch(
   path: string,
   body?: string,
 ): Promise<Response> {
+  // Description:
+  //     AgentFetch.
+  //
+  // Inputs:
+  //     entry: DeployAgentEntry
+  //         Caller-supplied entry.
+  //     method: string
+  //         Caller-supplied method.
+  //     path: string
+  //         Caller-supplied path.
+  //     body?: string
+  //         Caller-supplied body?.
+  //
+  // Outputs:
+  //     result: Promise<Response>
+  //         Return value from `agentFetch`.
+  //
+  // Example:
+
+  //     const result = agentFetch(entry, method, path, body?);
+
   const base = entry.url.replace(/\/$/, "");
   const headers: Record<string, string> = { Accept: "application/json" };
   if (body) headers["Content-Type"] = "application/json";
@@ -115,6 +278,21 @@ async function agentFetch(
 }
 
 export async function agentHealth(entry: DeployAgentEntry): Promise<boolean> {
+  // Description:
+  //     AgentHealth.
+  //
+  // Inputs:
+  //     entry: DeployAgentEntry
+  //         Caller-supplied entry.
+  //
+  // Outputs:
+  //     result: Promise<boolean>
+  //         Return value from `agentHealth`.
+  //
+  // Example:
+
+  //     const result = agentHealth(entry);
+
   const response = await agentFetch(entry, "GET", "/v1/health");
   if (!response.ok) return false;
   const body = (await response.json()) as { ok?: boolean };
@@ -125,7 +303,26 @@ export async function agentReadiness(
   entry: DeployAgentEntry,
   runtime = false,
   injectHealthFaults = false,
-): Promise<{ ok: boolean; mission_ready?: boolean; readiness?: unknown }> {
+): Promise<{
+  // Description:
+  //     AgentReadiness.
+  //
+  // Inputs:
+  //     entry: DeployAgentEntry
+  //         Caller-supplied entry.
+  //     runtime = false: input value
+  //         Caller-supplied runtime = false.
+  //     injectHealthFaults = false: input value
+  //         Caller-supplied injectHealthFaults = false.
+  //
+  // Outputs:
+  //     result: Promise<
+  //         Return value from `agentReadiness`.
+  //
+  // Example:
+
+ // const result = agentReadiness(entry, runtime = false, injectHealthFaults = false);
+ ok: boolean; mission_ready?: boolean; readiness?: unknown }> {
   const query = new URLSearchParams();
   if (runtime) query.set("runtime", "true");
   if (injectHealthFaults) query.set("inject_health_faults", "true");
@@ -138,6 +335,23 @@ export async function agentReadiness(
 }
 
 export async function agentUploadProgram(entry: DeployAgentEntry, program: string): Promise<void> {
+  // Description:
+  //     AgentUploadProgram.
+  //
+  // Inputs:
+  //     entry: DeployAgentEntry
+  //         Caller-supplied entry.
+  //     program: string
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     result: Promise<void>
+  //         Return value from `agentUploadProgram`.
+  //
+  // Example:
+
+  //     const result = agentUploadProgram(entry, program);
+
   const response = await agentFetch(entry, "POST", "/v1/program", JSON.stringify({ program }));
   if (!response.ok) {
     throw new Error(`agent program upload HTTP ${response.status}`);
@@ -149,6 +363,21 @@ export async function agentUploadProgram(entry: DeployAgentEntry, program: strin
 }
 
 export async function agentStatus(entry: DeployAgentEntry): Promise<AgentStatusResponse> {
+  // Description:
+  //     AgentStatus.
+  //
+  // Inputs:
+  //     entry: DeployAgentEntry
+  //         Caller-supplied entry.
+  //
+  // Outputs:
+  //     result: Promise<AgentStatusResponse>
+  //         Return value from `agentStatus`.
+  //
+  // Example:
+
+  //     const result = agentStatus(entry);
+
   const response = await agentFetch(entry, "GET", "/v1/status");
   if (!response.ok) {
     throw new Error(`agent status HTTP ${response.status}`);
@@ -169,6 +398,27 @@ export async function executeRemoteRollout(
   registry: DeployAgentRegistry,
   bundle: DeployArtifactBundle,
 ): Promise<RolloutResult> {
+  // Description:
+  //     ExecuteRemoteRollout.
+  //
+  // Inputs:
+  //     plan: DeployPlan
+  //         Caller-supplied plan.
+  //     options: RolloutOptions
+  //         Caller-supplied options.
+  //     registry: DeployAgentRegistry
+  //         Caller-supplied registry.
+  //     bundle: DeployArtifactBundle
+  //         Caller-supplied bundle.
+  //
+  // Outputs:
+  //     result: Promise<RolloutResult>
+  //         Return value from `executeRemoteRollout`.
+  //
+  // Example:
+
+  //     const result = executeRemoteRollout(plan, options, registry, bundle);
+
   const local = planRollout(plan, options);
   if (options.dryRun) return local;
 
@@ -231,6 +481,23 @@ export async function executeRemoteRollback(
   plan: DeployPlan,
   registry: DeployAgentRegistry,
 ): Promise<RolloutResult> {
+  // Description:
+  //     ExecuteRemoteRollback.
+  //
+  // Inputs:
+  //     plan: DeployPlan
+  //         Caller-supplied plan.
+  //     registry: DeployAgentRegistry
+  //         Caller-supplied registry.
+  //
+  // Outputs:
+  //     result: Promise<RolloutResult>
+  //         Return value from `executeRemoteRollback`.
+  //
+  // Example:
+
+  //     const result = executeRemoteRollback(plan, registry);
+
   const steps: RolloutStep[] = [];
   let success = false;
   for (const assignment of plan.assignments) {
@@ -273,5 +540,21 @@ export function applyRemoteRolloutToState(
   state: import("./deploy-service.js").DeployState,
   result: RolloutResult,
 ): void {
+  // Description:
+  //     ApplyRemoteRolloutToState.
+  //
+  // Inputs:
+  //     state: import("./deploy-service.js").DeployState
+  //         Caller-supplied state.
+  //     result: RolloutResult
+  //         Caller-supplied result.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+  //     const result = applyRemoteRolloutToState(state, result);
+
   applyRollout(state, result);
 }

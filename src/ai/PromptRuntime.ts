@@ -6,21 +6,40 @@
 import type { RuntimeValue } from "../runtime/interpreter.js";
 
 export function buildPrompt(base: string, input?: RuntimeValue, goal?: string): string {
-  // BuildPrompt.
+  // Description:
+  //     BuildPrompt.
   //
-  // Parameters:
-  // - `base` — input value
-  // - `input?` — optional input
-  // - `goal?` — optional input
+  // Inputs:
+  //     base: string
+  //         Caller-supplied base.
+  //     input?: RuntimeValue
+  //         Caller-supplied input?.
+  //     goal?: string
+  //         Caller-supplied goal?.
   //
-  // Returns:
-  // Text result.
-  //
-  // Options:
-  // - `input?` — optional parameter
-  // - `goal?` — optional parameter
+  // Outputs:
+  //     result: string
+  //         Return value from `buildPrompt`.
   //
   // Example:
+  //     const result = buildPrompt(base, input?, goal?);
+  // Description:
+  //     BuildPrompt.
+  //
+  // Inputs:
+  //     base: string
+  //         Caller-supplied base.
+  //     input?: RuntimeValue
+  //         Caller-supplied input?.
+  //     goal?: string
+  //         Caller-supplied goal?.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `buildPrompt`.
+  //
+  // Example:
+  //     const result = buildPrompt(base, input?, goal?);
 
   // const result = buildPrompt(base, input?, goal?);
   const parts: string[] = [];
@@ -40,18 +59,32 @@ export function buildPrompt(base: string, input?: RuntimeValue, goal?: string): 
 }
 
 function summarizeInput(input?: RuntimeValue): string {
-  // SummarizeInput.
+  // Description:
+  //     SummarizeInput.
   //
-  // Parameters:
-  // - `input?` — optional input
+  // Inputs:
+  //     input?: RuntimeValue
+  //         Caller-supplied input?.
   //
-  // Returns:
-  // Text result.
-  //
-  // Options:
-  // - `input?` — optional parameter
+  // Outputs:
+  //     result: string
+  //         Return value from `summarizeInput`.
   //
   // Example:
+  //     const result = summarizeInput(input?);
+  // Description:
+  //     SummarizeInput.
+  //
+  // Inputs:
+  //     input?: RuntimeValue
+  //         Caller-supplied input?.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `summarizeInput`.
+  //
+  // Example:
+  //     const result = summarizeInput(input?);
 
   // const result = summarizeInput(input?);
   if (!input || input.kind === "void") return "(no input)";

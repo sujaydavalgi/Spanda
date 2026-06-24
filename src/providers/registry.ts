@@ -24,6 +24,21 @@ export type TransportProvider = {
 
 /** Registry key for a package-scoped transport provider. */
 export function transportRegistryKey(packageName: string): string {
+  // Description:
+  //     TransportRegistryKey.
+  //
+  // Inputs:
+  //     packageName: string
+  //         Caller-supplied packageName.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `transportRegistryKey`.
+  //
+  // Example:
+
+  //     const result = transportRegistryKey(packageName);
+
   return `${packageName}::project`;
 }
 

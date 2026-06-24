@@ -41,6 +41,24 @@ export function buildCertificationProof(
   programPath: string,
   strict: boolean,
 ): CertificationProofReport {
+  // Description:
+  //     BuildCertificationProof.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     programPath: string
+  //         Caller-supplied programPath.
+  //     strict: boolean
+  //         Caller-supplied strict.
+  //
+  // Outputs:
+  //     result: CertificationProofReport
+  //         Return value from `buildCertificationProof`.
+  //
+  // Example:
+  //     const result = buildCertificationProof(program, programPath, strict);
+
   // Aggregate certify metadata and checklist items into an audit artifact.
   const checklist = verifyCertificationProof(program, strict);
   const passed = !checklist.some((item) => item.severity === "error");
@@ -74,6 +92,22 @@ export function buildCertificationProofSummary(
   program: Program,
   programPath: string,
 ): CertificationProofSummary {
+  // Description:
+  //     BuildCertificationProofSummary.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     programPath: string
+  //         Caller-supplied programPath.
+  //
+  // Outputs:
+  //     result: CertificationProofSummary
+  //         Return value from `buildCertificationProofSummary`.
+  //
+  // Example:
+  //     const result = buildCertificationProofSummary(program, programPath);
+
   // Derive non-strict and strict proof outcomes for deploy plan reporting.
   const proof = buildCertificationProof(program, programPath, false);
   const strict = buildCertificationProof(program, programPath, true);

@@ -28,19 +28,33 @@ export class RegexError extends Error {
 }
 
 export function compileRegex(pattern: RegexPattern): RegExp {
-  // Compile the regex pattern into a JavaScript RegExp instance.
+  // Description:
+  //     CompileRegex.
   //
-  // Parameters:
-  // - `pattern` — regex literal source and flags
+  // Inputs:
+  //     pattern: RegexPattern
+  //         Caller-supplied pattern.
   //
-  // Returns:
-  // Compiled RegExp, or throws RegexError on invalid flags or syntax.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: RegExp
+  //         Return value from `compileRegex`.
   //
   // Example:
-  // const re = compileRegex(pattern);
+  //     const result = compileRegex(pattern);
+  // Description:
+  //     CompileRegex.
+  //
+  // Inputs:
+  //     pattern: RegexPattern
+  //         Caller-supplied pattern.
+  //
+  // Outputs:
+  //     result: RegExp
+  //         Return value from `compileRegex`.
+  //
+  // Example:
+
+  //     const result = compileRegex(pattern);
 
   let jsFlags = "";
   for (const flag of pattern.flags) {
@@ -69,40 +83,74 @@ export function compileRegex(pattern: RegexPattern): RegExp {
 }
 
 export function regexMatches(pattern: RegexPattern, text: string): boolean {
-  // Return whether text matches the regex pattern anywhere in the string.
+  // Description:
+  //     RegexMatches.
   //
-  // Parameters:
-  // - `pattern` — compiled regex source
-  // - `text` — haystack string
+  // Inputs:
+  //     pattern: RegexPattern
+  //         Caller-supplied pattern.
+  //     text: string
+  //         Caller-supplied text.
   //
-  // Returns:
-  // Boolean match result.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: boolean
+  //         Return value from `regexMatches`.
   //
   // Example:
-  // const ok = regexMatches(pattern, "robot-123");
+  //     const result = regexMatches(pattern, text);
+  // Description:
+  //     RegexMatches.
+  //
+  // Inputs:
+  //     pattern: RegexPattern
+  //         Caller-supplied pattern.
+  //     text: string
+  //         Caller-supplied text.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `regexMatches`.
+  //
+  // Example:
+
+  //     const result = regexMatches(pattern, text);
 
   const re = compileRegex(pattern);
   return re.test(text);
 }
 
 export function regexFind(pattern: RegexPattern, text: string): string | null {
-  // Return the first substring matched by the pattern.
+  // Description:
+  //     RegexFind.
   //
-  // Parameters:
-  // - `pattern` — compiled regex source
-  // - `text` — haystack string
+  // Inputs:
+  //     pattern: RegexPattern
+  //         Caller-supplied pattern.
+  //     text: string
+  //         Caller-supplied text.
   //
-  // Returns:
-  // First match text if present.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: string | null
+  //         Return value from `regexFind`.
   //
   // Example:
-  // const found = regexFind(pattern, logLine);
+  //     const result = regexFind(pattern, text);
+  // Description:
+  //     RegexFind.
+  //
+  // Inputs:
+  //     pattern: RegexPattern
+  //         Caller-supplied pattern.
+  //     text: string
+  //         Caller-supplied text.
+  //
+  // Outputs:
+  //     result: string | null
+  //         Return value from `regexFind`.
+  //
+  // Example:
+
+  //     const result = regexFind(pattern, text);
 
   const re = compileRegex(pattern);
   const match = re.exec(text);
@@ -110,61 +158,115 @@ export function regexFind(pattern: RegexPattern, text: string): string | null {
 }
 
 export function regexReplace(pattern: RegexPattern, text: string, replacement: string): string {
-  // Replace all regex matches in text with replacement.
+  // Description:
+  //     RegexReplace.
   //
-  // Parameters:
-  // - `pattern` — compiled regex source
-  // - `text` — input string
-  // - `replacement` — replacement text
+  // Inputs:
+  //     pattern: RegexPattern
+  //         Caller-supplied pattern.
+  //     text: string
+  //         Caller-supplied text.
+  //     replacement: string
+  //         Caller-supplied replacement.
   //
-  // Returns:
-  // Transformed string.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: string
+  //         Return value from `regexReplace`.
   //
   // Example:
-  // const cleaned = regexReplace(pattern, line, "_");
+  //     const result = regexReplace(pattern, text, replacement);
+  // Description:
+  //     RegexReplace.
+  //
+  // Inputs:
+  //     pattern: RegexPattern
+  //         Caller-supplied pattern.
+  //     text: string
+  //         Caller-supplied text.
+  //     replacement: string
+  //         Caller-supplied replacement.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `regexReplace`.
+  //
+  // Example:
+
+  //     const result = regexReplace(pattern, text, replacement);
 
   const re = compileRegex(pattern);
   return text.replace(re, replacement);
 }
 
 export function regexSplit(pattern: RegexPattern, text: string): string[] {
-  // Split text on regex matches.
+  // Description:
+  //     RegexSplit.
   //
-  // Parameters:
-  // - `pattern` — compiled regex source
-  // - `text` — input string
+  // Inputs:
+  //     pattern: RegexPattern
+  //         Caller-supplied pattern.
+  //     text: string
+  //         Caller-supplied text.
   //
-  // Returns:
-  // Split segments including empty segments between consecutive delimiters.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: string[]
+  //         Return value from `regexSplit`.
   //
   // Example:
-  // const parts = regexSplit(pattern, "a,b,c");
+  //     const result = regexSplit(pattern, text);
+  // Description:
+  //     RegexSplit.
+  //
+  // Inputs:
+  //     pattern: RegexPattern
+  //         Caller-supplied pattern.
+  //     text: string
+  //         Caller-supplied text.
+  //
+  // Outputs:
+  //     result: string[]
+  //         Return value from `regexSplit`.
+  //
+  // Example:
+
+  //     const result = regexSplit(pattern, text);
 
   const re = compileRegex(pattern);
   return text.split(re);
 }
 
 export function regexCapture(pattern: RegexPattern, text: string): CaptureResult | null {
-  // Capture the first regex match and named groups.
+  // Description:
+  //     RegexCapture.
   //
-  // Parameters:
-  // - `pattern` — compiled regex source
-  // - `text` — haystack string
+  // Inputs:
+  //     pattern: RegexPattern
+  //         Caller-supplied pattern.
+  //     text: string
+  //         Caller-supplied text.
   //
-  // Returns:
-  // Full match and named capture map when a match exists.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: CaptureResult | null
+  //         Return value from `regexCapture`.
   //
   // Example:
-  // const cap = regexCapture(pattern, logLine);
+  //     const result = regexCapture(pattern, text);
+  // Description:
+  //     RegexCapture.
+  //
+  // Inputs:
+  //     pattern: RegexPattern
+  //         Caller-supplied pattern.
+  //     text: string
+  //         Caller-supplied text.
+  //
+  // Outputs:
+  //     result: CaptureResult | null
+  //         Return value from `regexCapture`.
+  //
+  // Example:
+
+  //     const result = regexCapture(pattern, text);
 
   const re = compileRegex(pattern);
   const match = re.exec(text);
@@ -182,40 +284,75 @@ export function regexCapture(pattern: RegexPattern, text: string): CaptureResult
 }
 
 export function validateRegexLiteral(source: string, flags: string, span: Span): void {
-  // Validate regex literal syntax at compile time.
+  // Description:
+  //     ValidateRegexLiteral.
   //
-  // Parameters:
-  // - `source` — pattern body without slashes
-  // - `flags` — trailing flag letters
-  // - `span` — source span for diagnostics
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //     flags: string
+  //         Caller-supplied flags.
+  //     span: Span
+  //         Caller-supplied span.
   //
-  // Returns:
-  // Nothing; throws RegexError when syntax is invalid.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     None.
   //
   // Example:
-  // validateRegexLiteral("robot-[0-9]+", "", span);
+  //     const result = validateRegexLiteral(source, flags, span);
+  // Description:
+  //     ValidateRegexLiteral.
+  //
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //     flags: string
+  //         Caller-supplied flags.
+  //     span: Span
+  //         Caller-supplied span.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+  //     const result = validateRegexLiteral(source, flags, span);
 
   compileRegex({ source, flags, span });
 }
 
 export function regexFromLexeme(lexeme: string, span: Span): RegexPattern {
-  // Convert a `/pattern/flags` lexeme into structured pattern data.
+  // Description:
+  //     RegexFromLexeme.
   //
-  // Parameters:
-  // - `lexeme` — raw regex literal text including slashes
-  // - `span` — source span for diagnostics
+  // Inputs:
+  //     lexeme: string
+  //         Caller-supplied lexeme.
+  //     span: Span
+  //         Caller-supplied span.
   //
-  // Returns:
-  // Parsed regex pattern.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: RegexPattern
+  //         Return value from `regexFromLexeme`.
   //
   // Example:
-  // const pattern = regexFromLexeme("/^robot-[0-9]+$/", span);
+  //     const result = regexFromLexeme(lexeme, span);
+  // Description:
+  //     RegexFromLexeme.
+  //
+  // Inputs:
+  //     lexeme: string
+  //         Caller-supplied lexeme.
+  //     span: Span
+  //         Caller-supplied span.
+  //
+  // Outputs:
+  //     result: RegexPattern
+  //         Return value from `regexFromLexeme`.
+  //
+  // Example:
+
+  //     const result = regexFromLexeme(lexeme, span);
 
   const trimmed = lexeme.trimStart().slice(1);
   const slashIdx = trimmed.lastIndexOf("/");

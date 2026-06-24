@@ -13,24 +13,39 @@ export class WireCryptoSession {
 
   /** Derive a 256-bit session key from configured cert/key material. */
   constructor(material: string) {
+
     // Hash configured material into a fixed-width AES key.
     this.key = sha256(new TextEncoder().encode(material));
   }
 
   static fromMaterial(material: string): WireCryptoSession {
-    // Build a session from cert/key material strings.
+    // Description:
+    //     FromMaterial.
     //
-    // Parameters:
-    // - `material` — cert path and key secret combined
+    // Inputs:
+    //     material: string
+    //         Caller-supplied material.
     //
-    // Returns:
-    // WireCryptoSession instance.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: WireCryptoSession
+    //         Return value from `fromMaterial`.
     //
     // Example:
-    // const session = WireCryptoSession.fromMaterial("certs/rover.pem:motion_key");
+    //     const result = fromMaterial(material);
+    // Description:
+    //     FromMaterial.
+    //
+    // Inputs:
+    //     material: string
+    //         Caller-supplied material.
+    //
+    // Outputs:
+    //     result: WireCryptoSession
+    //         Return value from `fromMaterial`.
+    //
+    // Example:
+
+    //     const result = fromMaterial(material);
 
     return new WireCryptoSession(material);
   }
@@ -48,6 +63,7 @@ export class WireCryptoSession {
     // None.
     //
     // Example:
+
     // const encrypted = session.encrypt(new TextEncoder().encode("{}"));
 
     const nonce = randomBytes(12);
@@ -70,6 +86,7 @@ export class WireCryptoSession {
     // None.
     //
     // Example:
+
     // const plain = session.decrypt(wireBytes);
 
     if (data.length < 13) {

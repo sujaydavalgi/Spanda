@@ -51,6 +51,21 @@ export type AssuranceParseCtx = {
 };
 
 function parseComparisonOp(ctx: AssuranceParseCtx): string {
+  // Description:
+  //     ParseComparisonOp.
+  //
+  // Inputs:
+  //     ctx: AssuranceParseCtx
+  //         Caller-supplied ctx.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `parseComparisonOp`.
+  //
+  // Example:
+
+  //     const result = parseComparisonOp(ctx);
+
   if (ctx.check("GTE")) {
     ctx.advance();
     return ">=";
@@ -76,6 +91,21 @@ function parseComparisonOp(ctx: AssuranceParseCtx): string {
 }
 
 function parseThresholdValue(ctx: AssuranceParseCtx): string {
+  // Description:
+  //     ParseThresholdValue.
+  //
+  // Inputs:
+  //     ctx: AssuranceParseCtx
+  //         Caller-supplied ctx.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `parseThresholdValue`.
+  //
+  // Example:
+
+  //     const result = parseThresholdValue(ctx);
+
   let threshold: string;
   if (ctx.check("TRUE")) {
     ctx.advance();
@@ -102,6 +132,21 @@ function parseThresholdValue(ctx: AssuranceParseCtx): string {
 }
 
 function parseBracketNameList(ctx: AssuranceParseCtx): string[] {
+  // Description:
+  //     ParseBracketNameList.
+  //
+  // Inputs:
+  //     ctx: AssuranceParseCtx
+  //         Caller-supplied ctx.
+  //
+  // Outputs:
+  //     result: string[]
+  //         Return value from `parseBracketNameList`.
+  //
+  // Example:
+
+  //     const result = parseBracketNameList(ctx);
+
   ctx.expect("LBRACKET", "Expected '['");
   const items: string[] = [];
   while (!ctx.check("RBRACKET") && !ctx.check("EOF")) {
@@ -114,6 +159,21 @@ function parseBracketNameList(ctx: AssuranceParseCtx): string[] {
 }
 
 function parseActionStatement(ctx: AssuranceParseCtx): string {
+  // Description:
+  //     ParseActionStatement.
+  //
+  // Inputs:
+  //     ctx: AssuranceParseCtx
+  //         Caller-supplied ctx.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `parseActionStatement`.
+  //
+  // Example:
+
+  //     const result = parseActionStatement(ctx);
+
   const parts: string[] = [];
   while (!ctx.check("SEMICOLON") && !ctx.check("RBRACE") && !ctx.check("EOF")) {
     parts.push(ctx.advance().lexeme);
@@ -129,6 +189,21 @@ function parseActionStatement(ctx: AssuranceParseCtx): string {
 }
 
 export function parseKnowledgeModel(ctx: AssuranceParseCtx): KnowledgeModelDecl {
+  // Description:
+  //     ParseKnowledgeModel.
+  //
+  // Inputs:
+  //     ctx: AssuranceParseCtx
+  //         Caller-supplied ctx.
+  //
+  // Outputs:
+  //     result: KnowledgeModelDecl
+  //         Return value from `parseKnowledgeModel`.
+  //
+  // Example:
+
+  //     const result = parseKnowledgeModel(ctx);
+
   const start = ctx.advance();
   const name = ctx.parseLabel("Expected knowledge model name");
   ctx.expect("LBRACE", "Expected '{' after knowledge_model name");
@@ -157,6 +232,21 @@ export function parseKnowledgeModel(ctx: AssuranceParseCtx): KnowledgeModelDecl 
 }
 
 export function parseStateEstimator(ctx: AssuranceParseCtx): StateEstimatorDecl {
+  // Description:
+  //     ParseStateEstimator.
+  //
+  // Inputs:
+  //     ctx: AssuranceParseCtx
+  //         Caller-supplied ctx.
+  //
+  // Outputs:
+  //     result: StateEstimatorDecl
+  //         Return value from `parseStateEstimator`.
+  //
+  // Example:
+
+  //     const result = parseStateEstimator(ctx);
+
   const start = ctx.advance();
   const name = ctx.parseLabel("Expected state_estimator name");
   ctx.expect("LBRACE", "Expected '{' after state_estimator name");
@@ -181,6 +271,21 @@ export function parseStateEstimator(ctx: AssuranceParseCtx): StateEstimatorDecl 
 }
 
 export function parseAnomalyDetector(ctx: AssuranceParseCtx): AnomalyDetectorDecl {
+  // Description:
+  //     ParseAnomalyDetector.
+  //
+  // Inputs:
+  //     ctx: AssuranceParseCtx
+  //         Caller-supplied ctx.
+  //
+  // Outputs:
+  //     result: AnomalyDetectorDecl
+  //         Return value from `parseAnomalyDetector`.
+  //
+  // Example:
+
+  //     const result = parseAnomalyDetector(ctx);
+
   const start = ctx.advance();
   const name = ctx.parseLabel("Expected anomaly_detector name");
   ctx.expect("LBRACE", "Expected '{' after anomaly_detector name");
@@ -211,6 +316,21 @@ export function parseAnomalyDetector(ctx: AssuranceParseCtx): AnomalyDetectorDec
 }
 
 export function parseAnomalyHandler(ctx: AssuranceParseCtx): AnomalyHandlerDecl {
+  // Description:
+  //     ParseAnomalyHandler.
+  //
+  // Inputs:
+  //     ctx: AssuranceParseCtx
+  //         Caller-supplied ctx.
+  //
+  // Outputs:
+  //     result: AnomalyHandlerDecl
+  //         Return value from `parseAnomalyHandler`.
+  //
+  // Example:
+
+  //     const result = parseAnomalyHandler(ctx);
+
   const start = ctx.advance();
   ctx.expect("IDENT", "Expected 'anomaly' after on");
   const detector = ctx.parseLabel("Expected anomaly detector name");
@@ -226,6 +346,21 @@ export function parseAnomalyHandler(ctx: AssuranceParseCtx): AnomalyHandlerDecl 
 }
 
 export function parsePrognostics(ctx: AssuranceParseCtx): PrognosticsDecl {
+  // Description:
+  //     ParsePrognostics.
+  //
+  // Inputs:
+  //     ctx: AssuranceParseCtx
+  //         Caller-supplied ctx.
+  //
+  // Outputs:
+  //     result: PrognosticsDecl
+  //         Return value from `parsePrognostics`.
+  //
+  // Example:
+
+  //     const result = parsePrognostics(ctx);
+
   const start = ctx.advance();
   const name = ctx.parseLabel("Expected prognostics name");
   ctx.expect("LBRACE", "Expected '{' after prognostics name");
@@ -249,6 +384,21 @@ export function parsePrognostics(ctx: AssuranceParseCtx): PrognosticsDecl {
 }
 
 export function parseMitigation(ctx: AssuranceParseCtx): MitigationDecl {
+  // Description:
+  //     ParseMitigation.
+  //
+  // Inputs:
+  //     ctx: AssuranceParseCtx
+  //         Caller-supplied ctx.
+  //
+  // Outputs:
+  //     result: MitigationDecl
+  //         Return value from `parseMitigation`.
+  //
+  // Example:
+
+  //     const result = parseMitigation(ctx);
+
   const start = ctx.advance();
   const name = ctx.parseLabel("Expected mitigation name");
   ctx.expect("LBRACE", "Expected '{' after mitigation name");
@@ -274,6 +424,21 @@ export function parseMitigation(ctx: AssuranceParseCtx): MitigationDecl {
 }
 
 export function parseRecoveryPolicy(ctx: AssuranceParseCtx): RecoveryPolicyDecl {
+  // Description:
+  //     ParseRecoveryPolicy.
+  //
+  // Inputs:
+  //     ctx: AssuranceParseCtx
+  //         Caller-supplied ctx.
+  //
+  // Outputs:
+  //     result: RecoveryPolicyDecl
+  //         Return value from `parseRecoveryPolicy`.
+  //
+  // Example:
+
+  //     const result = parseRecoveryPolicy(ctx);
+
   const start = ctx.advance();
   const name = ctx.parseLabel("Expected recovery_policy name");
   ctx.expect("LBRACE", "Expected '{' after recovery_policy name");
@@ -299,6 +464,21 @@ export function parseRecoveryPolicy(ctx: AssuranceParseCtx): RecoveryPolicyDecl 
 }
 
 export function parseAssuranceCase(ctx: AssuranceParseCtx): AssuranceCaseDecl {
+  // Description:
+  //     ParseAssuranceCase.
+  //
+  // Inputs:
+  //     ctx: AssuranceParseCtx
+  //         Caller-supplied ctx.
+  //
+  // Outputs:
+  //     result: AssuranceCaseDecl
+  //         Return value from `parseAssuranceCase`.
+  //
+  // Example:
+
+  //     const result = parseAssuranceCase(ctx);
+
   const start = ctx.advance();
   const name = ctx.parseLabel("Expected assurance_case name");
   ctx.expect("LBRACE", "Expected '{' after assurance_case name");
@@ -318,6 +498,21 @@ export function parseAssuranceCase(ctx: AssuranceParseCtx): AssuranceCaseDecl {
 }
 
 export function parseResiliencePolicy(ctx: AssuranceParseCtx): ResiliencePolicyDecl {
+  // Description:
+  //     ParseResiliencePolicy.
+  //
+  // Inputs:
+  //     ctx: AssuranceParseCtx
+  //         Caller-supplied ctx.
+  //
+  // Outputs:
+  //     result: ResiliencePolicyDecl
+  //         Return value from `parseResiliencePolicy`.
+  //
+  // Example:
+
+  //     const result = parseResiliencePolicy(ctx);
+
   const start = ctx.advance();
   const name = ctx.parseLabel("Expected resilience_policy name");
   ctx.expect("LBRACE", "Expected '{' after resilience_policy name");
@@ -337,6 +532,21 @@ export function parseResiliencePolicy(ctx: AssuranceParseCtx): ResiliencePolicyD
 }
 
 export function parseMissionPlan(ctx: AssuranceParseCtx): MissionPlanDecl {
+  // Description:
+  //     ParseMissionPlan.
+  //
+  // Inputs:
+  //     ctx: AssuranceParseCtx
+  //         Caller-supplied ctx.
+  //
+  // Outputs:
+  //     result: MissionPlanDecl
+  //         Return value from `parseMissionPlan`.
+  //
+  // Example:
+
+  //     const result = parseMissionPlan(ctx);
+
   const start = ctx.advance();
   const name = ctx.parseLabel("Expected mission_plan name");
   ctx.expect("LBRACE", "Expected '{' after mission_plan name");
@@ -364,6 +574,21 @@ export function parseMissionPlan(ctx: AssuranceParseCtx): MissionPlanDecl {
 }
 
 export function parseOperatingMode(ctx: AssuranceParseCtx): OperatingModeDecl {
+  // Description:
+  //     ParseOperatingMode.
+  //
+  // Inputs:
+  //     ctx: AssuranceParseCtx
+  //         Caller-supplied ctx.
+  //
+  // Outputs:
+  //     result: OperatingModeDecl
+  //         Return value from `parseOperatingMode`.
+  //
+  // Example:
+
+  //     const result = parseOperatingMode(ctx);
+
   const start = ctx.advance();
   const name = ctx.parseLabel("Expected operating_mode name");
   ctx.expect("LBRACE", "Expected '{' after operating_mode name");

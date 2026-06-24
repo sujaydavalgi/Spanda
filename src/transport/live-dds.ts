@@ -29,6 +29,7 @@ export class LiveDdsBridge {
     // None.
     //
     // Example:
+
     // bridge.connect(0);
 
     const port = 7400 + domainId;
@@ -72,5 +73,19 @@ export class LiveDdsBridge {
 }
 
 export function liveDdsEnabled(): boolean {
+  // Description:
+  //     LiveDdsEnabled.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `liveDdsEnabled`.
+  //
+  // Example:
+
+  //     const result = liveDdsEnabled();
+
   return process.env.SPANDA_LIVE_DDS === "1";
 }

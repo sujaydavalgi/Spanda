@@ -37,19 +37,33 @@ export type TraceVerification = {
 };
 
 export function createMissionTrace(source: string): MissionTrace {
-  // Create an empty mission trace for a source program.
+  // Description:
+  //     CreateMissionTrace.
   //
-  // Parameters:
-  // - `source` — `.sd` file path or label
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
   //
-  // Returns:
-  // Empty trace container.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: MissionTrace
+  //         Return value from `createMissionTrace`.
   //
   // Example:
-  // const trace = createMissionTrace("rover.sd");
+  //     const result = createMissionTrace(source);
+  // Description:
+  //     CreateMissionTrace.
+  //
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //
+  // Outputs:
+  //     result: MissionTrace
+  //         Return value from `createMissionTrace`.
+  //
+  // Example:
+
+  //     const result = createMissionTrace(source);
 
   return {
     version: 1,
@@ -65,22 +79,43 @@ export function recordTraceFrame(
   event: string,
   payload: unknown = {},
 ): void {
-  // Append one trace frame at the current simulation time.
+  // Description:
+  //     RecordTraceFrame.
   //
-  // Parameters:
-  // - `trace` — mission trace to mutate
-  // - `simTimeMs` — simulation clock in milliseconds
-  // - `event` — event label
-  // - `payload` — structured payload
+  // Inputs:
+  //     trace: MissionTrace
+  //         Caller-supplied trace.
+  //     simTimeMs: number
+  //         Caller-supplied simTimeMs.
+  //     event: string
+  //         Caller-supplied event.
+  //     payload: unknown = {}
+  //         Caller-supplied payload.
   //
-  // Returns:
-  // Nothing.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     None.
   //
   // Example:
-  // recordTraceFrame(trace, 10.0, "task_tick", { task: "sense" });
+  //     const result = recordTraceFrame(trace, simTimeMs, event, payload);
+  // Description:
+  //     RecordTraceFrame.
+  //
+  // Inputs:
+  //     trace: MissionTrace
+  //         Caller-supplied trace.
+  //     simTimeMs: number
+  //         Caller-supplied simTimeMs.
+  //     event: string
+  //         Caller-supplied event.
+  //     payload: unknown = {}
+  //         Caller-supplied payload.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+  //     const result = recordTraceFrame(trace, simTimeMs, event, payload);
 
   trace.frames.push({ simTimeMs, event, payload, state: undefined });
 }
@@ -92,6 +127,28 @@ export function recordTraceFrameWithState(
   payload: unknown,
   state: ReplayStateSnapshot,
 ): void {
+  // Description:
+  //     RecordTraceFrameWithState.
+  //
+  // Inputs:
+  //     trace: MissionTrace
+  //         Caller-supplied trace.
+  //     simTimeMs: number
+  //         Caller-supplied simTimeMs.
+  //     event: string
+  //         Caller-supplied event.
+  //     payload: unknown
+  //         Caller-supplied payload.
+  //     state: ReplayStateSnapshot
+  //         Caller-supplied state.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+  //     const result = recordTraceFrameWithState(trace, simTimeMs, event, payload, state);
+
   trace.frames.push({ simTimeMs, event, payload, state });
   if (state) {
     trace.version = 2;
@@ -103,6 +160,21 @@ export function playbackFrames(
   applyState: (state: ReplayStateSnapshot) => void,
   wallClock = false,
 ): PlaybackReport {
+  // Description:
+  //     PlaybackFrames.
+  //
+  // Inputs:
+  //     frames: TraceFrame[]
+  //         Caller-supplied frames.
+  //
+  // Outputs:
+  //     result: PlaybackReport
+  //         Return value from `playbackFrames`.
+  //
+  // Example:
+
+  //     const result = playbackFrames(frames);
+
   let statesApplied = 0;
   const events: string[] = [];
   let prevSim = 0;
@@ -129,39 +201,70 @@ export function playbackFrames(
 }
 
 export function traceFramesFrom(trace: MissionTrace, offsetMs: number): TraceFrame[] {
-  // Return trace frames starting at or after the requested offset.
+  // Description:
+  //     TraceFramesFrom.
   //
-  // Parameters:
-  // - `trace` — mission trace
-  // - `offsetMs` — replay start offset in milliseconds
+  // Inputs:
+  //     trace: MissionTrace
+  //         Caller-supplied trace.
+  //     offsetMs: number
+  //         Caller-supplied offsetMs.
   //
-  // Returns:
-  // Slice of frames at/after the offset.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: TraceFrame[]
+  //         Return value from `traceFramesFrom`.
   //
   // Example:
-  // const slice = traceFramesFrom(trace, 30_000);
+  //     const result = traceFramesFrom(trace, offsetMs);
+  // Description:
+  //     TraceFramesFrom.
+  //
+  // Inputs:
+  //     trace: MissionTrace
+  //         Caller-supplied trace.
+  //     offsetMs: number
+  //         Caller-supplied offsetMs.
+  //
+  // Outputs:
+  //     result: TraceFrame[]
+  //         Return value from `traceFramesFrom`.
+  //
+  // Example:
+
+  //     const result = traceFramesFrom(trace, offsetMs);
 
   const idx = trace.frames.findIndex((frame) => frame.simTimeMs >= offsetMs);
   return idx === -1 ? [] : trace.frames.slice(idx);
 }
 
 export function parseReplayOffset(raw: string): number {
-  // Parse replay offset strings such as `T+00:30` into milliseconds.
+  // Description:
+  //     ParseReplayOffset.
   //
-  // Parameters:
-  // - `raw` — CLI offset argument
+  // Inputs:
+  //     raw: string
+  //         Caller-supplied raw.
   //
-  // Returns:
-  // Offset in milliseconds.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: number
+  //         Return value from `parseReplayOffset`.
   //
   // Example:
-  // const ms = parseReplayOffset("T+00:30");
+  //     const result = parseReplayOffset(raw);
+  // Description:
+  //     ParseReplayOffset.
+  //
+  // Inputs:
+  //     raw: string
+  //         Caller-supplied raw.
+  //
+  // Outputs:
+  //     result: number
+  //         Return value from `parseReplayOffset`.
+  //
+  // Example:
+
+  //     const result = parseReplayOffset(raw);
 
   const asNumber = Number(raw);
   if (!Number.isNaN(asNumber)) {
@@ -192,21 +295,41 @@ export function verifyTraces(
   actual: MissionTrace,
   fromMs: number,
 ): TraceVerification {
-  // Compare two mission traces from the same offset for deterministic replay checks.
+  // Description:
+  //     VerifyTraces.
   //
-  // Parameters:
-  // - `expected` — reference trace loaded from disk
-  // - `actual` — trace recorded during a replay run
-  // - `fromMs` — comparison start offset in milliseconds
+  // Inputs:
+  //     expected: MissionTrace
+  //         Caller-supplied expected.
+  //     actual: MissionTrace
+  //         Caller-supplied actual.
+  //     fromMs: number
+  //         Caller-supplied fromMs.
   //
-  // Returns:
-  // Verification summary with mismatched frame details.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: TraceVerification
+  //         Return value from `verifyTraces`.
   //
   // Example:
-  // const report = verifyTraces(expected, actual, 0.0);
+  //     const result = verifyTraces(expected, actual, fromMs);
+  // Description:
+  //     VerifyTraces.
+  //
+  // Inputs:
+  //     expected: MissionTrace
+  //         Caller-supplied expected.
+  //     actual: MissionTrace
+  //         Caller-supplied actual.
+  //     fromMs: number
+  //         Caller-supplied fromMs.
+  //
+  // Outputs:
+  //     result: TraceVerification
+  //         Return value from `verifyTraces`.
+  //
+  // Example:
+
+  //     const result = verifyTraces(expected, actual, fromMs);
 
   const exp = traceFramesFrom(expected, fromMs);
   const act = traceFramesFrom(actual, fromMs);
@@ -237,9 +360,39 @@ export function verifyTraces(
 }
 
 export function serializeMissionTrace(trace: MissionTrace): string {
+  // Description:
+  //     SerializeMissionTrace.
+  //
+  // Inputs:
+  //     trace: MissionTrace
+  //         Caller-supplied trace.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `serializeMissionTrace`.
+  //
+  // Example:
+
+  //     const result = serializeMissionTrace(trace);
+
   return JSON.stringify(trace, null, 2);
 }
 
 export function deserializeMissionTrace(text: string): MissionTrace {
+  // Description:
+  //     DeserializeMissionTrace.
+  //
+  // Inputs:
+  //     text: string
+  //         Caller-supplied text.
+  //
+  // Outputs:
+  //     result: MissionTrace
+  //         Return value from `deserializeMissionTrace`.
+  //
+  // Example:
+
+  //     const result = deserializeMissionTrace(text);
+
   return JSON.parse(text) as MissionTrace;
 }

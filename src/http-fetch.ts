@@ -42,11 +42,25 @@ function safeUrlForError(url: string): string {
  * @throws Rejected when the request fails, is aborted by `init.signal`, or times out.
  */
 export function remoteFetch(url: string, init: RequestInit = {}): Promise<Response> {
+
   // Issue one HTTP request with a bounded wait for connect and response body.
   const controller = new AbortController();
   const { signal: upstreamSignal, ...restInit } = init;
   let upstreamAbortHandler: (() => void) | undefined;
   const detachUpstreamAbortListener = () => {
+    // Description:
+    //     DetachUpstreamAbortListener.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+
+    //     const result = detachUpstreamAbortListener();
+
     if (upstreamSignal && upstreamAbortHandler) {
       upstreamSignal.removeEventListener("abort", upstreamAbortHandler);
     }

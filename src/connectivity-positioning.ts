@@ -35,20 +35,45 @@ export type ConnectivityPolicyRuntime = {
 };
 
 export function haversineM(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  // Great-circle distance in meters between two WGS84 coordinates.
+  // Description:
+  //     HaversineM.
   //
-  // Parameters:
-  // - `lat1`, `lon1` — first point in degrees
-  // - `lat2`, `lon2` — second point in degrees
+  // Inputs:
+  //     lat1: number
+  //         Caller-supplied lat1.
+  //     lon1: number
+  //         Caller-supplied lon1.
+  //     lat2: number
+  //         Caller-supplied lat2.
+  //     lon2: number
+  //         Caller-supplied lon2.
   //
-  // Returns:
-  // Distance in meters.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: number
+  //         Return value from `haversineM`.
   //
   // Example:
-  // const d = haversineM(30.0, -97.0, 30.1, -97.1);
+  //     const result = haversineM(lat1, lon1, lat2, lon2);
+  // Description:
+  //     HaversineM.
+  //
+  // Inputs:
+  //     lat1: number
+  //         Caller-supplied lat1.
+  //     lon1: number
+  //         Caller-supplied lon1.
+  //     lat2: number
+  //         Caller-supplied lat2.
+  //     lon2: number
+  //         Caller-supplied lon2.
+  //
+  // Outputs:
+  //     result: number
+  //         Return value from `haversineM`.
+  //
+  // Example:
+
+  //     const result = haversineM(lat1, lon1, lat2, lon2);
 
   const r = 6_371_000;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -63,38 +88,73 @@ export function haversineM(lat1: number, lon1: number, lat2: number, lon2: numbe
 }
 
 export function geofenceContains(fence: GeofenceRuntime, lat: number, lon: number): boolean {
-  // Return true when the coordinate lies inside the geofence circle.
+  // Description:
+  //     GeofenceContains.
   //
-  // Parameters:
-  // - `fence` — runtime geofence definition
-  // - `lat`, `lon` — probe coordinate in degrees
+  // Inputs:
+  //     fence: GeofenceRuntime
+  //         Caller-supplied fence.
+  //     lat: number
+  //         Caller-supplied lat.
+  //     lon: number
+  //         Caller-supplied lon.
   //
-  // Returns:
-  // Whether the point is inside the fence radius.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: boolean
+  //         Return value from `geofenceContains`.
   //
   // Example:
-  // const inside = geofenceContains(fence, 30.2672, -97.7431);
+  //     const result = geofenceContains(fence, lat, lon);
+  // Description:
+  //     GeofenceContains.
+  //
+  // Inputs:
+  //     fence: GeofenceRuntime
+  //         Caller-supplied fence.
+  //     lat: number
+  //         Caller-supplied lat.
+  //     lon: number
+  //         Caller-supplied lon.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `geofenceContains`.
+  //
+  // Example:
+
+  //     const result = geofenceContains(fence, lat, lon);
 
   return haversineM(lat, lon, fence.centerLat, fence.centerLon) <= fence.radiusM;
 }
 
 export function geofenceFromDecl(decl: GeofenceDecl): GeofenceRuntime {
-  // Build runtime geofence state from an AST declaration.
+  // Description:
+  //     GeofenceFromDecl.
   //
-  // Parameters:
-  // - `decl` — parsed geofence block
+  // Inputs:
+  //     decl: GeofenceDecl
+  //         Caller-supplied decl.
   //
-  // Returns:
-  // Runtime geofence circle.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: GeofenceRuntime
+  //         Return value from `geofenceFromDecl`.
   //
   // Example:
-  // const fence = geofenceFromDecl(decl);
+  //     const result = geofenceFromDecl(decl);
+  // Description:
+  //     GeofenceFromDecl.
+  //
+  // Inputs:
+  //     decl: GeofenceDecl
+  //         Caller-supplied decl.
+  //
+  // Outputs:
+  //     result: GeofenceRuntime
+  //         Return value from `geofenceFromDecl`.
+  //
+  // Example:
+
+  //     const result = geofenceFromDecl(decl);
 
   return {
     name: decl.name,
@@ -107,19 +167,33 @@ export function geofenceFromDecl(decl: GeofenceDecl): GeofenceRuntime {
 export function connectivityPolicyFromDecl(
   decl: ConnectivityPolicyDecl,
 ): ConnectivityPolicyRuntime {
-  // Build runtime failover policy from an AST declaration.
+  // Description:
+  //     ConnectivityPolicyFromDecl.
   //
-  // Parameters:
-  // - `decl` — parsed connectivity_policy block
+  // Inputs:
+  //     decl: ConnectivityPolicyDecl
+  //         Caller-supplied decl.
   //
-  // Returns:
-  // Runtime policy used by the interpreter.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: ConnectivityPolicyRuntime
+  //         Return value from `connectivityPolicyFromDecl`.
   //
   // Example:
-  // const policy = connectivityPolicyFromDecl(decl);
+  //     const result = connectivityPolicyFromDecl(decl);
+  // Description:
+  //     ConnectivityPolicyFromDecl.
+  //
+  // Inputs:
+  //     decl: ConnectivityPolicyDecl
+  //         Caller-supplied decl.
+  //
+  // Outputs:
+  //     result: ConnectivityPolicyRuntime
+  //         Return value from `connectivityPolicyFromDecl`.
+  //
+  // Example:
+
+  //     const result = connectivityPolicyFromDecl(decl);
 
   return {
     name: decl.name,
@@ -132,19 +206,31 @@ export function connectivityPolicyFromDecl(
 }
 
 export function connectivityCapabilities(): string[] {
-  // List security capabilities for positioning and connectivity.
+  // Description:
+  //     ConnectivityCapabilities.
   //
-  // Parameters:
-  // None.
+  // Inputs:
+  //     None.
   //
-  // Returns:
-  // Capability identifier strings.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: string[]
+  //         Return value from `connectivityCapabilities`.
   //
   // Example:
-  // const caps = connectivityCapabilities();
+  //     const result = connectivityCapabilities();
+  // Description:
+  //     ConnectivityCapabilities.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: string[]
+  //         Return value from `connectivityCapabilities`.
+  //
+  // Example:
+
+  //     const result = connectivityCapabilities();
 
   return [
     "gps.read",
@@ -158,55 +244,91 @@ export function connectivityCapabilities(): string[] {
 }
 
 export function positioningSensorTypes(): string[] {
-  // Return built-in positioning sensor type names.
+  // Description:
+  //     PositioningSensorTypes.
   //
-  // Parameters:
-  // None.
+  // Inputs:
+  //     None.
   //
-  // Returns:
-  // Sensor type identifiers.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: string[]
+  //         Return value from `positioningSensorTypes`.
   //
   // Example:
-  // const types = positioningSensorTypes();
+  //     const result = positioningSensorTypes();
+  // Description:
+  //     PositioningSensorTypes.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: string[]
+  //         Return value from `positioningSensorTypes`.
+  //
+  // Example:
+
+  //     const result = positioningSensorTypes();
 
   return ["GPS", "GNSS"];
 }
 
 export function connectivityLinkTypes(): string[] {
-  // Return built-in wireless link type names for hardware profiles.
+  // Description:
+  //     ConnectivityLinkTypes.
   //
-  // Parameters:
-  // None.
+  // Inputs:
+  //     None.
   //
-  // Returns:
-  // Connectivity type identifiers.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: string[]
+  //         Return value from `connectivityLinkTypes`.
   //
   // Example:
-  // const links = connectivityLinkTypes();
+  //     const result = connectivityLinkTypes();
+  // Description:
+  //     ConnectivityLinkTypes.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: string[]
+  //         Return value from `connectivityLinkTypes`.
+  //
+  // Example:
+
+  //     const result = connectivityLinkTypes();
 
   return ["WiFi", "WiFi6", "Bluetooth", "Bluetooth5", "LTE", "5G", "GPS", "Satellite"];
 }
 
 export function connectivityFaultNames(): string[] {
-  // Return simulation fault names for positioning and connectivity.
+  // Description:
+  //     ConnectivityFaultNames.
   //
-  // Parameters:
-  // None.
+  // Inputs:
+  //     None.
   //
-  // Returns:
-  // Fault identifier strings.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: string[]
+  //         Return value from `connectivityFaultNames`.
   //
   // Example:
-  // const faults = connectivityFaultNames();
+  //     const result = connectivityFaultNames();
+  // Description:
+  //     ConnectivityFaultNames.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: string[]
+  //         Return value from `connectivityFaultNames`.
+  //
+  // Example:
+
+  //     const result = connectivityFaultNames();
 
   return [
     "GPSLost",
@@ -226,19 +348,33 @@ export function connectivityFaultNames(): string[] {
 }
 
 export function connectivityKeyToProfileTokens(key: string): string[] {
-  // Map requires_connectivity channel keys to hardware profile tokens.
+  // Description:
+  //     ConnectivityKeyToProfileTokens.
   //
-  // Parameters:
-  // - `key` — channel name from requires_connectivity
+  // Inputs:
+  //     key: string
+  //         Caller-supplied key.
   //
-  // Returns:
-  // Matching hardware connectivity identifiers.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: string[]
+  //         Return value from `connectivityKeyToProfileTokens`.
   //
   // Example:
-  // const tokens = connectivityKeyToProfileTokens("wifi");
+  //     const result = connectivityKeyToProfileTokens(key);
+  // Description:
+  //     ConnectivityKeyToProfileTokens.
+  //
+  // Inputs:
+  //     key: string
+  //         Caller-supplied key.
+  //
+  // Outputs:
+  //     result: string[]
+  //         Return value from `connectivityKeyToProfileTokens`.
+  //
+  // Example:
+
+  //     const result = connectivityKeyToProfileTokens(key);
 
   switch (key) {
     case "gps":
@@ -264,7 +400,21 @@ export function connectivityKeyToProfileTokens(key: string): string[] {
 
 export function faultToConnectivity(
   fault: string,
-): { domain: string; event: string } | null {
+): {
+  // Description:
+  //     FaultToConnectivity.
+  //
+  // Inputs:
+  //     fault: string
+  //         Caller-supplied fault.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+ // const result = faultToConnectivity(fault);
+ domain: string; event: string } | null {
   // Map a simulation fault to a connectivity trigger domain and event.
   //
   // Parameters:
@@ -277,6 +427,7 @@ export function faultToConnectivity(
   // None.
   //
   // Example:
+
   // const evt = faultToConnectivity("NetworkOutage");
 
   switch (fault) {
@@ -299,19 +450,33 @@ export function faultToConnectivity(
 }
 
 export function connectivityLinkToTransport(link: string): TransportKind {
-  // Map an active connectivity link to the default transport kind.
+  // Description:
+  //     ConnectivityLinkToTransport.
   //
-  // Parameters:
-  // - `link` — link name from connectivity_policy or robot.connectivity_link()
+  // Inputs:
+  //     link: string
+  //         Caller-supplied link.
   //
-  // Returns:
-  // Transport kind used for comm publish/subscribe.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: TransportKind
+  //         Return value from `connectivityLinkToTransport`.
   //
   // Example:
-  // const transport = connectivityLinkToTransport("wifi");
+  //     const result = connectivityLinkToTransport(link);
+  // Description:
+  //     ConnectivityLinkToTransport.
+  //
+  // Inputs:
+  //     link: string
+  //         Caller-supplied link.
+  //
+  // Outputs:
+  //     result: TransportKind
+  //         Return value from `connectivityLinkToTransport`.
+  //
+  // Example:
+
+  //     const result = connectivityLinkToTransport(link);
 
   switch (link.toLowerCase()) {
     case "wifi":
@@ -341,7 +506,27 @@ export function applyGpsPositionFaults(
   trueLat: number,
   trueLon: number,
   simTimeMs: number,
-): { lat: number; lon: number; fixQuality: number } {
+): {
+  // Description:
+  //     ApplyGpsPositionFaults.
+  //
+  // Inputs:
+  //     faults: Set<string>
+  //         Caller-supplied faults.
+  //     trueLat: number
+  //         Caller-supplied trueLat.
+  //     trueLon: number
+  //         Caller-supplied trueLon.
+  //     simTimeMs: number
+  //         Caller-supplied simTimeMs.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+ // const result = applyGpsPositionFaults(faults, trueLat, trueLon, simTimeMs);
+ lat: number; lon: number; fixQuality: number } {
   // Apply GPS drift or spoofing simulation to WGS84 coordinates.
   //
   // Parameters:
@@ -356,6 +541,7 @@ export function applyGpsPositionFaults(
   // None.
   //
   // Example:
+
   // const pos = applyGpsPositionFaults(faults, 30, -97, 1000);
 
   if (faults.has("GpsSpoofing")) {
@@ -370,94 +556,167 @@ export function applyGpsPositionFaults(
 }
 
 export function isCellularLink(link: string): boolean {
-  // Return true when the link name refers to a cellular bearer (not satellite).
+  // Description:
+  //     IsCellularLink.
   //
-  // Parameters:
-  // - `link` — active connectivity link name
+  // Inputs:
+  //     link: string
+  //         Caller-supplied link.
   //
-  // Returns:
-  // Whether the link is cellular-class.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: boolean
+  //         Return value from `isCellularLink`.
   //
   // Example:
-  // const cellular = isCellularLink("lte");
+  //     const result = isCellularLink(link);
+  // Description:
+  //     IsCellularLink.
+  //
+  // Inputs:
+  //     link: string
+  //         Caller-supplied link.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `isCellularLink`.
+  //
+  // Example:
+
+  //     const result = isCellularLink(link);
 
   const lower = link.toLowerCase();
   return ["cellular", "lte", "4g", "fourg", "fiveg", "5g"].includes(lower);
 }
 
 export function isSatelliteLink(link: string): boolean {
-  // Return true when the active link is a satellite backhaul bearer.
+  // Description:
+  //     IsSatelliteLink.
   //
-  // Parameters:
-  // - `link` — active connectivity link name
+  // Inputs:
+  //     link: string
+  //         Caller-supplied link.
   //
-  // Returns:
-  // Whether the link is satellite-class.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: boolean
+  //         Return value from `isSatelliteLink`.
   //
   // Example:
-  // const sat = isSatelliteLink("satellite");
+  //     const result = isSatelliteLink(link);
+  // Description:
+  //     IsSatelliteLink.
+  //
+  // Inputs:
+  //     link: string
+  //         Caller-supplied link.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `isSatelliteLink`.
+  //
+  // Example:
+
+  //     const result = isSatelliteLink(link);
 
   return link.toLowerCase() === "satellite";
 }
 
 export function isModemBearer(link: string): boolean {
-  // Return true when the link supports SIM/modem attestation simulation.
+  // Description:
+  //     IsModemBearer.
   //
-  // Parameters:
-  // - `link` — active connectivity link name
+  // Inputs:
+  //     link: string
+  //         Caller-supplied link.
   //
-  // Returns:
-  // Whether sim_identity attestation applies.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: boolean
+  //         Return value from `isModemBearer`.
   //
   // Example:
-  // const modem = isModemBearer("cellular");
+  //     const result = isModemBearer(link);
+  // Description:
+  //     IsModemBearer.
+  //
+  // Inputs:
+  //     link: string
+  //         Caller-supplied link.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `isModemBearer`.
+  //
+  // Example:
+
+  //     const result = isModemBearer(link);
 
   return isCellularLink(link) || isSatelliteLink(link);
 }
 
 export function isWifiLink(link: string): boolean {
-  // Return true when the link name refers to Wi-Fi.
+  // Description:
+  //     IsWifiLink.
   //
-  // Parameters:
-  // - `link` — active connectivity link name
+  // Inputs:
+  //     link: string
+  //         Caller-supplied link.
   //
-  // Returns:
-  // Whether the link is Wi-Fi-class.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: boolean
+  //         Return value from `isWifiLink`.
   //
   // Example:
-  // const wifi = isWifiLink("wifi");
+  //     const result = isWifiLink(link);
+  // Description:
+  //     IsWifiLink.
+  //
+  // Inputs:
+  //     link: string
+  //         Caller-supplied link.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `isWifiLink`.
+  //
+  // Example:
+
+  //     const result = isWifiLink(link);
 
   const lower = link.toLowerCase();
   return lower === "wifi" || lower === "wi-fi" || lower === "wifi6";
 }
 
 export function isLinkImpaired(link: string, faults: Set<string> | Iterable<string>): boolean {
-  // Return true when simulation faults disable the given connectivity link.
+  // Description:
+  //     IsLinkImpaired.
   //
-  // Parameters:
-  // - `link` — active connectivity link name
-  // - `faults` — active injected fault names
+  // Inputs:
+  //     link: string
+  //         Caller-supplied link.
+  //     faults: Set<string> | Iterable<string>
+  //         Caller-supplied faults.
   //
-  // Returns:
-  // Whether the link should be treated as unavailable.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: boolean
+  //         Return value from `isLinkImpaired`.
   //
   // Example:
-  // const impaired = isLinkImpaired("cellular", new Set(["LteOutage"]));
+  //     const result = isLinkImpaired(link, faults);
+  // Description:
+  //     IsLinkImpaired.
+  //
+  // Inputs:
+  //     link: string
+  //         Caller-supplied link.
+  //     faults: Set<string> | Iterable<string>
+  //         Caller-supplied faults.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `isLinkImpaired`.
+  //
+  // Example:
+
+  //     const result = isLinkImpaired(link, faults);
 
   const lower = link.toLowerCase();
   for (const fault of faults) {
@@ -483,20 +742,35 @@ export function isLinkImpaired(link: string, faults: Set<string> | Iterable<stri
 }
 
 export function runtimeSimIdentity(link: string, attested: boolean) {
-  // Build a SimIdentity object for SIM/eSIM attestation simulation.
+  // Description:
+  //     RuntimeSimIdentity.
   //
-  // Parameters:
-  // - `link` — active connectivity link name
-  // - `attested` — whether the modem attestation succeeded
+  // Inputs:
+  //     link: string
+  //         Caller-supplied link.
+  //     attested: boolean
+  //         Caller-supplied attested.
   //
-  // Returns:
-  // SimIdentity runtime object.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     None.
   //
   // Example:
-  // const sim = runtimeSimIdentity("cellular", true);
+  //     const result = runtimeSimIdentity(link, attested);
+  // Description:
+  //     RuntimeSimIdentity.
+  //
+  // Inputs:
+  //     link: string
+  //         Caller-supplied link.
+  //     attested: boolean
+  //         Caller-supplied attested.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+  //     const result = runtimeSimIdentity(link, attested);
 
   const lower = link.toLowerCase();
   let hash = 0;
@@ -531,6 +805,29 @@ function compatItem(
   line: number,
   column: number,
 ): CompatItem {
+  // Description:
+  //     CompatItem.
+  //
+  // Inputs:
+  //     category: string
+  //         Caller-supplied category.
+  //     message: string
+  //         Caller-supplied message.
+  //     severity: CompatItem["severity"]
+  //         Caller-supplied severity.
+  //     line: number
+  //         Caller-supplied line.
+  //     column: number
+  //         Caller-supplied column.
+  //
+  // Outputs:
+  //     result: CompatItem
+  //         Return value from `compatItem`.
+  //
+  // Example:
+
+  //     const result = compatItem(category, message, severity, line, column);
+
   return { category, message, severity, line, column };
 }
 
@@ -538,20 +835,37 @@ export function verifyRequiresConnectivity(
   req: RequiresConnectivityDecl,
   profile: HardwareProfile,
 ): CompatItem[] {
-  // Verify requires_connectivity against a hardware profile (TypeScript fallback).
+  // Description:
+  //     VerifyRequiresConnectivity.
   //
-  // Parameters:
-  // - `req` — parsed requires_connectivity block
-  // - `profile` — deploy target hardware profile
+  // Inputs:
+  //     req: RequiresConnectivityDecl
+  //         Caller-supplied req.
+  //     profile: HardwareProfile
+  //         Caller-supplied profile.
   //
-  // Returns:
-  // Compatibility check items.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: CompatItem[]
+  //         Return value from `verifyRequiresConnectivity`.
   //
   // Example:
-  // const items = verifyRequiresConnectivity(req, profile);
+  //     const result = verifyRequiresConnectivity(req, profile);
+  // Description:
+  //     VerifyRequiresConnectivity.
+  //
+  // Inputs:
+  //     req: RequiresConnectivityDecl
+  //         Caller-supplied req.
+  //     profile: HardwareProfile
+  //         Caller-supplied profile.
+  //
+  // Outputs:
+  //     result: CompatItem[]
+  //         Return value from `verifyRequiresConnectivity`.
+  //
+  // Example:
+
+  //     const result = verifyRequiresConnectivity(req, profile);
 
   const items: CompatItem[] = [];
   const line = req.span.start.line;
@@ -709,19 +1023,33 @@ export function verifyRequiresConnectivity(
 }
 
 export function validateGeofence(geofence: GeofenceDecl): CompatItem[] {
-  // Validate geofence WGS84 geometry.
+  // Description:
+  //     ValidateGeofence.
   //
-  // Parameters:
-  // - `geofence` — parsed geofence declaration
+  // Inputs:
+  //     geofence: GeofenceDecl
+  //         Caller-supplied geofence.
   //
-  // Returns:
-  // Compatibility check items.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: CompatItem[]
+  //         Return value from `validateGeofence`.
   //
   // Example:
-  // const items = validateGeofence(geofence);
+  //     const result = validateGeofence(geofence);
+  // Description:
+  //     ValidateGeofence.
+  //
+  // Inputs:
+  //     geofence: GeofenceDecl
+  //         Caller-supplied geofence.
+  //
+  // Outputs:
+  //     result: CompatItem[]
+  //         Return value from `validateGeofence`.
+  //
+  // Example:
+
+  //     const result = validateGeofence(geofence);
 
   const line = geofence.span.start.line;
   const column = geofence.span.start.column;
@@ -770,19 +1098,33 @@ export function validateGeofence(geofence: GeofenceDecl): CompatItem[] {
 }
 
 export function validateConnectivityPolicy(policy: ConnectivityPolicyDecl): CompatItem[] {
-  // Validate connectivity failover policy declarations.
+  // Description:
+  //     ValidateConnectivityPolicy.
   //
-  // Parameters:
-  // - `policy` — parsed connectivity_policy block
+  // Inputs:
+  //     policy: ConnectivityPolicyDecl
+  //         Caller-supplied policy.
   //
-  // Returns:
-  // Compatibility check items.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: CompatItem[]
+  //         Return value from `validateConnectivityPolicy`.
   //
   // Example:
-  // const items = validateConnectivityPolicy(policy);
+  //     const result = validateConnectivityPolicy(policy);
+  // Description:
+  //     ValidateConnectivityPolicy.
+  //
+  // Inputs:
+  //     policy: ConnectivityPolicyDecl
+  //         Caller-supplied policy.
+  //
+  // Outputs:
+  //     result: CompatItem[]
+  //         Return value from `validateConnectivityPolicy`.
+  //
+  // Example:
+
+  //     const result = validateConnectivityPolicy(policy);
 
   const line = policy.span.start.line;
   const column = policy.span.start.column;

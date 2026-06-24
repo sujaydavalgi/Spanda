@@ -9,6 +9,21 @@ import { transportRegistryKey } from "./registry.js";
 
 /** Map a dotted module import path to its backing official package name. */
 export function officialPackageForModule(modulePath: string): string | null {
+  // Description:
+  //     OfficialPackageForModule.
+  //
+  // Inputs:
+  //     modulePath: string
+  //         Caller-supplied modulePath.
+  //
+  // Outputs:
+  //     result: string | null
+  //         Return value from `officialPackageForModule`.
+  //
+  // Example:
+
+  //     const result = officialPackageForModule(modulePath);
+
   switch (modulePath) {
     case "positioning.gps":
       return "spanda-gps";
@@ -64,10 +79,39 @@ export function officialPackageForModule(modulePath: string): string | null {
 }
 
 function projectProviderKey(packageName: string): string {
+  // Description:
+  //     ProjectProviderKey.
+  //
+  // Inputs:
+  //     packageName: string
+  //         Caller-supplied packageName.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `projectProviderKey`.
+  //
+  // Example:
+
+  //     const result = projectProviderKey(packageName);
+
   return `${packageName}::project`;
 }
 
 function okInt(): RuntimeValue {
+  // Description:
+  //     OkInt.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `okInt`.
+  //
+  // Example:
+
+  //     const result = okInt();
+
   return { kind: "number", value: 1, unit: "none" };
 }
 
@@ -81,6 +125,27 @@ export function dispatchOfficialPackageCall(
   functionName: string,
   _args: readonly RuntimeValue[],
 ): RuntimeValue | null {
+  // Description:
+  //     DispatchOfficialPackageCall.
+  //
+  // Inputs:
+  //     registry: ProviderRegistry
+  //         Caller-supplied registry.
+  //     modulePath: string
+  //         Caller-supplied modulePath.
+  //     functionName: string
+  //         Caller-supplied functionName.
+  //     _args: readonly RuntimeValue[]
+  //         Caller-supplied args.
+  //
+  // Outputs:
+  //     result: RuntimeValue | null
+  //         Return value from `dispatchOfficialPackageCall`.
+  //
+  // Example:
+
+  //     const result = dispatchOfficialPackageCall(registry, modulePath, functionName, _args);
+
   const packageName = officialPackageForModule(modulePath);
   if (!packageName || !registry.isOfficialPackage(packageName)) {
     return null;

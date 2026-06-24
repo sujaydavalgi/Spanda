@@ -35,6 +35,20 @@ const FRAMEWORK_ADAPTER_DETAILS: Record<string, string> = {
 };
 
 export function verifyFrameworkImports(imports: ImportDecl[]): CompatItem[] {
+  // Description:
+  //     VerifyFrameworkImports.
+  //
+  // Inputs:
+  //     imports: ImportDecl[]
+  //         Caller-supplied imports.
+  //
+  // Outputs:
+  //     result: CompatItem[]
+  //         Return value from `verifyFrameworkImports`.
+  //
+  // Example:
+  //     const result = verifyFrameworkImports(imports);
+
   // Match declared imports against known framework package stubs.
   const items: CompatItem[] = [];
   for (const imp of imports) {

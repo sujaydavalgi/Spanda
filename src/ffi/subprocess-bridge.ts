@@ -16,18 +16,32 @@ type BridgeResponse = {
 };
 
 function runtimeValueToJson(value: RuntimeValue): unknown {
-  // RuntimeValueToJson.
+  // Description:
+  //     RuntimeValueToJson.
   //
-  // Parameters:
-  // - `value` — input value
+  // Inputs:
+  //     value: RuntimeValue
+  //         Caller-supplied value.
   //
-  // Returns:
-  // `unknown`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: unknown
+  //         Return value from `runtimeValueToJson`.
   //
   // Example:
+  //     const result = runtimeValueToJson(value);
+  // Description:
+  //     RuntimeValueToJson.
+  //
+  // Inputs:
+  //     value: RuntimeValue
+  //         Caller-supplied value.
+  //
+  // Outputs:
+  //     result: unknown
+  //         Return value from `runtimeValueToJson`.
+  //
+  // Example:
+  //     const result = runtimeValueToJson(value);
 
   // const result = runtimeValueToJson(value);
   switch (value.kind) {
@@ -45,18 +59,32 @@ function runtimeValueToJson(value: RuntimeValue): unknown {
 }
 
 function jsonToRuntimeValue(value: unknown): RuntimeValue {
-  // JsonToRuntimeValue.
+  // Description:
+  //     JsonToRuntimeValue.
   //
-  // Parameters:
-  // - `value` — input value
+  // Inputs:
+  //     value: unknown
+  //         Caller-supplied value.
   //
-  // Returns:
-  // `RuntimeValue`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `jsonToRuntimeValue`.
   //
   // Example:
+  //     const result = jsonToRuntimeValue(value);
+  // Description:
+  //     JsonToRuntimeValue.
+  //
+  // Inputs:
+  //     value: unknown
+  //         Caller-supplied value.
+  //
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `jsonToRuntimeValue`.
+  //
+  // Example:
+  //     const result = jsonToRuntimeValue(value);
 
   // const result = jsonToRuntimeValue(value);
   if (typeof value === "number") {
@@ -76,36 +104,60 @@ function jsonToRuntimeValue(value: unknown): RuntimeValue {
 }
 
 function repoRoot(): string {
-  // RepoRoot.
+  // Description:
+  //     RepoRoot.
   //
-  // Parameters:
-  // None.
+  // Inputs:
+  //     None.
   //
-  // Returns:
-  // Text result.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: string
+  //         Return value from `repoRoot`.
   //
   // Example:
+  //     const result = repoRoot();
+  // Description:
+  //     RepoRoot.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `repoRoot`.
+  //
+  // Example:
+  //     const result = repoRoot();
 
   // const result = repoRoot();
   return resolve(import.meta.dirname, "../..");
 }
 
 export function pythonBridgeScriptPath(): string | null {
-  // PythonBridgeScriptPath.
+  // Description:
+  //     PythonBridgeScriptPath.
   //
-  // Parameters:
-  // None.
+  // Inputs:
+  //     None.
   //
-  // Returns:
-  // `Some` / non-null value on success, otherwise `None` / null.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: string | null
+  //         Return value from `pythonBridgeScriptPath`.
   //
   // Example:
+  //     const result = pythonBridgeScriptPath();
+  // Description:
+  //     PythonBridgeScriptPath.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: string | null
+  //         Return value from `pythonBridgeScriptPath`.
+  //
+  // Example:
+  //     const result = pythonBridgeScriptPath();
 
   // const result = pythonBridgeScriptPath();
   const env = process.env.SPANDA_PYTHON_BRIDGE;
@@ -120,18 +172,30 @@ export function pythonBridgeScriptPath(): string | null {
 }
 
 export function cppBridgeBinaryPath(): string | null {
-  // CppBridgeBinaryPath.
+  // Description:
+  //     CppBridgeBinaryPath.
   //
-  // Parameters:
-  // None.
+  // Inputs:
+  //     None.
   //
-  // Returns:
-  // `Some` / non-null value on success, otherwise `None` / null.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: string | null
+  //         Return value from `cppBridgeBinaryPath`.
   //
   // Example:
+  //     const result = cppBridgeBinaryPath();
+  // Description:
+  //     CppBridgeBinaryPath.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: string | null
+  //         Return value from `cppBridgeBinaryPath`.
+  //
+  // Example:
+  //     const result = cppBridgeBinaryPath();
 
   // const result = cppBridgeBinaryPath();
   const env = process.env.SPANDA_CPP_BRIDGE;
@@ -147,18 +211,30 @@ export function cppBridgeBinaryPath(): string | null {
 }
 
 function cargoCppBridgePaths(): string[] {
-  // CargoCppBridgePaths.
+  // Description:
+  //     CargoCppBridgePaths.
   //
-  // Parameters:
-  // None.
+  // Inputs:
+  //     None.
   //
-  // Returns:
-  // `string[]`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: string[]
+  //         Return value from `cargoCppBridgePaths`.
   //
   // Example:
+  //     const result = cargoCppBridgePaths();
+  // Description:
+  //     CargoCppBridgePaths.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: string[]
+  //         Return value from `cargoCppBridgePaths`.
+  //
+  // Example:
+  //     const result = cargoCppBridgePaths();
 
   // const result = cargoCppBridgePaths();
   const roots = [
@@ -188,18 +264,30 @@ function cargoCppBridgePaths(): string[] {
 }
 
 function pythonCommand(): string | null {
-  // PythonCommand.
+  // Description:
+  //     PythonCommand.
   //
-  // Parameters:
-  // None.
+  // Inputs:
+  //     None.
   //
-  // Returns:
-  // `Some` / non-null value on success, otherwise `None` / null.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: string | null
+  //         Return value from `pythonCommand`.
   //
   // Example:
+  //     const result = pythonCommand();
+  // Description:
+  //     PythonCommand.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: string | null
+  //         Return value from `pythonCommand`.
+  //
+  // Example:
+  //     const result = pythonCommand();
 
   // const result = pythonCommand();
   for (const cmd of ["python3", "python"]) {
@@ -219,23 +307,52 @@ function callSubprocessBridge(
   args: RuntimeValue[],
   line: number,
 ): RuntimeValue {
-  // CallSubprocessBridge.
+  // Description:
+  //     CallSubprocessBridge.
   //
-  // Parameters:
-  // - `label` — input value
-  // - `executable` — input value
-  // - `extraArgs` — input value
-  // - `decl` — input value
-  // - `args` — input value
-  // - `line` — input value
+  // Inputs:
+  //     label: string
+  //         Caller-supplied label.
+  //     executable: string
+  //         Caller-supplied executable.
+  //     extraArgs: string[]
+  //         Caller-supplied extraArgs.
+  //     decl: ExternFnDecl
+  //         Caller-supplied decl.
+  //     args: RuntimeValue[]
+  //         Caller-supplied args.
+  //     line: number
+  //         Caller-supplied line.
   //
-  // Returns:
-  // `RuntimeValue`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `callSubprocessBridge`.
   //
   // Example:
+  //     const result = callSubprocessBridge(label, executable, extraArgs, decl, args, line);
+  // Description:
+  //     CallSubprocessBridge.
+  //
+  // Inputs:
+  //     label: string
+  //         Caller-supplied label.
+  //     executable: string
+  //         Caller-supplied executable.
+  //     extraArgs: string[]
+  //         Caller-supplied extraArgs.
+  //     decl: ExternFnDecl
+  //         Caller-supplied decl.
+  //     args: RuntimeValue[]
+  //         Caller-supplied args.
+  //     line: number
+  //         Caller-supplied line.
+  //
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `callSubprocessBridge`.
+  //
+  // Example:
+  //     const result = callSubprocessBridge(label, executable, extraArgs, decl, args, line);
 
   // const result = callSubprocessBridge(label, executable, extraArgs, decl, args, line);
   const request = JSON.stringify({
@@ -280,19 +397,36 @@ export function callExternBridge(
   decl: ExternFnDecl,
   args: RuntimeValue[],
 ): RuntimeValue {
-  // CallExternBridge.
+  // Description:
+  //     CallExternBridge.
   //
-  // Parameters:
-  // - `decl` — input value
-  // - `args` — input value
+  // Inputs:
+  //     decl: ExternFnDecl
+  //         Caller-supplied decl.
+  //     args: RuntimeValue[]
+  //         Caller-supplied args.
   //
-  // Returns:
-  // `RuntimeValue`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `callExternBridge`.
   //
   // Example:
+  //     const result = callExternBridge(decl, args);
+  // Description:
+  //     CallExternBridge.
+  //
+  // Inputs:
+  //     decl: ExternFnDecl
+  //         Caller-supplied decl.
+  //     args: RuntimeValue[]
+  //         Caller-supplied args.
+  //
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `callExternBridge`.
+  //
+  // Example:
+  //     const result = callExternBridge(decl, args);
 
   // const result = callExternBridge(decl, args);
   const line = decl.span.start.line;

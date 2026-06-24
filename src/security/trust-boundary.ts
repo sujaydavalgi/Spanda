@@ -12,6 +12,20 @@ export type TrustBoundaryKind =
   | "operator_to_robot";
 
 export function boundaryForTransportName(transport: string): TrustBoundaryKind | null {
+  // Description:
+  //     BoundaryForTransportName.
+  //
+  // Inputs:
+  //     transport: string
+  //         Caller-supplied transport.
+  //
+  // Outputs:
+  //     result: TrustBoundaryKind | null
+  //         Return value from `boundaryForTransportName`.
+  //
+  // Example:
+  //     const result = boundaryForTransportName(transport);
+
   // Map a transport name to the trust boundary it typically crosses.
   switch (transport) {
     case "local":
@@ -33,19 +47,33 @@ export function boundaryForTransportName(transport: string): TrustBoundaryKind |
 }
 
 export function parseTrustBoundary(name: string): TrustBoundaryKind {
-  // Parse a trust boundary declaration name into a known kind.
+  // Description:
+  //     ParseTrustBoundary.
   //
-  // Parameters:
-  // - `name` — boundary name from source
+  // Inputs:
+  //     name: string
+  //         Caller-supplied name.
   //
-  // Returns:
-  // TrustBoundaryKind enum value.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: TrustBoundaryKind
+  //         Return value from `parseTrustBoundary`.
   //
   // Example:
-  // const kind = parseTrustBoundary("robot_to_robot");
+  //     const result = parseTrustBoundary(name);
+  // Description:
+  //     ParseTrustBoundary.
+  //
+  // Inputs:
+  //     name: string
+  //         Caller-supplied name.
+  //
+  // Outputs:
+  //     result: TrustBoundaryKind
+  //         Return value from `parseTrustBoundary`.
+  //
+  // Example:
+
+  //     const result = parseTrustBoundary(name);
 
   switch (name) {
     case "robot_internal":
@@ -62,6 +90,20 @@ export function parseTrustBoundary(name: string): TrustBoundaryKind {
 }
 
 export function requiredEncryption(boundary: TrustBoundaryKind): EncryptionMode {
+  // Description:
+  //     RequiredEncryption.
+  //
+  // Inputs:
+  //     boundary: TrustBoundaryKind
+  //         Caller-supplied boundary.
+  //
+  // Outputs:
+  //     result: EncryptionMode
+  //         Return value from `requiredEncryption`.
+  //
+  // Example:
+  //     const result = requiredEncryption(boundary);
+
   // Return the minimum encryption mode required for a trust boundary.
   switch (boundary) {
     case "robot_internal":
@@ -72,12 +114,40 @@ export function requiredEncryption(boundary: TrustBoundaryKind): EncryptionMode 
 }
 
 export function requiredAuthentication(boundary: TrustBoundaryKind): AuthenticationMode {
+  // Description:
+  //     RequiredAuthentication.
+  //
+  // Inputs:
+  //     boundary: TrustBoundaryKind
+  //         Caller-supplied boundary.
+  //
+  // Outputs:
+  //     result: AuthenticationMode
+  //         Return value from `requiredAuthentication`.
+  //
+  // Example:
+  //     const result = requiredAuthentication(boundary);
+
   // Return the minimum authentication mode required for a trust boundary.
   if (boundary === "operator_to_robot") return "mutual";
   return "none";
 }
 
 export function requiresVerifiedActuator(boundary: TrustBoundaryKind): boolean {
+  // Description:
+  //     RequiresVerifiedActuator.
+  //
+  // Inputs:
+  //     boundary: TrustBoundaryKind
+  //         Caller-supplied boundary.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `requiresVerifiedActuator`.
+  //
+  // Example:
+  //     const result = requiresVerifiedActuator(boundary);
+
   // True when actuator commands crossing this boundary need verified envelopes.
   return boundary !== "robot_internal";
 }
@@ -87,11 +157,13 @@ export class TrustBoundaryRegistry {
   private boundaries = new Set<TrustBoundaryKind>();
 
   declare(boundary: TrustBoundaryKind): void {
+
     // Register a declared trust boundary on the robot.
     this.boundaries.add(boundary);
   }
 
   contains(boundary: TrustBoundaryKind): boolean {
+
     // Return whether the robot declared a specific trust boundary.
     return this.boundaries.has(boundary);
   }
@@ -119,6 +191,7 @@ export class TrustBoundaryRegistry {
     // None.
     //
     // Example:
+
     // registry.validateChannel("robot_to_robot", "none", "none", "none", "Velocity");
 
     const reqEnc = requiredEncryption(boundary);

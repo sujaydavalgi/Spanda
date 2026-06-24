@@ -8,11 +8,39 @@ import type { ReadinessIssue } from "./readiness.js";
 
 type Spanned = { span: { start: { line: number; column: number } } };
 
-function atSpan(node?: Spanned): { line: number; column: number } {
+function atSpan(node?: Spanned): {
+  // Description:
+  //     AtSpan.
+  //
+  // Inputs:
+  //     node?: Spanned
+  //         Caller-supplied node?.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+ // const result = atSpan(node?);
+ line: number; column: number } {
   return node ? { line: node.span.start.line, column: node.span.start.column } : { line: 1, column: 1 };
 }
 
-function deploySpan(program: Program): { line: number; column: number } | undefined {
+function deploySpan(program: Program): {
+  // Description:
+  //     DeploySpan.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+ // const result = deploySpan(program);
+ line: number; column: number } | undefined {
   const deploy = program.deployments?.[0];
   if (deploy && deploy.kind === "DeployDecl") {
     return atSpan(deploy);
@@ -20,16 +48,60 @@ function deploySpan(program: Program): { line: number; column: number } | undefi
   return undefined;
 }
 
-function firstRobotSpan(program: Program): { line: number; column: number } {
+function firstRobotSpan(program: Program): {
+  // Description:
+  //     FirstRobotSpan.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+ // const result = firstRobotSpan(program);
+ line: number; column: number } {
   return atSpan(program.robots?.[0]);
 }
 
 function missionSpan(program: Program): Spanned | undefined {
+  // Description:
+  //     MissionSpan.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     result: Spanned | undefined
+  //         Return value from `missionSpan`.
+  //
+  // Example:
+
+  //     const result = missionSpan(program);
+
   const mission = program.robots?.find((r) => r.mission)?.mission;
   return mission ?? undefined;
 }
 
 function firstRobotSafetySpan(program: Program): Spanned | undefined {
+  // Description:
+  //     FirstRobotSafetySpan.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     result: Spanned | undefined
+  //         Return value from `firstRobotSafetySpan`.
+  //
+  // Example:
+
+  //     const result = firstRobotSafetySpan(program);
+
   for (const robot of program.robots ?? []) {
     if (robot.safety) return robot.safety;
   }
@@ -37,46 +109,214 @@ function firstRobotSafetySpan(program: Program): Spanned | undefined {
 }
 
 function firstAssuranceCaseSpan(program: Program): Spanned | undefined {
+  // Description:
+  //     FirstAssuranceCaseSpan.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     result: Spanned | undefined
+  //         Return value from `firstAssuranceCaseSpan`.
+  //
+  // Example:
+
+  //     const result = firstAssuranceCaseSpan(program);
+
   return program.assuranceCases?.[0];
 }
 
 function firstAssuranceCaseWithoutEvidence(program: Program): Spanned | undefined {
+  // Description:
+  //     FirstAssuranceCaseWithoutEvidence.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     result: Spanned | undefined
+  //         Return value from `firstAssuranceCaseWithoutEvidence`.
+  //
+  // Example:
+
+  //     const result = firstAssuranceCaseWithoutEvidence(program);
+
   return program.assuranceCases?.find((c) => c.evidence.length === 0);
 }
 
 function firstKnowledgeModelSpan(program: Program): Spanned | undefined {
+  // Description:
+  //     FirstKnowledgeModelSpan.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     result: Spanned | undefined
+  //         Return value from `firstKnowledgeModelSpan`.
+  //
+  // Example:
+
+  //     const result = firstKnowledgeModelSpan(program);
+
   return program.knowledgeModels?.[0];
 }
 
 function firstEmptyKnowledgeModel(program: Program): Spanned | undefined {
+  // Description:
+  //     FirstEmptyKnowledgeModel.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     result: Spanned | undefined
+  //         Return value from `firstEmptyKnowledgeModel`.
+  //
+  // Example:
+
+  //     const result = firstEmptyKnowledgeModel(program);
+
   return program.knowledgeModels?.find((m) => m.components.length === 0);
 }
 
 function firstAnomalyDetectorSpan(program: Program): Spanned | undefined {
+  // Description:
+  //     FirstAnomalyDetectorSpan.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     result: Spanned | undefined
+  //         Return value from `firstAnomalyDetectorSpan`.
+  //
+  // Example:
+
+  //     const result = firstAnomalyDetectorSpan(program);
+
   return program.anomalyDetectors?.[0];
 }
 
 function anomalyDetectorSpan(program: Program, name: string): Spanned | undefined {
+  // Description:
+  //     AnomalyDetectorSpan.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     name: string
+  //         Caller-supplied name.
+  //
+  // Outputs:
+  //     result: Spanned | undefined
+  //         Return value from `anomalyDetectorSpan`.
+  //
+  // Example:
+
+  //     const result = anomalyDetectorSpan(program, name);
+
   return program.anomalyDetectors?.find((d) => d.name === name);
 }
 
 function firstMitigationSpan(program: Program): Spanned | undefined {
+  // Description:
+  //     FirstMitigationSpan.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     result: Spanned | undefined
+  //         Return value from `firstMitigationSpan`.
+  //
+  // Example:
+
+  //     const result = firstMitigationSpan(program);
+
   return program.mitigations?.[0];
 }
 
 function firstStateEstimatorSpan(program: Program): Spanned | undefined {
+  // Description:
+  //     FirstStateEstimatorSpan.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     result: Spanned | undefined
+  //         Return value from `firstStateEstimatorSpan`.
+  //
+  // Example:
+
+  //     const result = firstStateEstimatorSpan(program);
+
   return program.stateEstimators?.[0];
 }
 
 function firstEmptyStateEstimator(program: Program): Spanned | undefined {
+  // Description:
+  //     FirstEmptyStateEstimator.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     result: Spanned | undefined
+  //         Return value from `firstEmptyStateEstimator`.
+  //
+  // Example:
+
+  //     const result = firstEmptyStateEstimator(program);
+
   return program.stateEstimators?.find((e) => e.inputs.length === 0);
 }
 
 function stateEstimatorSpan(program: Program, name: string): Spanned | undefined {
+  // Description:
+  //     StateEstimatorSpan.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     name: string
+  //         Caller-supplied name.
+  //
+  // Outputs:
+  //     result: Spanned | undefined
+  //         Return value from `stateEstimatorSpan`.
+  //
+  // Example:
+
+  //     const result = stateEstimatorSpan(program, name);
+
   return program.stateEstimators?.find((e) => e.name === name);
 }
 
-function assuranceSpan(program: Program): { line: number; column: number } | undefined {
+function assuranceSpan(program: Program): {
+  // Description:
+  //     AssuranceSpan.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+ // const result = assuranceSpan(program);
+ line: number; column: number } | undefined {
   const node =
     firstAssuranceCaseSpan(program) ??
     firstKnowledgeModelSpan(program) ??
@@ -87,6 +327,23 @@ function assuranceSpan(program: Program): { line: number; column: number } | und
 }
 
 function extractQuotedName(message: string, prefix: string): string | undefined {
+  // Description:
+  //     ExtractQuotedName.
+  //
+  // Inputs:
+  //     message: string
+  //         Caller-supplied message.
+  //     prefix: string
+  //         Caller-supplied prefix.
+  //
+  // Outputs:
+  //     result: string | undefined
+  //         Return value from `extractQuotedName`.
+  //
+  // Example:
+
+  //     const result = extractQuotedName(message, prefix);
+
   if (!message.startsWith(prefix)) return undefined;
   const rest = message.slice(prefix.length);
   const end = rest.indexOf("'");
@@ -94,7 +351,23 @@ function extractQuotedName(message: string, prefix: string): string | undefined 
 }
 
 /** Resolve a display line/column for a readiness issue factor. */
-export function lineColumnForFactor(program: Program, factor: string): { line: number; column: number } {
+export function lineColumnForFactor(program: Program, factor: string): {
+  // Description:
+  //     LineColumnForFactor.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     factor: string
+  //         Caller-supplied factor.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+ // const result = lineColumnForFactor(program, factor);
+ line: number; column: number } {
   switch (factor) {
     case "Hardware":
     case "Battery":
@@ -132,7 +405,23 @@ export function lineColumnForFactor(program: Program, factor: string): { line: n
 export function lineColumnForIssue(
   program: Program,
   issue: ReadinessIssue,
-): { line: number; column: number } {
+): {
+  // Description:
+  //     LineColumnForIssue.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     issue: ReadinessIssue
+  //         Caller-supplied issue.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+ // const result = lineColumnForIssue(program, issue);
+ line: number; column: number } {
   if (issue.factor === "Assurance") {
     const detectorName = extractQuotedName(issue.message, "Anomaly detector '");
     if (detectorName) {

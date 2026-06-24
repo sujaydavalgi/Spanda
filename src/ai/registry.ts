@@ -48,36 +48,62 @@ export const AI_LIB_REGISTRY: Record<string, AiLibModule> = {
 };
 
 export function resolveAiImport(path: string): AiLibModule | undefined {
-  // ResolveAiImport.
+  // Description:
+  //     ResolveAiImport.
   //
-  // Parameters:
-  // - `path` — input value
+  // Inputs:
+  //     path: string
+  //         Caller-supplied path.
   //
-  // Returns:
-  // `Some` / non-null value on success, otherwise `None` / null.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: AiLibModule | undefined
+  //         Return value from `resolveAiImport`.
   //
   // Example:
+  //     const result = resolveAiImport(path);
+  // Description:
+  //     ResolveAiImport.
+  //
+  // Inputs:
+  //     path: string
+  //         Caller-supplied path.
+  //
+  // Outputs:
+  //     result: AiLibModule | undefined
+  //         Return value from `resolveAiImport`.
+  //
+  // Example:
+  //     const result = resolveAiImport(path);
 
   // const result = resolveAiImport(path);
   return AI_LIB_REGISTRY[path];
 }
 
 export function listAiLibraries(): AiLibModule[] {
-  // ListAiLibraries.
+  // Description:
+  //     ListAiLibraries.
   //
-  // Parameters:
-  // None.
+  // Inputs:
+  //     None.
   //
-  // Returns:
-  // `AiLibModule[]`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: AiLibModule[]
+  //         Return value from `listAiLibraries`.
   //
   // Example:
+  //     const result = listAiLibraries();
+  // Description:
+  //     ListAiLibraries.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: AiLibModule[]
+  //         Return value from `listAiLibraries`.
+  //
+  // Example:
+  //     const result = listAiLibraries();
 
   // const result = listAiLibraries();
   return Object.values(AI_LIB_REGISTRY);

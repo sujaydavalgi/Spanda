@@ -61,18 +61,19 @@ type StubState = {
 
 /** Create an in-memory transport adapter stub for tests and package bootstrap. */
 export function createTransportStub(kind: TransportKind): TransportProvider & TransportAdapter {
-  // CreateStubAdapter.
+  // Description:
+  //     CreateTransportStub.
   //
-  // Parameters:
-  // - `kind` — input value
+  // Inputs:
+  //     kind: TransportKind
+  //         Caller-supplied kind.
   //
-  // Returns:
-  // `TransportAdapter`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: TransportProvider & TransportAdapter
+  //         Return value from `createTransportStub`.
   //
   // Example:
+  //     const result = createTransportStub(kind);
 
   // const result = createStubAdapter(kind);
   const state: StubState = {
@@ -246,6 +247,21 @@ export class RoutingCommBus {
   }
 
   private usesRegistryTransport(kind: TransportKind): boolean {
+    // Description:
+    //     UsesRegistryTransport.
+    //
+    // Inputs:
+    //     kind: TransportKind
+    //         Caller-supplied kind.
+    //
+    // Outputs:
+    //     result: boolean
+    //         Return value from `usesRegistryTransport`.
+    //
+    // Example:
+
+    //     const result = usesRegistryTransport(kind);
+
     return this.registryBacked.has(kind) && this.providerRegistry !== null;
   }
 
@@ -260,6 +276,19 @@ export class RoutingCommBus {
   }
 
   private initLiveTransports(config: FullTransportConfig): void {
+    // Description:
+    //     InitLiveTransports.
+    //
+    // Inputs:
+    //     config: FullTransportConfig
+    //         Caller-supplied config.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = initLiveTransports(config);
+
     // Connect optional live transport bridges when env flags are enabled.
     if (liveMqttEnabled()) {
       this.liveMqtt = new LiveMqttBridge();
@@ -282,12 +311,47 @@ export class RoutingCommBus {
   }
 
   private liveBridgePublish(transport: TransportKind, topic: string, payload: string): void {
+    // Description:
+    //     LiveBridgePublish.
+    //
+    // Inputs:
+    //     transport: TransportKind
+    //         Caller-supplied transport.
+    //     topic: string
+    //         Caller-supplied topic.
+    //     payload: string
+    //         Caller-supplied payload.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+
+    //     const result = liveBridgePublish(transport, topic, payload);
+
     if (transport === "mqtt") this.liveMqtt?.publish(topic, payload);
     if (transport === "websocket") this.liveWebsocket?.publish(topic, payload);
     if (transport === "dds") this.liveDds?.publish(topic, payload);
   }
 
   private liveBridgeReceive(transport: TransportKind, topic: string): RuntimeValue | null {
+    // Description:
+    //     LiveBridgeReceive.
+    //
+    // Inputs:
+    //     transport: TransportKind
+    //         Caller-supplied transport.
+    //     topic: string
+    //         Caller-supplied topic.
+    //
+    // Outputs:
+    //     result: RuntimeValue | null
+    //         Return value from `liveBridgeReceive`.
+    //
+    // Example:
+
+    //     const result = liveBridgeReceive(transport, topic);
+
     if (transport === "mqtt") return this.liveMqtt?.receive(topic) ?? null;
     if (transport === "websocket") return this.liveWebsocket?.receive(topic) ?? null;
     if (transport === "dds") return this.liveDds?.receive(topic) ?? null;
@@ -307,6 +371,7 @@ export class RoutingCommBus {
     // None.
     //
     // Example:
+
     // bus.configure({ nodeName: "Rover", security: busSecurity, tls: new TlsTransportSession() });
 
     const merged: FullTransportConfig = {
@@ -338,18 +403,32 @@ export class RoutingCommBus {
   }
 
   private adapter(transport: TransportKind): TransportAdapter | null {
-    // Adapter.
+    // Description:
+    //     Adapter.
     //
-    // Parameters:
-    // - `transport` — input value
+    // Inputs:
+    //     transport: TransportKind
+    //         Caller-supplied transport.
     //
-    // Returns:
-    // Some value on success, otherwise none.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: TransportAdapter | null
+    //         Return value from `adapter`.
     //
     // Example:
+    //     const result = adapter(transport);
+    // Description:
+    //     Adapter.
+    //
+    // Inputs:
+    //     transport: TransportKind
+    //         Caller-supplied transport.
+    //
+    // Outputs:
+    //     result: TransportAdapter | null
+    //         Return value from `adapter`.
+    //
+    // Example:
+    //     const result = adapter(transport);
 
     // const result = adapter(transport);
     switch (transport) {
@@ -446,6 +525,7 @@ export class RoutingCommBus {
     // None.
     //
     // Example:
+
     // bus.publish("/motion", "Velocity", val, "mqtt", "Navigator");
 
     this.memory.publish(topicPath, messageType, value, transport, sourceId);
@@ -522,6 +602,7 @@ export class RoutingCommBus {
     // None.
     //
     // Example:
+
     // const env = bus.receiveEnvelope("/motion");
 
     return this.memory.receiveEnvelope(topicPath);
@@ -559,6 +640,7 @@ export class RoutingCommBus {
     // None.
     //
     // Example:
+
     // const inbound = bus.pollInbound("mqtt");
 
     const paths = this.memory.subscriptionPaths();
@@ -764,6 +846,7 @@ export class RoutingCommBus {
     // None.
     //
     // Example:
+
     // const faults = activeFaults();
 
     return this.memory.activeFaults();
@@ -782,6 +865,7 @@ export class RoutingCommBus {
     // None.
     //
     // Example:
+
     // reconnectTransport("dds");
 
     const adapter = this.adapter(transport);

@@ -7,18 +7,97 @@ import type { Program } from "./ast/nodes.js";
 import type { CompatItem } from "./rust-bridge.js";
 
 function pass(category: string, message: string, line: number, column: number): CompatItem {
+  // Description:
+  //     Pass.
+  //
+  // Inputs:
+  //     category: string
+  //         Caller-supplied category.
+  //     message: string
+  //         Caller-supplied message.
+  //     line: number
+  //         Caller-supplied line.
+  //     column: number
+  //         Caller-supplied column.
+  //
+  // Outputs:
+  //     result: CompatItem
+  //         Return value from `pass`.
+  //
+  // Example:
+
+  //     const result = pass(category, message, line, column);
+
   return { category, message, severity: "pass", line, column };
 }
 
 function warn(category: string, message: string, line: number, column: number): CompatItem {
+  // Description:
+  //     Warn.
+  //
+  // Inputs:
+  //     category: string
+  //         Caller-supplied category.
+  //     message: string
+  //         Caller-supplied message.
+  //     line: number
+  //         Caller-supplied line.
+  //     column: number
+  //         Caller-supplied column.
+  //
+  // Outputs:
+  //     result: CompatItem
+  //         Return value from `warn`.
+  //
+  // Example:
+
+  //     const result = warn(category, message, line, column);
+
   return { category, message, severity: "warning", line, column };
 }
 
 function error(category: string, message: string, line: number, column: number): CompatItem {
+  // Description:
+  //     Error.
+  //
+  // Inputs:
+  //     category: string
+  //         Caller-supplied category.
+  //     message: string
+  //         Caller-supplied message.
+  //     line: number
+  //         Caller-supplied line.
+  //     column: number
+  //         Caller-supplied column.
+  //
+  // Outputs:
+  //     result: CompatItem
+  //         Return value from `error`.
+  //
+  // Example:
+
+  //     const result = error(category, message, line, column);
+
   return { category, message, severity: "error", line, column };
 }
 
 export function verifyCertificationProof(program: Program, strict: boolean): CompatItem[] {
+  // Description:
+  //     VerifyCertificationProof.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     strict: boolean
+  //         Caller-supplied strict.
+  //
+  // Outputs:
+  //     result: CompatItem[]
+  //         Return value from `verifyCertificationProof`.
+  //
+  // Example:
+  //     const result = verifyCertificationProof(program, strict);
+
   // Evaluate deploy/certify/safety/mission coverage for CI gates.
   const items: CompatItem[] = [];
   const hasDeploy = program.deployments.length > 0;

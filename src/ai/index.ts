@@ -20,19 +20,36 @@ export { resolveAiImport, listAiLibraries, AI_LIB_REGISTRY } from "./registry.js
 import type { RuntimeValue } from "../runtime/interpreter.js";
 
 export function runtimeSafeAction(linear: number, angular: number): RuntimeValue {
-  // RuntimeSafeAction.
+  // Description:
+  //     RuntimeSafeAction.
   //
-  // Parameters:
-  // - `linear` — input value
-  // - `angular` — input value
+  // Inputs:
+  //     linear: number
+  //         Caller-supplied linear.
+  //     angular: number
+  //         Caller-supplied angular.
   //
-  // Returns:
-  // `RuntimeValue`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `runtimeSafeAction`.
   //
   // Example:
+  //     const result = runtimeSafeAction(linear, angular);
+  // Description:
+  //     RuntimeSafeAction.
+  //
+  // Inputs:
+  //     linear: number
+  //         Caller-supplied linear.
+  //     angular: number
+  //         Caller-supplied angular.
+  //
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `runtimeSafeAction`.
+  //
+  // Example:
+  //     const result = runtimeSafeAction(linear, angular);
 
   // const result = runtimeSafeAction(linear, angular);
   return { kind: "safe_action", linear, angular, trusted: true };
@@ -43,38 +60,72 @@ export function runtimeActionProposal(
   angular: number,
   source: string,
 ): RuntimeValue {
-  // RuntimeActionProposal.
+  // Description:
+  //     RuntimeActionProposal.
   //
-  // Parameters:
-  // - `linear` — input value
-  // - `angular` — input value
-  // - `source` — input value
+  // Inputs:
+  //     linear: number
+  //         Caller-supplied linear.
+  //     angular: number
+  //         Caller-supplied angular.
+  //     source: string
+  //         Caller-supplied source.
   //
-  // Returns:
-  // `RuntimeValue`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `runtimeActionProposal`.
   //
   // Example:
+  //     const result = runtimeActionProposal(linear, angular, source);
+  // Description:
+  //     RuntimeActionProposal.
+  //
+  // Inputs:
+  //     linear: number
+  //         Caller-supplied linear.
+  //     angular: number
+  //         Caller-supplied angular.
+  //     source: string
+  //         Caller-supplied source.
+  //
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `runtimeActionProposal`.
+  //
+  // Example:
+  //     const result = runtimeActionProposal(linear, angular, source);
 
   // const result = runtimeActionProposal(linear, angular, source);
   return { kind: "action_proposal", linear, angular, source, trace: [], trusted: false };
 }
 
 export function isActionProposal(value: RuntimeValue): boolean {
-  // IsActionProposal.
+  // Description:
+  //     IsActionProposal.
   //
-  // Parameters:
-  // - `value` — input value
+  // Inputs:
+  //     value: RuntimeValue
+  //         Caller-supplied value.
   //
-  // Returns:
-  // `true` or `false`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: boolean
+  //         Return value from `isActionProposal`.
   //
   // Example:
+  //     const result = isActionProposal(value);
+  // Description:
+  //     IsActionProposal.
+  //
+  // Inputs:
+  //     value: RuntimeValue
+  //         Caller-supplied value.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `isActionProposal`.
+  //
+  // Example:
+  //     const result = isActionProposal(value);
 
   // const result = isActionProposal(value);
   return value.kind === "action_proposal";
@@ -83,18 +134,32 @@ export function isActionProposal(value: RuntimeValue): boolean {
 export function isSafeAction(
   value: RuntimeValue,
 ): value is Extract<RuntimeValue, {
-  // IsSafeAction.
+  // Description:
+  //     IsSafeAction.
   //
-  // Parameters:
-  // - `value` — input value
+  // Inputs:
+  //     value: RuntimeValue
+  //         Caller-supplied value.
   //
-  // Returns:
-  // `value is Extract<RuntimeValue,`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: value is Extract<RuntimeValue,
+  //         Return value from `isSafeAction`.
   //
   // Example:
+  //     const result = isSafeAction(value);
+  // Description:
+  //     IsSafeAction.
+  //
+  // Inputs:
+  //     value: RuntimeValue
+  //         Caller-supplied value.
+  //
+  // Outputs:
+  //     result: value is Extract<RuntimeValue,
+  //         Return value from `isSafeAction`.
+  //
+  // Example:
+  //     const result = isSafeAction(value);
 
  // const result = isSafeAction(value);
  kind: "safe_action" }> {
@@ -102,18 +167,30 @@ export function isSafeAction(
 }
 
 export function proposalFromValue(value: RuntimeValue): {
-  // ProposalFromValue.
+  // Description:
+  //     ProposalFromValue.
   //
-  // Parameters:
-  // - `value` — input value
+  // Inputs:
+  //     value: RuntimeValue
+  //         Caller-supplied value.
   //
-  // Returns:
-  // ``.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     None.
   //
   // Example:
+  //     const result = proposalFromValue(value);
+  // Description:
+  //     ProposalFromValue.
+  //
+  // Inputs:
+  //     value: RuntimeValue
+  //         Caller-supplied value.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+  //     const result = proposalFromValue(value);
 
  // const result = proposalFromValue(value);
  linear: number; angular: number; source: string } | null {
@@ -135,38 +212,72 @@ export function safeActionFromProposal(
   linear: number,
   angular: number,
 ): RuntimeValue {
-  // SafeActionFromProposal.
+  // Description:
+  //     SafeActionFromProposal.
   //
-  // Parameters:
-  // - `linear` — input value
-  // - `angular` — input value
+  // Inputs:
+  //     linear: number
+  //         Caller-supplied linear.
+  //     angular: number
+  //         Caller-supplied angular.
   //
-  // Returns:
-  // `RuntimeValue`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `safeActionFromProposal`.
   //
   // Example:
+  //     const result = safeActionFromProposal(linear, angular);
+  // Description:
+  //     SafeActionFromProposal.
+  //
+  // Inputs:
+  //     linear: number
+  //         Caller-supplied linear.
+  //     angular: number
+  //         Caller-supplied angular.
+  //
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `safeActionFromProposal`.
+  //
+  // Example:
+  //     const result = safeActionFromProposal(linear, angular);
 
   // const result = safeActionFromProposal(linear, angular);
   return runtimeSafeAction(linear, angular);
 }
 
 export function wrapCompletion(text: string, model: string): RuntimeValue {
-  // WrapCompletion.
+  // Description:
+  //     WrapCompletion.
   //
-  // Parameters:
-  // - `text` — input value
-  // - `model` — input value
+  // Inputs:
+  //     text: string
+  //         Caller-supplied text.
+  //     model: string
+  //         Caller-supplied model.
   //
-  // Returns:
-  // `RuntimeValue`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `wrapCompletion`.
   //
   // Example:
+  //     const result = wrapCompletion(text, model);
+  // Description:
+  //     WrapCompletion.
+  //
+  // Inputs:
+  //     text: string
+  //         Caller-supplied text.
+  //     model: string
+  //         Caller-supplied model.
+  //
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `wrapCompletion`.
+  //
+  // Example:
+  //     const result = wrapCompletion(text, model);
 
   // const result = wrapCompletion(text, model);
   return { kind: "completion", text, model };
@@ -177,20 +288,40 @@ export function wrapDetection(
   confidence: number,
   nearestDistance: number,
 ): RuntimeValue {
-  // WrapDetection.
+  // Description:
+  //     WrapDetection.
   //
-  // Parameters:
-  // - `label` — input value
-  // - `confidence` — input value
-  // - `nearestDistance` — input value
+  // Inputs:
+  //     label: string
+  //         Caller-supplied label.
+  //     confidence: number
+  //         Caller-supplied confidence.
+  //     nearestDistance: number
+  //         Caller-supplied nearestDistance.
   //
-  // Returns:
-  // `RuntimeValue`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `wrapDetection`.
   //
   // Example:
+  //     const result = wrapDetection(label, confidence, nearestDistance);
+  // Description:
+  //     WrapDetection.
+  //
+  // Inputs:
+  //     label: string
+  //         Caller-supplied label.
+  //     confidence: number
+  //         Caller-supplied confidence.
+  //     nearestDistance: number
+  //         Caller-supplied nearestDistance.
+  //
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `wrapDetection`.
+  //
+  // Example:
+  //     const result = wrapDetection(label, confidence, nearestDistance);
 
   // const result = wrapDetection(label, confidence, nearestDistance);
   return {

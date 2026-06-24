@@ -28,6 +28,20 @@ export type FleetRecoveryResponse = {
 };
 
 export function defaultFleetMeshUrl(): string | undefined {
+  // Description:
+  //     DefaultFleetMeshUrl.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: string | undefined
+  //         Return value from `defaultFleetMeshUrl`.
+  //
+  // Example:
+
+  //     const result = defaultFleetMeshUrl();
+
   return process.env.SPANDA_FLEET_MESH_URL;
 }
 
@@ -37,6 +51,27 @@ async function meshFetch(
   body: string,
   token?: string,
 ): Promise<Response> {
+  // Description:
+  //     MeshFetch.
+  //
+  // Inputs:
+  //     meshUrl: string
+  //         Caller-supplied meshUrl.
+  //     path: string
+  //         Caller-supplied path.
+  //     body: string
+  //         Caller-supplied body.
+  //     token?: string
+  //         Caller-supplied token?.
+  //
+  // Outputs:
+  //     result: Promise<Response>
+  //         Return value from `meshFetch`.
+  //
+  // Example:
+
+  //     const result = meshFetch(meshUrl, path, body, token?);
+
   const base = meshUrl.replace(/\/$/, "");
   const headers: Record<string, string> = {
     Accept: "application/json",
@@ -51,6 +86,25 @@ export async function relayDeliveriesViaMesh(
   deliveries: PeerDelivery[],
   token?: string,
 ): Promise<MeshRelayResponse> {
+  // Description:
+  //     RelayDeliveriesViaMesh.
+  //
+  // Inputs:
+  //     meshUrl: string
+  //         Caller-supplied meshUrl.
+  //     deliveries: PeerDelivery[]
+  //         Caller-supplied deliveries.
+  //     token?: string
+  //         Caller-supplied token?.
+  //
+  // Outputs:
+  //     result: Promise<MeshRelayResponse>
+  //         Return value from `relayDeliveriesViaMesh`.
+  //
+  // Example:
+
+  //     const result = relayDeliveriesViaMesh(meshUrl, deliveries, token?);
+
   const response = await meshFetch(
     meshUrl,
     "/v1/mesh/relay",
@@ -75,6 +129,25 @@ export async function relayRecoveryViaMesh(
   request: FleetRecoveryRequest,
   token?: string,
 ): Promise<FleetRecoveryResponse> {
+  // Description:
+  //     RelayRecoveryViaMesh.
+  //
+  // Inputs:
+  //     meshUrl: string
+  //         Caller-supplied meshUrl.
+  //     request: FleetRecoveryRequest
+  //         Caller-supplied request.
+  //     token?: string
+  //         Caller-supplied token?.
+  //
+  // Outputs:
+  //     result: Promise<FleetRecoveryResponse>
+  //         Return value from `relayRecoveryViaMesh`.
+  //
+  // Example:
+
+  //     const result = relayRecoveryViaMesh(meshUrl, request, token?);
+
   const response = await meshFetch(
     meshUrl,
     "/v1/fleet/recovery",

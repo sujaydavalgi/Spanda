@@ -35,19 +35,36 @@ export type LibModule = {
 };
 
 function scanReading(ctx: DriverContext, range = 10): RuntimeValue {
-  // ScanReading.
+  // Description:
+  //     ScanReading.
   //
-  // Parameters:
-  // - `ctx` — input value
-  // - `range` — optional input
+  // Inputs:
+  //     ctx: DriverContext
+  //         Caller-supplied ctx.
+  //     range = 10: input value
+  //         Caller-supplied range = 10.
   //
-  // Returns:
-  // `RuntimeValue`.
-  //
-  // Options:
-  // - `range` — optional parameter
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `scanReading`.
   //
   // Example:
+  //     const result = scanReading(ctx, range = 10);
+  // Description:
+  //     ScanReading.
+  //
+  // Inputs:
+  //     ctx: DriverContext
+  //         Caller-supplied ctx.
+  //     range = 10: input value
+  //         Caller-supplied range = 10.
+  //
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `scanReading`.
+  //
+  // Example:
+  //     const result = scanReading(ctx, range = 10);
 
   // const result = scanReading(ctx, range);
   const x = ctx.simState?.pose.x ?? 0;
@@ -56,18 +73,32 @@ function scanReading(ctx: DriverContext, range = 10): RuntimeValue {
 }
 
 function imuReading(yaw = 0): RuntimeValue {
-  // ImuReading.
+  // Description:
+  //     ImuReading.
   //
-  // Parameters:
-  // - `yaw` — optional input
+  // Inputs:
+  //     yaw = 0: input value
+  //         Caller-supplied yaw = 0.
   //
-  // Returns:
-  // `RuntimeValue`.
-  //
-  // Options:
-  // - `yaw` — optional parameter
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `imuReading`.
   //
   // Example:
+  //     const result = imuReading(yaw = 0);
+  // Description:
+  //     ImuReading.
+  //
+  // Inputs:
+  //     yaw = 0: input value
+  //         Caller-supplied yaw = 0.
+  //
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `imuReading`.
+  //
+  // Example:
+  //     const result = imuReading(yaw = 0);
 
   // const result = imuReading(yaw);
   return {
@@ -381,37 +412,68 @@ export const LIB_REGISTRY: Record<string, LibModule> = {
 };
 
 export function resolveImport(path: string): LibModule | undefined {
-  // ResolveImport.
+  // Description:
+  //     ResolveImport.
   //
-  // Parameters:
-  // - `path` — input value
+  // Inputs:
+  //     path: string
+  //         Caller-supplied path.
   //
-  // Returns:
-  // `Some` / non-null value on success, otherwise `None` / null.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: LibModule | undefined
+  //         Return value from `resolveImport`.
   //
   // Example:
+  //     const result = resolveImport(path);
+  // Description:
+  //     ResolveImport.
+  //
+  // Inputs:
+  //     path: string
+  //         Caller-supplied path.
+  //
+  // Outputs:
+  //     result: LibModule | undefined
+  //         Return value from `resolveImport`.
+  //
+  // Example:
+  //     const result = resolveImport(path);
 
   // const result = resolveImport(path);
   return LIB_REGISTRY[path];
 }
 
 export function getSensorDriver(libraryId: string, sensorType: string): SensorDriverDef | undefined {
-  // GetSensorDriver.
+  // Description:
+  //     GetSensorDriver.
   //
-  // Parameters:
-  // - `libraryId` — input value
-  // - `sensorType` — input value
+  // Inputs:
+  //     libraryId: string
+  //         Caller-supplied libraryId.
+  //     sensorType: string
+  //         Caller-supplied sensorType.
   //
-  // Returns:
-  // `Some` / non-null value on success, otherwise `None` / null.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: SensorDriverDef | undefined
+  //         Return value from `getSensorDriver`.
   //
   // Example:
+  //     const result = getSensorDriver(libraryId, sensorType);
+  // Description:
+  //     GetSensorDriver.
+  //
+  // Inputs:
+  //     libraryId: string
+  //         Caller-supplied libraryId.
+  //     sensorType: string
+  //         Caller-supplied sensorType.
+  //
+  // Outputs:
+  //     result: SensorDriverDef | undefined
+  //         Return value from `getSensorDriver`.
+  //
+  // Example:
+  //     const result = getSensorDriver(libraryId, sensorType);
 
   // const result = getSensorDriver(libraryId, sensorType);
   const lib = LIB_REGISTRY[libraryId];
@@ -422,37 +484,66 @@ export function getSensorDriver(libraryId: string, sensorType: string): SensorDr
 }
 
 export function getSensorTypeFromLib(libraryId: string, sensorType: string): boolean {
-  // GetSensorTypeFromLib.
+  // Description:
+  //     GetSensorTypeFromLib.
   //
-  // Parameters:
-  // - `libraryId` — input value
-  // - `sensorType` — input value
+  // Inputs:
+  //     libraryId: string
+  //         Caller-supplied libraryId.
+  //     sensorType: string
+  //         Caller-supplied sensorType.
   //
-  // Returns:
-  // `true` or `false`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: boolean
+  //         Return value from `getSensorTypeFromLib`.
   //
   // Example:
+  //     const result = getSensorTypeFromLib(libraryId, sensorType);
+  // Description:
+  //     GetSensorTypeFromLib.
+  //
+  // Inputs:
+  //     libraryId: string
+  //         Caller-supplied libraryId.
+  //     sensorType: string
+  //         Caller-supplied sensorType.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `getSensorTypeFromLib`.
+  //
+  // Example:
+  //     const result = getSensorTypeFromLib(libraryId, sensorType);
 
   // const result = getSensorTypeFromLib(libraryId, sensorType);
   return getSensorDriver(libraryId, sensorType) !== undefined;
 }
 
 export function allLibrarySensorTypes(): Record<string, {
-  // AllLibrarySensorTypes.
+  // Description:
+  //     AllLibrarySensorTypes.
   //
-  // Parameters:
-  // None.
+  // Inputs:
+  //     None.
   //
-  // Returns:
-  // `Record<string,`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: Record<string,
+  //         Return value from `allLibrarySensorTypes`.
   //
   // Example:
+  //     const result = allLibrarySensorTypes();
+  // Description:
+  //     AllLibrarySensorTypes.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: Record<string,
+  //         Return value from `allLibrarySensorTypes`.
+  //
+  // Example:
+  //     const result = allLibrarySensorTypes();
 
  // const result = allLibrarySensorTypes();
  roboType: { kind: "named"; name: string }; library: string }> {
@@ -466,36 +557,62 @@ export function allLibrarySensorTypes(): Record<string, {
 }
 
 export function listLibraries(): LibModule[] {
-  // ListLibraries.
+  // Description:
+  //     ListLibraries.
   //
-  // Parameters:
-  // None.
+  // Inputs:
+  //     None.
   //
-  // Returns:
-  // `LibModule[]`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: LibModule[]
+  //         Return value from `listLibraries`.
   //
   // Example:
+  //     const result = listLibraries();
+  // Description:
+  //     ListLibraries.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: LibModule[]
+  //         Return value from `listLibraries`.
+  //
+  // Example:
+  //     const result = listLibraries();
 
   // const result = listLibraries();
   return Object.values(LIB_REGISTRY);
 }
 
 export function listLibrariesByVendor(vendor: string): LibModule[] {
-  // ListLibrariesByVendor.
+  // Description:
+  //     ListLibrariesByVendor.
   //
-  // Parameters:
-  // - `vendor` — input value
+  // Inputs:
+  //     vendor: string
+  //         Caller-supplied vendor.
   //
-  // Returns:
-  // `LibModule[]`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: LibModule[]
+  //         Return value from `listLibrariesByVendor`.
   //
   // Example:
+  //     const result = listLibrariesByVendor(vendor);
+  // Description:
+  //     ListLibrariesByVendor.
+  //
+  // Inputs:
+  //     vendor: string
+  //         Caller-supplied vendor.
+  //
+  // Outputs:
+  //     result: LibModule[]
+  //         Return value from `listLibrariesByVendor`.
+  //
+  // Example:
+  //     const result = listLibrariesByVendor(vendor);
 
   // const result = listLibrariesByVendor(vendor);
   return listLibraries().filter((l) => l.vendor.toLowerCase() === vendor.toLowerCase());
@@ -505,19 +622,36 @@ export function readWithDriver(
   driver: SensorDriverDef,
   ctx: DriverContext,
 ): RuntimeValue {
-  // ReadWithDriver.
+  // Description:
+  //     ReadWithDriver.
   //
-  // Parameters:
-  // - `driver` — input value
-  // - `ctx` — input value
+  // Inputs:
+  //     driver: SensorDriverDef
+  //         Caller-supplied driver.
+  //     ctx: DriverContext
+  //         Caller-supplied ctx.
   //
-  // Returns:
-  // `RuntimeValue`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `readWithDriver`.
   //
   // Example:
+  //     const result = readWithDriver(driver, ctx);
+  // Description:
+  //     ReadWithDriver.
+  //
+  // Inputs:
+  //     driver: SensorDriverDef
+  //         Caller-supplied driver.
+  //     ctx: DriverContext
+  //         Caller-supplied ctx.
+  //
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `readWithDriver`.
+  //
+  // Example:
+  //     const result = readWithDriver(driver, ctx);
 
   // const result = readWithDriver(driver, ctx);
   return driver.read(ctx);

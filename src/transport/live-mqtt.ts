@@ -19,20 +19,22 @@ export class LiveMqttBridge {
 
   /** Connect to a broker URL using the mqtt client library. */
   async connect(brokerUrl: string, clientId: string): Promise<void> {
-    // Connect to the configured MQTT broker and buffer inbound payloads.
+    // Description:
+    //     Connect.
     //
-    // Parameters:
-    // - `brokerUrl` — mqtt:// or mqtts:// broker URL
-    // - `clientId` — MQTT client identifier
+    // Inputs:
+    //     brokerUrl: string
+    //         Caller-supplied brokerUrl.
+    //     clientId: string
+    //         Caller-supplied clientId.
     //
-    // Returns:
-    // Resolves when the client is connected.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: Promise<void>
+    //         Return value from `connect`.
     //
     // Example:
-    // await bridge.connect("mqtt://localhost:1883", "spanda");
+
+    //     const result = connect(brokerUrl, clientId);
 
     const mqtt = await import("mqtt");
     const client = mqtt.connect(brokerUrl, { clientId }) as MqttClient;
@@ -72,5 +74,19 @@ export class LiveMqttBridge {
 }
 
 export function liveMqttEnabled(): boolean {
+  // Description:
+  //     LiveMqttEnabled.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `liveMqttEnabled`.
+  //
+  // Example:
+
+  //     const result = liveMqttEnabled();
+
   return process.env.SPANDA_LIVE_MQTT === "1";
 }

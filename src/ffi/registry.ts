@@ -13,18 +13,32 @@ export const FFI_BRIDGE_IMPORTS = new Set([
 export type FfiBridgeKind = "python" | "cpp";
 
 export function ffiBridgeKind(path: string): FfiBridgeKind | null {
-  // FfiBridgeKind.
+  // Description:
+  //     FfiBridgeKind.
   //
-  // Parameters:
-  // - `path` — input value
+  // Inputs:
+  //     path: string
+  //         Caller-supplied path.
   //
-  // Returns:
-  // `Some` / non-null value on success, otherwise `None` / null.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: FfiBridgeKind | null
+  //         Return value from `ffiBridgeKind`.
   //
   // Example:
+  //     const result = ffiBridgeKind(path);
+  // Description:
+  //     FfiBridgeKind.
+  //
+  // Inputs:
+  //     path: string
+  //         Caller-supplied path.
+  //
+  // Outputs:
+  //     result: FfiBridgeKind | null
+  //         Return value from `ffiBridgeKind`.
+  //
+  // Example:
+  //     const result = ffiBridgeKind(path);
 
   // const result = ffiBridgeKind(path);
   if (path.startsWith("python.")) return "python";
@@ -35,18 +49,32 @@ export function ffiBridgeKind(path: string): FfiBridgeKind | null {
 }
 
 export function resolveFfiImport(path: string): boolean {
-  // ResolveFfiImport.
+  // Description:
+  //     ResolveFfiImport.
   //
-  // Parameters:
-  // - `path` — input value
+  // Inputs:
+  //     path: string
+  //         Caller-supplied path.
   //
-  // Returns:
-  // `true` or `false`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: boolean
+  //         Return value from `resolveFfiImport`.
   //
   // Example:
+  //     const result = resolveFfiImport(path);
+  // Description:
+  //     ResolveFfiImport.
+  //
+  // Inputs:
+  //     path: string
+  //         Caller-supplied path.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `resolveFfiImport`.
+  //
+  // Example:
+  //     const result = resolveFfiImport(path);
 
   // const result = resolveFfiImport(path);
   if (FFI_BRIDGE_IMPORTS.has(path)) return true;

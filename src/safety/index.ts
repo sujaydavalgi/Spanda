@@ -90,6 +90,7 @@ export class SafetyMonitor {
 
     for (const zone of this.config.zones) {
       if (this.isPointInZone(pose.x, pose.y, zone)) {
+
         // Allow motion inside zones that only declare a program speed cap.
         if (this.config.zoneSpeedCaps.has(zone.name)) {
           continue;
@@ -137,6 +138,7 @@ export class SafetyMonitor {
   }
 
   effectiveMaxSpeed(pose: { x: number; y: number }): number {
+
     // Compute the active speed cap from global max and program zone policies.
     let cap = this.config.maxSpeed;
     for (const zone of this.config.zones) {
@@ -151,6 +153,7 @@ export class SafetyMonitor {
   }
 
   clampSpeedAtPose(requested: number, pose: { x: number; y: number }): number {
+
     // Clamp requested linear speed to the effective cap at the current pose.
     const sign = requested === 0 ? 1 : Math.sign(requested);
     return Math.min(Math.abs(requested), this.effectiveMaxSpeed(pose)) * sign;
@@ -254,14 +257,51 @@ export class SafetyMonitor {
     this.emergencyStop = false;
   }
 
-  private isPointInZone(x: number, y: number, zone: SafetyZoneRuntime): boolean {    // continue when shape equals radius !== undefined.
+  private isPointInZone(x: number, y: number, zone: SafetyZoneRuntime): boolean {
+    // Description:
+    //     IsPointInZone.
+    //
+    // Inputs:
+    //     x: number
+    //         Caller-supplied x.
+    //     y: number
+    //         Caller-supplied y.
+    //     zone: SafetyZoneRuntime
+    //         Caller-supplied zone.
+    //
+    // Outputs:
+    //     result: boolean
+    //         Return value from `isPointInZone`.
+    //
+    // Example:
+    //     const result = isPointInZone(x, y, zone);
+    // continue when shape equals radius !== undefined.
     if (zone.shape === "circle" && zone.radius !== undefined) {
       const dx = x - zone.x;
       const dy = y - zone.y;
       return Math.sqrt(dx * dx + dy * dy) <= zone.radius;
     }
+    // continue when shape equals height !== unde
+  // Description:
+  //     CreateSafetyConfigFromRobot.
+  //
+  // Inputs:
+  //     maxSpeed: number
+  //         Caller-supplied maxSpeed.
 
-    // continue when shape equals height !== undefined.
+  //     stopIfRules: Array<(env: Environment) => boolean>,
+  zones: SafetyZoneRuntime[] = [],
+  zoneSpeedCaps: Map<string
+  //         Caller-supplied stopIfRules.
+  //
+  // Outputs:
+  //     result: SafetyConfig
+  //         Return value from `createSafetyConfigFromRobot`.
+  //
+  // Example:
+
+// const result = createSafetyConfigFromRobot(maxSpeed, stopIfRules);
+fined.
     if (zone.shape === "rect" && zone.width !== undefined && zone.height !== undefined) {
       return x >= zone.x && x <= zone.x + zone.width && y >= zone.y && y <= zone.y + zone.height;
     }
@@ -275,39 +315,126 @@ export function createSafetyConfigFromRobot(
   zones: SafetyZoneRuntime[] = [],
   zoneSpeedCaps: Map<string, number> = new Map(),
 ): SafetyConfig {
-  // Build a safety monitor configuration from robot rules and program zone caps.
+
+  // Description:
+
+  //     CreateSafetyConfigFromRobot.
+
   //
-  // Parameters:
-  // - `maxSpeed` — global maximum linear speed
-  // - `stopIfRules` — runtime stop-if predicates
-  // - `zones` — geometric safety zones on the robot
-  // - `zoneSpeedCaps` — program-level caps keyed by zone name
+
+  // Inputs:
+
+  //     maxSpeed: number
+
+  //         Caller-supplied maxSpeed.
+
+  //     stopIfRules: Array<(env: Environment) => boolean>, zones: SafetyZoneRuntime[] = [], zoneSpeedCaps: Map<string
+
+  //         Caller-supplied stopIfRules.
+
   //
-  // Returns:
-  // Safety configuration for `SafetyMonitor`.
+
+  // Outputs:
+
+  //     result: SafetyConfig
+
+  //         Return value from `createSafetyConfigFromRobot`.
+
   //
-  // Options:
-  // None.
+
+  // Example:
+
+  //     const result = createSafetyConfigFromRobot(maxSpeed, stopIfRules);
+
+  // Description:
+  //     CreateSafetyConfigFromRobot.
+  //
+  // Inputs:
+  //     maxSpeed: number
+  //         Caller-supplied maxSpeed.
+
+  //     stopIfRules: Array<(env: Environment) => boolean>,
+  zones: SafetyZoneRuntime[] = [],
+  zoneSpeedCaps: Map<string
+  //         Caller-supplied stopIfRules.
+  //
+  // Outputs:
+  //     result: SafetyConfig
+  //         Return value from `createSafetyConfigFromRobot`.
   //
   // Example:
-  // createSafetyConfigFromRobot(1.0, [], zones, caps);
+  //     const result = createSafetyConfigFromRobot(maxSpeed, stopIfRules);
+  // Description:
+  //     CreateSafetyConfigFromRobot.
+  //
+  // Inputs:
+  //     maxSpeed: number
+  //         Caller-supplied maxSpeed.
+
+  //     stopIfRules: Array<(env: Environment) => boolean>,
+  zo
+  // Description:
+  //     ApplyEmergencyStop.
+  //
+  // Inputs:
+  //     state: RobotState
+  //         Caller-supplied state.
+  //
+  // Outputs:
+  //     result: RobotState
+  //         Return value from `applyEmergencyStop`.
+  //
+  // Example:
+
+// const result = applyEmergencyStop(state);
+nes: SafetyZoneRuntime[] = [],
+  zoneSpeedCaps: Map<string
+  //         Caller-supplied stopIfRules.
+  //
+  // Outputs:
+  //     result: SafetyConfig
+  //         Return value from `createSafetyConfigFromRobot`.
+  //
+  // Example:
+
+  //     const result = createSafetyConfigFromRobot(maxSpeed, stopIfRules);
 
   return { maxSpeed, stopIfRules, zones, zoneSpeedCaps };
 }
 
 export function applyEmergencyStop(state: RobotState): RobotState {
-  // ApplyEmergencyStop.
+  // Description:
+  //     ApplyEmergencyStop.
   //
-  // Parameters:
-  // - `state` — input value
+  // Inputs:
+  //     state: RobotState
+  //         Caller-supplied state.
   //
-  // Returns:
-  // `RobotState`.
+  // Outputs:
+  //     result: RobotState
+  //      
+  // Description:
+  //     InterpolatePoses.
   //
-  // Options:
-  // None.
+  // Inputs:
+  //     from: { x: number; y: number; theta: number; z?: number }
+  //         Caller-supplied from.
+  //     to: { x: number; y: number; theta: number; z?: number }
+  //         Caller-supplied to.
+  //     steps: number
+  //         Caller-supplied steps.
+  //
+  // Outputs:
+  //     result: Array<
+  //         Return value from `interpolatePoses`.
   //
   // Example:
+
+   // const result = interpolatePoses(from, to, steps);
+   Return value from `applyEmergencyStop`.
+  //
+  // Example:
+  //     const result = applyEmergencyStop(state);
 
   // const result = applyEmergencyStop(state);
   return {
@@ -322,21 +449,23 @@ export function interpolatePoses(
   to: { x: number; y: number; theta: number; z?: number },
   steps: number,
 ): Array<{
-  // InterpolatePoses.
+  // Description:
+  //     InterpolatePoses.
   //
-  // Parameters:
-  // - `from` — optional input
-  // - `to` — optional input
-  // - `steps` — input value
+  // Inputs:
+  //     from: { x: number; y: number; theta: number; z?: number }
+  //         Caller-supplied from.
+  //     to: { x: number; y: number; theta: number; z?: number }
+  //         Caller-supplied to.
+  //     steps: number
+  //         Caller-supplied steps.
   //
-  // Returns:
-  // `Array<`.
-  //
-  // Options:
-  // - `from` — optional parameter
-  // - `to` — optional parameter
+  // Outputs:
+  //     result: Array<
+  //         Return value from `interpolatePoses`.
   //
   // Example:
+  //     const result = interpolatePoses(from, to, steps);
 
  // const result = interpolatePoses(from, to, steps);
  x: number; y: number; theta: number; z: number }> {

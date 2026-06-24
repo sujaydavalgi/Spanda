@@ -310,6 +310,21 @@ export type SwarmDecl = {
 export const SWARM_POLICIES: SwarmPolicy[] = ["round_robin", "broadcast", "leader_follow"];
 
 export function parseSwarmPolicy(name: string): SwarmPolicy | undefined {
+  // Description:
+  //     ParseSwarmPolicy.
+  //
+  // Inputs:
+  //     name: string
+  //         Caller-supplied name.
+  //
+  // Outputs:
+  //     result: SwarmPolicy | undefined
+  //         Return value from `parseSwarmPolicy`.
+  //
+  // Example:
+
+  //     const result = parseSwarmPolicy(name);
+
   return SWARM_POLICIES.includes(name as SwarmPolicy) ? (name as SwarmPolicy) : undefined;
 }
 
@@ -318,6 +333,25 @@ export function validateSwarmFleet(
   fleetName: string,
   fleetNames: string[],
 ): string | undefined {
+  // Description:
+  //     ValidateSwarmFleet.
+  //
+  // Inputs:
+  //     swarmName: string
+  //         Caller-supplied swarmName.
+  //     fleetName: string
+  //         Caller-supplied fleetName.
+  //     fleetNames: string[]
+  //         Caller-supplied fleetNames.
+  //
+  // Outputs:
+  //     result: string | undefined
+  //         Return value from `validateSwarmFleet`.
+  //
+  // Example:
+
+  //     const result = validateSwarmFleet(swarmName, fleetName, fleetNames);
+
   if (fleetNames.includes(fleetName)) return undefined;
   return `swarm '${swarmName}' references unknown fleet '${fleetName}'`;
 }
@@ -565,18 +599,32 @@ export type SecureBlockDecl = {
 };
 
 export function resolveModuleImport(path: string): boolean {
-  // ResolveModuleImport.
+  // Description:
+  //     ResolveModuleImport.
   //
-  // Parameters:
-  // - `path` — input value
+  // Inputs:
+  //     path: string
+  //         Caller-supplied path.
   //
-  // Returns:
-  // `true` or `false`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: boolean
+  //         Return value from `resolveModuleImport`.
   //
   // Example:
+  //     const result = resolveModuleImport(path);
+  // Description:
+  //     ResolveModuleImport.
+  //
+  // Inputs:
+  //     path: string
+  //         Caller-supplied path.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `resolveModuleImport`.
+  //
+  // Example:
+  //     const result = resolveModuleImport(path);
 
   // const result = resolveModuleImport(path);
   return [
@@ -636,18 +684,32 @@ export function resolveModuleImport(path: string): boolean {
 }
 
 export function resolveTypeAlias(name: string): string | undefined {
-  // ResolveTypeAlias.
+  // Description:
+  //     ResolveTypeAlias.
   //
-  // Parameters:
-  // - `name` — input value
+  // Inputs:
+  //     name: string
+  //         Caller-supplied name.
   //
-  // Returns:
-  // `Some` / non-null value on success, otherwise `None` / null.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: string | undefined
+  //         Return value from `resolveTypeAlias`.
   //
   // Example:
+  //     const result = resolveTypeAlias(name);
+  // Description:
+  //     ResolveTypeAlias.
+  //
+  // Inputs:
+  //     name: string
+  //         Caller-supplied name.
+  //
+  // Outputs:
+  //     result: string | undefined
+  //         Return value from `resolveTypeAlias`.
+  //
+  // Example:
+  //     const result = resolveTypeAlias(name);
 
   // const result = resolveTypeAlias(name);
   switch (name) {

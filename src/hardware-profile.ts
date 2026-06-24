@@ -40,6 +40,47 @@ function profile(
   minControlPeriodMs: number,
   powerDrawW: number,
 ): HardwareProfile {
+  // Description:
+  //     Profile.
+  //
+  // Inputs:
+  //     name: string
+  //         Caller-supplied name.
+  //     cpu: string
+  //         Caller-supplied cpu.
+  //     memoryMb: number
+  //         Caller-supplied memoryMb.
+  //     storageMb: number
+  //         Caller-supplied storageMb.
+  //     gpuTops: number | null
+  //         Caller-supplied gpuTops.
+  //     gpuRequired: boolean
+  //         Caller-supplied gpuRequired.
+  //     sensors: string[]
+  //         Caller-supplied sensors.
+  //     actuators: string[]
+  //         Caller-supplied actuators.
+  //     connectivity: string[]
+  //         Caller-supplied connectivity.
+  //     batteryWh: number | null
+  //         Caller-supplied batteryWh.
+  //     networkBandwidthMbps: number | null
+  //         Caller-supplied networkBandwidthMbps.
+  //     networkLatencyMs: number | null
+  //         Caller-supplied networkLatencyMs.
+  //     minControlPeriodMs: number
+  //         Caller-supplied minControlPeriodMs.
+  //     powerDrawW: number
+  //         Caller-supplied powerDrawW.
+  //
+  // Outputs:
+  //     result: HardwareProfile
+  //         Return value from `profile`.
+  //
+  // Example:
+
+  //     const result = profile(name, cpu, memoryMb, storageMb, gpuTops, gpuRequired, sensors, actuators, connectivity, batteryWh, networkBandwidthMbps, networkLatencyMs, minControlPeriodMs, powerDrawW);
+
   return {
     name,
     cpu,
@@ -60,19 +101,31 @@ function profile(
 }
 
 export function builtinProfiles(): Map<string, HardwareProfile> {
-  // Built-in hardware profiles mirrored from Rust `hardware::builtin_profiles`.
+  // Description:
+  //     BuiltinProfiles.
   //
-  // Parameters:
-  // None.
+  // Inputs:
+  //     None.
   //
-  // Returns:
-  // Map of profile name to profile definition.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: Map<string, HardwareProfile>
+  //         Return value from `builtinProfiles`.
   //
   // Example:
-  // const profiles = builtinProfiles();
+  //     const result = builtinProfiles();
+  // Description:
+  //     BuiltinProfiles.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: Map<string, HardwareProfile>
+  //         Return value from `builtinProfiles`.
+  //
+  // Example:
+
+  //     const result = builtinProfiles();
 
   return new Map([
     [
@@ -174,19 +227,33 @@ export function builtinProfiles(): Map<string, HardwareProfile> {
 }
 
 export function hardwareProfileFromDecl(decl: HardwareDecl): HardwareProfile {
-  // Convert a parsed hardware block into a verification profile.
+  // Description:
+  //     HardwareProfileFromDecl.
   //
-  // Parameters:
-  // - `decl` — AST hardware declaration
+  // Inputs:
+  //     decl: HardwareDecl
+  //         Caller-supplied decl.
   //
-  // Returns:
-  // Normalized hardware profile.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: HardwareProfile
+  //         Return value from `hardwareProfileFromDecl`.
   //
   // Example:
-  // const profile = hardwareProfileFromDecl(decl);
+  //     const result = hardwareProfileFromDecl(decl);
+  // Description:
+  //     HardwareProfileFromDecl.
+  //
+  // Inputs:
+  //     decl: HardwareDecl
+  //         Caller-supplied decl.
+  //
+  // Outputs:
+  //     result: HardwareProfile
+  //         Return value from `hardwareProfileFromDecl`.
+  //
+  // Example:
+
+  //     const result = hardwareProfileFromDecl(decl);
 
   return {
     name: decl.name,
@@ -208,19 +275,33 @@ export function hardwareProfileFromDecl(decl: HardwareDecl): HardwareProfile {
 }
 
 export function buildProfileRegistry(program: Program): Map<string, HardwareProfile> {
-  // Merge built-in and program-declared hardware profiles.
+  // Description:
+  //     BuildProfileRegistry.
   //
-  // Parameters:
-  // - `program` — parsed program
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
   //
-  // Returns:
-  // Profile registry keyed by name.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: Map<string, HardwareProfile>
+  //         Return value from `buildProfileRegistry`.
   //
   // Example:
-  // const registry = buildProfileRegistry(program);
+  //     const result = buildProfileRegistry(program);
+  // Description:
+  //     BuildProfileRegistry.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     result: Map<string, HardwareProfile>
+  //         Return value from `buildProfileRegistry`.
+  //
+  // Example:
+
+  //     const result = buildProfileRegistry(program);
 
   const registry = builtinProfiles();
   for (const decl of program.hardwareProfiles) {
@@ -230,20 +311,37 @@ export function buildProfileRegistry(program: Program): Map<string, HardwareProf
 }
 
 export function applyFault(profile: HardwareProfile, faultType: string): HardwareProfile {
-  // Apply a simulate_compatibility fault to a hardware profile copy.
+  // Description:
+  //     ApplyFault.
   //
-  // Parameters:
-  // - `profile` — base hardware profile
-  // - `faultType` — fault identifier
+  // Inputs:
+  //     profile: HardwareProfile
+  //         Caller-supplied profile.
+  //     faultType: string
+  //         Caller-supplied faultType.
   //
-  // Returns:
-  // Profile after fault effects.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: HardwareProfile
+  //         Return value from `applyFault`.
   //
   // Example:
-  // const degraded = applyFault(profile, "WeakWifi");
+  //     const result = applyFault(profile, faultType);
+  // Description:
+  //     ApplyFault.
+  //
+  // Inputs:
+  //     profile: HardwareProfile
+  //         Caller-supplied profile.
+  //     faultType: string
+  //         Caller-supplied faultType.
+  //
+  // Outputs:
+  //     result: HardwareProfile
+  //         Return value from `applyFault`.
+  //
+  // Example:
+
+  //     const result = applyFault(profile, faultType);
 
   const next = { ...profile, sensors: [...profile.sensors], actuators: [...profile.actuators], connectivity: [...profile.connectivity] };
   switch (faultType) {

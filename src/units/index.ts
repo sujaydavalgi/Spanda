@@ -42,18 +42,32 @@ export type PhysicalCategory =
 const DEG_TO_RAD = Math.PI / 180;
 
 export function canonicalUnit(category: PhysicalCategory): UnitKind {
-  // CanonicalUnit.
+  // Description:
+  //     CanonicalUnit.
   //
-  // Parameters:
-  // - `category` — input value
+  // Inputs:
+  //     category: PhysicalCategory
+  //         Caller-supplied category.
   //
-  // Returns:
-  // `UnitKind`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: UnitKind
+  //         Return value from `canonicalUnit`.
   //
   // Example:
+  //     const result = canonicalUnit(category);
+  // Description:
+  //     CanonicalUnit.
+  //
+  // Inputs:
+  //     category: PhysicalCategory
+  //         Caller-supplied category.
+  //
+  // Outputs:
+  //     result: UnitKind
+  //         Return value from `canonicalUnit`.
+  //
+  // Example:
+  //     const result = canonicalUnit(category);
 
   // const result = canonicalUnit(category);
   switch (category) {
@@ -93,18 +107,32 @@ export function canonicalUnit(category: PhysicalCategory): UnitKind {
 }
 
 export function unitCategory(unit: UnitKind): PhysicalCategory {
-  // UnitCategory.
+  // Description:
+  //     UnitCategory.
   //
-  // Parameters:
-  // - `unit` — input value
+  // Inputs:
+  //     unit: UnitKind
+  //         Caller-supplied unit.
   //
-  // Returns:
-  // `PhysicalCategory`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: PhysicalCategory
+  //         Return value from `unitCategory`.
   //
   // Example:
+  //     const result = unitCategory(unit);
+  // Description:
+  //     UnitCategory.
+  //
+  // Inputs:
+  //     unit: UnitKind
+  //         Caller-supplied unit.
+  //
+  // Outputs:
+  //     result: PhysicalCategory
+  //         Return value from `unitCategory`.
+  //
+  // Example:
+  //     const result = unitCategory(unit);
 
   // const result = unitCategory(unit);
   switch (unit) {
@@ -223,19 +251,36 @@ export function unitCategory(unit: UnitKind): PhysicalCategory {
 }
 
 export function unitsCompatible(a: UnitKind, b: UnitKind): boolean {
-  // UnitsCompatible.
+  // Description:
+  //     UnitsCompatible.
   //
-  // Parameters:
-  // - `a` — input value
-  // - `b` — input value
+  // Inputs:
+  //     a: UnitKind
+  //         Caller-supplied a.
+  //     b: UnitKind
+  //         Caller-supplied b.
   //
-  // Returns:
-  // `true` or `false`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: boolean
+  //         Return value from `unitsCompatible`.
   //
   // Example:
+  //     const result = unitsCompatible(a, b);
+  // Description:
+  //     UnitsCompatible.
+  //
+  // Inputs:
+  //     a: UnitKind
+  //         Caller-supplied a.
+  //     b: UnitKind
+  //         Caller-supplied b.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `unitsCompatible`.
+  //
+  // Example:
+  //     const result = unitsCompatible(a, b);
 
   // const result = unitsCompatible(a, b);
   if (a === b) return true;
@@ -246,19 +291,36 @@ export function unitsCompatible(a: UnitKind, b: UnitKind): boolean {
 }
 
 export function unitMatchesNamedType(typeName: string, unit: UnitKind): boolean {
-  // UnitMatchesNamedType.
+  // Description:
+  //     UnitMatchesNamedType.
   //
-  // Parameters:
-  // - `typeName` — input value
-  // - `unit` — input value
+  // Inputs:
+  //     typeName: string
+  //         Caller-supplied typeName.
+  //     unit: UnitKind
+  //         Caller-supplied unit.
   //
-  // Returns:
-  // `true` or `false`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: boolean
+  //         Return value from `unitMatchesNamedType`.
   //
   // Example:
+  //     const result = unitMatchesNamedType(typeName, unit);
+  // Description:
+  //     UnitMatchesNamedType.
+  //
+  // Inputs:
+  //     typeName: string
+  //         Caller-supplied typeName.
+  //     unit: UnitKind
+  //         Caller-supplied unit.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `unitMatchesNamedType`.
+  //
+  // Example:
+  //     const result = unitMatchesNamedType(typeName, unit);
 
   // const result = unitMatchesNamedType(typeName, unit);
   switch (typeName) {
@@ -328,19 +390,36 @@ export function unitMatchesNamedType(typeName: string, unit: UnitKind): boolean 
 }
 
 function toCanonicalLinear(value: number, unit: UnitKind): number {
-  // ToCanonicalLinear.
+  // Description:
+  //     ToCanonicalLinear.
   //
-  // Parameters:
-  // - `value` — input value
-  // - `unit` — input value
+  // Inputs:
+  //     value: number
+  //         Caller-supplied value.
+  //     unit: UnitKind
+  //         Caller-supplied unit.
   //
-  // Returns:
-  // Numeric result.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: number
+  //         Return value from `toCanonicalLinear`.
   //
   // Example:
+  //     const result = toCanonicalLinear(value, unit);
+  // Description:
+  //     ToCanonicalLinear.
+  //
+  // Inputs:
+  //     value: number
+  //         Caller-supplied value.
+  //     unit: UnitKind
+  //         Caller-supplied unit.
+  //
+  // Outputs:
+  //     result: number
+  //         Return value from `toCanonicalLinear`.
+  //
+  // Example:
+  //     const result = toCanonicalLinear(value, unit);
 
   // const result = toCanonicalLinear(value, unit);
   switch (unit) {
@@ -426,20 +505,40 @@ function toCanonicalLinear(value: number, unit: UnitKind): number {
 }
 
 function fromCanonical(value: number, category: PhysicalCategory, to: UnitKind): number {
-  // FromCanonical.
+  // Description:
+  //     FromCanonical.
   //
-  // Parameters:
-  // - `value` — input value
-  // - `category` — input value
-  // - `to` — input value
+  // Inputs:
+  //     value: number
+  //         Caller-supplied value.
+  //     category: PhysicalCategory
+  //         Caller-supplied category.
+  //     to: UnitKind
+  //         Caller-supplied to.
   //
-  // Returns:
-  // Numeric result.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: number
+  //         Return value from `fromCanonical`.
   //
   // Example:
+  //     const result = fromCanonical(value, category, to);
+  // Description:
+  //     FromCanonical.
+  //
+  // Inputs:
+  //     value: number
+  //         Caller-supplied value.
+  //     category: PhysicalCategory
+  //         Caller-supplied category.
+  //     to: UnitKind
+  //         Caller-supplied to.
+  //
+  // Outputs:
+  //     result: number
+  //         Return value from `fromCanonical`.
+  //
+  // Example:
+  //     const result = fromCanonical(value, category, to);
 
   // const result = fromCanonical(value, category, to);
   switch (category) {
@@ -711,20 +810,40 @@ function fromCanonical(value: number, category: PhysicalCategory, to: UnitKind):
 }
 
 export function convertValue(value: number, from: UnitKind, to: UnitKind): number | undefined {
-  // ConvertValue.
+  // Description:
+  //     ConvertValue.
   //
-  // Parameters:
-  // - `value` — input value
-  // - `from` — input value
-  // - `to` — input value
+  // Inputs:
+  //     value: number
+  //         Caller-supplied value.
+  //     from: UnitKind
+  //         Caller-supplied from.
+  //     to: UnitKind
+  //         Caller-supplied to.
   //
-  // Returns:
-  // `Some` / non-null value on success, otherwise `None` / null.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: number | undefined
+  //         Return value from `convertValue`.
   //
   // Example:
+  //     const result = convertValue(value, from, to);
+  // Description:
+  //     ConvertValue.
+  //
+  // Inputs:
+  //     value: number
+  //         Caller-supplied value.
+  //     from: UnitKind
+  //         Caller-supplied from.
+  //     to: UnitKind
+  //         Caller-supplied to.
+  //
+  // Outputs:
+  //     result: number | undefined
+  //         Return value from `convertValue`.
+  //
+  // Example:
+  //     const result = convertValue(value, from, to);
 
   // const result = convertValue(value, from, to);
   if (from === to) return value;
@@ -741,21 +860,44 @@ export function alignForBinary(
   right: number,
   rightUnit: UnitKind,
 ): [number, number, UnitKind] | undefined {
-  // AlignForBinary.
+  // Description:
+  //     AlignForBinary.
   //
-  // Parameters:
-  // - `left` — input value
-  // - `leftUnit` — input value
-  // - `right` — input value
-  // - `rightUnit` — input value
+  // Inputs:
+  //     left: number
+  //         Caller-supplied left.
+  //     leftUnit: UnitKind
+  //         Caller-supplied leftUnit.
+  //     right: number
+  //         Caller-supplied right.
+  //     rightUnit: UnitKind
+  //         Caller-supplied rightUnit.
   //
-  // Returns:
-  // `Some` / non-null value on success, otherwise `None` / null.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: [number, number, UnitKind] | undefined
+  //         Return value from `alignForBinary`.
   //
   // Example:
+  //     const result = alignForBinary(left, leftUnit, right, rightUnit);
+  // Description:
+  //     AlignForBinary.
+  //
+  // Inputs:
+  //     left: number
+  //         Caller-supplied left.
+  //     leftUnit: UnitKind
+  //         Caller-supplied leftUnit.
+  //     right: number
+  //         Caller-supplied right.
+  //     rightUnit: UnitKind
+  //         Caller-supplied rightUnit.
+  //
+  // Outputs:
+  //     result: [number, number, UnitKind] | undefined
+  //         Return value from `alignForBinary`.
+  //
+  // Example:
+  //     const result = alignForBinary(left, leftUnit, right, rightUnit);
 
   // const result = alignForBinary(left, leftUnit, right, rightUnit);
   if (!unitsCompatible(leftUnit, rightUnit)) return undefined;

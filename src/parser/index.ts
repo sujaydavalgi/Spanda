@@ -142,18 +142,32 @@ export class ParseError extends Error {
 }
 
 export function parse(tokens: Token[]): Program {
-  // Parse input.
+  // Description:
+  //     Parse.
   //
-  // Parameters:
-  // - `tokens` — input value
+  // Inputs:
+  //     tokens: Token[]
+  //         Caller-supplied tokens.
   //
-  // Returns:
-  // `Program`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: Program
+  //         Return value from `parse`.
   //
   // Example:
+  //     const result = parse(tokens);
+  // Description:
+  //     Parse.
+  //
+  // Inputs:
+  //     tokens: Token[]
+  //         Caller-supplied tokens.
+  //
+  // Outputs:
+  //     result: Program
+  //         Return value from `parse`.
+  //
+  // Example:
+  //     const result = parse(tokens);
 
   // const result = parse(tokens);
   const parser = new Parser(tokens);
@@ -167,54 +181,90 @@ class Parser {
   constructor(private tokens: Token[]) {}
 
   private peek(): Token {
-    // Peek.
+    // Description:
+    //     Peek.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Token.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: Token
+    //         Return value from `peek`.
     //
     // Example:
+    //     const result = peek();
+    // Description:
+    //     Peek.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: Token
+    //         Return value from `peek`.
+    //
+    // Example:
+    //     const result = peek();
 
     // const result = peek();
     return this.tokens[this.pos];
 }
 
   private previous(): Token {
-    // Previous.
+    // Description:
+    //     Previous.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Token.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: Token
+    //         Return value from `previous`.
     //
     // Example:
+    //     const result = previous();
+    // Description:
+    //     Previous.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: Token
+    //         Return value from `previous`.
+    //
+    // Example:
+    //     const result = previous();
 
     // const result = previous();
     return this.tokens[this.pos - 1];
 }
 
   private advance(): Token {
-    // Advance.
+    // Description:
+    //     Advance.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Token.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: Token
+    //         Return value from `advance`.
     //
     // Example:
+    //     const result = advance();
+    // Description:
+    //     Advance.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: Token
+    //         Return value from `advance`.
+    //
+    // Example:
+    //     const result = advance();
 
     // const result = advance();
     if (this.peek().type !== "EOF") this.pos++;
@@ -222,36 +272,64 @@ class Parser {
 }
 
   private check(type: Token["type"]): boolean {
-    // Check input.
+    // Description:
+    //     Check.
     //
-    // Parameters:
-    // - `type` — input value
+    // Inputs:
+    //     type: Token["type"]
+    //         Caller-supplied type.
     //
-    // Returns:
-    // true or false.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: boolean
+    //         Return value from `check`.
     //
     // Example:
+    //     const result = check(type);
+    // Description:
+    //     Check.
+    //
+    // Inputs:
+    //     type: Token["type"]
+    //         Caller-supplied type.
+    //
+    // Outputs:
+    //     result: boolean
+    //         Return value from `check`.
+    //
+    // Example:
+    //     const result = check(type);
 
     // const result = check(type);
     return this.peek().type === type;
 }
 
   private match(...types: Token["type"][]): boolean {
-    // Match.
+    // Description:
+    //     Match.
     //
-    // Parameters:
-    // - `...types` — rest arguments
+    // Inputs:
+    //     types: Token["type"][]
+    //         Caller-supplied types.
     //
-    // Returns:
-    // true or false.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: boolean
+    //         Return value from `match`.
     //
     // Example:
+    //     const result = match(types);
+    // Description:
+    //     Match.
+    //
+    // Inputs:
+    //     types: Token["type"][]
+    //         Caller-supplied types.
+    //
+    // Outputs:
+    //     result: boolean
+    //         Return value from `match`.
+    //
+    // Example:
+    //     const result = match(types);
 
     // const result = match(...types);
     for (const t of types) {
@@ -266,19 +344,36 @@ class Parser {
 }
 
   private expect(type: Token["type"], message: string): Token {
-    // Expect.
+    // Description:
+    //     Expect.
     //
-    // Parameters:
-    // - `type` — input value
-    // - `message` — input value
+    // Inputs:
+    //     type: Token["type"]
+    //         Caller-supplied type.
+    //     message: string
+    //         Caller-supplied message.
     //
-    // Returns:
-    // Token.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: Token
+    //         Return value from `expect`.
     //
     // Example:
+    //     const result = expect(type, message);
+    // Description:
+    //     Expect.
+    //
+    // Inputs:
+    //     type: Token["type"]
+    //         Caller-supplied type.
+    //     message: string
+    //         Caller-supplied message.
+    //
+    // Outputs:
+    //     result: Token
+    //         Return value from `expect`.
+    //
+    // Example:
+    //     const result = expect(type, message);
 
     // const result = expect(type, message);
     if (this.check(type)) return this.advance();
@@ -287,20 +382,36 @@ class Parser {
 }
 
   private spanFrom(start: Token, end: Token): Span {
-    // SpanFrom.
+    // Description:
+    //     SpanFrom.
     //
-    // Parameters:
-    // - `start` — input value
-    // - `end` — input value
+    // Inputs:
+    //     start: Token
+    //         Caller-supplied start.
+    //     end: Token
+    //         Caller-supplied end.
     //
-    // Returns:
-    // Span.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: Span
+    //         Return value from `spanFrom`.
     //
     // Example:
-
+    //     const result = spanFrom(start, end);
+    // Description:
+    //     SpanFrom.
+    //
+    // Inputs:
+    //     start: Token
+    //         Caller-supplied start.
+    //     end: Token
+    //         Caller-supplied end.
+    //
+    // Outputs:
+    //     result: Span
+    //         Return value from `spanFrom`.
+    //
+    // Example:
+    //     const result = spanFrom(start, end);
     // const result = spanFrom(start, end);
     // End offset is exclusive so source slices include the full end token.
     return {
@@ -314,18 +425,32 @@ class Parser {
 }
 
   private parseLabel(message: string): string {
-    // ParseLabel.
+    // Description:
+    //     ParseLabel.
     //
-    // Parameters:
-    // - `message` — input value
+    // Inputs:
+    //     message: string
+    //         Caller-supplied message.
     //
-    // Returns:
-    // Text result.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: string
+    //         Return value from `parseLabel`.
     //
     // Example:
+    //     const result = parseLabel(message);
+    // Description:
+    //     ParseLabel.
+    //
+    // Inputs:
+    //     message: string
+    //         Caller-supplied message.
+    //
+    // Outputs:
+    //     result: string
+    //         Return value from `parseLabel`.
+    //
+    // Example:
+    //     const result = parseLabel(message);
 
     // const result = parseLabel(message);
     const labelTypes: Token["type"][] = [
@@ -385,18 +510,32 @@ class Parser {
 }
 
   private parseBindingIdent(message: string): string {
-    // ParseBindingIdent.
+    // Description:
+    //     ParseBindingIdent.
     //
-    // Parameters:
-    // - `message` — input value
+    // Inputs:
+    //     message: string
+    //         Caller-supplied message.
     //
-    // Returns:
-    // Text result.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: string
+    //         Return value from `parseBindingIdent`.
     //
     // Example:
+    //     const result = parseBindingIdent(message);
+    // Description:
+    //     ParseBindingIdent.
+    //
+    // Inputs:
+    //     message: string
+    //         Caller-supplied message.
+    //
+    // Outputs:
+    //     result: string
+    //         Return value from `parseBindingIdent`.
+    //
+    // Example:
+    //     const result = parseBindingIdent(message);
 
     // const result = parseBindingIdent(message);
     const bindingTypes: Token["type"][] = [
@@ -648,18 +787,32 @@ class Parser {
   }
 
   private parseDottedName(message: string): string {
-    // ParseDottedName.
+    // Description:
+    //     ParseDottedName.
     //
-    // Parameters:
-    // - `message` — input value
+    // Inputs:
+    //     message: string
+    //         Caller-supplied message.
     //
-    // Returns:
-    // Text result.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: string
+    //         Return value from `parseDottedName`.
     //
     // Example:
+    //     const result = parseDottedName(message);
+    // Description:
+    //     ParseDottedName.
+    //
+    // Inputs:
+    //     message: string
+    //         Caller-supplied message.
+    //
+    // Outputs:
+    //     result: string
+    //         Return value from `parseDottedName`.
+    //
+    // Example:
+    //     const result = parseDottedName(message);
 
     // const result = parseDottedName(message);
     const parts = [this.parseImportSegment(message)];
@@ -672,18 +825,30 @@ class Parser {
 }
 
   private isModuleFnStart(): boolean {
-    // IsModuleFnStart.
+    // Description:
+    //     IsModuleFnStart.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // true or false.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: boolean
+    //         Return value from `isModuleFnStart`.
     //
     // Example:
+    //     const result = isModuleFnStart();
+    // Description:
+    //     IsModuleFnStart.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: boolean
+    //         Return value from `isModuleFnStart`.
+    //
+    // Example:
+    //     const result = isModuleFnStart();
 
     // const result = isModuleFnStart();
     return (
@@ -696,18 +861,30 @@ class Parser {
 }
 
   private parseTypeParams(): string[] {
-    // ParseTypeParams.
+    // Description:
+    //     ParseTypeParams.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // string[].
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: string[]
+    //         Return value from `parseTypeParams`.
     //
     // Example:
+    //     const result = parseTypeParams();
+    // Description:
+    //     ParseTypeParams.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: string[]
+    //         Return value from `parseTypeParams`.
+    //
+    // Example:
+    //     const result = parseTypeParams();
 
     // const result = parseTypeParams();
     if (!this.match("LT")) return [];
@@ -726,18 +903,30 @@ class Parser {
 }
 
   private parseModuleFn(): ModuleFnDecl {
-    // ParseModuleFn.
+    // Description:
+    //     ParseModuleFn.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // ModuleFnDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: ModuleFnDecl
+    //         Return value from `parseModuleFn`.
     //
     // Example:
+    //     const result = parseModuleFn();
+    // Description:
+    //     ParseModuleFn.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: ModuleFnDecl
+    //         Return value from `parseModuleFn`.
+    //
+    // Example:
+    //     const result = parseModuleFn();
 
     // const result = parseModuleFn();
     const start = this.peek();
@@ -797,18 +986,30 @@ class Parser {
 }
 
   private parseExternFn(): ExternFnDecl {
-    // ParseExternFn.
+    // Description:
+    //     ParseExternFn.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // ExternFnDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: ExternFnDecl
+    //         Return value from `parseExternFn`.
     //
     // Example:
+    //     const result = parseExternFn();
+    // Description:
+    //     ParseExternFn.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: ExternFnDecl
+    //         Return value from `parseExternFn`.
+    //
+    // Example:
+    //     const result = parseExternFn();
 
     // const result = parseExternFn();
     const start = this.previous();
@@ -873,18 +1074,30 @@ class Parser {
 }
 
   private parseTest(): TestDecl {
-    // ParseTest.
+    // Description:
+    //     ParseTest.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // TestDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: TestDecl
+    //         Return value from `parseTest`.
     //
     // Example:
+    //     const result = parseTest();
+    // Description:
+    //     ParseTest.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: TestDecl
+    //         Return value from `parseTest`.
+    //
+    // Example:
+    //     const result = parseTest();
 
     // const result = parseTest();
     const start = this.advance();
@@ -902,18 +1115,30 @@ class Parser {
 }
 
   private parseImport(): ImportDecl {
-    // ParseImport.
+    // Description:
+    //     ParseImport.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // ImportDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: ImportDecl
+    //         Return value from `parseImport`.
     //
     // Example:
+    //     const result = parseImport();
+    // Description:
+    //     ParseImport.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: ImportDecl
+    //         Return value from `parseImport`.
+    //
+    // Example:
+    //     const result = parseImport();
 
     // const result = parseImport();
     const start = this.advance();
@@ -930,18 +1155,32 @@ class Parser {
 }
 
   private parseImportSegment(message: string): string {
-    // ParseImportSegment.
+    // Description:
+    //     ParseImportSegment.
     //
-    // Parameters:
-    // - `message` — input value
+    // Inputs:
+    //     message: string
+    //         Caller-supplied message.
     //
-    // Returns:
-    // Text result.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: string
+    //         Return value from `parseImportSegment`.
     //
     // Example:
+    //     const result = parseImportSegment(message);
+    // Description:
+    //     ParseImportSegment.
+    //
+    // Inputs:
+    //     message: string
+    //         Caller-supplied message.
+    //
+    // Outputs:
+    //     result: string
+    //         Return value from `parseImportSegment`.
+    //
+    // Example:
+    //     const result = parseImportSegment(message);
 
     // const result = parseImportSegment(message);
     if (this.check("IDENT")) {
@@ -957,18 +1196,32 @@ class Parser {
 }
 
   private parseTypeNamePart(message: string): string {
-    // ParseTypeNamePart.
+    // Description:
+    //     ParseTypeNamePart.
     //
-    // Parameters:
-    // - `message` — input value
+    // Inputs:
+    //     message: string
+    //         Caller-supplied message.
     //
-    // Returns:
-    // Text result.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: string
+    //         Return value from `parseTypeNamePart`.
     //
     // Example:
+    //     const result = parseTypeNamePart(message);
+    // Description:
+    //     ParseTypeNamePart.
+    //
+    // Inputs:
+    //     message: string
+    //         Caller-supplied message.
+    //
+    // Outputs:
+    //     result: string
+    //         Return value from `parseTypeNamePart`.
+    //
+    // Example:
+    //     const result = parseTypeNamePart(message);
 
     // const result = parseTypeNamePart(message);
     if (this.check("IDENT")) {
@@ -978,18 +1231,32 @@ class Parser {
 }
 
   private finishGenericTypeName(base: string): string {
-    // FinishGenericTypeName.
+    // Description:
+    //     FinishGenericTypeName.
     //
-    // Parameters:
-    // - `base` — input value
+    // Inputs:
+    //     base: string
+    //         Caller-supplied base.
     //
-    // Returns:
-    // Text result.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: string
+    //         Return value from `finishGenericTypeName`.
     //
     // Example:
+    //     const result = finishGenericTypeName(base);
+    // Description:
+    //     FinishGenericTypeName.
+    //
+    // Inputs:
+    //     base: string
+    //         Caller-supplied base.
+    //
+    // Outputs:
+    //     result: string
+    //         Return value from `finishGenericTypeName`.
+    //
+    // Example:
+    //     const result = finishGenericTypeName(base);
 
     // const result = finishGenericTypeName(base);
     this.expect("LT", "Expected '<' to open generic type");
@@ -1008,18 +1275,30 @@ class Parser {
 }
 
   private parseTypeName(): string {
-    // ParseTypeName.
+    // Description:
+    //     ParseTypeName.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Text result.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: string
+    //         Return value from `parseTypeName`.
     //
     // Example:
+    //     const result = parseTypeName();
+    // Description:
+    //     ParseTypeName.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: string
+    //         Return value from `parseTypeName`.
+    //
+    // Example:
+    //     const result = parseTypeName();
 
     // const result = parseTypeName();
     let name = this.parseTypeNamePart("Expected type name");
@@ -1032,18 +1311,30 @@ class Parser {
 }
 
   private parseTypeAnnotation(): SpandaType {
-    // ParseTypeAnnotation.
+    // Description:
+    //     ParseTypeAnnotation.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // SpandaType.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: SpandaType
+    //         Return value from `parseTypeAnnotation`.
     //
     // Example:
+    //     const result = parseTypeAnnotation();
+    // Description:
+    //     ParseTypeAnnotation.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: SpandaType
+    //         Return value from `parseTypeAnnotation`.
+    //
+    // Example:
+    //     const result = parseTypeAnnotation();
 
     // const result = parseTypeAnnotation();
     if (this.match("DYN")) {
@@ -1097,18 +1388,30 @@ class Parser {
 }
 
   private parseStruct(): StructDecl {
-    // ParseStruct.
+    // Description:
+    //     ParseStruct.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // StructDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: StructDecl
+    //         Return value from `parseStruct`.
     //
     // Example:
+    //     const result = parseStruct();
+    // Description:
+    //     ParseStruct.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: StructDecl
+    //         Return value from `parseStruct`.
+    //
+    // Example:
+    //     const result = parseStruct();
 
     // const result = parseStruct();
     const start = this.advance();
@@ -1141,18 +1444,30 @@ class Parser {
 }
 
   private parseEnum(): EnumDecl {
-    // ParseEnum.
+    // Description:
+    //     ParseEnum.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // EnumDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: EnumDecl
+    //         Return value from `parseEnum`.
     //
     // Example:
+    //     const result = parseEnum();
+    // Description:
+    //     ParseEnum.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: EnumDecl
+    //         Return value from `parseEnum`.
+    //
+    // Example:
+    //     const result = parseEnum();
 
     // const result = parseEnum();
     const start = this.advance();
@@ -1197,18 +1512,30 @@ class Parser {
 }
 
   private parseTrait(): TraitDecl {
-    // ParseTrait.
+    // Description:
+    //     ParseTrait.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // TraitDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: TraitDecl
+    //         Return value from `parseTrait`.
     //
     // Example:
+    //     const result = parseTrait();
+    // Description:
+    //     ParseTrait.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: TraitDecl
+    //         Return value from `parseTrait`.
+    //
+    // Example:
+    //     const result = parseTrait();
 
     // const result = parseTrait();
     const start = this.advance();
@@ -1230,18 +1557,30 @@ class Parser {
 }
 
   private parseTraitMethod(): TraitMethodDecl {
-    // ParseTraitMethod.
+    // Description:
+    //     ParseTraitMethod.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // TraitMethodDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: TraitMethodDecl
+    //         Return value from `parseTraitMethod`.
     //
     // Example:
+    //     const result = parseTraitMethod();
+    // Description:
+    //     ParseTraitMethod.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: TraitMethodDecl
+    //         Return value from `parseTraitMethod`.
+    //
+    // Example:
+    //     const result = parseTraitMethod();
 
     // const result = parseTraitMethod();
     const start = this.advance(); // fn
@@ -1278,18 +1617,30 @@ class Parser {
 }
 
   private parseRobot(): RobotDecl {
-    // ParseRobot.
+    // Description:
+    //     ParseRobot.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // RobotDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: RobotDecl
+    //         Return value from `parseRobot`.
     //
     // Example:
+    //     const result = parseRobot();
+    // Description:
+    //     ParseRobot.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: RobotDecl
+    //         Return value from `parseRobot`.
+    //
+    // Example:
+    //     const result = parseRobot();
 
     // const result = parseRobot();
     const start = this.expect("ROBOT", "Expected 'robot'");
@@ -1616,36 +1967,62 @@ class Parser {
 }
 
   private isRobotMemberKeyword(kw: string): boolean {
-    // IsRobotMemberKeyword.
+    // Description:
+    //     IsRobotMemberKeyword.
     //
-    // Parameters:
-    // - `kw` — input value
+    // Inputs:
+    //     kw: string
+    //         Caller-supplied kw.
     //
-    // Returns:
-    // true or false.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: boolean
+    //         Return value from `isRobotMemberKeyword`.
     //
     // Example:
+    //     const result = isRobotMemberKeyword(kw);
+    // Description:
+    //     IsRobotMemberKeyword.
+    //
+    // Inputs:
+    //     kw: string
+    //         Caller-supplied kw.
+    //
+    // Outputs:
+    //     result: boolean
+    //         Return value from `isRobotMemberKeyword`.
+    //
+    // Example:
+    //     const result = isRobotMemberKeyword(kw);
 
     // const result = isRobotMemberKeyword(kw);
     return this.check("IDENT") && this.peek().lexeme === kw;
 }
 
   private isAgentShorthand(): boolean {
-    // IsAgentShorthand.
+    // Description:
+    //     IsAgentShorthand.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // true or false.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: boolean
+    //         Return value from `isAgentShorthand`.
     //
     // Example:
+    //     const result = isAgentShorthand();
+    // Description:
+    //     IsAgentShorthand.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: boolean
+    //         Return value from `isAgentShorthand`.
+    //
+    // Example:
+    //     const result = isAgentShorthand();
 
     // const result = isAgentShorthand();
     let idx = this.pos + 1;
@@ -1660,18 +2037,30 @@ class Parser {
 }
 
   private isAgentChannel(): boolean {
-    // IsAgentChannel.
+    // Description:
+    //     IsAgentChannel.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // true or false.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: boolean
+    //         Return value from `isAgentChannel`.
     //
     // Example:
+    //     const result = isAgentChannel();
+    // Description:
+    //     IsAgentChannel.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: boolean
+    //         Return value from `isAgentChannel`.
+    //
+    // Example:
+    //     const result = isAgentChannel();
 
     // const result = isAgentChannel();
     const idx = this.pos;
@@ -1684,18 +2073,30 @@ class Parser {
 }
 
   private parseAgentShorthand(agents: AgentDecl[]): void {
-    // ParseAgentShorthand.
+    // Description:
+    //     ParseAgentShorthand.
     //
-    // Parameters:
-    // - `agents` — input value
+    // Inputs:
+    //     agents: AgentDecl[]
+    //         Caller-supplied agents.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = parseAgentShorthand(agents);
+    // Description:
+    //     ParseAgentShorthand.
+    //
+    // Inputs:
+    //     agents: AgentDecl[]
+    //         Caller-supplied agents.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = parseAgentShorthand(agents);
 
     // const result = parseAgentShorthand(agents);
     const start = this.advance();
@@ -1717,6 +2118,20 @@ class Parser {
 }
 
   private parseBus(): BusDecl {
+    // Description:
+    //     ParseBus.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: BusDecl
+    //         Return value from `parseBus`.
+    //
+    // Example:
+
+    //     const result = parseBus();
+
     const start = this.advance();
     const busName = this.expect("IDENT", "Expected bus name");
 
@@ -1774,18 +2189,30 @@ class Parser {
 }
 
   private parsePeerRobot(): PeerRobotDecl {
-    // ParsePeerRobot.
+    // Description:
+    //     ParsePeerRobot.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // PeerRobotDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: PeerRobotDecl
+    //         Return value from `parsePeerRobot`.
     //
     // Example:
+    //     const result = parsePeerRobot();
+    // Description:
+    //     ParsePeerRobot.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: PeerRobotDecl
+    //         Return value from `parsePeerRobot`.
+    //
+    // Example:
+    //     const result = parsePeerRobot();
 
     // const result = parsePeerRobot();
     const start = this.advance();
@@ -1799,18 +2226,30 @@ class Parser {
 }
 
   private parseDevice(): DeviceDecl {
-    // ParseDevice.
+    // Description:
+    //     ParseDevice.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // DeviceDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: DeviceDecl
+    //         Return value from `parseDevice`.
     //
     // Example:
+    //     const result = parseDevice();
+    // Description:
+    //     ParseDevice.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: DeviceDecl
+    //         Return value from `parseDevice`.
+    //
+    // Example:
+    //     const result = parseDevice();
 
     // const result = parseDevice();
     const start = this.advance();
@@ -1827,18 +2266,30 @@ class Parser {
 }
 
   private parseAgentChannel(): AgentChannelDecl {
-    // ParseAgentChannel.
+    // Description:
+    //     ParseAgentChannel.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // AgentChannelDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: AgentChannelDecl
+    //         Return value from `parseAgentChannel`.
     //
     // Example:
+    //     const result = parseAgentChannel();
+    // Description:
+    //     ParseAgentChannel.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: AgentChannelDecl
+    //         Return value from `parseAgentChannel`.
+    //
+    // Example:
+    //     const result = parseAgentChannel();
 
     // const result = parseAgentChannel();
     const start = this.peek();
@@ -1856,18 +2307,30 @@ class Parser {
 }
 
   private parseMessage(): MessageDecl {
-    // ParseMessage.
+    // Description:
+    //     ParseMessage.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // MessageDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: MessageDecl
+    //         Return value from `parseMessage`.
     //
     // Example:
+    //     const result = parseMessage();
+    // Description:
+    //     ParseMessage.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: MessageDecl
+    //         Return value from `parseMessage`.
+    //
+    // Example:
+    //     const result = parseMessage();
 
     // const result = parseMessage();
     const start = this.advance();
@@ -1909,18 +2372,30 @@ class Parser {
 }
 
   private parseNumberValue(): number {
-    // ParseNumberValue.
+    // Description:
+    //     ParseNumberValue.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Numeric result.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: number
+    //         Return value from `parseNumberValue`.
     //
     // Example:
+    //     const result = parseNumberValue();
+    // Description:
+    //     ParseNumberValue.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: number
+    //         Return value from `parseNumberValue`.
+    //
+    // Example:
+    //     const result = parseNumberValue();
 
     // const result = parseNumberValue();
     const tok = this.expect("NUMBER", "Expected number");
@@ -1928,18 +2403,30 @@ class Parser {
 }
 
   private parseStorageAmount(): number {
-    // ParseStorageAmount.
+    // Description:
+    //     ParseStorageAmount.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Numeric result.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: number
+    //         Return value from `parseStorageAmount`.
     //
     // Example:
+    //     const result = parseStorageAmount();
+    // Description:
+    //     ParseStorageAmount.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: number
+    //         Return value from `parseStorageAmount`.
+    //
+    // Example:
+    //     const result = parseStorageAmount();
 
     // const result = parseStorageAmount();
     const value = this.parseNumberValue();
@@ -1968,18 +2455,30 @@ class Parser {
 }
 
   private parseNetworkAmount(): number {
-    // ParseNetworkAmount.
+    // Description:
+    //     ParseNetworkAmount.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Numeric result.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: number
+    //         Return value from `parseNetworkAmount`.
     //
     // Example:
+    //     const result = parseNetworkAmount();
+    // Description:
+    //     ParseNetworkAmount.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: number
+    //         Return value from `parseNetworkAmount`.
+    //
+    // Example:
+    //     const result = parseNetworkAmount();
 
     // const result = parseNetworkAmount();
     const value = this.parseNumberValue();
@@ -2004,18 +2503,30 @@ class Parser {
 }
 
   private parseEnergyWhValue(): number {
-    // ParseEnergyWhValue.
+    // Description:
+    //     ParseEnergyWhValue.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Numeric result.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: number
+    //         Return value from `parseEnergyWhValue`.
     //
     // Example:
+    //     const result = parseEnergyWhValue();
+    // Description:
+    //     ParseEnergyWhValue.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: number
+    //         Return value from `parseEnergyWhValue`.
+    //
+    // Example:
+    //     const result = parseEnergyWhValue();
 
     // const result = parseEnergyWhValue();
     const tok = this.peek();
@@ -2035,18 +2546,30 @@ class Parser {
 }
 
   private parsePowerWValue(): number {
-    // ParsePowerWValue.
+    // Description:
+    //     ParsePowerWValue.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Numeric result.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: number
+    //         Return value from `parsePowerWValue`.
     //
     // Example:
+    //     const result = parsePowerWValue();
+    // Description:
+    //     ParsePowerWValue.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: number
+    //         Return value from `parsePowerWValue`.
+    //
+    // Example:
+    //     const result = parsePowerWValue();
 
     // const result = parsePowerWValue();
     const tok = this.peek();
@@ -2066,18 +2589,32 @@ class Parser {
 }
 
   private parseHardwareTypeList(kind: string): string[] {
-    // ParseHardwareTypeList.
+    // Description:
+    //     ParseHardwareTypeList.
     //
-    // Parameters:
-    // - `kind` — input value
+    // Inputs:
+    //     kind: string
+    //         Caller-supplied kind.
     //
-    // Returns:
-    // string[].
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: string[]
+    //         Return value from `parseHardwareTypeList`.
     //
     // Example:
+    //     const result = parseHardwareTypeList(kind);
+    // Description:
+    //     ParseHardwareTypeList.
+    //
+    // Inputs:
+    //     kind: string
+    //         Caller-supplied kind.
+    //
+    // Outputs:
+    //     result: string[]
+    //         Return value from `parseHardwareTypeList`.
+    //
+    // Example:
+    //     const result = parseHardwareTypeList(kind);
 
     // const result = parseHardwareTypeList(kind);
     this.expect("LBRACKET", `Expected '[' after ${kind}`);
@@ -2097,6 +2634,20 @@ class Parser {
 }
 
   private parseHardwareComponent(): HardwareComponentDecl {
+    // Description:
+    //     ParseHardwareComponent.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: HardwareComponentDecl
+    //         Return value from `parseHardwareComponent`.
+    //
+    // Example:
+
+    //     const result = parseHardwareComponent();
+
     const start = this.advance();
     const componentKind = start.lexeme;
     const nameTok = this.expect("IDENT", "Expected component name");
@@ -2141,6 +2692,20 @@ class Parser {
   }
 
   private parseKillSwitch(): KillSwitchDecl {
+    // Description:
+    //     ParseKillSwitch.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: KillSwitchDecl
+    //         Return value from `parseKillSwitch`.
+    //
+    // Example:
+
+    //     const result = parseKillSwitch();
+
     const start = this.advance();
     const name = this.parseLabel("Expected kill switch name");
     this.expect("LBRACE", "Expected '{' after kill switch name");
@@ -2198,6 +2763,20 @@ class Parser {
   }
 
   private parseHealthCheck(): HealthCheckDecl {
+    // Description:
+    //     ParseHealthCheck.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: HealthCheckDecl
+    //         Return value from `parseHealthCheck`.
+    //
+    // Example:
+
+    //     const result = parseHealthCheck();
+
     const start = this.advance();
     const name = this.parseLabel("Expected health check name");
     this.expect("FOR", "Expected 'for' after health check name");
@@ -2278,6 +2857,20 @@ class Parser {
   }
 
   private parseHealthPolicy(): HealthPolicyDecl {
+    // Description:
+    //     ParseHealthPolicy.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: HealthPolicyDecl
+    //         Return value from `parseHealthPolicy`.
+    //
+    // Example:
+
+    //     const result = parseHealthPolicy();
+
     const start = this.advance();
     const name = this.parseLabel("Expected health policy name");
     this.expect("LBRACE", "Expected '{' after health policy name");
@@ -2310,6 +2903,20 @@ class Parser {
   }
 
   private parseRequiresCapability(): RequiresCapabilityDecl {
+    // Description:
+    //     ParseRequiresCapability.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: RequiresCapabilityDecl
+    //         Return value from `parseRequiresCapability`.
+    //
+    // Example:
+
+    //     const result = parseRequiresCapability();
+
     const start = this.advance();
     const capability = this.parseLabel("Expected capability name");
     this.expect("LBRACE", "Expected '{' after capability name");
@@ -2382,18 +2989,30 @@ class Parser {
   }
 
   private parseHardware(): HardwareDecl {
-    // ParseHardware.
+    // Description:
+    //     ParseHardware.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // HardwareDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: HardwareDecl
+    //         Return value from `parseHardware`.
     //
     // Example:
+    //     const result = parseHardware();
+    // Description:
+    //     ParseHardware.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: HardwareDecl
+    //         Return value from `parseHardware`.
+    //
+    // Example:
+    //     const result = parseHardware();
 
     // const result = parseHardware();
     const start = this.advance();
@@ -2561,18 +3180,30 @@ class Parser {
 }
 
   private parseDeploy(): DeployDecl {
-    // ParseDeploy.
+    // Description:
+    //     ParseDeploy.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // DeployDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: DeployDecl
+    //         Return value from `parseDeploy`.
     //
     // Example:
+    //     const result = parseDeploy();
+    // Description:
+    //     ParseDeploy.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: DeployDecl
+    //         Return value from `parseDeploy`.
+    //
+    // Example:
+    //     const result = parseDeploy();
 
     // const result = parseDeploy();
     const start = this.advance();
@@ -2603,18 +3234,30 @@ class Parser {
 }
 
   private parseRequiresHardware(): RequiresHardwareDecl {
-    // ParseRequiresHardware.
+    // Description:
+    //     ParseRequiresHardware.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // RequiresHardwareDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: RequiresHardwareDecl
+    //         Return value from `parseRequiresHardware`.
     //
     // Example:
+    //     const result = parseRequiresHardware();
+    // Description:
+    //     ParseRequiresHardware.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: RequiresHardwareDecl
+    //         Return value from `parseRequiresHardware`.
+    //
+    // Example:
+    //     const result = parseRequiresHardware();
 
     // const result = parseRequiresHardware();
     const start = this.advance();
@@ -2701,18 +3344,30 @@ class Parser {
 }
 
   private parseRequiresNetwork(): RequiresNetworkDecl {
-    // ParseRequiresNetwork.
+    // Description:
+    //     ParseRequiresNetwork.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // RequiresNetworkDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: RequiresNetworkDecl
+    //         Return value from `parseRequiresNetwork`.
     //
     // Example:
+    //     const result = parseRequiresNetwork();
+    // Description:
+    //     ParseRequiresNetwork.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: RequiresNetworkDecl
+    //         Return value from `parseRequiresNetwork`.
+    //
+    // Example:
+    //     const result = parseRequiresNetwork();
 
     // const result = parseRequiresNetwork();
     const start = this.advance();
@@ -2751,19 +3406,31 @@ class Parser {
 }
 
   private parseSignedNumberValue(): number {
-    // Parse a numeric literal that may be prefixed with minus.
+    // Description:
+    //     ParseSignedNumberValue.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Signed numeric value.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: number
+    //         Return value from `parseSignedNumberValue`.
     //
     // Example:
-    // const lon = parseSignedNumberValue();
+    //     const result = parseSignedNumberValue();
+    // Description:
+    //     ParseSignedNumberValue.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: number
+    //         Return value from `parseSignedNumberValue`.
+    //
+    // Example:
+
+    //     const result = parseSignedNumberValue();
 
     let sign = 1;
     if (this.match("MINUS")) {
@@ -2773,19 +3440,33 @@ class Parser {
   }
 
   private parseConnectivityLink(message: string): string {
-    // Parse a connectivity link identifier (wifi, cellular, bluetooth, network).
+    // Description:
+    //     ParseConnectivityLink.
     //
-    // Parameters:
-    // - `message` — parse error when the token is invalid
+    // Inputs:
+    //     message: string
+    //         Caller-supplied message.
     //
-    // Returns:
-    // Link name string.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: string
+    //         Return value from `parseConnectivityLink`.
     //
     // Example:
-    // const link = parseConnectivityLink("Expected link name");
+    //     const result = parseConnectivityLink(message);
+    // Description:
+    //     ParseConnectivityLink.
+    //
+    // Inputs:
+    //     message: string
+    //         Caller-supplied message.
+    //
+    // Outputs:
+    //     result: string
+    //         Return value from `parseConnectivityLink`.
+    //
+    // Example:
+
+    //     const result = parseConnectivityLink(message);
 
     if (this.check("BLUETOOTH")) {
       this.advance();
@@ -2799,19 +3480,31 @@ class Parser {
   }
 
   private parseTriggerDomain(): string {
-    // Parse the domain prefix in dot-notation triggers (gps, network, bluetooth).
+    // Description:
+    //     ParseTriggerDomain.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Domain identifier string.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: string
+    //         Return value from `parseTriggerDomain`.
     //
     // Example:
-    // const domain = parseTriggerDomain();
+    //     const result = parseTriggerDomain();
+    // Description:
+    //     ParseTriggerDomain.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: string
+    //         Return value from `parseTriggerDomain`.
+    //
+    // Example:
+
+    //     const result = parseTriggerDomain();
 
     if (this.check("BLUETOOTH")) {
       this.advance();
@@ -2825,19 +3518,31 @@ class Parser {
   }
 
   private parseRequiresConnectivity(): RequiresConnectivityDecl {
-    // Parse a requires_connectivity verification block.
+    // Description:
+    //     ParseRequiresConnectivity.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Parsed connectivity requirements.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: RequiresConnectivityDecl
+    //         Return value from `parseRequiresConnectivity`.
     //
     // Example:
-    // const req = parseRequiresConnectivity();
+    //     const result = parseRequiresConnectivity();
+    // Description:
+    //     ParseRequiresConnectivity.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: RequiresConnectivityDecl
+    //         Return value from `parseRequiresConnectivity`.
+    //
+    // Example:
+
+    //     const result = parseRequiresConnectivity();
 
     const start = this.advance();
     this.expect("LBRACE", "Expected '{' after requires_connectivity");
@@ -2905,19 +3610,31 @@ class Parser {
   }
 
   private parseGeofence(): GeofenceDecl {
-    // Parse a WGS84 geofence zone declaration.
+    // Description:
+    //     ParseGeofence.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Parsed geofence declaration.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: GeofenceDecl
+    //         Return value from `parseGeofence`.
     //
     // Example:
-    // const fence = parseGeofence();
+    //     const result = parseGeofence();
+    // Description:
+    //     ParseGeofence.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: GeofenceDecl
+    //         Return value from `parseGeofence`.
+    //
+    // Example:
+
+    //     const result = parseGeofence();
 
     const start = this.advance();
     const name = this.expect("IDENT", "Expected geofence name").lexeme;
@@ -2961,19 +3678,31 @@ class Parser {
   }
 
   private parseConnectivityPolicy(): ConnectivityPolicyDecl {
-    // Parse a multi-link connectivity failover policy.
+    // Description:
+    //     ParseConnectivityPolicy.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Parsed connectivity policy.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: ConnectivityPolicyDecl
+    //         Return value from `parseConnectivityPolicy`.
     //
     // Example:
-    // const policy = parseConnectivityPolicy();
+    //     const result = parseConnectivityPolicy();
+    // Description:
+    //     ParseConnectivityPolicy.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: ConnectivityPolicyDecl
+    //         Return value from `parseConnectivityPolicy`.
+    //
+    // Example:
+
+    //     const result = parseConnectivityPolicy();
 
     const start = this.advance();
     const name = this.expect("IDENT", "Expected connectivity policy name").lexeme;
@@ -3035,19 +3764,31 @@ class Parser {
   }
 
   private parseBleService(): BleServiceDecl {
-    // Parse a BLE GATT service declaration.
+    // Description:
+    //     ParseBleService.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Parsed BLE service block.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: BleServiceDecl
+    //         Return value from `parseBleService`.
     //
     // Example:
-    // const svc = parseBleService();
+    //     const result = parseBleService();
+    // Description:
+    //     ParseBleService.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: BleServiceDecl
+    //         Return value from `parseBleService`.
+    //
+    // Example:
+
+    //     const result = parseBleService();
 
     const start = this.advance();
     const name = this.expect("IDENT", "Expected BLE service name").lexeme;
@@ -3075,19 +3816,31 @@ class Parser {
   }
 
   private parseBluetoothConfig(): BluetoothConfigDecl {
-    // Parse a robot-level Bluetooth scan and pairing configuration.
+    // Description:
+    //     ParseBluetoothConfig.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Parsed bluetooth block.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: BluetoothConfigDecl
+    //         Return value from `parseBluetoothConfig`.
     //
     // Example:
-    // const bt = parseBluetoothConfig();
+    //     const result = parseBluetoothConfig();
+    // Description:
+    //     ParseBluetoothConfig.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: BluetoothConfigDecl
+    //         Return value from `parseBluetoothConfig`.
+    //
+    // Example:
+
+    //     const result = parseBluetoothConfig();
 
     const start = this.advance();
     this.expect("LBRACE", "Expected '{' after bluetooth");
@@ -3127,18 +3880,30 @@ class Parser {
   }
 
   private parseSimulateCompatibility(): SimulateCompatibilityDecl {
-    // ParseSimulateCompatibility.
+    // Description:
+    //     ParseSimulateCompatibility.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // SimulateCompatibilityDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: SimulateCompatibilityDecl
+    //         Return value from `parseSimulateCompatibility`.
     //
     // Example:
+    //     const result = parseSimulateCompatibility();
+    // Description:
+    //     ParseSimulateCompatibility.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: SimulateCompatibilityDecl
+    //         Return value from `parseSimulateCompatibility`.
+    //
+    // Example:
+    //     const result = parseSimulateCompatibility();
 
     // const result = parseSimulateCompatibility();
     const start = this.advance();
@@ -3197,18 +3962,30 @@ class Parser {
 }
 
   private parseObserve(): ObserveDecl {
-    // ParseObserve.
+    // Description:
+    //     ParseObserve.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // ObserveDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: ObserveDecl
+    //         Return value from `parseObserve`.
     //
     // Example:
+    //     const result = parseObserve();
+    // Description:
+    //     ParseObserve.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: ObserveDecl
+    //         Return value from `parseObserve`.
+    //
+    // Example:
+    //     const result = parseObserve();
 
     // const result = parseObserve();
     const start = this.expect("OBSERVE", "Expected 'observe'");
@@ -3226,19 +4003,31 @@ class Parser {
   }
 
   private parseWorldModel(): WorldModelDecl {
-    // Parse world_model block on a robot declaration.
+    // Description:
+    //     ParseWorldModel.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Parsed world_model declaration.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: WorldModelDecl
+    //         Return value from `parseWorldModel`.
     //
     // Example:
-    // const result = parseWorldModel();
+    //     const result = parseWorldModel();
+    // Description:
+    //     ParseWorldModel.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: WorldModelDecl
+    //         Return value from `parseWorldModel`.
+    //
+    // Example:
+
+    //     const result = parseWorldModel();
 
     const start = this.expect("IDENT", "Expected 'world_model'");
     this.expect("LBRACE", "Expected '{' after world_model");
@@ -3263,18 +4052,30 @@ class Parser {
   }
 
   private parseIdentity(): IdentityDecl {
-    // ParseIdentity.
+    // Description:
+    //     ParseIdentity.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // IdentityDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: IdentityDecl
+    //         Return value from `parseIdentity`.
     //
     // Example:
+    //     const result = parseIdentity();
+    // Description:
+    //     ParseIdentity.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: IdentityDecl
+    //         Return value from `parseIdentity`.
+    //
+    // Example:
+    //     const result = parseIdentity();
 
     // const result = parseIdentity();
     const start = this.advance();
@@ -3300,18 +4101,30 @@ class Parser {
 }
 
   private parseAudit(): AuditDecl {
-    // ParseAudit.
+    // Description:
+    //     ParseAudit.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // AuditDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: AuditDecl
+    //         Return value from `parseAudit`.
     //
     // Example:
+    //     const result = parseAudit();
+    // Description:
+    //     ParseAudit.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: AuditDecl
+    //         Return value from `parseAudit`.
+    //
+    // Example:
+    //     const result = parseAudit();
 
     // const result = parseAudit();
     const start = this.advance();
@@ -3336,18 +4149,30 @@ class Parser {
 }
 
   private parseProvenance(): ProvenanceDecl {
-    // ParseProvenance.
+    // Description:
+    //     ParseProvenance.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // ProvenanceDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: ProvenanceDecl
+    //         Return value from `parseProvenance`.
     //
     // Example:
+    //     const result = parseProvenance();
+    // Description:
+    //     ParseProvenance.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: ProvenanceDecl
+    //         Return value from `parseProvenance`.
+    //
+    // Example:
+    //     const result = parseProvenance();
 
     // const result = parseProvenance();
     const start = this.advance();
@@ -3381,18 +4206,30 @@ class Parser {
 }
 
   private parseSignedRecord(): SignedRecordDecl {
-    // ParseSignedRecord.
+    // Description:
+    //     ParseSignedRecord.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // SignedRecordDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: SignedRecordDecl
+    //         Return value from `parseSignedRecord`.
     //
     // Example:
+    //     const result = parseSignedRecord();
+    // Description:
+    //     ParseSignedRecord.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: SignedRecordDecl
+    //         Return value from `parseSignedRecord`.
+    //
+    // Example:
+    //     const result = parseSignedRecord();
 
     // const result = parseSignedRecord();
     const start = this.advance();
@@ -3404,18 +4241,30 @@ class Parser {
 }
 
   private parseSecret(): SecretDecl {
-    // ParseSecret.
+    // Description:
+    //     ParseSecret.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // SecretDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: SecretDecl
+    //         Return value from `parseSecret`.
     //
     // Example:
+    //     const result = parseSecret();
+    // Description:
+    //     ParseSecret.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: SecretDecl
+    //         Return value from `parseSecret`.
+    //
+    // Example:
+    //     const result = parseSecret();
 
     // const result = parseSecret();
     const start = this.advance();
@@ -3449,18 +4298,30 @@ class Parser {
 }
 
   private parseTrust(): TrustDecl {
-    // ParseTrust.
+    // Description:
+    //     ParseTrust.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // TrustDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: TrustDecl
+    //         Return value from `parseTrust`.
     //
     // Example:
+    //     const result = parseTrust();
+    // Description:
+    //     ParseTrust.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: TrustDecl
+    //         Return value from `parseTrust`.
+    //
+    // Example:
+    //     const result = parseTrust();
 
     // const result = parseTrust();
     const start = this.advance();
@@ -3470,18 +4331,30 @@ class Parser {
 }
 
   private parseDottedCapability(): string {
-    // ParseDottedCapability.
+    // Description:
+    //     ParseDottedCapability.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Text result.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: string
+    //         Return value from `parseDottedCapability`.
     //
     // Example:
+    //     const result = parseDottedCapability();
+    // Description:
+    //     ParseDottedCapability.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: string
+    //         Return value from `parseDottedCapability`.
+    //
+    // Example:
+    //     const result = parseDottedCapability();
 
     // const result = parseDottedCapability();
     const first = this.parseCapabilityDomain();
@@ -3494,6 +4367,20 @@ class Parser {
   }
 
   private parseCapabilitySuffix(): string {
+    // Description:
+    //     ParseCapabilitySuffix.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: string
+    //         Return value from `parseCapabilitySuffix`.
+    //
+    // Example:
+
+    //     const result = parseCapabilitySuffix();
+
     if (this.check("IDENT") && this.peek().lexeme === "scan") {
       this.advance();
       return "scan";
@@ -3530,19 +4417,31 @@ class Parser {
   }
 
   private parseCapabilityDomain(): string {
-    // Parse the domain prefix in dotted capability names (network.status, gps.read).
+    // Description:
+    //     ParseCapabilityDomain.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Capability domain string.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: string
+    //         Return value from `parseCapabilityDomain`.
     //
     // Example:
-    // const domain = parseCapabilityDomain();
+    //     const result = parseCapabilityDomain();
+    // Description:
+    //     ParseCapabilityDomain.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: string
+    //         Return value from `parseCapabilityDomain`.
+    //
+    // Example:
+
+    //     const result = parseCapabilityDomain();
 
     if (this.check("NETWORK")) {
       this.advance();
@@ -3556,18 +4455,30 @@ class Parser {
   }
 
   private parsePermissions(): PermissionsDecl {
-    // ParsePermissions.
+    // Description:
+    //     ParsePermissions.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // PermissionsDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: PermissionsDecl
+    //         Return value from `parsePermissions`.
     //
     // Example:
+    //     const result = parsePermissions();
+    // Description:
+    //     ParsePermissions.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: PermissionsDecl
+    //         Return value from `parsePermissions`.
+    //
+    // Example:
+    //     const result = parsePermissions();
 
     // const result = parsePermissions();
     const start = this.advance();
@@ -3588,6 +4499,20 @@ class Parser {
 }
 
   private parseSecretsBlock(): SecretDecl[] {
+    // Description:
+    //     ParseSecretsBlock.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: SecretDecl[]
+    //         Return value from `parseSecretsBlock`.
+    //
+    // Example:
+
+    //     const result = parseSecretsBlock();
+
     const start = this.advance();
     this.expect("LBRACE", "Expected '{' after secrets");
     const secrets: SecretDecl[] = [];
@@ -3621,6 +4546,20 @@ class Parser {
   }
 
   private parseSecureCommPolicy(): SecureCommPolicyDecl {
+    // Description:
+    //     ParseSecureCommPolicy.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: SecureCommPolicyDecl
+    //         Return value from `parseSecureCommPolicy`.
+    //
+    // Example:
+
+    //     const result = parseSecureCommPolicy();
+
     const start = this.advance();
     this.expect("LBRACE", "Expected '{' after secure_comm");
     let encryption: string | null = null;
@@ -3651,6 +4590,20 @@ class Parser {
   }
 
   private parseTrustBoundary(): TrustBoundaryDecl {
+    // Description:
+    //     ParseTrustBoundary.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: TrustBoundaryDecl
+    //         Return value from `parseTrustBoundary`.
+    //
+    // Example:
+
+    //     const result = parseTrustBoundary();
+
     const start = this.advance();
     const name = this.parseLabel("Expected trust boundary name");
     this.expect("SEMICOLON", "Expected ';' after trust_boundary declaration");
@@ -3662,6 +4615,20 @@ class Parser {
   }
 
   private parseSecureBlock(): SecureBlockDecl {
+    // Description:
+    //     ParseSecureBlock.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: SecureBlockDecl
+    //         Return value from `parseSecureBlock`.
+    //
+    // Example:
+
+    //     const result = parseSecureBlock();
+
     const start = this.advance();
     this.expect("LBRACE", "Expected '{' after secure");
     let signed = false;
@@ -3738,18 +4705,30 @@ class Parser {
   }
 
   private parseConfigValueString(): string {
-    // ParseConfigValueString.
+    // Description:
+    //     ParseConfigValueString.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Text result.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: string
+    //         Return value from `parseConfigValueString`.
     //
     // Example:
+    //     const result = parseConfigValueString();
+    // Description:
+    //     ParseConfigValueString.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: string
+    //         Return value from `parseConfigValueString`.
+    //
+    // Example:
+    //     const result = parseConfigValueString();
 
     // const result = parseConfigValueString();
     const tok = this.advance();
@@ -3763,18 +4742,32 @@ class Parser {
 }
 
   private static exprPathString(expr: Expr): string {
-    // ExprPathString.
+    // Description:
+    //     ExprPathString.
     //
-    // Parameters:
-    // - `expr` — input value
+    // Inputs:
+    //     expr: Expr
+    //         Caller-supplied expr.
     //
-    // Returns:
-    // Text result.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: string
+    //         Return value from `exprPathString`.
     //
     // Example:
+    //     const result = exprPathString(expr);
+    // Description:
+    //     ExprPathString.
+    //
+    // Inputs:
+    //     expr: Expr
+    //         Caller-supplied expr.
+    //
+    // Outputs:
+    //     result: string
+    //         Return value from `exprPathString`.
+    //
+    // Example:
+    //     const result = exprPathString(expr);
 
     // const result = exprPathString(expr);
     if (expr.kind === "IdentExpr") return expr.name;
@@ -3787,18 +4780,30 @@ class Parser {
 }
 
   private parseVerify(): VerifyDecl {
-    // ParseVerify.
+    // Description:
+    //     ParseVerify.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // VerifyDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: VerifyDecl
+    //         Return value from `parseVerify`.
     //
     // Example:
+    //     const result = parseVerify();
+    // Description:
+    //     ParseVerify.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: VerifyDecl
+    //         Return value from `parseVerify`.
+    //
+    // Example:
+    //     const result = parseVerify();
 
     // const result = parseVerify();
     const start = this.expect("VERIFY", "Expected 'verify'");
@@ -3815,18 +4820,30 @@ class Parser {
 }
 
   private parseTraitImpl(): TraitImplDecl {
-    // ParseTraitImpl.
+    // Description:
+    //     ParseTraitImpl.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // TraitImplDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: TraitImplDecl
+    //         Return value from `parseTraitImpl`.
     //
     // Example:
+    //     const result = parseTraitImpl();
+    // Description:
+    //     ParseTraitImpl.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: TraitImplDecl
+    //         Return value from `parseTraitImpl`.
+    //
+    // Example:
+    //     const result = parseTraitImpl();
 
     // const result = parseTraitImpl();
     const start = this.expect("IMPL", "Expected 'impl'");
@@ -3851,18 +4868,30 @@ class Parser {
 }
 
   private parseTraitImplMethod(): import("../foundations.js").TraitImplMethodDecl {
-    // ParseTraitImplMethod.
+    // Description:
+    //     ParseTraitImplMethod.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // import("../foundations.js").TraitImplMethodDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: import("../foundations.js").TraitImplMethodDecl
+    //         Return value from `parseTraitImplMethod`.
     //
     // Example:
+    //     const result = parseTraitImplMethod();
+    // Description:
+    //     ParseTraitImplMethod.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: import("../foundations.js").TraitImplMethodDecl
+    //         Return value from `parseTraitImplMethod`.
+    //
+    // Example:
+    //     const result = parseTraitImplMethod();
 
     // const result = parseTraitImplMethod();
     const start = this.advance(); // fn
@@ -3902,18 +4931,30 @@ class Parser {
 }
 
   private parseSoc(): SocDecl {
-    // ParseSoc.
+    // Description:
+    //     ParseSoc.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // SocDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: SocDecl
+    //         Return value from `parseSoc`.
     //
     // Example:
+    //     const result = parseSoc();
+    // Description:
+    //     ParseSoc.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: SocDecl
+    //         Return value from `parseSoc`.
+    //
+    // Example:
+    //     const result = parseSoc();
 
     // const result = parseSoc();
     const start = this.advance();
@@ -3924,18 +4965,30 @@ class Parser {
 }
 
   private parseHal(): HalBlock {
-    // ParseHal.
+    // Description:
+    //     ParseHal.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // HalBlock.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: HalBlock
+    //         Return value from `parseHal`.
     //
     // Example:
+    //     const result = parseHal();
+    // Description:
+    //     ParseHal.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: HalBlock
+    //         Return value from `parseHal`.
+    //
+    // Example:
+    //     const result = parseHal();
 
     // const result = parseHal();
     const start = this.advance();
@@ -3951,18 +5004,30 @@ class Parser {
 }
 
   private parseHalMember(): HalMemberDecl {
-    // ParseHalMember.
+    // Description:
+    //     ParseHalMember.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // HalMemberDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: HalMemberDecl
+    //         Return value from `parseHalMember`.
     //
     // Example:
+    //     const result = parseHalMember();
+    // Description:
+    //     ParseHalMember.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: HalMemberDecl
+    //         Return value from `parseHalMember`.
+    //
+    // Example:
+    //     const result = parseHalMember();
 
     // const result = parseHalMember();
     const start = this.peek();
@@ -4079,18 +5144,30 @@ class Parser {
 }
 
   private parseFrequencyHz(): number {
-    // ParseFrequencyHz.
+    // Description:
+    //     ParseFrequencyHz.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Numeric result.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: number
+    //         Return value from `parseFrequencyHz`.
     //
     // Example:
+    //     const result = parseFrequencyHz();
+    // Description:
+    //     ParseFrequencyHz.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: number
+    //         Return value from `parseFrequencyHz`.
+    //
+    // Example:
+    //     const result = parseFrequencyHz();
 
     // const result = parseFrequencyHz();
     const tok = this.peek();
@@ -4115,18 +5192,30 @@ class Parser {
 }
 
   private parseNode(): NodeDecl {
-    // ParseNode.
+    // Description:
+    //     ParseNode.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // NodeDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: NodeDecl
+    //         Return value from `parseNode`.
     //
     // Example:
+    //     const result = parseNode();
+    // Description:
+    //     ParseNode.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: NodeDecl
+    //         Return value from `parseNode`.
+    //
+    // Example:
+    //     const result = parseNode();
 
     // const result = parseNode();
     const start = this.advance();
@@ -4144,18 +5233,30 @@ class Parser {
 }
 
   private parseTopic(): TopicDecl {
-    // ParseTopic.
+    // Description:
+    //     ParseTopic.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // TopicDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: TopicDecl
+    //         Return value from `parseTopic`.
     //
     // Example:
+    //     const result = parseTopic();
+    // Description:
+    //     ParseTopic.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: TopicDecl
+    //         Return value from `parseTopic`.
+    //
+    // Example:
+    //     const result = parseTopic();
 
     // const result = parseTopic();
     const start = this.advance();
@@ -4238,18 +5339,30 @@ class Parser {
 }
 
   private parseQosBlock(): QosDecl {
-    // ParseQosBlock.
+    // Description:
+    //     ParseQosBlock.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // QosDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: QosDecl
+    //         Return value from `parseQosBlock`.
     //
     // Example:
+    //     const result = parseQosBlock();
+    // Description:
+    //     ParseQosBlock.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: QosDecl
+    //         Return value from `parseQosBlock`.
+    //
+    // Example:
+    //     const result = parseQosBlock();
 
     // const result = parseQosBlock();
     const start = this.peek();
@@ -4307,18 +5420,30 @@ class Parser {
 }
 
   private parseService(): ServiceDecl {
-    // ParseService.
+    // Description:
+    //     ParseService.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // ServiceDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: ServiceDecl
+    //         Return value from `parseService`.
     //
     // Example:
+    //     const result = parseService();
+    // Description:
+    //     ParseService.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: ServiceDecl
+    //         Return value from `parseService`.
+    //
+    // Example:
+    //     const result = parseService();
 
     // const result = parseService();
     const start = this.advance();
@@ -4378,18 +5503,30 @@ class Parser {
 }
 
   private parseAction(): ActionDecl {
-    // ParseAction.
+    // Description:
+    //     ParseAction.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // ActionDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: ActionDecl
+    //         Return value from `parseAction`.
     //
     // Example:
+    //     const result = parseAction();
+    // Description:
+    //     ParseAction.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: ActionDecl
+    //         Return value from `parseAction`.
+    //
+    // Example:
+    //     const result = parseAction();
 
     // const result = parseAction();
     const start = this.advance();
@@ -4457,18 +5594,30 @@ class Parser {
 }
 
   private parseSensor(): SensorDecl {
-    // ParseSensor.
+    // Description:
+    //     ParseSensor.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // SensorDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: SensorDecl
+    //         Return value from `parseSensor`.
     //
     // Example:
+    //     const result = parseSensor();
+    // Description:
+    //     ParseSensor.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: SensorDecl
+    //         Return value from `parseSensor`.
+    //
+    // Example:
+    //     const result = parseSensor();
 
     // const result = parseSensor();
     const start = this.advance();
@@ -4513,18 +5662,30 @@ class Parser {
 }
 
   private parseActuator(): ActuatorDecl {
-    // ParseActuator.
+    // Description:
+    //     ParseActuator.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // ActuatorDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: ActuatorDecl
+    //         Return value from `parseActuator`.
     //
     // Example:
+    //     const result = parseActuator();
+    // Description:
+    //     ParseActuator.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: ActuatorDecl
+    //         Return value from `parseActuator`.
+    //
+    // Example:
+    //     const result = parseActuator();
 
     // const result = parseActuator();
     const start = this.advance();
@@ -4542,18 +5703,30 @@ class Parser {
 }
 
   private parseSafety(): SafetyBlock {
-    // ParseSafety.
+    // Description:
+    //     ParseSafety.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // SafetyBlock.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: SafetyBlock
+    //         Return value from `parseSafety`.
     //
     // Example:
+    //     const result = parseSafety();
+    // Description:
+    //     ParseSafety.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: SafetyBlock
+    //         Return value from `parseSafety`.
+    //
+    // Example:
+    //     const result = parseSafety();
 
     // const result = parseSafety();
     const start = this.advance();
@@ -4587,18 +5760,30 @@ class Parser {
 }
 
   private parseAiModelDecl(): AiModelDecl {
-    // ParseAiModelDecl.
+    // Description:
+    //     ParseAiModelDecl.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // AiModelDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: AiModelDecl
+    //         Return value from `parseAiModelDecl`.
     //
     // Example:
+    //     const result = parseAiModelDecl();
+    // Description:
+    //     ParseAiModelDecl.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: AiModelDecl
+    //         Return value from `parseAiModelDecl`.
+    //
+    // Example:
+    //     const result = parseAiModelDecl();
 
     // const result = parseAiModelDecl();
     const start = this.advance();
@@ -4618,18 +5803,30 @@ class Parser {
 }
 
   private parseAiConfigEntries(): AiConfigEntry[] {
-    // ParseAiConfigEntries.
+    // Description:
+    //     ParseAiConfigEntries.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // AiConfigEntry[].
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: AiConfigEntry[]
+    //         Return value from `parseAiConfigEntries`.
     //
     // Example:
+    //     const result = parseAiConfigEntries();
+    // Description:
+    //     ParseAiConfigEntries.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: AiConfigEntry[]
+    //         Return value from `parseAiConfigEntries`.
+    //
+    // Example:
+    //     const result = parseAiConfigEntries();
 
     // const result = parseAiConfigEntries();
     const entries: AiConfigEntry[] = [];
@@ -4651,18 +5848,30 @@ class Parser {
 }
 
   private parseConfigKeyToken(): string {
-    // ParseConfigKeyToken.
+    // Description:
+    //     ParseConfigKeyToken.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Text result.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: string
+    //         Return value from `parseConfigKeyToken`.
     //
     // Example:
+    //     const result = parseConfigKeyToken();
+    // Description:
+    //     ParseConfigKeyToken.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: string
+    //         Return value from `parseConfigKeyToken`.
+    //
+    // Example:
+    //     const result = parseConfigKeyToken();
 
     // const result = parseConfigKeyToken();
     if (this.check("IDENT") || this.check("PROVIDER") || this.check("MEMORY")) {
@@ -4673,18 +5882,30 @@ class Parser {
 }
 
   private parseConfigValue(): string | number | boolean {
-    // ParseConfigValue.
+    // Description:
+    //     ParseConfigValue.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // string | number | boolean.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: string | number | boolean
+    //         Return value from `parseConfigValue`.
     //
     // Example:
+    //     const result = parseConfigValue();
+    // Description:
+    //     ParseConfigValue.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: string | number | boolean
+    //         Return value from `parseConfigValue`.
+    //
+    // Example:
+    //     const result = parseConfigValue();
 
     // const result = parseConfigValue();
     if (this.match("STRING")) {
@@ -4726,18 +5947,30 @@ class Parser {
 }
 
   private parseAgent(): AgentDecl {
-    // ParseAgent.
+    // Description:
+    //     ParseAgent.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // AgentDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: AgentDecl
+    //         Return value from `parseAgent`.
     //
     // Example:
+    //     const result = parseAgent();
+    // Description:
+    //     ParseAgent.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: AgentDecl
+    //         Return value from `parseAgent`.
+    //
+    // Example:
+    //     const result = parseAgent();
 
     // const result = parseAgent();
     const start = this.advance();
@@ -4844,18 +6077,30 @@ class Parser {
 }
 
   private parseSafetyZone(): SafetyZoneDecl {
-    // ParseSafetyZone.
+    // Description:
+    //     ParseSafetyZone.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // SafetyZoneDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: SafetyZoneDecl
+    //         Return value from `parseSafetyZone`.
     //
     // Example:
+    //     const result = parseSafetyZone();
+    // Description:
+    //     ParseSafetyZone.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: SafetyZoneDecl
+    //         Return value from `parseSafetyZone`.
+    //
+    // Example:
+    //     const result = parseSafetyZone();
 
     // const result = parseSafetyZone();
     const start = this.advance();
@@ -4908,18 +6153,30 @@ class Parser {
 }
 
   private parseMaxSpeedRule(): SafetyRule {
-    // ParseMaxSpeedRule.
+    // Description:
+    //     ParseMaxSpeedRule.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // SafetyRule.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: SafetyRule
+    //         Return value from `parseMaxSpeedRule`.
     //
     // Example:
+    //     const result = parseMaxSpeedRule();
+    // Description:
+    //     ParseMaxSpeedRule.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: SafetyRule
+    //         Return value from `parseMaxSpeedRule`.
+    //
+    // Example:
+    //     const result = parseMaxSpeedRule();
 
     // const result = parseMaxSpeedRule();
     const start = this.peek();
@@ -4948,18 +6205,30 @@ class Parser {
 }
 
   private parseStopIfRule(): SafetyRule {
-    // ParseStopIfRule.
+    // Description:
+    //     ParseStopIfRule.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // SafetyRule.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: SafetyRule
+    //         Return value from `parseStopIfRule`.
     //
     // Example:
+    //     const result = parseStopIfRule();
+    // Description:
+    //     ParseStopIfRule.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: SafetyRule
+    //         Return value from `parseStopIfRule`.
+    //
+    // Example:
+    //     const result = parseStopIfRule();
 
     // const result = parseStopIfRule();
     const start = this.advance();
@@ -4970,18 +6239,28 @@ class Parser {
 }
 
   private parseContractClauses(): {
-    // ParseContractClauses.
+    // Description:
+    //     ParseContractClauses.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // .
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = parseContractClauses();
+    // Description:
+    //     ParseContractClauses.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = parseContractClauses();
 
     // const result = parseContractClauses();
     requires: Expr | null;
@@ -5006,18 +6285,30 @@ class Parser {
   }
 
   private parseBehavior(): BehaviorDecl {
-    // ParseBehavior.
+    // Description:
+    //     ParseBehavior.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // BehaviorDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: BehaviorDecl
+    //         Return value from `parseBehavior`.
     //
     // Example:
+    //     const result = parseBehavior();
+    // Description:
+    //     ParseBehavior.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: BehaviorDecl
+    //         Return value from `parseBehavior`.
+    //
+    // Example:
+    //     const result = parseBehavior();
 
     // const result = parseBehavior();
     const start = this.advance();
@@ -5046,18 +6337,30 @@ class Parser {
 }
 
   private parseTask(): TaskDecl {
-    // ParseTask.
+    // Description:
+    //     ParseTask.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // TaskDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: TaskDecl
+    //         Return value from `parseTask`.
     //
     // Example:
+    //     const result = parseTask();
+    // Description:
+    //     ParseTask.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: TaskDecl
+    //         Return value from `parseTask`.
+    //
+    // Example:
+    //     const result = parseTask();
 
     // const result = parseTask();
     const start = this.advance();
@@ -5140,18 +6443,30 @@ class Parser {
 }
 
   private parseBudget(): ResourceBudgetDecl {
-    // ParseBudget.
+    // Description:
+    //     ParseBudget.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // ResourceBudgetDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: ResourceBudgetDecl
+    //         Return value from `parseBudget`.
     //
     // Example:
+    //     const result = parseBudget();
+    // Description:
+    //     ParseBudget.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: ResourceBudgetDecl
+    //         Return value from `parseBudget`.
+    //
+    // Example:
+    //     const result = parseBudget();
 
     // const result = parseBudget();
     const start = this.advance();
@@ -5222,6 +6537,20 @@ class Parser {
 }
 
   private parsePipeline(): PipelineDecl {
+    // Description:
+    //     ParsePipeline.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: PipelineDecl
+    //         Return value from `parsePipeline`.
+    //
+    // Example:
+
+    //     const result = parsePipeline();
+
     const start = this.advance();
     const name = this.expect("IDENT", "Expected pipeline name");
     this.expect("BUDGET", "Expected 'budget' after pipeline name");
@@ -5239,6 +6568,20 @@ class Parser {
   }
 
   private parseWatchdog(): WatchdogDecl {
+    // Description:
+    //     ParseWatchdog.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: WatchdogDecl
+    //         Return value from `parseWatchdog`.
+    //
+    // Example:
+
+    //     const result = parseWatchdog();
+
     const start = this.advance();
     const name = this.expect("IDENT", "Expected watchdog name");
     let target: string | null = null;
@@ -5266,6 +6609,20 @@ class Parser {
   }
 
   private parseMode(): ModeDecl {
+    // Description:
+    //     ParseMode.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: ModeDecl
+    //         Return value from `parseMode`.
+    //
+    // Example:
+
+    //     const result = parseMode();
+
     const start = this.advance();
     const name = this.expect("IDENT", "Expected mode name");
     this.expect("LBRACE", "Expected '{' after mode name");
@@ -5280,6 +6637,20 @@ class Parser {
   }
 
   private parseRetry(): RetryDecl {
+    // Description:
+    //     ParseRetry.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: RetryDecl
+    //         Return value from `parseRetry`.
+    //
+    // Example:
+
+    //     const result = parseRetry();
+
     const start = this.advance();
     const attemptsTok = this.expect("NUMBER", "Expected retry attempt count");
     const attempts = typeof attemptsTok.value === "number" ? attemptsTok.value : Number(attemptsTok.value);
@@ -5309,6 +6680,20 @@ class Parser {
   }
 
   private parseRecover(): RecoverDecl {
+    // Description:
+    //     ParseRecover.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: RecoverDecl
+    //         Return value from `parseRecover`.
+    //
+    // Example:
+
+    //     const result = parseRecover();
+
     const start = this.advance();
     this.expect("FROM", "Expected 'from' after recover");
     const errorName = this.expect("IDENT", "Expected error name");
@@ -5324,6 +6709,20 @@ class Parser {
   }
 
   private parseValidateRule(): ValidateRuleDecl {
+    // Description:
+    //     ParseValidateRule.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: ValidateRuleDecl
+    //         Return value from `parseValidateRule`.
+    //
+    // Example:
+
+    //     const result = parseValidateRule();
+
     const start = this.advance();
     const name = this.expect("IDENT", "Expected validate rule name");
     this.expect("LBRACE", "Expected '{' after validate name");
@@ -5341,23 +6740,49 @@ class Parser {
   }
 
   private parseRegexLiteral(): import("../regex.js").RegexPattern {
+    // Description:
+    //     ParseRegexLiteral.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: import("../regex.js").RegexPattern
+    //         Return value from `parseRegexLiteral`.
+    //
+    // Example:
+
+    //     const result = parseRegexLiteral();
+
     const tok = this.expect("REGEX_LITERAL", "Expected regex literal");
     return regexFromLexeme(tok.lexeme, this.spanFrom(tok, tok));
   }
 
   private parsePercentValue(): number {
-    // ParsePercentValue.
+    // Description:
+    //     ParsePercentValue.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Numeric result.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: number
+    //         Return value from `parsePercentValue`.
     //
     // Example:
+    //     const result = parsePercentValue();
+    // Description:
+    //     ParsePercentValue.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: number
+    //         Return value from `parsePercentValue`.
+    //
+    // Example:
+    //     const result = parsePercentValue();
 
     // const result = parsePercentValue();
     const value = this.parseNumberValue();
@@ -5374,6 +6799,20 @@ class Parser {
 }
 
   private parseMission(): MissionDecl {
+    // Description:
+    //     ParseMission.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: MissionDecl
+    //         Return value from `parseMission`.
+    //
+    // Example:
+
+    //     const result = parseMission();
+
     const start = this.advance();
     const name = this.check("IDENT") ? this.advance().lexeme : null;
     this.expect("LBRACE", "Expected '{' after mission");
@@ -5419,6 +6858,20 @@ class Parser {
   }
 
   private parseFleet(): import("../foundations.js").FleetDecl {
+    // Description:
+    //     ParseFleet.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: import("../foundations.js").FleetDecl
+    //         Return value from `parseFleet`.
+    //
+    // Example:
+
+    //     const result = parseFleet();
+
     const start = this.advance();
     const name = this.expect("IDENT", "Expected fleet name").lexeme;
     this.expect("LBRACE", "Expected '{' after fleet name");
@@ -5433,6 +6886,20 @@ class Parser {
   }
 
   private parseSwarm(): import("../foundations.js").SwarmDecl {
+    // Description:
+    //     ParseSwarm.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: import("../foundations.js").SwarmDecl
+    //         Return value from `parseSwarm`.
+    //
+    // Example:
+
+    //     const result = parseSwarm();
+
     const start = this.advance();
     const name = this.expect("IDENT", "Expected swarm name").lexeme;
     this.expect("LBRACE", "Expected '{' after swarm name");
@@ -5479,6 +6946,20 @@ class Parser {
   }
 
   private parseProgramSafetyZone(): import("../foundations.js").ProgramSafetyZoneDecl {
+    // Description:
+    //     ParseProgramSafetyZone.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: import("../foundations.js").ProgramSafetyZoneDecl
+    //         Return value from `parseProgramSafetyZone`.
+    //
+    // Example:
+
+    //     const result = parseProgramSafetyZone();
+
     const start = this.advance();
     const name = this.expect("IDENT", "Expected safety zone name").lexeme;
     this.expect("LBRACE", "Expected '{' after safety zone name");
@@ -5503,6 +6984,20 @@ class Parser {
   }
 
   private parseCertify(): import("../foundations.js").CertifyDecl {
+    // Description:
+    //     ParseCertify.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: import("../foundations.js").CertifyDecl
+    //         Return value from `parseCertify`.
+    //
+    // Example:
+
+    //     const result = parseCertify();
+
     const start = this.advance();
     const standardName = this.expect("IDENT", "Expected certification standard after 'certify'").lexeme;
     const standard = (["ISO13849", "IEC61508", "ISO26262"] as const).find((s) => s === standardName);
@@ -5535,6 +7030,21 @@ class Parser {
   }
 
   private exprToMps(expr: Expr): number {
+    // Description:
+    //     ExprToMps.
+    //
+    // Inputs:
+    //     expr: Expr
+    //         Caller-supplied expr.
+    //
+    // Outputs:
+    //     result: number
+    //         Return value from `exprToMps`.
+    //
+    // Example:
+
+    //     const result = exprToMps(expr);
+
     if (expr.kind !== "UnitLiteralExpr") {
       throw new ParseError("max_speed requires a numeric velocity literal", expr.span.start.line, expr.span.start.column);
     }
@@ -5545,18 +7055,30 @@ class Parser {
   }
 
   private parseDurationHours(): number {
-    // ParseDurationHours.
+    // Description:
+    //     ParseDurationHours.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Numeric result.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: number
+    //         Return value from `parseDurationHours`.
     //
     // Example:
+    //     const result = parseDurationHours();
+    // Description:
+    //     ParseDurationHours.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: number
+    //         Return value from `parseDurationHours`.
+    //
+    // Example:
+    //     const result = parseDurationHours();
 
     // const result = parseDurationHours();
     const tok = this.peek();
@@ -5618,18 +7140,30 @@ class Parser {
 }
 
   private parseStateMachine(): StateMachineDecl {
-    // ParseStateMachine.
+    // Description:
+    //     ParseStateMachine.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // StateMachineDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: StateMachineDecl
+    //         Return value from `parseStateMachine`.
     //
     // Example:
+    //     const result = parseStateMachine();
+    // Description:
+    //     ParseStateMachine.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: StateMachineDecl
+    //         Return value from `parseStateMachine`.
+    //
+    // Example:
+    //     const result = parseStateMachine();
 
     // const result = parseStateMachine();
     const start = this.advance();
@@ -5675,18 +7209,30 @@ class Parser {
 }
 
   private parseEvent(): EventDecl {
-    // ParseEvent.
+    // Description:
+    //     ParseEvent.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // EventDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: EventDecl
+    //         Return value from `parseEvent`.
     //
     // Example:
+    //     const result = parseEvent();
+    // Description:
+    //     ParseEvent.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: EventDecl
+    //         Return value from `parseEvent`.
+    //
+    // Example:
+    //     const result = parseEvent();
 
     // const result = parseEvent();
     const start = this.advance();
@@ -5722,6 +7268,20 @@ class Parser {
 }
 
   private parseOnTrigger(): EventHandlerDecl {
+    // Description:
+    //     ParseOnTrigger.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: EventHandlerDecl
+    //         Return value from `parseOnTrigger`.
+    //
+    // Example:
+
+    //     const result = parseOnTrigger();
+
     const start = this.advance();
     let eventName: string;
 
@@ -5798,18 +7358,30 @@ class Parser {
   }
 
   private parseTwin(): TwinDecl {
-    // ParseTwin.
+    // Description:
+    //     ParseTwin.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // TwinDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: TwinDecl
+    //         Return value from `parseTwin`.
     //
     // Example:
+    //     const result = parseTwin();
+    // Description:
+    //     ParseTwin.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: TwinDecl
+    //         Return value from `parseTwin`.
+    //
+    // Example:
+    //     const result = parseTwin();
 
     // const result = parseTwin();
     const start = this.advance();
@@ -5853,18 +7425,30 @@ class Parser {
 }
 
   private parseCapability(): CapabilityDecl {
-    // ParseCapability.
+    // Description:
+    //     ParseCapability.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // CapabilityDecl.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: CapabilityDecl
+    //         Return value from `parseCapability`.
     //
     // Example:
+    //     const result = parseCapability();
+    // Description:
+    //     ParseCapability.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: CapabilityDecl
+    //         Return value from `parseCapability`.
+    //
+    // Example:
+    //     const result = parseCapability();
 
     // const result = parseCapability();
     const start = this.peek();
@@ -5905,18 +7489,32 @@ class Parser {
 }
 
   private parseLocalName(message: string): Token {
-    // ParseLocalName.
+    // Description:
+    //     ParseLocalName.
     //
-    // Parameters:
-    // - `message` — input value
+    // Inputs:
+    //     message: string
+    //         Caller-supplied message.
     //
-    // Returns:
-    // Token.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: Token
+    //         Return value from `parseLocalName`.
     //
     // Example:
+    //     const result = parseLocalName(message);
+    // Description:
+    //     ParseLocalName.
+    //
+    // Inputs:
+    //     message: string
+    //         Caller-supplied message.
+    //
+    // Outputs:
+    //     result: Token
+    //         Return value from `parseLocalName`.
+    //
+    // Example:
+    //     const result = parseLocalName(message);
 
     // const result = parseLocalName(message);
     const lexeme = this.parseBindingIdent(message);
@@ -5931,18 +7529,30 @@ class Parser {
 }
 
   private parseBlock(): Stmt[] {
-    // ParseBlock.
+    // Description:
+    //     ParseBlock.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Stmt[].
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: Stmt[]
+    //         Return value from `parseBlock`.
     //
     // Example:
+    //     const result = parseBlock();
+    // Description:
+    //     ParseBlock.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: Stmt[]
+    //         Return value from `parseBlock`.
+    //
+    // Example:
+    //     const result = parseBlock();
 
     // const result = parseBlock();
     const stmts: Stmt[] = [];
@@ -5955,18 +7565,30 @@ class Parser {
 }
 
   private parseStmt(): Stmt {
-    // ParseStmt.
+    // Description:
+    //     ParseStmt.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Stmt.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: Stmt
+    //         Return value from `parseStmt`.
     //
     // Example:
+    //     const result = parseStmt();
+    // Description:
+    //     ParseStmt.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: Stmt
+    //         Return value from `parseStmt`.
+    //
+    // Example:
+    //     const result = parseStmt();
 
     // const result = parseStmt();
     const start = this.peek();
@@ -6372,18 +7994,30 @@ class Parser {
 }
 
   private parseSubscribeTarget(): string {
-    // ParseSubscribeTarget.
+    // Description:
+    //     ParseSubscribeTarget.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Text result.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: string
+    //         Return value from `parseSubscribeTarget`.
     //
     // Example:
+    //     const result = parseSubscribeTarget();
+    // Description:
+    //     ParseSubscribeTarget.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: string
+    //         Return value from `parseSubscribeTarget`.
+    //
+    // Example:
+    //     const result = parseSubscribeTarget();
 
     // const result = parseSubscribeTarget();
     const first = this.parseLabel("Expected subscribe target");
@@ -6397,18 +8031,30 @@ class Parser {
 }
 
   private parseDiscoverTarget(): DiscoverTarget {
-    // ParseDiscoverTarget.
+    // Description:
+    //     ParseDiscoverTarget.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // DiscoverTarget.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: DiscoverTarget
+    //         Return value from `parseDiscoverTarget`.
     //
     // Example:
+    //     const result = parseDiscoverTarget();
+    // Description:
+    //     ParseDiscoverTarget.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: DiscoverTarget
+    //         Return value from `parseDiscoverTarget`.
+    //
+    // Example:
+    //     const result = parseDiscoverTarget();
 
     // const result = parseDiscoverTarget();
     const name = this.expect("IDENT", "Expected discover target").lexeme;
@@ -6430,18 +8076,30 @@ class Parser {
 }
 
   private parseDiscoverFilter(): DiscoverFilter | null {
-    // ParseDiscoverFilter.
+    // Description:
+    //     ParseDiscoverFilter.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Some value on success, otherwise none.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: DiscoverFilter | null
+    //         Return value from `parseDiscoverFilter`.
     //
     // Example:
+    //     const result = parseDiscoverFilter();
+    // Description:
+    //     ParseDiscoverFilter.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: DiscoverFilter | null
+    //         Return value from `parseDiscoverFilter`.
+    //
+    // Example:
+    //     const result = parseDiscoverFilter();
 
     // const result = parseDiscoverFilter();
     if (!this.match("WHERE")) return null;
@@ -6452,18 +8110,30 @@ class Parser {
 }
 
   private parseDuration(): number {
-    // ParseDuration.
+    // Description:
+    //     ParseDuration.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Numeric result.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: number
+    //         Return value from `parseDuration`.
     //
     // Example:
+    //     const result = parseDuration();
+    // Description:
+    //     ParseDuration.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: number
+    //         Return value from `parseDuration`.
+    //
+    // Example:
+    //     const result = parseDuration();
 
     // const result = parseDuration();
     const tok = this.peek();
@@ -6494,18 +8164,30 @@ class Parser {
 }
 
   private parseUnitSuffix(): UnitKind {
-    // ParseUnitSuffix.
+    // Description:
+    //     ParseUnitSuffix.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // UnitKind.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: UnitKind
+    //         Return value from `parseUnitSuffix`.
     //
     // Example:
+    //     const result = parseUnitSuffix();
+    // Description:
+    //     ParseUnitSuffix.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: UnitKind
+    //         Return value from `parseUnitSuffix`.
+    //
+    // Example:
+    //     const result = parseUnitSuffix();
 
     // const result = parseUnitSuffix();
     const unit = this.tryParseUnitSuffix();
@@ -6519,18 +8201,30 @@ class Parser {
 }
 
   private tryParseUnitSuffix(): UnitKind | null {
-    // TryParseUnitSuffix.
+    // Description:
+    //     TryParseUnitSuffix.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Some value on success, otherwise none.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: UnitKind | null
+    //         Return value from `tryParseUnitSuffix`.
     //
     // Example:
+    //     const result = tryParseUnitSuffix();
+    // Description:
+    //     TryParseUnitSuffix.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: UnitKind | null
+    //         Return value from `tryParseUnitSuffix`.
+    //
+    // Example:
+    //     const result = tryParseUnitSuffix();
 
     // const result = tryParseUnitSuffix();
     if (this.check("UNIT_LITERAL")) {
@@ -6568,36 +8262,60 @@ class Parser {
 }
 
   private parseExpr(): Expr {
-    // ParseExpr.
+    // Description:
+    //     ParseExpr.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Expr.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: Expr
+    //         Return value from `parseExpr`.
     //
     // Example:
+    //     const result = parseExpr();
+    // Description:
+    //     ParseExpr.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: Expr
+    //         Return value from `parseExpr`.
+    //
+    // Example:
+    //     const result = parseExpr();
 
     // const result = parseExpr();
     return this.parseOr();
 }
 
   private parseOr(): Expr {
-    // ParseOr.
+    // Description:
+    //     ParseOr.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Expr.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: Expr
+    //         Return value from `parseOr`.
     //
     // Example:
+    //     const result = parseOr();
+    // Description:
+    //     ParseOr.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: Expr
+    //         Return value from `parseOr`.
+    //
+    // Example:
+    //     const result = parseOr();
 
     // const result = parseOr();
     let left = this.parseAnd();
@@ -6621,18 +8339,30 @@ class Parser {
 }
 
   private parseAnd(): Expr {
-    // ParseAnd.
+    // Description:
+    //     ParseAnd.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Expr.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: Expr
+    //         Return value from `parseAnd`.
     //
     // Example:
+    //     const result = parseAnd();
+    // Description:
+    //     ParseAnd.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: Expr
+    //         Return value from `parseAnd`.
+    //
+    // Example:
+    //     const result = parseAnd();
 
     // const result = parseAnd();
     let left = this.parseComparison();
@@ -6653,18 +8383,30 @@ class Parser {
 }
 
   private parseComparison(): Expr {
-    // ParseComparison.
+    // Description:
+    //     ParseComparison.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Expr.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: Expr
+    //         Return value from `parseComparison`.
     //
     // Example:
+    //     const result = parseComparison();
+    // Description:
+    //     ParseComparison.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: Expr
+    //         Return value from `parseComparison`.
+    //
+    // Example:
+    //     const result = parseComparison();
 
     // const result = parseComparison();
     let left = this.parseAdditive();
@@ -6688,18 +8430,30 @@ class Parser {
 }
 
   private parseAdditive(): Expr {
-    // ParseAdditive.
+    // Description:
+    //     ParseAdditive.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Expr.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: Expr
+    //         Return value from `parseAdditive`.
     //
     // Example:
+    //     const result = parseAdditive();
+    // Description:
+    //     ParseAdditive.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: Expr
+    //         Return value from `parseAdditive`.
+    //
+    // Example:
+    //     const result = parseAdditive();
 
     // const result = parseAdditive();
     let left = this.parseMultiplicative();
@@ -6721,18 +8475,30 @@ class Parser {
 }
 
   private parseMultiplicative(): Expr {
-    // ParseMultiplicative.
+    // Description:
+    //     ParseMultiplicative.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Expr.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: Expr
+    //         Return value from `parseMultiplicative`.
     //
     // Example:
+    //     const result = parseMultiplicative();
+    // Description:
+    //     ParseMultiplicative.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: Expr
+    //         Return value from `parseMultiplicative`.
+    //
+    // Example:
+    //     const result = parseMultiplicative();
 
     // const result = parseMultiplicative();
     let left = this.parseUnary();
@@ -6754,18 +8520,30 @@ class Parser {
 }
 
   private parseUnary(): Expr {
-    // ParseUnary.
+    // Description:
+    //     ParseUnary.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Expr.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: Expr
+    //         Return value from `parseUnary`.
     //
     // Example:
+    //     const result = parseUnary();
+    // Description:
+    //     ParseUnary.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: Expr
+    //         Return value from `parseUnary`.
+    //
+    // Example:
+    //     const result = parseUnary();
 
     // const result = parseUnary();
     if (this.match("SPAWN")) {
@@ -6821,18 +8599,30 @@ class Parser {
 }
 
   private parsePostfix(): Expr {
-    // ParsePostfix.
+    // Description:
+    //     ParsePostfix.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Expr.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: Expr
+    //         Return value from `parsePostfix`.
     //
     // Example:
+    //     const result = parsePostfix();
+    // Description:
+    //     ParsePostfix.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: Expr
+    //         Return value from `parsePostfix`.
+    //
+    // Example:
+    //     const result = parsePostfix();
 
     // const result = parsePostfix();
     let expr = this.parsePrimary();
@@ -6958,18 +8748,30 @@ class Parser {
 }
 
   private parsePrimary(): Expr {
-    // ParsePrimary.
+    // Description:
+    //     ParsePrimary.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Expr.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: Expr
+    //         Return value from `parsePrimary`.
     //
     // Example:
+    //     const result = parsePrimary();
+    // Description:
+    //     ParsePrimary.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: Expr
+    //         Return value from `parsePrimary`.
+    //
+    // Example:
+    //     const result = parsePrimary();
 
     // const result = parsePrimary();
     const start = this.peek();
@@ -7222,13 +9024,39 @@ class Parser {
     throw new ParseError("Expected expression", t.line, t.column);
 }
 
-  private parsePropertyName(): Token {    // Compute lexeme for the following logic.
+  private parsePropertyName(): Token {
+    // Description:
+    //     ParsePropertyName.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: Token
+    //         Return value from `parsePropertyName`.
+    //
+    // Example:
+    //     const result = parsePropertyName();
+    // Compute lexeme for the following logic.
     const lexeme = this.parseLabel("Expected property name after '.'");
     const end = this.previous();
     return { type: "IDENT", lexeme, value: null, line: end.line, column: end.column, offset: end.offset };
 }
 
-  private isNamedArgStart(): boolean {    // Compute next for the following logic.
+  private isNamedArgStart(): boolean {
+    // Description:
+    //     IsNamedArgStart.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: boolean
+    //         Return value from `isNamedArgStart`.
+    //
+    // Example:
+    //     const result = isNamedArgStart();
+    // Compute next for the following logic.
     const next = this.tokens[this.pos + 1];
 
     // continue when type differs from "COLON".
@@ -7236,7 +9064,20 @@ class Parser {
     return this.check("IDENT") || this.check("FROM") || this.check("GOAL") || this.check("TO");
 }
 
-  private parseNamedArgName(): string {    // continue when this.match("FROM").
+  private parseNamedArgName(): string {
+    // Description:
+    //     ParseNamedArgName.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: string
+    //         Return value from `parseNamedArgName`.
+    //
+    // Example:
+    //     const result = parseNamedArgName();
+    // continue when this.match("FROM").
     if (this.match("FROM")) return "from";
 
     // continue when this.match("TO").
@@ -7248,6 +9089,20 @@ class Parser {
 }
 
   private isAnomalyHandler(): boolean {
+    // Description:
+    //     IsAnomalyHandler.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: boolean
+    //         Return value from `isAnomalyHandler`.
+    //
+    // Example:
+
+    //     const result = isAnomalyHandler();
+
     return this.tokens[this.pos + 1]?.lexeme === "anomaly";
   }
 }

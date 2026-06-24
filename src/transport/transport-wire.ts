@@ -31,6 +31,20 @@ export type FullTransportConfig = {
 };
 
 function runtimeValueToPlain(value: RuntimeValue): unknown {
+  // Description:
+  //     RuntimeValueToPlain.
+  //
+  // Inputs:
+  //     value: RuntimeValue
+  //         Caller-supplied value.
+  //
+  // Outputs:
+  //     result: unknown
+  //         Return value from `runtimeValueToPlain`.
+  //
+  // Example:
+  //     const result = runtimeValueToPlain(value);
+
   // Convert a runtime value into JSON-serializable data.
   switch (value.kind) {
     case "number":
@@ -59,24 +73,52 @@ function runtimeValueToPlain(value: RuntimeValue): unknown {
 }
 
 export function runtimeValueToJson(value: RuntimeValue): string {
-  // Serialize a runtime value to JSON for wire transport frames.
+  // Description:
+  //     RuntimeValueToJson.
   //
-  // Parameters:
-  // - `value` — runtime value to encode
+  // Inputs:
+  //     value: RuntimeValue
+  //         Caller-supplied value.
   //
-  // Returns:
-  // JSON string payload.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: string
+  //         Return value from `runtimeValueToJson`.
   //
   // Example:
-  // const json = runtimeValueToJson(velocityValue);
+  //     const result = runtimeValueToJson(value);
+  // Description:
+  //     RuntimeValueToJson.
+  //
+  // Inputs:
+  //     value: RuntimeValue
+  //         Caller-supplied value.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `runtimeValueToJson`.
+  //
+  // Example:
+
+  //     const result = runtimeValueToJson(value);
 
   return JSON.stringify(runtimeValueToPlain(value));
 }
 
 function plainToRuntimeValue(data: Record<string, unknown>): RuntimeValue {
+  // Description:
+  //     PlainToRuntimeValue.
+  //
+  // Inputs:
+  //     data: Record<string, unknown>
+  //         Caller-supplied data.
+  //
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `plainToRuntimeValue`.
+  //
+  // Example:
+  //     const result = plainToRuntimeValue(data);
+
   // Rehydrate a runtime value from decoded wire JSON.
   const kind = String(data.kind ?? "string");
   switch (kind) {
@@ -119,19 +161,33 @@ function plainToRuntimeValue(data: Record<string, unknown>): RuntimeValue {
 }
 
 export function runtimeValueFromJson(json: string): RuntimeValue {
-  // Parse JSON wire payload back into a runtime value.
+  // Description:
+  //     RuntimeValueFromJson.
   //
-  // Parameters:
-  // - `json` — JSON payload string
+  // Inputs:
+  //     json: string
+  //         Caller-supplied json.
   //
-  // Returns:
-  // RuntimeValue decoded from wire JSON.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `runtimeValueFromJson`.
   //
   // Example:
-  // const value = runtimeValueFromJson(frame.payload);
+  //     const result = runtimeValueFromJson(json);
+  // Description:
+  //     RuntimeValueFromJson.
+  //
+  // Inputs:
+  //     json: string
+  //         Caller-supplied json.
+  //
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `runtimeValueFromJson`.
+  //
+  // Example:
+
+  //     const result = runtimeValueFromJson(json);
 
   const data = JSON.parse(json) as Record<string, unknown>;
   return plainToRuntimeValue(data);
@@ -144,23 +200,49 @@ export function createTransportWireFrame(
   sourceId: string | null | undefined,
   transport: TransportKind,
 ): TransportWireFrame {
-  // Build a versioned transport wire frame envelope.
+  // Description:
+  //     CreateTransportWireFrame.
   //
-  // Parameters:
-  // - `topic` — topic path
-  // - `messageType` — message type name
-  // - `value` — payload runtime value
-  // - `sourceId` — optional publisher identity
-  // - `transport` — active transport kind
+  // Inputs:
+  //     topic: string
+  //         Caller-supplied topic.
+  //     messageType: string
+  //         Caller-supplied messageType.
+  //     value: RuntimeValue
+  //         Caller-supplied value.
+  //     sourceId: string | null | undefined
+  //         Caller-supplied sourceId.
+  //     transport: TransportKind
+  //         Caller-supplied transport.
   //
-  // Returns:
-  // TransportWireFrame v1 object.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: TransportWireFrame
+  //         Return value from `createTransportWireFrame`.
   //
   // Example:
-  // const frame = createTransportWireFrame("/motion", "Velocity", val, "Nav", "mqtt");
+  //     const result = createTransportWireFrame(topic, messageType, value, sourceId, transport);
+  // Description:
+  //     CreateTransportWireFrame.
+  //
+  // Inputs:
+  //     topic: string
+  //         Caller-supplied topic.
+  //     messageType: string
+  //         Caller-supplied messageType.
+  //     value: RuntimeValue
+  //         Caller-supplied value.
+  //     sourceId: string | null | undefined
+  //         Caller-supplied sourceId.
+  //     transport: TransportKind
+  //         Caller-supplied transport.
+  //
+  // Outputs:
+  //     result: TransportWireFrame
+  //         Return value from `createTransportWireFrame`.
+  //
+  // Example:
+
+  //     const result = createTransportWireFrame(topic, messageType, value, sourceId, transport);
 
   const frame: TransportWireFrame = {
     v: 1,
@@ -181,24 +263,53 @@ export function encodeWireValue(
   sourceId: string | null | undefined,
   transport: TransportKind,
 ): RuntimeValue {
-  // Encode a runtime value into a wire frame string, optionally encrypted.
+  // Description:
+  //     EncodeWireValue.
   //
-  // Parameters:
-  // - `config` — full transport configuration with TLS session
-  // - `topic` — topic path
-  // - `messageType` — message type name
-  // - `value` — payload runtime value
-  // - `sourceId` — optional publisher identity
-  // - `transport` — active transport kind
+  // Inputs:
+  //     config: FullTransportConfig
+  //         Caller-supplied config.
+  //     topic: string
+  //         Caller-supplied topic.
+  //     messageType: string
+  //         Caller-supplied messageType.
+  //     value: RuntimeValue
+  //         Caller-supplied value.
+  //     sourceId: string | null | undefined
+  //         Caller-supplied sourceId.
+  //     transport: TransportKind
+  //         Caller-supplied transport.
   //
-  // Returns:
-  // String runtime value containing wire frame JSON or ciphertext.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `encodeWireValue`.
   //
   // Example:
-  // const wire = encodeWireValue(cfg, "/t", "Velocity", val, "Nav", "mqtt");
+  //     const result = encodeWireValue(config, topic, messageType, value, sourceId, transport);
+  // Description:
+  //     EncodeWireValue.
+  //
+  // Inputs:
+  //     config: FullTransportConfig
+  //         Caller-supplied config.
+  //     topic: string
+  //         Caller-supplied topic.
+  //     messageType: string
+  //         Caller-supplied messageType.
+  //     value: RuntimeValue
+  //         Caller-supplied value.
+  //     sourceId: string | null | undefined
+  //         Caller-supplied sourceId.
+  //     transport: TransportKind
+  //         Caller-supplied transport.
+  //
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `encodeWireValue`.
+  //
+  // Example:
+
+  //     const result = encodeWireValue(config, topic, messageType, value, sourceId, transport);
 
   const frame = createTransportWireFrame(topic, messageType, value, sourceId, transport);
   const json = JSON.stringify(frame);
@@ -211,7 +322,23 @@ export function encodeWireValue(
 export function decodeWireValue(
   config: FullTransportConfig,
   value: RuntimeValue,
-): { value: RuntimeValue; sourceId: string | null } {
+): {
+  // Description:
+  //     DecodeWireValue.
+  //
+  // Inputs:
+  //     config: FullTransportConfig
+  //         Caller-supplied config.
+  //     value: RuntimeValue
+  //         Caller-supplied value.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+ // const result = decodeWireValue(config, value);
+ value: RuntimeValue; sourceId: string | null } {
   // Decode an adapter wire value back to payload and optional source id.
   //
   // Parameters:
@@ -225,6 +352,7 @@ export function decodeWireValue(
   // None.
   //
   // Example:
+
   // const { value, sourceId } = decodeWireValue(cfg, wireValue);
 
   if (value.kind !== "string") {

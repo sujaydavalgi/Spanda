@@ -156,18 +156,32 @@ export type SocValidationError = {
 };
 
 export function getSocProfile(name: string): SocProfile | undefined {
-  // GetSocProfile.
+  // Description:
+  //     GetSocProfile.
   //
-  // Parameters:
-  // - `name` — input value
+  // Inputs:
+  //     name: string
+  //         Caller-supplied name.
   //
-  // Returns:
-  // `Some` / non-null value on success, otherwise `None` / null.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: SocProfile | undefined
+  //         Return value from `getSocProfile`.
   //
   // Example:
+  //     const result = getSocProfile(name);
+  // Description:
+  //     GetSocProfile.
+  //
+  // Inputs:
+  //     name: string
+  //         Caller-supplied name.
+  //
+  // Outputs:
+  //     result: SocProfile | undefined
+  //         Return value from `getSocProfile`.
+  //
+  // Example:
+  //     const result = getSocProfile(name);
 
   // const result = getSocProfile(name);
   return SOC_PROFILES[name];
@@ -177,19 +191,36 @@ export function validateHalAgainstSoc(
   profile: SocProfile,
   halMembers: import("../hal/index.js").HalMemberConfig[],
 ): SocValidationError[] {
-  // ValidateHalAgainstSoc.
+  // Description:
+  //     ValidateHalAgainstSoc.
   //
-  // Parameters:
-  // - `profile` — input value
-  // - `halMembers` — input value
+  // Inputs:
+  //     profile: SocProfile
+  //         Caller-supplied profile.
+  //     halMembers: import("../hal/index.js").HalMemberConfig[]
+  //         Caller-supplied halMembers.
   //
-  // Returns:
-  // SocValidationError[].
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: SocValidationError[]
+  //         Return value from `validateHalAgainstSoc`.
   //
   // Example:
+  //     const result = validateHalAgainstSoc(profile, halMembers);
+  // Description:
+  //     ValidateHalAgainstSoc.
+  //
+  // Inputs:
+  //     profile: SocProfile
+  //         Caller-supplied profile.
+  //     halMembers: import("../hal/index.js").HalMemberConfig[]
+  //         Caller-supplied halMembers.
+  //
+  // Outputs:
+  //     result: SocValidationError[]
+  //         Return value from `validateHalAgainstSoc`.
+  //
+  // Example:
+  //     const result = validateHalAgainstSoc(profile, halMembers);
 
   // const result = validateHalAgainstSoc(profile, halMembers);
   const errors: SocValidationError[] = [];
@@ -267,18 +298,30 @@ export function validateHalAgainstSoc(
 }
 
 export function listSocProfiles(): SocProfile[] {
-  // ListSocProfiles.
+  // Description:
+  //     ListSocProfiles.
   //
-  // Parameters:
-  // None.
+  // Inputs:
+  //     None.
   //
-  // Returns:
-  // `SocProfile[]`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: SocProfile[]
+  //         Return value from `listSocProfiles`.
   //
   // Example:
+  //     const result = listSocProfiles();
+  // Description:
+  //     ListSocProfiles.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: SocProfile[]
+  //         Return value from `listSocProfiles`.
+  //
+  // Example:
+  //     const result = listSocProfiles();
 
   // const result = listSocProfiles();
   return Object.values(SOC_PROFILES);

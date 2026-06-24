@@ -19,18 +19,32 @@ export type AgentRoute = {
 };
 
 function runtimeTypeTag(value: RuntimeValue): string {
-  // RuntimeTypeTag.
+  // Description:
+  //     RuntimeTypeTag.
   //
-  // Parameters:
-  // - `value` — input value
+  // Inputs:
+  //     value: RuntimeValue
+  //         Caller-supplied value.
   //
-  // Returns:
-  // Text result.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: string
+  //         Return value from `runtimeTypeTag`.
   //
   // Example:
+  //     const result = runtimeTypeTag(value);
+  // Description:
+  //     RuntimeTypeTag.
+  //
+  // Inputs:
+  //     value: RuntimeValue
+  //         Caller-supplied value.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `runtimeTypeTag`.
+  //
+  // Example:
+  //     const result = runtimeTypeTag(value);
 
   // const result = runtimeTypeTag(value);
   switch (value.kind) {

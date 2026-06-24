@@ -108,18 +108,32 @@ export class AIModel {
 }
 
 function parseConfig(decl: AiModelDecl): AiModelConfig {
-  // ParseConfig.
+  // Description:
+  //     ParseConfig.
   //
-  // Parameters:
-  // - `decl` — input value
+  // Inputs:
+  //     decl: AiModelDecl
+  //         Caller-supplied decl.
   //
-  // Returns:
-  // `AiModelConfig`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: AiModelConfig
+  //         Return value from `parseConfig`.
   //
   // Example:
+  //     const result = parseConfig(decl);
+  // Description:
+  //     ParseConfig.
+  //
+  // Inputs:
+  //     decl: AiModelDecl
+  //         Caller-supplied decl.
+  //
+  // Outputs:
+  //     result: AiModelConfig
+  //         Return value from `parseConfig`.
+  //
+  // Example:
+  //     const result = parseConfig(decl);
 
   // const result = parseConfig(decl);
   const map = new Map(decl.config.map((e) => [e.key, e.value]));
@@ -132,18 +146,32 @@ function parseConfig(decl: AiModelDecl): AiModelConfig {
 }
 
 export function createAIModel(decl: AiModelDecl): AIModel {
-  // CreateAIModel.
+  // Description:
+  //     CreateAIModel.
   //
-  // Parameters:
-  // - `decl` — input value
+  // Inputs:
+  //     decl: AiModelDecl
+  //         Caller-supplied decl.
   //
-  // Returns:
-  // `AIModel`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: AIModel
+  //         Return value from `createAIModel`.
   //
   // Example:
+  //     const result = createAIModel(decl);
+  // Description:
+  //     CreateAIModel.
+  //
+  // Inputs:
+  //     decl: AiModelDecl
+  //         Caller-supplied decl.
+  //
+  // Outputs:
+  //     result: AIModel
+  //         Return value from `createAIModel`.
+  //
+  // Example:
+  //     const result = createAIModel(decl);
 
   // const result = createAIModel(decl);
   return new AIModel(decl);

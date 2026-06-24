@@ -159,10 +159,42 @@ const FAILURE_SCENARIOS: Array<[string, string, string, string]> = [
 ];
 
 export function parseProgramSource(source: string): Program {
+  // Description:
+  //     ParseProgramSource.
+  //
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //
+  // Outputs:
+  //     result: Program
+  //         Return value from `parseProgramSource`.
+  //
+  // Example:
+
+  //     const result = parseProgramSource(source);
+
   return parse(tokenize(source));
 }
 
 export function verifyMissionTs(program: Program, target?: string): MissionVerificationReport[] {
+  // Description:
+  //     VerifyMissionTs.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     target?: string
+  //         Caller-supplied target?.
+  //
+  // Outputs:
+  //     result: MissionVerificationReport[]
+  //         Return value from `verifyMissionTs`.
+  //
+  // Example:
+
+  //     const result = verifyMissionTs(program, target?);
+
   const hw = verifyHardwareProgram(program, { target, allTargets: !target });
   const reports: MissionVerificationReport[] = [];
 
@@ -203,6 +235,21 @@ export function verifyMissionTs(program: Program, target?: string): MissionVerif
 }
 
 export function analyzeFailureTs(program: Program): FailureAnalysisReport {
+  // Description:
+  //     AnalyzeFailureTs.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     result: FailureAnalysisReport
+  //         Return value from `analyzeFailureTs`.
+  //
+  // Example:
+
+  //     const result = analyzeFailureTs(program);
+
   const robot = program.robots[0]?.name ?? null;
   const components = new Set<string>();
   for (const r of program.robots) {
@@ -223,6 +270,21 @@ export function analyzeFailureTs(program: Program): FailureAnalysisReport {
 }
 
 export function verifyFleetTs(program: Program): FleetVerifyReport {
+  // Description:
+  //     VerifyFleetTs.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     result: FleetVerifyReport
+  //         Return value from `verifyFleetTs`.
+  //
+  // Example:
+
+  //     const result = verifyFleetTs(program);
+
   const findings: FleetVerifyFinding[] = [];
   const names = new Set(program.robots.map((r) => r.name));
   if (program.robots.length > 1 && program.programSafetyZones.length === 0) {
@@ -247,6 +309,21 @@ export function verifyFleetTs(program: Program): FleetVerifyReport {
 }
 
 export function verifyApprovalsTs(program: Program): ApprovalVerifyReport {
+  // Description:
+  //     VerifyApprovalsTs.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     result: ApprovalVerifyReport
+  //         Return value from `verifyApprovalsTs`.
+  //
+  // Example:
+
+  //     const result = verifyApprovalsTs(program);
+
   const rows: ApprovalVerifyRow[] = [];
   const robotNames = new Set(program.robots.map((r) => r.name));
   for (const robot of program.robots) {
@@ -269,6 +346,23 @@ export function verifyApprovalsTs(program: Program): ApprovalVerifyReport {
 }
 
 export function auditProgramTs(program: Program, source: string): SafetyAuditReport {
+  // Description:
+  //     AuditProgramTs.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     source: string
+  //         Caller-supplied source.
+  //
+  // Outputs:
+  //     result: SafetyAuditReport
+  //         Return value from `auditProgramTs`.
+  //
+  // Example:
+
+  //     const result = auditProgramTs(program, source);
+
   const findings: AuditFinding[] = [];
   if (program.killSwitches.length === 0) {
     findings.push({
@@ -325,6 +419,23 @@ export function auditProgramTs(program: Program, source: string): SafetyAuditRep
 }
 
 export function generateSafetyReportTs(program: Program, label: string): SafetyCaseReport {
+  // Description:
+  //     GenerateSafetyReportTs.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     label: string
+  //         Caller-supplied label.
+  //
+  // Outputs:
+  //     result: SafetyCaseReport
+  //         Return value from `generateSafetyReportTs`.
+  //
+  // Example:
+
+  //     const result = generateSafetyReportTs(program, label);
+
   const missions = verifyMissionTs(program);
   const hw = verifyHardwareProgram(program);
   const known_risks = hw.items.filter((i) => i.severity === "warning").map((i) => i.message);
@@ -345,6 +456,23 @@ export function evaluateFleetReadinessTs(
   program: Program,
   options: ReadinessOptions = {},
 ): FleetReadinessReport {
+  // Description:
+  //     EvaluateFleetReadinessTs.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     options: ReadinessOptions = {}
+  //         Caller-supplied options.
+  //
+  // Outputs:
+  //     result: FleetReadinessReport
+  //         Return value from `evaluateFleetReadinessTs`.
+  //
+  // Example:
+
+  //     const result = evaluateFleetReadinessTs(program, options);
+
   const robot_reports = program.robots.map((robot) => {
     const report = evaluateReadinessTs(program, options);
     return { ...report, robots: [robot.name] };
@@ -379,6 +507,23 @@ export function evaluateTwinReadinessTs(
   program: Program,
   tracePath?: string,
 ): TwinReadinessStatus {
+  // Description:
+  //     EvaluateTwinReadinessTs.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     tracePath?: string
+  //         Caller-supplied tracePath?.
+  //
+  // Outputs:
+  //     result: TwinReadinessStatus
+  //         Return value from `evaluateTwinReadinessTs`.
+  //
+  // Example:
+
+  //     const result = evaluateTwinReadinessTs(program, tracePath?);
+
   const physical = evaluateReadinessTs(program);
   const configuration_drift: string[] = [];
   const hasTwin = program.robots.some((r) => r.twin);
@@ -418,6 +563,21 @@ export function evaluateTwinReadinessTs(
 }
 
 export function diagnoseTraceTs(tracePath: string): RootCauseReport {
+  // Description:
+  //     DiagnoseTraceTs.
+  //
+  // Inputs:
+  //     tracePath: string
+  //         Caller-supplied tracePath.
+  //
+  // Outputs:
+  //     result: RootCauseReport
+  //         Return value from `diagnoseTraceTs`.
+  //
+  // Example:
+
+  //     const result = diagnoseTraceTs(tracePath);
+
   const trace = deserializeMissionTrace(readFileSync(tracePath, "utf-8"));
   const timeline = trace.frames.map((frame) => ({
     sim_time_ms: frame.simTimeMs,
@@ -443,6 +603,21 @@ export function diagnoseTraceTs(tracePath: string): RootCauseReport {
 }
 
 export function formatMissionVerification(reports: MissionVerificationReport[]): string {
+  // Description:
+  //     FormatMissionVerification.
+  //
+  // Inputs:
+  //     reports: MissionVerificationReport[]
+  //         Caller-supplied reports.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `formatMissionVerification`.
+  //
+  // Example:
+
+  //     const result = formatMissionVerification(reports);
+
   return reports
     .map(
       (r) =>
@@ -454,32 +629,122 @@ export function formatMissionVerification(reports: MissionVerificationReport[]):
 }
 
 export function formatFailureAnalysis(report: FailureAnalysisReport): string {
+  // Description:
+  //     FormatFailureAnalysis.
+  //
+  // Inputs:
+  //     report: FailureAnalysisReport
+  //         Caller-supplied report.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `formatFailureAnalysis`.
+  //
+  // Example:
+
+  //     const result = formatFailureAnalysis(report);
+
   return report.impacts
     .map((i) => `[${i.severity}] ${i.component}: ${i.consequence}\n  Mitigation: ${i.mitigation}`)
     .join("\n\n");
 }
 
 export function formatFleetVerify(report: FleetVerifyReport): string {
+  // Description:
+  //     FormatFleetVerify.
+  //
+  // Inputs:
+  //     report: FleetVerifyReport
+  //         Caller-supplied report.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `formatFleetVerify`.
+  //
+  // Example:
+
+  //     const result = formatFleetVerify(report);
+
   return report.findings.map((f) => `[${f.severity}] ${f.category}: ${f.message}`).join("\n");
 }
 
 export function formatAudit(report: SafetyAuditReport): string {
+  // Description:
+  //     FormatAudit.
+  //
+  // Inputs:
+  //     report: SafetyAuditReport
+  //         Caller-supplied report.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `formatAudit`.
+  //
+  // Example:
+
+  //     const result = formatAudit(report);
+
   return report.findings
     .map((f) => `[${f.severity}] ${f.category} @ ${f.line}:${f.column}: ${f.message}`)
     .join("\n");
 }
 
 export function formatRootCause(report: RootCauseReport): string {
+  // Description:
+  //     FormatRootCause.
+  //
+  // Inputs:
+  //     report: RootCauseReport
+  //         Caller-supplied report.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `formatRootCause`.
+  //
+  // Example:
+
+  //     const result = formatRootCause(report);
+
   return `Root cause: ${report.root_cause}\n\nTimeline:\n${report.timeline
     .map((t) => `  T+${t.sim_time_ms}ms ${t.event}: ${t.detail}`)
     .join("\n")}`;
 }
 
 export function formatFleetReadiness(report: FleetReadinessReport): string {
+  // Description:
+  //     FormatFleetReadiness.
+  //
+  // Inputs:
+  //     report: FleetReadinessReport
+  //         Caller-supplied report.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `formatFleetReadiness`.
+  //
+  // Example:
+
+  //     const result = formatFleetReadiness(report);
+
   return `Fleet score: ${report.fleet_score}/100\nHealthy: ${report.healthy_robots}  Degraded: ${report.degraded_robots}  Not ready: ${report.not_ready_robots}`;
 }
 
 export function formatTwinReadiness(status: TwinReadinessStatus): string {
+  // Description:
+  //     FormatTwinReadiness.
+  //
+  // Inputs:
+  //     status: TwinReadinessStatus
+  //         Caller-supplied status.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `formatTwinReadiness`.
+  //
+  // Example:
+
+  //     const result = formatTwinReadiness(status);
+
   return `Physical ready: ${status.physical_ready}\nTwin ready: ${status.twin_ready}\nOverall: ${status.overall}`;
 }
 
@@ -487,7 +752,25 @@ export function runOperationalCommand(
   command: string,
   positional: string[],
   flags: Map<string, string | boolean>,
-): { exitCode: number; output: string } {
+): {
+  // Description:
+  //     RunOperationalCommand.
+  //
+  // Inputs:
+  //     command: string
+  //         Caller-supplied command.
+  //     positional: string[]
+  //         Caller-supplied positional.
+  //     flags: Map<string, string | boolean>
+  //         Caller-supplied flags.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+ // const result = runOperationalCommand(command, positional, flags);
+ exitCode: number; output: string } {
   const json = flags.has("json");
   const target = typeof flags.get("target") === "string" ? (flags.get("target") as string) : undefined;
   const includeRuntime = flags.has("runtime") || flags.has("inject-health-faults");

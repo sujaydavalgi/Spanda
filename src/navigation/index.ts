@@ -18,20 +18,33 @@ export type Nav2BridgeContext = {
 const DEFAULT_CMD_VEL_TOPIC = "/cmd_vel";
 
 export function tryPublishNav2CmdVel(ctx: Nav2BridgeContext): boolean {
-  // Publish a velocity command on `/cmd_vel` when the robot declares that topic.
+  // Description:
+  //     TryPublishNav2CmdVel.
   //
-  // Parameters:
-  // - `ctx` — backend, topic map, goal text, and optional velocity overrides
+  // Inputs:
+  //     ctx: Nav2BridgeContext
+  //         Caller-supplied ctx.
   //
-  // Returns:
-  // true when a publish was attempted on a declared `/cmd_vel` topic.
-  //
-  // Options:
-  // - `linearMps` — defaults to 0.2 m/s
-  // - `angularRadS` — defaults to 0.0 rad/s
+  // Outputs:
+  //     result: boolean
+  //         Return value from `tryPublishNav2CmdVel`.
   //
   // Example:
-  // tryPublishNav2CmdVel({ backend, topicPathToMessageType, goal: "Dock" });
+  //     const result = tryPublishNav2CmdVel(ctx);
+  // Description:
+  //     TryPublishNav2CmdVel.
+  //
+  // Inputs:
+  //     ctx: Nav2BridgeContext
+  //         Caller-supplied ctx.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `tryPublishNav2CmdVel`.
+  //
+  // Example:
+
+  //     const result = tryPublishNav2CmdVel(ctx);
 
   const messageType = ctx.topicPathToMessageType.get(DEFAULT_CMD_VEL_TOPIC);
   if (!messageType) {

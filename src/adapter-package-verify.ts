@@ -39,6 +39,20 @@ const SLAM_METADATA: AdapterMetadata = {
 };
 
 export function adapterMetadataForImport(importPath: string): AdapterMetadata | undefined {
+  // Description:
+  //     AdapterMetadataForImport.
+  //
+  // Inputs:
+  //     importPath: string
+  //         Caller-supplied importPath.
+  //
+  // Outputs:
+  //     result: AdapterMetadata | undefined
+  //         Return value from `adapterMetadataForImport`.
+  //
+  // Example:
+  //     const result = adapterMetadataForImport(importPath);
+
   // Resolve expected adapter metadata for a framework import path.
   switch (importPath) {
     case "navigation.nav2":
@@ -55,6 +69,20 @@ export function adapterMetadataForImport(importPath: string): AdapterMetadata | 
 }
 
 export function adapterMetadataForPackage(packageName: string): AdapterMetadata | undefined {
+  // Description:
+  //     AdapterMetadataForPackage.
+  //
+  // Inputs:
+  //     packageName: string
+  //         Caller-supplied packageName.
+  //
+  // Outputs:
+  //     result: AdapterMetadata | undefined
+  //         Return value from `adapterMetadataForPackage`.
+  //
+  // Example:
+  //     const result = adapterMetadataForPackage(packageName);
+
   // Resolve expected adapter metadata for a registry package name.
   switch (packageName) {
     case "spanda-nav2":
@@ -71,10 +99,44 @@ export function adapterMetadataForPackage(packageName: string): AdapterMetadata 
 }
 
 function missingProvides(expected: AdapterMetadata, actual: AdapterMetadata): string[] {
+  // Description:
+  //     MissingProvides.
+  //
+  // Inputs:
+  //     expected: AdapterMetadata
+  //         Caller-supplied expected.
+  //     actual: AdapterMetadata
+  //         Caller-supplied actual.
+  //
+  // Outputs:
+  //     result: string[]
+  //         Return value from `missingProvides`.
+  //
+  // Example:
+
+  //     const result = missingProvides(expected, actual);
+
   return expected.provides.filter((symbol) => !actual.provides.includes(symbol));
 }
 
 function missingRequires(expected: AdapterMetadata, actual: AdapterMetadata): string[] {
+  // Description:
+  //     MissingRequires.
+  //
+  // Inputs:
+  //     expected: AdapterMetadata
+  //         Caller-supplied expected.
+  //     actual: AdapterMetadata
+  //         Caller-supplied actual.
+  //
+  // Outputs:
+  //     result: string[]
+  //         Return value from `missingRequires`.
+  //
+  // Example:
+
+  //     const result = missingRequires(expected, actual);
+
   return expected.requires.filter((symbol) => !actual.requires.includes(symbol));
 }
 
@@ -83,6 +145,24 @@ export function verifyManifestAdapter(
   actual: AdapterMetadata,
   expected: AdapterMetadata,
 ): AdapterVerifyIssue[] {
+  // Description:
+  //     VerifyManifestAdapter.
+  //
+  // Inputs:
+  //     packageName: string
+  //         Caller-supplied packageName.
+  //     actual: AdapterMetadata
+  //         Caller-supplied actual.
+  //     expected: AdapterMetadata
+  //         Caller-supplied expected.
+  //
+  // Outputs:
+  //     result: AdapterVerifyIssue[]
+  //         Return value from `verifyManifestAdapter`.
+  //
+  // Example:
+  //     const result = verifyManifestAdapter(packageName, actual, expected);
+
   // Check declared provides/requires against registry adapter metadata.
   const issues: AdapterVerifyIssue[] = [];
   if (actual.provides.length === 0 && actual.requires.length === 0) {
@@ -123,6 +203,21 @@ export function verifyManifestAdapter(
 }
 
 export function adapterVerifyOk(issues: AdapterVerifyIssue[]): boolean {
+  // Description:
+  //     AdapterVerifyOk.
+  //
+  // Inputs:
+  //     issues: AdapterVerifyIssue[]
+  //         Caller-supplied issues.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `adapterVerifyOk`.
+  //
+  // Example:
+
+  //     const result = adapterVerifyOk(issues);
+
   return !issues.some((issue) => issue.severity === "error");
 }
 
@@ -132,6 +227,21 @@ export type AdapterManifestSection = {
 };
 
 function parseTomlStringArray(line: string): string[] {
+  // Description:
+  //     ParseTomlStringArray.
+  //
+  // Inputs:
+  //     line: string
+  //         Caller-supplied line.
+  //
+  // Outputs:
+  //     result: string[]
+  //         Return value from `parseTomlStringArray`.
+  //
+  // Example:
+
+  //     const result = parseTomlStringArray(line);
+
   const match = line.match(/=\s*\[(.*)\]/);
   if (!match?.[1]) return [];
   return match[1]
@@ -141,6 +251,20 @@ function parseTomlStringArray(line: string): string[] {
 }
 
 export function readAdapterManifestSection(projectRoot: string): AdapterManifestSection {
+  // Description:
+  //     ReadAdapterManifestSection.
+  //
+  // Inputs:
+  //     projectRoot: string
+  //         Caller-supplied projectRoot.
+  //
+  // Outputs:
+  //     result: AdapterManifestSection
+  //         Return value from `readAdapterManifestSection`.
+  //
+  // Example:
+  //     const result = readAdapterManifestSection(projectRoot);
+
   // Read package name and adapter provides/requires from spanda.toml.
   const manifestPath = join(resolve(projectRoot), "spanda.toml");
   if (!existsSync(manifestPath)) {
@@ -184,6 +308,24 @@ export function verifyAdapterPackage(
   importPath?: string,
   packageName?: string,
 ): AdapterVerifyIssue[] {
+  // Description:
+  //     VerifyAdapterPackage.
+  //
+  // Inputs:
+  //     projectRoot: string
+  //         Caller-supplied projectRoot.
+  //     importPath?: string
+  //         Caller-supplied importPath?.
+  //     packageName?: string
+  //         Caller-supplied packageName?.
+  //
+  // Outputs:
+  //     result: AdapterVerifyIssue[]
+  //         Return value from `verifyAdapterPackage`.
+  //
+  // Example:
+  //     const result = verifyAdapterPackage(projectRoot, importPath?, packageName?);
+
   // Resolve expected adapter metadata and validate the manifest adapter section.
   const expected =
     (importPath ? adapterMetadataForImport(importPath) : undefined) ??

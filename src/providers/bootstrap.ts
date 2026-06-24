@@ -15,6 +15,21 @@ import { ProviderRegistry, transportRegistryKey } from "./registry.js";
 
 /** Map a transport kind to the official package that backs it when installed. */
 export function officialPackageForTransport(kind: TransportKind): string | null {
+  // Description:
+  //     OfficialPackageForTransport.
+  //
+  // Inputs:
+  //     kind: TransportKind
+  //         Caller-supplied kind.
+  //
+  // Outputs:
+  //     result: string | null
+  //         Return value from `officialPackageForTransport`.
+  //
+  // Example:
+
+  //     const result = officialPackageForTransport(kind);
+
   switch (kind) {
     case "ros2":
       return "spanda-ros2";
@@ -34,11 +49,44 @@ function registerTransportStub(
   packageName: string,
   kind: TransportKind,
 ): void {
+  // Description:
+  //     RegisterTransportStub.
+  //
+  // Inputs:
+  //     registry: ProviderRegistry
+  //         Caller-supplied registry.
+  //     packageName: string
+  //         Caller-supplied packageName.
+  //     kind: TransportKind
+  //         Caller-supplied kind.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+  //     const result = registerTransportStub(registry, packageName, kind);
+
   registry.registerTransport(transportRegistryKey(packageName), createTransportStub(kind));
 }
 
 /** Build a provider registry from installed official package names. */
 export function bootstrapProvidersForPackages(packageNames: readonly string[]): ProviderRegistry {
+  // Description:
+  //     BootstrapProvidersForPackages.
+  //
+  // Inputs:
+  //     packageNames: readonly string[]
+  //         Caller-supplied packageNames.
+  //
+  // Outputs:
+  //     result: ProviderRegistry
+  //         Return value from `bootstrapProvidersForPackages`.
+  //
+  // Example:
+
+  //     const result = bootstrapProvidersForPackages(packageNames);
+
   const registry = new ProviderRegistry();
   registry.setOfficialPackages([...packageNames]);
   registry.grantCapability("mqtt.publish");
@@ -99,6 +147,20 @@ export function bootstrapProvidersForPackages(packageNames: readonly string[]): 
 
 /** Register default compatibility-shim providers when no project manifest is available. */
 export function bootstrapDefaultProviders(): ProviderRegistry {
+  // Description:
+  //     BootstrapDefaultProviders.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: ProviderRegistry
+  //         Return value from `bootstrapDefaultProviders`.
+  //
+  // Example:
+
+  //     const result = bootstrapDefaultProviders();
+
   return bootstrapProvidersForPackages([]);
 }
 
@@ -109,6 +171,28 @@ function connectRegistryTransport(
   packageName: string,
   config: TransportConfig,
 ): void {
+  // Description:
+  //     ConnectRegistryTransport.
+  //
+  // Inputs:
+  //     commBus: RoutingCommBus
+  //         Caller-supplied commBus.
+  //     registry: ProviderRegistry
+  //         Caller-supplied registry.
+  //     kind: TransportKind
+  //         Caller-supplied kind.
+  //     packageName: string
+  //         Caller-supplied packageName.
+  //     config: TransportConfig
+  //         Caller-supplied config.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+  //     const result = connectRegistryTransport(commBus, registry, kind, packageName, config);
+
   const key = transportRegistryKey(packageName);
   const connected = registry.withTransport(key, (provider) => {
     provider.connect(config);
@@ -124,6 +208,22 @@ export function syncCommBusForOfficialPackages(
   commBus: RoutingCommBus,
   registry: ProviderRegistry,
 ): void {
+  // Description:
+  //     SyncCommBusForOfficialPackages.
+  //
+  // Inputs:
+  //     commBus: RoutingCommBus
+  //         Caller-supplied commBus.
+  //     registry: ProviderRegistry
+  //         Caller-supplied registry.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+  //     const result = syncCommBusForOfficialPackages(commBus, registry);
+
   commBus.clearRegistryBacked();
   const base: TransportConfig = {
     security: defaultTransportSecurity(),

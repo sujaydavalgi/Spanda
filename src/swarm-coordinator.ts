@@ -40,14 +40,57 @@ export type SwarmCoordinationResult = {
 };
 
 export function defaultSwarmStatePath(): string {
+  // Description:
+  //     DefaultSwarmStatePath.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `defaultSwarmStatePath`.
+  //
+  // Example:
+
+  //     const result = defaultSwarmStatePath();
+
   return process.env.SPANDA_SWARM_STATE ?? ".spanda/swarm-state.json";
 }
 
 export function emptySwarmState(): SwarmState {
+  // Description:
+  //     EmptySwarmState.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: SwarmState
+  //         Return value from `emptySwarmState`.
+  //
+  // Example:
+
+  //     const result = emptySwarmState();
+
   return { roundRobinCursor: {} };
 }
 
 export function readSwarmStateFromDisk(path = defaultSwarmStatePath()): SwarmState {
+  // Description:
+  //     ReadSwarmStateFromDisk.
+  //
+  // Inputs:
+  //     path = defaultSwarmStatePath(): input value
+  //         Caller-supplied path = defaultSwarmStatePath().
+  //
+  // Outputs:
+  //     result: SwarmState
+  //         Return value from `readSwarmStateFromDisk`.
+  //
+  // Example:
+
+  //     const result = readSwarmStateFromDisk(path = defaultSwarmStatePath());
+
   if (!existsSync(path)) return emptySwarmState();
   try {
     const parsed = JSON.parse(readFileSync(path, "utf-8")) as {
@@ -63,12 +106,43 @@ export function readSwarmStateFromDisk(path = defaultSwarmStatePath()): SwarmSta
 }
 
 export function writeSwarmStateToDisk(state: SwarmState, path = defaultSwarmStatePath()): void {
+  // Description:
+  //     WriteSwarmStateToDisk.
+  //
+  // Inputs:
+  //     state: SwarmState
+  //         Caller-supplied state.
+  //     path = defaultSwarmStatePath(): input value
+  //         Caller-supplied path = defaultSwarmStatePath().
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+  //     const result = writeSwarmStateToDisk(state, path = defaultSwarmStatePath());
+
   const abs = resolve(path);
   mkdirSync(dirname(abs), { recursive: true });
   writeFileSync(abs, JSON.stringify({ round_robin_cursor: state.roundRobinCursor }, null, 2));
 }
 
 function missionForRobot(robot: Program["robots"][number]): MissionRuntime | null {
+  // Description:
+  //     MissionForRobot.
+  //
+  // Inputs:
+  //     robot: Program["robots"][number]
+  //         Caller-supplied robot.
+  //
+  // Outputs:
+  //     result: MissionRuntime | null
+  //         Return value from `missionForRobot`.
+  //
+  // Example:
+
+  //     const result = missionForRobot(robot);
+
   if (!robot.mission) return null;
   return createMissionRuntime(
     robot.mission.name,
@@ -78,6 +152,22 @@ function missionForRobot(robot: Program["robots"][number]): MissionRuntime | nul
 }
 
 function advanceMember(program: Program, memberName: string): {
+  // Description:
+  //     AdvanceMember.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     memberName: string
+  //         Caller-supplied memberName.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+  //     const result = advanceMember(program, memberName);
+
   state: FleetMemberState;
   deliveries: PeerDelivery[];
 } {
@@ -141,6 +231,25 @@ function leaderFollowDeliveries(
   step: string,
   members: string[],
 ): PeerDelivery[] {
+  // Description:
+  //     LeaderFollowDeliveries.
+  //
+  // Inputs:
+  //     leader: string
+  //         Caller-supplied leader.
+  //     step: string
+  //         Caller-supplied step.
+  //     members: string[]
+  //         Caller-supplied members.
+  //
+  // Outputs:
+  //     result: PeerDelivery[]
+  //         Return value from `leaderFollowDeliveries`.
+  //
+  // Example:
+
+  //     const result = leaderFollowDeliveries(leader, step, members);
+
   if (!step) return [];
   return members
     .filter((member) => member !== leader)
@@ -158,6 +267,25 @@ function coordinateSwarmGroup(
   swarm: SwarmDecl,
   cursor: number,
 ): SwarmCoordinationReport {
+  // Description:
+  //     CoordinateSwarmGroup.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     swarm: SwarmDecl
+  //         Caller-supplied swarm.
+  //     cursor: number
+  //         Caller-supplied cursor.
+  //
+  // Outputs:
+  //     result: SwarmCoordinationReport
+  //         Return value from `coordinateSwarmGroup`.
+  //
+  // Example:
+
+  //     const result = coordinateSwarmGroup(program, swarm, cursor);
+
   const fleet = program.fleets.find((entry) => entry.name === swarm.fleetName);
   const members = fleet?.members ?? [];
   const memberStates: FleetMemberState[] = [];
@@ -220,6 +348,24 @@ export function coordinateSwarms(
   programPath: string,
   state: SwarmState,
 ): SwarmCoordinationResult {
+  // Description:
+  //     CoordinateSwarms.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     programPath: string
+  //         Caller-supplied programPath.
+  //     state: SwarmState
+  //         Caller-supplied state.
+  //
+  // Outputs:
+  //     result: SwarmCoordinationResult
+  //         Return value from `coordinateSwarms`.
+  //
+  // Example:
+  //     const result = coordinateSwarms(program, programPath, state);
+
   // Execute one coordination tick for each swarm declaration in the program.
   const reports: SwarmCoordinationReport[] = [];
   for (const swarm of program.swarms ?? []) {
@@ -264,6 +410,28 @@ export async function coordinateSwarmsMesh(
   meshUrl: string,
   token?: string,
 ): Promise<SwarmCoordinationResult> {
+  // Description:
+  //     CoordinateSwarmsMesh.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     programPath: string
+  //         Caller-supplied programPath.
+  //     state: SwarmState
+  //         Caller-supplied state.
+  //     meshUrl: string
+  //         Caller-supplied meshUrl.
+  //     token?: string
+  //         Caller-supplied token?.
+  //
+  // Outputs:
+  //     result: Promise<SwarmCoordinationResult>
+  //         Return value from `coordinateSwarmsMesh`.
+  //
+  // Example:
+  //     const result = coordinateSwarmsMesh(program, programPath, state, meshUrl, token?);
+
   // Execute swarm coordination locally, then push peer deliveries to the mesh coordinator.
   const { relayDeliveriesViaMesh } = await import("./fleet-mesh.js");
   const result = coordinateSwarms(program, programPath, state);

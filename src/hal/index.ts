@@ -229,36 +229,62 @@ export class SimHalBackend implements HalBackend {
 }
 
 export function createSimHal(): SimHalBackend {
-  // CreateSimHal.
+  // Description:
+  //     CreateSimHal.
   //
-  // Parameters:
-  // None.
+  // Inputs:
+  //     None.
   //
-  // Returns:
-  // `SimHalBackend`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: SimHalBackend
+  //         Return value from `createSimHal`.
   //
   // Example:
+  //     const result = createSimHal();
+  // Description:
+  //     CreateSimHal.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: SimHalBackend
+  //         Return value from `createSimHal`.
+  //
+  // Example:
+  //     const result = createSimHal();
 
   // const result = createSimHal();
   return new SimHalBackend();
 }
 
 export function halMemberFromDecl(decl: import("../ast/nodes.js").HalMemberDecl): HalMemberConfig {
-  // HalMemberFromDecl.
+  // Description:
+  //     HalMemberFromDecl.
   //
-  // Parameters:
-  // - `decl` — input value
+  // Inputs:
+  //     decl: import("../ast/nodes.js").HalMemberDecl
+  //         Caller-supplied decl.
   //
-  // Returns:
-  // HalMemberConfig.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: HalMemberConfig
+  //         Return value from `halMemberFromDecl`.
   //
   // Example:
+  //     const result = halMemberFromDecl(decl);
+  // Description:
+  //     HalMemberFromDecl.
+  //
+  // Inputs:
+  //     decl: import("../ast/nodes.js").HalMemberDecl
+  //         Caller-supplied decl.
+  //
+  // Outputs:
+  //     result: HalMemberConfig
+  //         Return value from `halMemberFromDecl`.
+  //
+  // Example:
+  //     const result = halMemberFromDecl(decl);
 
   // const result = halMemberFromDecl(decl);
   switch (decl.kind) {

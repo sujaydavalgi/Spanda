@@ -27,14 +27,57 @@ export type PeerRelayResponse = {
 };
 
 export function defaultFleetAgentsPath(): string {
+  // Description:
+  //     DefaultFleetAgentsPath.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `defaultFleetAgentsPath`.
+  //
+  // Example:
+
+  //     const result = defaultFleetAgentsPath();
+
   return process.env.SPANDA_FLEET_AGENTS ?? ".spanda/fleet-agents.json";
 }
 
 export function emptyFleetAgentRegistry(): FleetAgentRegistry {
+  // Description:
+  //     EmptyFleetAgentRegistry.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: FleetAgentRegistry
+  //         Return value from `emptyFleetAgentRegistry`.
+  //
+  // Example:
+
+  //     const result = emptyFleetAgentRegistry();
+
   return { agents: [] };
 }
 
 export function loadFleetAgentRegistry(text: string | null): FleetAgentRegistry {
+  // Description:
+  //     LoadFleetAgentRegistry.
+  //
+  // Inputs:
+  //     text: string | null
+  //         Caller-supplied text.
+  //
+  // Outputs:
+  //     result: FleetAgentRegistry
+  //         Return value from `loadFleetAgentRegistry`.
+  //
+  // Example:
+
+  //     const result = loadFleetAgentRegistry(text);
+
   if (!text) return emptyFleetAgentRegistry();
   try {
     const parsed = JSON.parse(text) as {
@@ -53,6 +96,21 @@ export function loadFleetAgentRegistry(text: string | null): FleetAgentRegistry 
 }
 
 export function serializeFleetAgentRegistry(registry: FleetAgentRegistry): string {
+  // Description:
+  //     SerializeFleetAgentRegistry.
+  //
+  // Inputs:
+  //     registry: FleetAgentRegistry
+  //         Caller-supplied registry.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `serializeFleetAgentRegistry`.
+  //
+  // Example:
+
+  //     const result = serializeFleetAgentRegistry(registry);
+
   return JSON.stringify(
     {
       agents: registry.agents.map((entry) => ({
@@ -67,6 +125,21 @@ export function serializeFleetAgentRegistry(registry: FleetAgentRegistry): strin
 }
 
 export function readFleetAgentRegistryFromDisk(path = defaultFleetAgentsPath()): FleetAgentRegistry {
+  // Description:
+  //     ReadFleetAgentRegistryFromDisk.
+  //
+  // Inputs:
+  //     path = defaultFleetAgentsPath(): input value
+  //         Caller-supplied path = defaultFleetAgentsPath().
+  //
+  // Outputs:
+  //     result: FleetAgentRegistry
+  //         Return value from `readFleetAgentRegistryFromDisk`.
+  //
+  // Example:
+
+  //     const result = readFleetAgentRegistryFromDisk(path = defaultFleetAgentsPath());
+
   if (!existsSync(path)) return emptyFleetAgentRegistry();
   return loadFleetAgentRegistry(readFileSync(path, "utf-8"));
 }
@@ -75,6 +148,22 @@ export function writeFleetAgentRegistryToDisk(
   registry: FleetAgentRegistry,
   path = defaultFleetAgentsPath(),
 ): void {
+  // Description:
+  //     WriteFleetAgentRegistryToDisk.
+  //
+  // Inputs:
+  //     registry: FleetAgentRegistry
+  //         Caller-supplied registry.
+  //     path = defaultFleetAgentsPath(): input value
+  //         Caller-supplied path = defaultFleetAgentsPath().
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+  //     const result = writeFleetAgentRegistryToDisk(registry, path = defaultFleetAgentsPath());
+
   const abs = resolve(path);
   mkdirSync(dirname(abs), { recursive: true });
   writeFileSync(abs, serializeFleetAgentRegistry(registry));
@@ -86,6 +175,27 @@ export function registerFleetAgent(
   url: string,
   token?: string,
 ): FleetAgentRegistry {
+  // Description:
+  //     RegisterFleetAgent.
+  //
+  // Inputs:
+  //     registry: FleetAgentRegistry
+  //         Caller-supplied registry.
+  //     robotName: string
+  //         Caller-supplied robotName.
+  //     url: string
+  //         Caller-supplied url.
+  //     token?: string
+  //         Caller-supplied token?.
+  //
+  // Outputs:
+  //     result: FleetAgentRegistry
+  //         Return value from `registerFleetAgent`.
+  //
+  // Example:
+
+  //     const result = registerFleetAgent(registry, robotName, url, token?);
+
   if (!url.startsWith("http://") && !url.startsWith("https://")) {
     throw new Error(`fleet agent URL must start with http:// or https:// (got ${url})`);
   }
@@ -99,6 +209,23 @@ export function lookupFleetAgent(
   registry: FleetAgentRegistry,
   robotName: string,
 ): FleetAgentEntry | undefined {
+  // Description:
+  //     LookupFleetAgent.
+  //
+  // Inputs:
+  //     registry: FleetAgentRegistry
+  //         Caller-supplied registry.
+  //     robotName: string
+  //         Caller-supplied robotName.
+  //
+  // Outputs:
+  //     result: FleetAgentEntry | undefined
+  //         Return value from `lookupFleetAgent`.
+  //
+  // Example:
+
+  //     const result = lookupFleetAgent(registry, robotName);
+
   return registry.agents.find((entry) => entry.robotName === robotName);
 }
 
@@ -108,6 +235,27 @@ async function agentFetch(
   path: string,
   body?: string,
 ): Promise<Response> {
+  // Description:
+  //     AgentFetch.
+  //
+  // Inputs:
+  //     entry: FleetAgentEntry
+  //         Caller-supplied entry.
+  //     method: string
+  //         Caller-supplied method.
+  //     path: string
+  //         Caller-supplied path.
+  //     body?: string
+  //         Caller-supplied body?.
+  //
+  // Outputs:
+  //     result: Promise<Response>
+  //         Return value from `agentFetch`.
+  //
+  // Example:
+
+  //     const result = agentFetch(entry, method, path, body?);
+
   const base = entry.url.replace(/\/$/, "");
   const headers: Record<string, string> = { Accept: "application/json" };
   if (body) headers["Content-Type"] = "application/json";
@@ -116,6 +264,21 @@ async function agentFetch(
 }
 
 export async function fleetAgentHealth(entry: FleetAgentEntry): Promise<boolean> {
+  // Description:
+  //     FleetAgentHealth.
+  //
+  // Inputs:
+  //     entry: FleetAgentEntry
+  //         Caller-supplied entry.
+  //
+  // Outputs:
+  //     result: Promise<boolean>
+  //         Return value from `fleetAgentHealth`.
+  //
+  // Example:
+
+  //     const result = fleetAgentHealth(entry);
+
   const response = await agentFetch(entry, "GET", "/v1/health");
   if (!response.ok) return false;
   const body = (await response.json()) as { ok?: boolean };
@@ -126,7 +289,26 @@ export async function fleetAgentReadiness(
   entry: FleetAgentEntry,
   runtime = false,
   injectHealthFaults = false,
-): Promise<{ ok: boolean; mission_ready?: boolean; readiness?: unknown }> {
+): Promise<{
+  // Description:
+  //     FleetAgentReadiness.
+  //
+  // Inputs:
+  //     entry: FleetAgentEntry
+  //         Caller-supplied entry.
+  //     runtime = false: input value
+  //         Caller-supplied runtime = false.
+  //     injectHealthFaults = false: input value
+  //         Caller-supplied injectHealthFaults = false.
+  //
+  // Outputs:
+  //     result: Promise<
+  //         Return value from `fleetAgentReadiness`.
+  //
+  // Example:
+
+ // const result = fleetAgentReadiness(entry, runtime = false, injectHealthFaults = false);
+ ok: boolean; mission_ready?: boolean; readiness?: unknown }> {
   const query = new URLSearchParams();
   if (runtime) query.set("runtime", "true");
   if (injectHealthFaults) query.set("inject_health_faults", "true");
@@ -139,6 +321,23 @@ export async function fleetAgentReadiness(
 }
 
 export async function fleetAgentUploadProgram(entry: FleetAgentEntry, program: string): Promise<void> {
+  // Description:
+  //     FleetAgentUploadProgram.
+  //
+  // Inputs:
+  //     entry: FleetAgentEntry
+  //         Caller-supplied entry.
+  //     program: string
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     result: Promise<void>
+  //         Return value from `fleetAgentUploadProgram`.
+  //
+  // Example:
+
+  //     const result = fleetAgentUploadProgram(entry, program);
+
   const response = await agentFetch(entry, "POST", "/v1/program", JSON.stringify({ program }));
   if (!response.ok) {
     throw new Error(`fleet agent program upload HTTP ${response.status}`);
@@ -153,6 +352,23 @@ export async function relayPeerDelivery(
   entry: FleetAgentEntry,
   delivery: PeerDelivery,
 ): Promise<PeerRelayResponse> {
+  // Description:
+  //     RelayPeerDelivery.
+  //
+  // Inputs:
+  //     entry: FleetAgentEntry
+  //         Caller-supplied entry.
+  //     delivery: PeerDelivery
+  //         Caller-supplied delivery.
+  //
+  // Outputs:
+  //     result: Promise<PeerRelayResponse>
+  //         Return value from `relayPeerDelivery`.
+  //
+  // Example:
+
+  //     const result = relayPeerDelivery(entry, delivery);
+
   const response = await agentFetch(
     entry,
     "POST",
@@ -187,7 +403,24 @@ export async function relayPeerDelivery(
 export async function relayPeerDeliveries(
   deliveries: PeerDelivery[],
   registry: FleetAgentRegistry,
-): Promise<{ relayed: number; failed: number }> {
+): Promise<{
+  // Description:
+  //     RelayPeerDeliveries.
+  //
+  // Inputs:
+  //     deliveries: PeerDelivery[]
+  //         Caller-supplied deliveries.
+  //     registry: FleetAgentRegistry
+  //         Caller-supplied registry.
+  //
+  // Outputs:
+  //     result: Promise<
+  //         Return value from `relayPeerDeliveries`.
+  //
+  // Example:
+
+ // const result = relayPeerDeliveries(deliveries, registry);
+ relayed: number; failed: number }> {
   let relayed = 0;
   let failed = 0;
   for (const delivery of deliveries) {

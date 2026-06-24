@@ -46,6 +46,21 @@ export type FleetOrchestrationResult = {
 };
 
 function missionForRobot(robot: Program["robots"][number]): MissionRuntime | null {
+  // Description:
+  //     MissionForRobot.
+  //
+  // Inputs:
+  //     robot: Program["robots"][number]
+  //         Caller-supplied robot.
+  //
+  // Outputs:
+  //     result: MissionRuntime | null
+  //         Return value from `missionForRobot`.
+  //
+  // Example:
+
+  //     const result = missionForRobot(robot);
+
   if (!robot.mission) return null;
   return createMissionRuntime(
     robot.mission.name,
@@ -55,6 +70,22 @@ function missionForRobot(robot: Program["robots"][number]): MissionRuntime | nul
 }
 
 export function orchestrateFleets(program: Program, programPath: string): FleetOrchestrationResult {
+  // Description:
+  //     OrchestrateFleets.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     programPath: string
+  //         Caller-supplied programPath.
+  //
+  // Outputs:
+  //     result: FleetOrchestrationResult
+  //         Return value from `orchestrateFleets`.
+  //
+  // Example:
+  //     const result = orchestrateFleets(program, programPath);
+
   // Coordinate declared fleet groups using each member robot's mission controller.
   const reports: FleetOrchestrationReport[] = [];
 
@@ -143,6 +174,27 @@ export async function orchestrateFleetsMesh(
   meshUrl: string,
   token?: string,
 ): Promise<FleetOrchestrationResult> {
+  // Description:
+  //     OrchestrateFleetsMesh.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     programPath: string
+  //         Caller-supplied programPath.
+  //     meshUrl: string
+  //         Caller-supplied meshUrl.
+  //     token?: string
+  //         Caller-supplied token?.
+  //
+  // Outputs:
+  //     result: Promise<FleetOrchestrationResult>
+  //         Return value from `orchestrateFleetsMesh`.
+  //
+  // Example:
+
+  //     const result = orchestrateFleetsMesh(program, programPath, meshUrl, token?);
+
   const { relayDeliveriesViaMesh } = await import("./fleet-mesh.js");
   const result = orchestrateFleets(program, programPath);
   let success = result.success;
@@ -167,6 +219,24 @@ export async function orchestrateFleetsRemote(
   programPath: string,
   registry: import("./fleet-remote.js").FleetAgentRegistry,
 ): Promise<FleetOrchestrationResult> {
+  // Description:
+  //     OrchestrateFleetsRemote.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     programPath: string
+  //         Caller-supplied programPath.
+  //     registry: import("./fleet-remote.js").FleetAgentRegistry
+  //         Caller-supplied registry.
+  //
+  // Outputs:
+  //     result: Promise<FleetOrchestrationResult>
+  //         Return value from `orchestrateFleetsRemote`.
+  //
+  // Example:
+  //     const result = orchestrateFleetsRemote(program, programPath, registry);
+
   // Coordinate locally, then push peer mission steps to remote fleet agents.
   const { relayPeerDeliveries } = await import("./fleet-remote.js");
   const result = orchestrateFleets(program, programPath);

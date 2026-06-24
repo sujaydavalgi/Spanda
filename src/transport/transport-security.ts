@@ -25,19 +25,31 @@ export type TransportSecurityConfig = {
 };
 
 export function defaultTransportSecurity(): TransportSecurityConfig {
-  // Return open transport security defaults.
+  // Description:
+  //     DefaultTransportSecurity.
   //
-  // Parameters:
-  // None.
+  // Inputs:
+  //     None.
   //
-  // Returns:
-  // TransportSecurityConfig with encryption disabled.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: TransportSecurityConfig
+  //         Return value from `defaultTransportSecurity`.
   //
   // Example:
-  // const cfg = defaultTransportSecurity();
+  //     const result = defaultTransportSecurity();
+  // Description:
+  //     DefaultTransportSecurity.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: TransportSecurityConfig
+  //         Return value from `defaultTransportSecurity`.
+  //
+  // Example:
+
+  //     const result = defaultTransportSecurity();
 
   return {
     encryption: "none",
@@ -50,18 +62,63 @@ export function defaultTransportSecurity(): TransportSecurityConfig {
 }
 
 function parseEncryption(value: string | null | undefined): EncryptionMode {
+  // Description:
+  //     ParseEncryption.
+  //
+  // Inputs:
+  //     value: string | null | undefined
+  //         Caller-supplied value.
+  //
+  // Outputs:
+  //     result: EncryptionMode
+  //         Return value from `parseEncryption`.
+  //
+  // Example:
+
+  //     const result = parseEncryption(value);
+
   if (!value) return "none";
   if (value === "none" || value === "optional" || value === "required") return value;
   throw new Error(`invalid encryption mode '${value}'`);
 }
 
 function parseAuthentication(value: string | null | undefined): AuthenticationMode {
+  // Description:
+  //     ParseAuthentication.
+  //
+  // Inputs:
+  //     value: string | null | undefined
+  //         Caller-supplied value.
+  //
+  // Outputs:
+  //     result: AuthenticationMode
+  //         Return value from `parseAuthentication`.
+  //
+  // Example:
+
+  //     const result = parseAuthentication(value);
+
   if (!value) return "none";
   if (value === "none" || value === "signed" || value === "mutual") return value;
   throw new Error(`invalid authentication mode '${value}'`);
 }
 
 function parseIntegrity(value: string | null | undefined): IntegrityMode {
+  // Description:
+  //     ParseIntegrity.
+  //
+  // Inputs:
+  //     value: string | null | undefined
+  //         Caller-supplied value.
+  //
+  // Outputs:
+  //     result: IntegrityMode
+  //         Return value from `parseIntegrity`.
+  //
+  // Example:
+
+  //     const result = parseIntegrity(value);
+
   if (!value) return "none";
   if (value === "none" || value === "required") return value;
   throw new Error(`invalid integrity mode '${value}'`);
@@ -72,21 +129,41 @@ export function transportSecurityFromBusFields(
   authentication?: string | null,
   integrity?: string | null,
 ): TransportSecurityConfig {
-  // Parse bus block security fields into a transport config.
+  // Description:
+  //     TransportSecurityFromBusFields.
   //
-  // Parameters:
-  // - `encryption` — optional bus encryption mode
-  // - `authentication` — optional bus authentication mode
-  // - `integrity` — optional bus integrity mode
+  // Inputs:
+  //     encryption?: string | null
+  //         Caller-supplied encryption?.
+  //     authentication?: string | null
+  //         Caller-supplied authentication?.
+  //     integrity?: string | null
+  //         Caller-supplied integrity?.
   //
-  // Returns:
-  // Parsed TransportSecurityConfig.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: TransportSecurityConfig
+  //         Return value from `transportSecurityFromBusFields`.
   //
   // Example:
-  // const cfg = transportSecurityFromBusFields("required", "mutual", "required");
+  //     const result = transportSecurityFromBusFields(encryption?, authentication?, integrity?);
+  // Description:
+  //     TransportSecurityFromBusFields.
+  //
+  // Inputs:
+  //     encryption?: string | null
+  //         Caller-supplied encryption?.
+  //     authentication?: string | null
+  //         Caller-supplied authentication?.
+  //     integrity?: string | null
+  //         Caller-supplied integrity?.
+  //
+  // Outputs:
+  //     result: TransportSecurityConfig
+  //         Return value from `transportSecurityFromBusFields`.
+  //
+  // Example:
+
+  //     const result = transportSecurityFromBusFields(encryption?, authentication?, integrity?);
 
   return {
     encryption: parseEncryption(encryption),
@@ -99,38 +176,67 @@ export function transportSecurityFromBusFields(
 }
 
 export function sessionMaterial(config: TransportSecurityConfig): string {
-  // Build deterministic session key material from cert and key secret names.
+  // Description:
+  //     SessionMaterial.
   //
-  // Parameters:
-  // - `config` — transport security config
+  // Inputs:
+  //     config: TransportSecurityConfig
+  //         Caller-supplied config.
   //
-  // Returns:
-  // Material string for WireCryptoSession derivation.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: string
+  //         Return value from `sessionMaterial`.
   //
   // Example:
-  // const material = sessionMaterial(cfg);
+  //     const result = sessionMaterial(config);
+  // Description:
+  //     SessionMaterial.
+  //
+  // Inputs:
+  //     config: TransportSecurityConfig
+  //         Caller-supplied config.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `sessionMaterial`.
+  //
+  // Example:
+
+  //     const result = sessionMaterial(config);
 
   return `${config.certPath ?? "spanda-local"}:${config.keySecret ?? "spanda-local-key"}`;
 }
 
 export function validateTransportSecurity(config: TransportSecurityConfig, transport: string): void {
-  // Fail fast when encryption is required without cert/key configuration.
+  // Description:
+  //     ValidateTransportSecurity.
   //
-  // Parameters:
-  // - `config` — transport security config
-  // - `transport` — transport kind name for error messages
+  // Inputs:
+  //     config: TransportSecurityConfig
+  //         Caller-supplied config.
+  //     transport: string
+  //         Caller-supplied transport.
   //
-  // Returns:
-  // Nothing; throws when configuration is invalid.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     None.
   //
   // Example:
-  // validateTransportSecurity(cfg, "mqtt");
+  //     const result = validateTransportSecurity(config, transport);
+  // Description:
+  //     ValidateTransportSecurity.
+  //
+  // Inputs:
+  //     config: TransportSecurityConfig
+  //         Caller-supplied config.
+  //     transport: string
+  //         Caller-supplied transport.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+  //     const result = validateTransportSecurity(config, transport);
 
   if (config.encryption === "required" && !config.certPath && !config.keySecret) {
     throw new Error(
@@ -142,6 +248,20 @@ export function validateTransportSecurity(config: TransportSecurityConfig, trans
 export type TlsEndpoint = { host: string; port: number; useTls: boolean };
 
 export function parseTlsEndpoint(url: string): TlsEndpoint | null {
+  // Description:
+  //     ParseTlsEndpoint.
+  //
+  // Inputs:
+  //     url: string
+  //         Caller-supplied url.
+  //
+  // Outputs:
+  //     result: TlsEndpoint | null
+  //         Return value from `parseTlsEndpoint`.
+  //
+  // Example:
+  //     const result = parseTlsEndpoint(url);
+
   // Parse broker URLs into host/port TLS endpoints.
   const lower = url.toLowerCase();
   let useTls = false;
@@ -177,6 +297,21 @@ export function parseTlsEndpoint(url: string): TlsEndpoint | null {
 }
 
 function mtlsSessionMaterial(config: TransportSecurityConfig): string {
+  // Description:
+  //     MtlsSessionMaterial.
+  //
+  // Inputs:
+  //     config: TransportSecurityConfig
+  //         Caller-supplied config.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `mtlsSessionMaterial`.
+  //
+  // Example:
+
+  //     const result = mtlsSessionMaterial(config);
+
   if (config.certPath && existsSync(config.certPath) && config.keyPath && existsSync(config.keyPath)) {
     const cert = readFileSync(config.certPath);
     const key = readFileSync(config.keyPath);
@@ -189,7 +324,25 @@ function tryMtlsHandshake(
   endpoint: TlsEndpoint,
   certPath: string,
   keyPath: string,
-): { cipherSuite: string; sessionMaterial: string } | null {
+): {
+  // Description:
+  //     TryMtlsHandshake.
+  //
+  // Inputs:
+  //     endpoint: TlsEndpoint
+  //         Caller-supplied endpoint.
+  //     certPath: string
+  //         Caller-supplied certPath.
+  //     keyPath: string
+  //         Caller-supplied keyPath.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+ // const result = tryMtlsHandshake(endpoint, certPath, keyPath);
+ cipherSuite: string; sessionMaterial: string } | null {
   if (!endpoint.useTls) return null;
   try {
     const cert = readFileSync(certPath);
@@ -225,6 +378,20 @@ function tryMtlsHandshake(
 }
 
 export function resolveBrokerUrl(busUrl?: string | null): string | null {
+  // Description:
+  //     ResolveBrokerUrl.
+  //
+  // Inputs:
+  //     busUrl?: string | null
+  //         Caller-supplied busUrl?.
+  //
+  // Outputs:
+  //     result: string | null
+  //         Return value from `resolveBrokerUrl`.
+  //
+  // Example:
+  //     const result = resolveBrokerUrl(busUrl?);
+
   // Resolve broker URL from bus declaration or SPANDA_BROKER_URL env.
   if (busUrl && busUrl.length > 0) return busUrl;
   const env = process.env.SPANDA_BROKER_URL;
@@ -232,19 +399,33 @@ export function resolveBrokerUrl(busUrl?: string | null): string | null {
 }
 
 export function urlRequiresTls(brokerUrl?: string | null): boolean {
-  // Detect TLS broker URL schemes that require encrypted transport.
+  // Description:
+  //     UrlRequiresTls.
   //
-  // Parameters:
-  // - `brokerUrl` — optional broker URL
+  // Inputs:
+  //     brokerUrl?: string | null
+  //         Caller-supplied brokerUrl?.
   //
-  // Returns:
-  // true when the URL implies TLS.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: boolean
+  //         Return value from `urlRequiresTls`.
   //
   // Example:
-  // urlRequiresTls("mqtts://broker:8883");
+  //     const result = urlRequiresTls(brokerUrl?);
+  // Description:
+  //     UrlRequiresTls.
+  //
+  // Inputs:
+  //     brokerUrl?: string | null
+  //         Caller-supplied brokerUrl?.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `urlRequiresTls`.
+  //
+  // Example:
+
+  //     const result = urlRequiresTls(brokerUrl?);
 
   if (!brokerUrl) return false;
   const lower = brokerUrl.toLowerCase();
@@ -267,20 +448,37 @@ export function effectiveTransportPolicy(
   robot: SecureCommPolicy,
   bus: TransportSecurityConfig,
 ): TransportSecurityConfig {
-  // Merge robot secure_comm defaults with per-bus overrides.
+  // Description:
+  //     EffectiveTransportPolicy.
   //
-  // Parameters:
-  // - `robot` — robot-wide secure_comm policy
-  // - `bus` — per-bus transport security config
+  // Inputs:
+  //     robot: SecureCommPolicy
+  //         Caller-supplied robot.
+  //     bus: TransportSecurityConfig
+  //         Caller-supplied bus.
   //
-  // Returns:
-  // Effective merged transport security config.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: TransportSecurityConfig
+  //         Return value from `effectiveTransportPolicy`.
   //
   // Example:
-  // const effective = effectiveTransportPolicy(robotPolicy, busCfg);
+  //     const result = effectiveTransportPolicy(robot, bus);
+  // Description:
+  //     EffectiveTransportPolicy.
+  //
+  // Inputs:
+  //     robot: SecureCommPolicy
+  //         Caller-supplied robot.
+  //     bus: TransportSecurityConfig
+  //         Caller-supplied bus.
+  //
+  // Outputs:
+  //     result: TransportSecurityConfig
+  //         Return value from `effectiveTransportPolicy`.
+  //
+  // Example:
+
+  //     const result = effectiveTransportPolicy(robot, bus);
 
   return {
     encryption: bus.encryption !== "none" ? bus.encryption : robot.encryption,
@@ -300,6 +498,7 @@ export class TlsTransportSession {
   private session: WireCryptoSession | null = null;
 
   connect(config: TransportSecurityConfig, brokerUrl?: string | null): void {
+
     // Negotiate wire encryption and optional mTLS handshake against a broker URL.
     validateTransportSecurity(config, "tls");
     if (config.encryption === "none") {
@@ -362,6 +561,7 @@ export class TlsTransportSession {
     // None.
     //
     // Example:
+
     // const wire = tls.encryptFrame(json);
 
     if (!this.negotiated) return plaintext;
@@ -383,6 +583,7 @@ export class TlsTransportSession {
     // None.
     //
     // Example:
+
     // const json = tls.decryptFrame(wire);
 
     if (!this.negotiated) return ciphertext;

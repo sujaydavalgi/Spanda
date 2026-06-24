@@ -47,18 +47,30 @@ export type RunResult = {
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 function cliPath(): string | null {
-  // CliPath.
+  // Description:
+  //     CliPath.
   //
-  // Parameters:
-  // None.
+  // Inputs:
+  //     None.
   //
-  // Returns:
-  // `Some` / non-null value on success, otherwise `None` / null.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: string | null
+  //         Return value from `cliPath`.
   //
   // Example:
+  //     const result = cliPath();
+  // Description:
+  //     CliPath.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: string | null
+  //         Return value from `cliPath`.
+  //
+  // Example:
+  //     const result = cliPath();
 
   // const result = cliPath();
   const release = join(repoRoot, "target/release/spanda");
@@ -84,36 +96,62 @@ function cliPath(): string | null {
 }
 
 export function isCliAvailable(): boolean {
-  // IsCliAvailable.
+  // Description:
+  //     IsCliAvailable.
   //
-  // Parameters:
-  // None.
+  // Inputs:
+  //     None.
   //
-  // Returns:
-  // `true` or `false`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: boolean
+  //         Return value from `isCliAvailable`.
   //
   // Example:
+  //     const result = isCliAvailable();
+  // Description:
+  //     IsCliAvailable.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `isCliAvailable`.
+  //
+  // Example:
+  //     const result = isCliAvailable();
 
   // const result = isCliAvailable();
   return cliPath() !== null;
 }
 
 export function checkViaCli(source: string): CheckResult {
-  // CheckViaCli.
+  // Description:
+  //     CheckViaCli.
   //
-  // Parameters:
-  // - `source` — input value
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
   //
-  // Returns:
-  // `CheckResult`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: CheckResult
+  //         Return value from `checkViaCli`.
   //
   // Example:
+  //     const result = checkViaCli(source);
+  // Description:
+  //     CheckViaCli.
+  //
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //
+  // Outputs:
+  //     result: CheckResult
+  //         Return value from `checkViaCli`.
+  //
+  // Example:
+  //     const result = checkViaCli(source);
 
   // const result = checkViaCli(source);
   const bin = cliPath();
@@ -150,19 +188,36 @@ export function verifyViaCli(
   source: string,
   args: string[] = [],
 ): VerifyResult {
-  // VerifyViaCli.
+  // Description:
+  //     VerifyViaCli.
   //
-  // Parameters:
-  // - `source` — input value
-  // - `args` — optional input
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //     args: string[] = []
+  //         Caller-supplied args.
   //
-  // Returns:
-  // `VerifyResult`.
-  //
-  // Options:
-  // - `args` — optional parameter
+  // Outputs:
+  //     result: VerifyResult
+  //         Return value from `verifyViaCli`.
   //
   // Example:
+  //     const result = verifyViaCli(source, args);
+  // Description:
+  //     VerifyViaCli.
+  //
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //     args: string[] = []
+  //         Caller-supplied args.
+  //
+  // Outputs:
+  //     result: VerifyResult
+  //         Return value from `verifyViaCli`.
+  //
+  // Example:
+  //     const result = verifyViaCli(source, args);
 
   // const result = verifyViaCli(source, args);
   const bin = cliPath();
@@ -212,18 +267,32 @@ export function verifyViaCli(
 }
 
 export function runViaCli(source: string): RunResult {
-  // RunViaCli.
+  // Description:
+  //     RunViaCli.
   //
-  // Parameters:
-  // - `source` — input value
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
   //
-  // Returns:
-  // `RunResult`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: RunResult
+  //         Return value from `runViaCli`.
   //
   // Example:
+  //     const result = runViaCli(source);
+  // Description:
+  //     RunViaCli.
+  //
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //
+  // Outputs:
+  //     result: RunResult
+  //         Return value from `runViaCli`.
+  //
+  // Example:
+  //     const result = runViaCli(source);
 
   // const result = runViaCli(source);
   const bin = cliPath();
@@ -273,7 +342,23 @@ function withTempSource(
   source: string,
   suffix: string,
   run: (file: string) => SpawnSyncReturns<string>,
-): SpawnSyncReturns<string> {  // Compute tmp for the following logic.
+): SpawnSyncReturns<string> {
+  // Description:
+  //     WithTempSource.
+  //
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //     suffix: string
+  //         Caller-supplied suffix.
+  //
+  // Outputs:
+  //     result: SpawnSyncReturns<string>
+  //         Return value from `withTempSource`.
+  //
+  // Example:
+  //     const result = withTempSource(source, suffix);
+  // Compute tmp for the following logic.
   const tmp = join(
     repoRoot,
     `${suffix.replace(/\.sd$/, "")}-${process.pid}-${Date.now()}.sd`,
@@ -291,18 +376,32 @@ function withTempSource(
 }
 
 export function fmtViaCli(source: string): FormatResult {
-  // FmtViaCli.
+  // Description:
+  //     FmtViaCli.
   //
-  // Parameters:
-  // - `source` — input value
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
   //
-  // Returns:
-  // `FormatResult`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: FormatResult
+  //         Return value from `fmtViaCli`.
   //
   // Example:
+  //     const result = fmtViaCli(source);
+  // Description:
+  //     FmtViaCli.
+  //
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //
+  // Outputs:
+  //     result: FormatResult
+  //         Return value from `fmtViaCli`.
+  //
+  // Example:
+  //     const result = fmtViaCli(source);
 
   // const result = fmtViaCli(source);
   const bin = cliPath();
@@ -323,18 +422,32 @@ export function fmtViaCli(source: string): FormatResult {
 }
 
 export function lintViaCli(source: string): LintResult {
-  // LintViaCli.
+  // Description:
+  //     LintViaCli.
   //
-  // Parameters:
-  // - `source` — input value
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
   //
-  // Returns:
-  // `LintResult`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: LintResult
+  //         Return value from `lintViaCli`.
   //
   // Example:
+  //     const result = lintViaCli(source);
+  // Description:
+  //     LintViaCli.
+  //
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //
+  // Outputs:
+  //     result: LintResult
+  //         Return value from `lintViaCli`.
+  //
+  // Example:
+  //     const result = lintViaCli(source);
 
   // const result = lintViaCli(source);
   const bin = cliPath();
@@ -361,18 +474,32 @@ export function lintViaCli(source: string): LintResult {
 }
 
 export function docViaCli(source: string): DocResult {
-  // DocViaCli.
+  // Description:
+  //     DocViaCli.
   //
-  // Parameters:
-  // - `source` — input value
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
   //
-  // Returns:
-  // `DocResult`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: DocResult
+  //         Return value from `docViaCli`.
   //
   // Example:
+  //     const result = docViaCli(source);
+  // Description:
+  //     DocViaCli.
+  //
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //
+  // Outputs:
+  //     result: DocResult
+  //         Return value from `docViaCli`.
+  //
+  // Example:
+  //     const result = docViaCli(source);
 
   // const result = docViaCli(source);
   const bin = cliPath();
@@ -401,19 +528,36 @@ export function docViaCli(source: string): DocResult {
 }
 
 export function codegenViaCli(source: string, target: CodegenTarget = "native"): string {
-  // CodegenViaCli.
+  // Description:
+  //     CodegenViaCli.
   //
-  // Parameters:
-  // - `source` — input value
-  // - `target` — optional input
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //     target: CodegenTarget = "native"
+  //         Caller-supplied target.
   //
-  // Returns:
-  // Text result.
-  //
-  // Options:
-  // - `target` — optional parameter
+  // Outputs:
+  //     result: string
+  //         Return value from `codegenViaCli`.
   //
   // Example:
+  //     const result = codegenViaCli(source, target);
+  // Description:
+  //     CodegenViaCli.
+  //
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //     target: CodegenTarget = "native"
+  //         Caller-supplied target.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `codegenViaCli`.
+  //
+  // Example:
+  //     const result = codegenViaCli(source, target);
 
   // const result = codegenViaCli(source, target);
   const bin = cliPath();
@@ -434,18 +578,32 @@ export function codegenViaCli(source: string, target: CodegenTarget = "native"):
 }
 
 export function deployViaCli(source: string): string {
-  // DeployViaCli.
+  // Description:
+  //     DeployViaCli.
   //
-  // Parameters:
-  // - `source` — input value
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
   //
-  // Returns:
-  // Text result.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: string
+  //         Return value from `deployViaCli`.
   //
   // Example:
+  //     const result = deployViaCli(source);
+  // Description:
+  //     DeployViaCli.
+  //
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `deployViaCli`.
+  //
+  // Example:
+  //     const result = deployViaCli(source);
 
   // const result = deployViaCli(source);
   const bin = cliPath();
@@ -466,19 +624,36 @@ export function deployViaCli(source: string): string {
 }
 
 export function debugViaCli(source: string, breakpoints: number[] = []): DebugResult {
-  // DebugViaCli.
+  // Description:
+  //     DebugViaCli.
   //
-  // Parameters:
-  // - `source` — input value
-  // - `breakpoints` — optional input
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //     breakpoints: number[] = []
+  //         Caller-supplied breakpoints.
   //
-  // Returns:
-  // `DebugResult`.
-  //
-  // Options:
-  // - `breakpoints` — optional parameter
+  // Outputs:
+  //     result: DebugResult
+  //         Return value from `debugViaCli`.
   //
   // Example:
+  //     const result = debugViaCli(source, breakpoints);
+  // Description:
+  //     DebugViaCli.
+  //
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //     breakpoints: number[] = []
+  //         Caller-supplied breakpoints.
+  //
+  // Outputs:
+  //     result: DebugResult
+  //         Return value from `debugViaCli`.
+  //
+  // Example:
+  //     const result = debugViaCli(source, breakpoints);
 
   // const result = debugViaCli(source, breakpoints);
   const bin = cliPath();
@@ -511,18 +686,32 @@ export function debugViaCli(source: string, breakpoints: number[] = []): DebugRe
 }
 
 export function runNativeCli(args: string[]): SpawnSyncReturns<string> {
-  // RunNativeCli.
+  // Description:
+  //     RunNativeCli.
   //
-  // Parameters:
-  // - `args` — input value
+  // Inputs:
+  //     args: string[]
+  //         Caller-supplied args.
   //
-  // Returns:
-  // `SpawnSyncReturns<string>`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: SpawnSyncReturns<string>
+  //         Return value from `runNativeCli`.
   //
   // Example:
+  //     const result = runNativeCli(args);
+  // Description:
+  //     RunNativeCli.
+  //
+  // Inputs:
+  //     args: string[]
+  //         Caller-supplied args.
+  //
+  // Outputs:
+  //     result: SpawnSyncReturns<string>
+  //         Return value from `runNativeCli`.
+  //
+  // Example:
+  //     const result = runNativeCli(args);
 
   // const result = runNativeCli(args);
   const bin = cliPath();
@@ -543,19 +732,36 @@ export function runNativeCli(args: string[]): SpawnSyncReturns<string> {
 }
 
 export function verifyFileViaCli(filePath: string, extraArgs: string[] = []): VerifyResult {
-  // VerifyFileViaCli.
+  // Description:
+  //     VerifyFileViaCli.
   //
-  // Parameters:
-  // - `filePath` — input value
-  // - `extraArgs` — optional input
+  // Inputs:
+  //     filePath: string
+  //         Caller-supplied filePath.
+  //     extraArgs: string[] = []
+  //         Caller-supplied extraArgs.
   //
-  // Returns:
-  // `VerifyResult`.
-  //
-  // Options:
-  // - `extraArgs` — optional parameter
+  // Outputs:
+  //     result: VerifyResult
+  //         Return value from `verifyFileViaCli`.
   //
   // Example:
+  //     const result = verifyFileViaCli(filePath, extraArgs);
+  // Description:
+  //     VerifyFileViaCli.
+  //
+  // Inputs:
+  //     filePath: string
+  //         Caller-supplied filePath.
+  //     extraArgs: string[] = []
+  //         Caller-supplied extraArgs.
+  //
+  // Outputs:
+  //     result: VerifyResult
+  //         Return value from `verifyFileViaCli`.
+  //
+  // Example:
+  //     const result = verifyFileViaCli(filePath, extraArgs);
 
   // const result = verifyFileViaCli(filePath, extraArgs);
   const source = readFileSync(filePath, "utf-8");
@@ -572,6 +778,22 @@ export type SecurityCliReport = {
 };
 
 function securityViaCli(source: string, mode: "check" | "audit"): SecurityCliReport {
+  // Description:
+  //     SecurityViaCli.
+  //
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //     mode: "check" | "audit"
+  //         Caller-supplied mode.
+  //
+  // Outputs:
+  //     result: SecurityCliReport
+  //         Return value from `securityViaCli`.
+  //
+  // Example:
+  //     const result = securityViaCli(source, mode);
+
   // Run native spanda security check or audit against source text.
   const bin = cliPath();
   if (!bin) {
@@ -605,9 +827,39 @@ function securityViaCli(source: string, mode: "check" | "audit"): SecurityCliRep
 }
 
 export function securityCheckViaCli(source: string): SecurityCliReport {
+  // Description:
+  //     SecurityCheckViaCli.
+  //
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //
+  // Outputs:
+  //     result: SecurityCliReport
+  //         Return value from `securityCheckViaCli`.
+  //
+  // Example:
+
+  //     const result = securityCheckViaCli(source);
+
   return securityViaCli(source, "check");
 }
 
 export function securityAuditViaCli(source: string): SecurityCliReport {
+  // Description:
+  //     SecurityAuditViaCli.
+  //
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //
+  // Outputs:
+  //     result: SecurityCliReport
+  //         Return value from `securityAuditViaCli`.
+  //
+  // Example:
+
+  //     const result = securityAuditViaCli(source);
+
   return securityViaCli(source, "audit");
 }

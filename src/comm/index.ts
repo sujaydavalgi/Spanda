@@ -10,18 +10,32 @@ import type { RuntimeValue } from "../runtime/values.js";
 export type TransportKind = "local" | "ros2" | "mqtt" | "dds" | "websocket" | "sim";
 
 export function transportFromIdent(s: string): TransportKind | null {
-  // TransportFromIdent.
+  // Description:
+  //     TransportFromIdent.
   //
-  // Parameters:
-  // - `s` — input value
+  // Inputs:
+  //     s: string
+  //         Caller-supplied s.
   //
-  // Returns:
-  // `Some` / non-null value on success, otherwise `None` / null.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: TransportKind | null
+  //         Return value from `transportFromIdent`.
   //
   // Example:
+  //     const result = transportFromIdent(s);
+  // Description:
+  //     TransportFromIdent.
+  //
+  // Inputs:
+  //     s: string
+  //         Caller-supplied s.
+  //
+  // Outputs:
+  //     result: TransportKind | null
+  //         Return value from `transportFromIdent`.
+  //
+  // Example:
+  //     const result = transportFromIdent(s);
 
   // const result = transportFromIdent(s);
   switch (s) {
@@ -43,18 +57,32 @@ export function transportFromIdent(s: string): TransportKind | null {
 }
 
 export function transportAsStr(t: TransportKind): string {
-  // TransportAsStr.
+  // Description:
+  //     TransportAsStr.
   //
-  // Parameters:
-  // - `t` — input value
+  // Inputs:
+  //     t: TransportKind
+  //         Caller-supplied t.
   //
-  // Returns:
-  // Text result.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: string
+  //         Return value from `transportAsStr`.
   //
   // Example:
+  //     const result = transportAsStr(t);
+  // Description:
+  //     TransportAsStr.
+  //
+  // Inputs:
+  //     t: TransportKind
+  //         Caller-supplied t.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `transportAsStr`.
+  //
+  // Example:
+  //     const result = transportAsStr(t);
 
   // const result = transportAsStr(t);
   return t;
@@ -156,18 +184,30 @@ export class MessageRegistry {
   private builtin = new Set(["Velocity", "Pose", "Scan", "String"]);
 
   static new(): MessageRegistry {
-    // Create a new instance.
+    // Description:
+    //     Construct a new instance.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // MessageRegistry.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: MessageRegistry
+    //         Return value from `new`.
     //
     // Example:
+    //     const result = new();
+    // Description:
+    //     Construct a new instance.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: MessageRegistry
+    //         Return value from `new`.
+    //
+    // Example:
+    //     const result = new();
 
     // const result = new();
     return new MessageRegistry();
@@ -197,19 +237,36 @@ export class MessageRegistry {
   }
 
   static fromProgram(messages: MessageDecl[], structs: StructDecl[]): MessageRegistry {
-    // FromProgram.
+    // Description:
+    //     FromProgram.
     //
-    // Parameters:
-    // - `messages` — input value
-    // - `structs` — input value
+    // Inputs:
+    //     messages: MessageDecl[]
+    //         Caller-supplied messages.
+    //     structs: StructDecl[]
+    //         Caller-supplied structs.
     //
-    // Returns:
-    // MessageRegistry.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: MessageRegistry
+    //         Return value from `fromProgram`.
     //
     // Example:
+    //     const result = fromProgram(messages, structs);
+    // Description:
+    //     FromProgram.
+    //
+    // Inputs:
+    //     messages: MessageDecl[]
+    //         Caller-supplied messages.
+    //     structs: StructDecl[]
+    //         Caller-supplied structs.
+    //
+    // Outputs:
+    //     result: MessageRegistry
+    //         Return value from `fromProgram`.
+    //
+    // Example:
+    //     const result = fromProgram(messages, structs);
 
     // const result = fromProgram(messages, structs);
     const reg = MessageRegistry.new();
@@ -359,6 +416,7 @@ export class InMemoryCommBus {
     // None.
     //
     // Example:
+
     // pushInbound("/motion", velocity, "Navigator");
 
     if (!this.buffers.has(topicPath)) this.buffers.set(topicPath, []);
@@ -401,6 +459,7 @@ export class InMemoryCommBus {
     // None.
     //
     // Example:
+
     // const env = receiveEnvelope("/motion");
 
     const buf = this.buffers.get(topicPath);
@@ -546,6 +605,7 @@ export class InMemoryCommBus {
     // None.
     //
     // Example:
+
     // const faults = activeFaults();
 
     return [...this.faults];
@@ -564,6 +624,7 @@ export class InMemoryCommBus {
     // None.
     //
     // Example:
+
     // const paths = subscriptionPaths();
 
     return [...this.subscriptions.keys()];

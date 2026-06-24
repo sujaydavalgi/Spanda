@@ -42,6 +42,29 @@ function compat(
   line: number,
   column: number,
 ): CompatItem {
+  // Description:
+  //     Compat.
+  //
+  // Inputs:
+  //     category: string
+  //         Caller-supplied category.
+  //     message: string
+  //         Caller-supplied message.
+  //     severity: CompatItem["severity"]
+  //         Caller-supplied severity.
+  //     line: number
+  //         Caller-supplied line.
+  //     column: number
+  //         Caller-supplied column.
+  //
+  // Outputs:
+  //     result: CompatItem
+  //         Return value from `compat`.
+  //
+  // Example:
+
+  //     const result = compat(category, message, severity, line, column);
+
   return { category, message, severity, line, column };
 }
 
@@ -49,6 +72,23 @@ function verifyRequiresHardware(
   req: RequiresHardwareDecl,
   profile: HardwareProfile,
 ): CompatItem[] {
+  // Description:
+  //     VerifyRequiresHardware.
+  //
+  // Inputs:
+  //     req: RequiresHardwareDecl
+  //         Caller-supplied req.
+  //     profile: HardwareProfile
+  //         Caller-supplied profile.
+  //
+  // Outputs:
+  //     result: CompatItem[]
+  //         Return value from `verifyRequiresHardware`.
+  //
+  // Example:
+
+  //     const result = verifyRequiresHardware(req, profile);
+
   const items: CompatItem[] = [];
   const line = req.span.start.line;
   const column = req.span.start.column;
@@ -112,6 +152,23 @@ function verifyRequiresHardware(
 }
 
 function verifyRequiresNetwork(req: RequiresNetworkDecl, profile: HardwareProfile): CompatItem[] {
+  // Description:
+  //     VerifyRequiresNetwork.
+  //
+  // Inputs:
+  //     req: RequiresNetworkDecl
+  //         Caller-supplied req.
+  //     profile: HardwareProfile
+  //         Caller-supplied profile.
+  //
+  // Outputs:
+  //     result: CompatItem[]
+  //         Return value from `verifyRequiresNetwork`.
+  //
+  // Example:
+
+  //     const result = verifyRequiresNetwork(req, profile);
+
   const items: CompatItem[] = [];
   const line = req.span.start.line;
   const column = req.span.start.column;
@@ -146,6 +203,25 @@ function verifyResourceBudget(
   profile: HardwareProfile,
   taskIntervalMs: number,
 ): CompatItem[] {
+  // Description:
+  //     VerifyResourceBudget.
+  //
+  // Inputs:
+  //     budget: ResourceBudgetDecl
+  //         Caller-supplied budget.
+  //     profile: HardwareProfile
+  //         Caller-supplied profile.
+  //     taskIntervalMs: number
+  //         Caller-supplied taskIntervalMs.
+  //
+  // Outputs:
+  //     result: CompatItem[]
+  //         Return value from `verifyResourceBudget`.
+  //
+  // Example:
+
+  //     const result = verifyResourceBudget(budget, profile, taskIntervalMs);
+
   const items: CompatItem[] = [];
   const line = budget.span.start.line;
   const column = budget.span.start.column;
@@ -171,6 +247,23 @@ function verifyResourceBudget(
 }
 
 function verifyBatteryMission(mission: MissionDecl, profile: HardwareProfile): CompatItem[] {
+  // Description:
+  //     VerifyBatteryMission.
+  //
+  // Inputs:
+  //     mission: MissionDecl
+  //         Caller-supplied mission.
+  //     profile: HardwareProfile
+  //         Caller-supplied profile.
+  //
+  // Outputs:
+  //     result: CompatItem[]
+  //         Return value from `verifyBatteryMission`.
+  //
+  // Example:
+
+  //     const result = verifyBatteryMission(mission, profile);
+
   const line = mission.span.start.line;
   const column = mission.span.start.column;
   if (profile.batteryWh == null) {
@@ -218,6 +311,23 @@ function verifyBatteryMission(mission: MissionDecl, profile: HardwareProfile): C
 }
 
 function verifyTiming(robot: RobotDecl, profile: HardwareProfile): CompatItem[] {
+  // Description:
+  //     VerifyTiming.
+  //
+  // Inputs:
+  //     robot: RobotDecl
+  //         Caller-supplied robot.
+  //     profile: HardwareProfile
+  //         Caller-supplied profile.
+  //
+  // Outputs:
+  //     result: CompatItem[]
+  //         Return value from `verifyTiming`.
+  //
+  // Example:
+
+  //     const result = verifyTiming(robot, profile);
+
   const items: CompatItem[] = [];
   const line = robot.span.start.line;
   const column = robot.span.start.column;
@@ -242,6 +352,23 @@ function verifyTiming(robot: RobotDecl, profile: HardwareProfile): CompatItem[] 
 }
 
 function aiConfigNumber(config: AiConfigEntry[], key: string): number | null {
+  // Description:
+  //     AiConfigNumber.
+  //
+  // Inputs:
+  //     config: AiConfigEntry[]
+  //         Caller-supplied config.
+  //     key: string
+  //         Caller-supplied key.
+  //
+  // Outputs:
+  //     result: number | null
+  //         Return value from `aiConfigNumber`.
+  //
+  // Example:
+
+  //     const result = aiConfigNumber(config, key);
+
   for (const entry of config) {
     if (entry.key === key && typeof entry.value === "number") {
       return entry.value;
@@ -251,6 +378,23 @@ function aiConfigNumber(config: AiConfigEntry[], key: string): number | null {
 }
 
 function aiConfigBool(config: AiConfigEntry[], key: string): boolean {
+  // Description:
+  //     AiConfigBool.
+  //
+  // Inputs:
+  //     config: AiConfigEntry[]
+  //         Caller-supplied config.
+  //     key: string
+  //         Caller-supplied key.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `aiConfigBool`.
+  //
+  // Example:
+
+  //     const result = aiConfigBool(config, key);
+
   for (const entry of config) {
     if (entry.key !== key) continue;
     if (typeof entry.value === "boolean") return entry.value;
@@ -260,6 +404,21 @@ function aiConfigBool(config: AiConfigEntry[], key: string): boolean {
 }
 
 function sensorAdapter(sensorType: string): string | null {
+  // Description:
+  //     SensorAdapter.
+  //
+  // Inputs:
+  //     sensorType: string
+  //         Caller-supplied sensorType.
+  //
+  // Outputs:
+  //     result: string | null
+  //         Return value from `sensorAdapter`.
+  //
+  // Example:
+
+  //     const result = sensorAdapter(sensorType);
+
   switch (sensorType) {
     case "Camera":
       return "CameraAdapter";
@@ -276,6 +435,21 @@ function sensorAdapter(sensorType: string): string | null {
 }
 
 function actuatorAdapter(actuatorType: string): string | null {
+  // Description:
+  //     ActuatorAdapter.
+  //
+  // Inputs:
+  //     actuatorType: string
+  //         Caller-supplied actuatorType.
+  //
+  // Outputs:
+  //     result: string | null
+  //         Return value from `actuatorAdapter`.
+  //
+  // Example:
+
+  //     const result = actuatorAdapter(actuatorType);
+
   switch (actuatorType) {
     case "DifferentialDrive":
       return "MotorAdapter";
@@ -291,6 +465,23 @@ function actuatorAdapter(actuatorType: string): string | null {
 }
 
 function verifyAiModels(robot: RobotDecl, profile: HardwareProfile): CompatItem[] {
+  // Description:
+  //     VerifyAiModels.
+  //
+  // Inputs:
+  //     robot: RobotDecl
+  //         Caller-supplied robot.
+  //     profile: HardwareProfile
+  //         Caller-supplied profile.
+  //
+  // Outputs:
+  //     result: CompatItem[]
+  //         Return value from `verifyAiModels`.
+  //
+  // Example:
+
+  //     const result = verifyAiModels(robot, profile);
+
   const items: CompatItem[] = [];
   for (const model of robot.ai_models) {
     const line = model.span.start.line;
@@ -321,6 +512,25 @@ function verifyAdapters(
   profile: HardwareProfile,
   programTraits: Set<string>,
 ): CompatItem[] {
+  // Description:
+  //     VerifyAdapters.
+  //
+  // Inputs:
+  //     robot: RobotDecl
+  //         Caller-supplied robot.
+  //     profile: HardwareProfile
+  //         Caller-supplied profile.
+  //     programTraits: Set<string>
+  //         Caller-supplied programTraits.
+  //
+  // Outputs:
+  //     result: CompatItem[]
+  //         Return value from `verifyAdapters`.
+  //
+  // Example:
+
+  //     const result = verifyAdapters(robot, profile, programTraits);
+
   const items: CompatItem[] = [];
   const sensorSet = new Set(profile.sensors);
   const actuatorSet = new Set(profile.actuators);
@@ -351,6 +561,23 @@ function verifyAdapters(
 }
 
 function verifyTopicBandwidth(topics: TopicDecl[], profile: HardwareProfile): CompatItem[] {
+  // Description:
+  //     VerifyTopicBandwidth.
+  //
+  // Inputs:
+  //     topics: TopicDecl[]
+  //         Caller-supplied topics.
+  //     profile: HardwareProfile
+  //         Caller-supplied profile.
+  //
+  // Outputs:
+  //     result: CompatItem[]
+  //         Return value from `verifyTopicBandwidth`.
+  //
+  // Example:
+
+  //     const result = verifyTopicBandwidth(topics, profile);
+
   const items: CompatItem[] = [];
   let totalMbps = 0;
 
@@ -385,6 +612,21 @@ function verifyTopicBandwidth(topics: TopicDecl[], profile: HardwareProfile): Co
 }
 
 function traitNames(program: Program): Set<string> {
+  // Description:
+  //     TraitNames.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     result: Set<string>
+  //         Return value from `traitNames`.
+  //
+  // Example:
+
+  //     const result = traitNames(program);
+
   return new Set(program.traits.map((t) => t.name));
 }
 
@@ -398,6 +640,35 @@ function verifyRobotAgainstProfile(
   spanLine: number,
   spanColumn: number,
 ): CompatItem[] {
+  // Description:
+  //     VerifyRobotAgainstProfile.
+  //
+  // Inputs:
+  //     robot: RobotDecl
+  //         Caller-supplied robot.
+  //     profile: HardwareProfile
+  //         Caller-supplied profile.
+  //     programRequiresHw: RequiresHardwareDecl | null
+  //         Caller-supplied programRequiresHw.
+  //     programRequiresNet: RequiresNetworkDecl | null
+  //         Caller-supplied programRequiresNet.
+  //     programRequiresConn: RequiresConnectivityDecl | null
+  //         Caller-supplied programRequiresConn.
+  //     programTraits: Set<string>
+  //         Caller-supplied programTraits.
+  //     spanLine: number
+  //         Caller-supplied spanLine.
+  //     spanColumn: number
+  //         Caller-supplied spanColumn.
+  //
+  // Outputs:
+  //     result: CompatItem[]
+  //         Return value from `verifyRobotAgainstProfile`.
+  //
+  // Example:
+
+  //     const result = verifyRobotAgainstProfile(robot, profile, programRequiresHw, programRequiresNet, programRequiresConn, programTraits, spanLine, spanColumn);
+
   const items: CompatItem[] = [];
   const sensorSet = new Set(profile.sensors);
   const actuatorSet = new Set(profile.actuators);
@@ -459,6 +730,25 @@ function resolveTargets(
   options: VerifyHardwareTsOptions,
   registry: Map<string, HardwareProfile>,
 ): Array<[string, string, number, number]> {
+  // Description:
+  //     ResolveTargets.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     options: VerifyHardwareTsOptions
+  //         Caller-supplied options.
+  //     registry: Map<string, HardwareProfile>
+  //         Caller-supplied registry.
+  //
+  // Outputs:
+  //     result: Array<[string, string, number, number]>
+  //         Return value from `resolveTargets`.
+  //
+  // Example:
+
+  //     const result = resolveTargets(program, options, registry);
+
   if (options.allTargets) {
     const pairs: Array<[string, string, number, number]> = [];
     for (const robot of program.robots) {
@@ -484,22 +774,37 @@ export function verifyHardwareProgram(
   program: Program,
   options: VerifyHardwareTsOptions = {},
 ): VerifyResult {
-  // Run hardware compatibility verification in TypeScript.
+  // Description:
+  //     VerifyHardwareProgram.
   //
-  // Parameters:
-  // - `program` — parsed Spanda program
-  // - `options` — optional target and simulation flags
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     options: VerifyHardwareTsOptions = {}
+  //         Caller-supplied options.
   //
-  // Returns:
-  // Verify result compatible with the native CLI JSON shape.
-  //
-  // Options:
-  // - `options.target` — hardware profile name
-  // - `options.allTargets` — verify against every known profile
-  // - `options.simulate` — apply simulate_compatibility faults
+  // Outputs:
+  //     result: VerifyResult
+  //         Return value from `verifyHardwareProgram`.
   //
   // Example:
-  // const result = verifyHardwareProgram(program, { target: "RoverV2" });
+  //     const result = verifyHardwareProgram(program, options);
+  // Description:
+  //     VerifyHardwareProgram.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     options: VerifyHardwareTsOptions = {}
+  //         Caller-supplied options.
+  //
+  // Outputs:
+  //     result: VerifyResult
+  //         Return value from `verifyHardwareProgram`.
+  //
+  // Example:
+
+  //     const result = verifyHardwareProgram(program, options);
 
   const registry = buildProfileRegistry(program);
   const items: CompatItem[] = [];

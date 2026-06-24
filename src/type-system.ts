@@ -30,18 +30,32 @@ const KNOWN_DOMAIN_TYPES = new Set([
 ]);
 
 function genericArity(name: string): number | undefined {
-  // GenericArity.
+  // Description:
+  //     GenericArity.
   //
-  // Parameters:
-  // - `name` — input value
+  // Inputs:
+  //     name: string
+  //         Caller-supplied name.
   //
-  // Returns:
-  // `Some` / non-null value on success, otherwise `None` / null.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: number | undefined
+  //         Return value from `genericArity`.
   //
   // Example:
+  //     const result = genericArity(name);
+  // Description:
+  //     GenericArity.
+  //
+  // Inputs:
+  //     name: string
+  //         Caller-supplied name.
+  //
+  // Outputs:
+  //     result: number | undefined
+  //         Return value from `genericArity`.
+  //
+  // Example:
+  //     const result = genericArity(name);
 
   // const result = genericArity(name);
   switch (name) {
@@ -68,18 +82,32 @@ function genericArity(name: string): number | undefined {
 }
 
 export function resolveTypeName(name: string): SpandaType {
-  // ResolveTypeName.
+  // Description:
+  //     ResolveTypeName.
   //
-  // Parameters:
-  // - `name` — input value
+  // Inputs:
+  //     name: string
+  //         Caller-supplied name.
   //
-  // Returns:
-  // `SpandaType`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: SpandaType
+  //         Return value from `resolveTypeName`.
   //
   // Example:
+  //     const result = resolveTypeName(name);
+  // Description:
+  //     ResolveTypeName.
+  //
+  // Inputs:
+  //     name: string
+  //         Caller-supplied name.
+  //
+  // Outputs:
+  //     result: SpandaType
+  //         Return value from `resolveTypeName`.
+  //
+  // Example:
+  //     const result = resolveTypeName(name);
 
   // const result = resolveTypeName(name);
   const short = name.replace(/^std\./, "").split(".").pop() ?? name;
@@ -261,19 +289,36 @@ export function resolveTypeName(name: string): SpandaType {
 }
 
 export function resolveGenericType(name: string, args: SpandaType[]): SpandaType {
-  // ResolveGenericType.
+  // Description:
+  //     ResolveGenericType.
   //
-  // Parameters:
-  // - `name` — input value
-  // - `args` — input value
+  // Inputs:
+  //     name: string
+  //         Caller-supplied name.
+  //     args: SpandaType[]
+  //         Caller-supplied args.
   //
-  // Returns:
-  // `SpandaType`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: SpandaType
+  //         Return value from `resolveGenericType`.
   //
   // Example:
+  //     const result = resolveGenericType(name, args);
+  // Description:
+  //     ResolveGenericType.
+  //
+  // Inputs:
+  //     name: string
+  //         Caller-supplied name.
+  //     args: SpandaType[]
+  //         Caller-supplied args.
+  //
+  // Outputs:
+  //     result: SpandaType
+  //         Return value from `resolveGenericType`.
+  //
+  // Example:
+  //     const result = resolveGenericType(name, args);
 
   // const result = resolveGenericType(name, args);
   const base = name.split(".").pop() ?? name;
@@ -292,18 +337,32 @@ export function resolveGenericType(name: string, args: SpandaType[]): SpandaType
 }
 
 export function physicalCategory(ty: SpandaType): PhysicalCategory {
-  // PhysicalCategory.
+  // Description:
+  //     PhysicalCategory.
   //
-  // Parameters:
-  // - `ty` — input value
+  // Inputs:
+  //     ty: SpandaType
+  //         Caller-supplied ty.
   //
-  // Returns:
-  // `PhysicalCategory`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: PhysicalCategory
+  //         Return value from `physicalCategory`.
   //
   // Example:
+  //     const result = physicalCategory(ty);
+  // Description:
+  //     PhysicalCategory.
+  //
+  // Inputs:
+  //     ty: SpandaType
+  //         Caller-supplied ty.
+  //
+  // Outputs:
+  //     result: PhysicalCategory
+  //         Return value from `physicalCategory`.
+  //
+  // Example:
+  //     const result = physicalCategory(ty);
 
   // const result = physicalCategory(ty);
   switch (ty.kind) {
@@ -418,20 +477,40 @@ const OP_MAP: Record<string, BinaryOp> = {
 };
 
 export function binaryPhysicalOpAllowed(opLexeme: string, left: SpandaType, right: SpandaType): boolean {
-  // BinaryPhysicalOpAllowed.
+  // Description:
+  //     BinaryPhysicalOpAllowed.
   //
-  // Parameters:
-  // - `opLexeme` — input value
-  // - `left` — input value
-  // - `right` — input value
+  // Inputs:
+  //     opLexeme: string
+  //         Caller-supplied opLexeme.
+  //     left: SpandaType
+  //         Caller-supplied left.
+  //     right: SpandaType
+  //         Caller-supplied right.
   //
-  // Returns:
-  // `true` or `false`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: boolean
+  //         Return value from `binaryPhysicalOpAllowed`.
   //
   // Example:
+  //     const result = binaryPhysicalOpAllowed(opLexeme, left, right);
+  // Description:
+  //     BinaryPhysicalOpAllowed.
+  //
+  // Inputs:
+  //     opLexeme: string
+  //         Caller-supplied opLexeme.
+  //     left: SpandaType
+  //         Caller-supplied left.
+  //     right: SpandaType
+  //         Caller-supplied right.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `binaryPhysicalOpAllowed`.
+  //
+  // Example:
+  //     const result = binaryPhysicalOpAllowed(opLexeme, left, right);
 
   // const result = binaryPhysicalOpAllowed(opLexeme, left, right);
   const op = OP_MAP[opLexeme];
@@ -468,54 +547,96 @@ export function binaryPhysicalOpAllowed(opLexeme: string, left: SpandaType, righ
 }
 
 export function isActionProposalType(ty: SpandaType): boolean {
-  // IsActionProposalType.
+  // Description:
+  //     IsActionProposalType.
   //
-  // Parameters:
-  // - `ty` — input value
+  // Inputs:
+  //     ty: SpandaType
+  //         Caller-supplied ty.
   //
-  // Returns:
-  // `true` or `false`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: boolean
+  //         Return value from `isActionProposalType`.
   //
   // Example:
+  //     const result = isActionProposalType(ty);
+  // Description:
+  //     IsActionProposalType.
+  //
+  // Inputs:
+  //     ty: SpandaType
+  //         Caller-supplied ty.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `isActionProposalType`.
+  //
+  // Example:
+  //     const result = isActionProposalType(ty);
 
   // const result = isActionProposalType(ty);
   return ty.kind === "named" && ty.name === "ActionProposal";
 }
 
 export function isSafeActionType(ty: SpandaType): boolean {
-  // IsSafeActionType.
+  // Description:
+  //     IsSafeActionType.
   //
-  // Parameters:
-  // - `ty` — input value
+  // Inputs:
+  //     ty: SpandaType
+  //         Caller-supplied ty.
   //
-  // Returns:
-  // `true` or `false`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: boolean
+  //         Return value from `isSafeActionType`.
   //
   // Example:
+  //     const result = isSafeActionType(ty);
+  // Description:
+  //     IsSafeActionType.
+  //
+  // Inputs:
+  //     ty: SpandaType
+  //         Caller-supplied ty.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `isSafeActionType`.
+  //
+  // Example:
+  //     const result = isSafeActionType(ty);
 
   // const result = isSafeActionType(ty);
   return ty.kind === "named" && ty.name === "SafeAction";
 }
 
 export function typeKindName(ty: SpandaType): string {
-  // TypeKindName.
+  // Description:
+  //     TypeKindName.
   //
-  // Parameters:
-  // - `ty` — input value
+  // Inputs:
+  //     ty: SpandaType
+  //         Caller-supplied ty.
   //
-  // Returns:
-  // Text result.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: string
+  //         Return value from `typeKindName`.
   //
   // Example:
+  //     const result = typeKindName(ty);
+  // Description:
+  //     TypeKindName.
+  //
+  // Inputs:
+  //     ty: SpandaType
+  //         Caller-supplied ty.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `typeKindName`.
+  //
+  // Example:
+  //     const result = typeKindName(ty);
 
   // const result = typeKindName(ty);
   switch (ty.kind) {

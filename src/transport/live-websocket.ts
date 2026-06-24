@@ -14,19 +14,20 @@ export class LiveWebsocketBridge {
 
   /** Connect to a ws:// or wss:// broker endpoint. */
   async connect(brokerUrl: string): Promise<void> {
-    // Open a WebSocket to the broker and buffer JSON wire envelopes.
+    // Description:
+    //     Connect.
     //
-    // Parameters:
-    // - `brokerUrl` — ws:// or wss:// URL
+    // Inputs:
+    //     brokerUrl: string
+    //         Caller-supplied brokerUrl.
     //
-    // Returns:
-    // Resolves when the socket is open.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: Promise<void>
+    //         Return value from `connect`.
     //
     // Example:
-    // await bridge.connect("ws://localhost:9090");
+
+    //     const result = connect(brokerUrl);
 
     const { default: WebSocket } = await import("ws");
     const socket = new WebSocket(brokerUrl);
@@ -76,5 +77,19 @@ export class LiveWebsocketBridge {
 }
 
 export function liveWebsocketEnabled(): boolean {
+  // Description:
+  //     LiveWebsocketEnabled.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `liveWebsocketEnabled`.
+  //
+  // Example:
+
+  //     const result = liveWebsocketEnabled();
+
   return process.env.SPANDA_LIVE_WEBSOCKET === "1";
 }

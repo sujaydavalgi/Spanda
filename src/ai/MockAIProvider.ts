@@ -8,18 +8,32 @@ import { buildPrompt } from "./PromptRuntime.js";
 import type { AIProvider, CompletionRequest, DetectionRequest, EmbedRequest } from "./AIProvider.js";
 
 function scanDistance(input?: RuntimeValue): number {
-  // ScanDistance.
+  // Description:
+  //     ScanDistance.
   //
-  // Parameters:
-  // - `input?` — optional input
+  // Inputs:
+  //     input?: RuntimeValue
+  //         Caller-supplied input?.
   //
-  // Returns:
-  // Numeric result.
-  //
-  // Options:
-  // - `input?` — optional parameter
+  // Outputs:
+  //     result: number
+  //         Return value from `scanDistance`.
   //
   // Example:
+  //     const result = scanDistance(input?);
+  // Description:
+  //     ScanDistance.
+  //
+  // Inputs:
+  //     input?: RuntimeValue
+  //         Caller-supplied input?.
+  //
+  // Outputs:
+  //     result: number
+  //         Return value from `scanDistance`.
+  //
+  // Example:
+  //     const result = scanDistance(input?);
 
   // const result = scanDistance(input?);
   if (!input) return 5;
@@ -38,21 +52,44 @@ function scanDistance(input?: RuntimeValue): number {
 }
 
 function actionProposal(linear: number, angular: number, source: string, trace: string[]): RuntimeValue {
-  // ActionProposal.
+  // Description:
+  //     ActionProposal.
   //
-  // Parameters:
-  // - `linear` — input value
-  // - `angular` — input value
-  // - `source` — input value
-  // - `trace` — input value
+  // Inputs:
+  //     linear: number
+  //         Caller-supplied linear.
+  //     angular: number
+  //         Caller-supplied angular.
+  //     source: string
+  //         Caller-supplied source.
+  //     trace: string[]
+  //         Caller-supplied trace.
   //
-  // Returns:
-  // `RuntimeValue`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `actionProposal`.
   //
   // Example:
+  //     const result = actionProposal(linear, angular, source, trace);
+  // Description:
+  //     ActionProposal.
+  //
+  // Inputs:
+  //     linear: number
+  //         Caller-supplied linear.
+  //     angular: number
+  //         Caller-supplied angular.
+  //     source: string
+  //         Caller-supplied source.
+  //     trace: string[]
+  //         Caller-supplied trace.
+  //
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `actionProposal`.
+  //
+  // Example:
+  //     const result = actionProposal(linear, angular, source, trace);
 
   // const result = actionProposal(linear, angular, source, trace);
   return { kind: "action_proposal", linear, angular, source, trace, trusted: false };
@@ -146,20 +183,36 @@ export class MockAIProvider implements AIProvider {
 }
 
 export function mockSummarize(input?: RuntimeValue, model = "mock"): RuntimeValue {
-  // MockSummarize.
+  // Description:
+  //     MockSummarize.
   //
-  // Parameters:
-  // - `input?` — optional input
-  // - `model` — optional input
+  // Inputs:
+  //     input?: RuntimeValue
+  //         Caller-supplied input?.
+  //     model = "mock": input value
+  //         Caller-supplied model = "mock".
   //
-  // Returns:
-  // `RuntimeValue`.
-  //
-  // Options:
-  // - `input?` — optional parameter
-  // - `model` — optional parameter
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `mockSummarize`.
   //
   // Example:
+  //     const result = mockSummarize(input?, model = "mock");
+  // Description:
+  //     MockSummarize.
+  //
+  // Inputs:
+  //     input?: RuntimeValue
+  //         Caller-supplied input?.
+  //     model = "mock": input value
+  //         Caller-supplied model = "mock".
+  //
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `mockSummarize`.
+  //
+  // Example:
+  //     const result = mockSummarize(input?, model = "mock");
 
   // const result = mockSummarize(input?, model);
   const summary =
@@ -172,20 +225,36 @@ export function mockSummarize(input?: RuntimeValue, model = "mock"): RuntimeValu
 }
 
 export function mockAnalyzeFrame(frame?: RuntimeValue, model = "mock"): RuntimeValue {
-  // MockAnalyzeFrame.
+  // Description:
+  //     MockAnalyzeFrame.
   //
-  // Parameters:
-  // - `frame?` — optional input
-  // - `model` — optional input
+  // Inputs:
+  //     frame?: RuntimeValue
+  //         Caller-supplied frame?.
+  //     model = "mock": input value
+  //         Caller-supplied model = "mock".
   //
-  // Returns:
-  // `RuntimeValue`.
-  //
-  // Options:
-  // - `frame?` — optional parameter
-  // - `model` — optional parameter
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `mockAnalyzeFrame`.
   //
   // Example:
+  //     const result = mockAnalyzeFrame(frame?, model = "mock");
+  // Description:
+  //     MockAnalyzeFrame.
+  //
+  // Inputs:
+  //     frame?: RuntimeValue
+  //         Caller-supplied frame?.
+  //     model = "mock": input value
+  //         Caller-supplied model = "mock".
+  //
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `mockAnalyzeFrame`.
+  //
+  // Example:
+  //     const result = mockAnalyzeFrame(frame?, model = "mock");
 
   // const result = mockAnalyzeFrame(frame?, model);
   const dist = scanDistance(frame);
@@ -201,18 +270,30 @@ export function mockAnalyzeFrame(frame?: RuntimeValue, model = "mock"): RuntimeV
 }
 
 export function mockCameraFrame(): RuntimeValue {
-  // MockCameraFrame.
+  // Description:
+  //     MockCameraFrame.
   //
-  // Parameters:
-  // None.
+  // Inputs:
+  //     None.
   //
-  // Returns:
-  // `RuntimeValue`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `mockCameraFrame`.
   //
   // Example:
+  //     const result = mockCameraFrame();
+  // Description:
+  //     MockCameraFrame.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: RuntimeValue
+  //         Return value from `mockCameraFrame`.
+  //
+  // Example:
+  //     const result = mockCameraFrame();
 
   // const result = mockCameraFrame();
   return {

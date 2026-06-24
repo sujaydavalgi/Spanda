@@ -32,37 +32,68 @@ const TRUST_RANK: Record<TrustLevel, number> = {
 };
 
 export function trustSatisfies(actual: TrustLevel, required: TrustLevel): boolean {
-  // TrustSatisfies.
+  // Description:
+  //     TrustSatisfies.
   //
-  // Parameters:
-  // - `actual` — input value
-  // - `required` — input value
+  // Inputs:
+  //     actual: TrustLevel
+  //         Caller-supplied actual.
+  //     required: TrustLevel
+  //         Caller-supplied required.
   //
-  // Returns:
-  // `true` or `false`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: boolean
+  //         Return value from `trustSatisfies`.
   //
   // Example:
+  //     const result = trustSatisfies(actual, required);
+  // Description:
+  //     TrustSatisfies.
+  //
+  // Inputs:
+  //     actual: TrustLevel
+  //         Caller-supplied actual.
+  //     required: TrustLevel
+  //         Caller-supplied required.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `trustSatisfies`.
+  //
+  // Example:
+  //     const result = trustSatisfies(actual, required);
 
   // const result = trustSatisfies(actual, required);
   return TRUST_RANK[actual] >= TRUST_RANK[required];
 }
 
 export function parseTrustLevel(level: string): TrustLevel | null {
-  // ParseTrustLevel.
+  // Description:
+  //     ParseTrustLevel.
   //
-  // Parameters:
-  // - `level` — input value
+  // Inputs:
+  //     level: string
+  //         Caller-supplied level.
   //
-  // Returns:
-  // `Some` / non-null value on success, otherwise `None` / null.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: TrustLevel | null
+  //         Return value from `parseTrustLevel`.
   //
   // Example:
+  //     const result = parseTrustLevel(level);
+  // Description:
+  //     ParseTrustLevel.
+  //
+  // Inputs:
+  //     level: string
+  //         Caller-supplied level.
+  //
+  // Outputs:
+  //     result: TrustLevel | null
+  //         Return value from `parseTrustLevel`.
+  //
+  // Example:
+  //     const result = parseTrustLevel(level);
 
   // const result = parseTrustLevel(level);
   if (level in TRUST_RANK) return level as TrustLevel;
@@ -70,54 +101,96 @@ export function parseTrustLevel(level: string): TrustLevel | null {
 }
 
 function seedBytes(material: string): Uint8Array {
-  // SeedBytes.
+  // Description:
+  //     SeedBytes.
   //
-  // Parameters:
-  // - `material` — input value
+  // Inputs:
+  //     material: string
+  //         Caller-supplied material.
   //
-  // Returns:
-  // `Uint8Array`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: Uint8Array
+  //         Return value from `seedBytes`.
   //
   // Example:
+  //     const result = seedBytes(material);
+  // Description:
+  //     SeedBytes.
+  //
+  // Inputs:
+  //     material: string
+  //         Caller-supplied material.
+  //
+  // Outputs:
+  //     result: Uint8Array
+  //         Return value from `seedBytes`.
+  //
+  // Example:
+  //     const result = seedBytes(material);
 
   // const result = seedBytes(material);
   return sha256(new TextEncoder().encode(material));
 }
 
 export function isHexPublicKey(key: string): boolean {
-  // IsHexPublicKey.
+  // Description:
+  //     IsHexPublicKey.
   //
-  // Parameters:
-  // - `key` — input value
+  // Inputs:
+  //     key: string
+  //         Caller-supplied key.
   //
-  // Returns:
-  // `true` or `false`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: boolean
+  //         Return value from `isHexPublicKey`.
   //
   // Example:
+  //     const result = isHexPublicKey(key);
+  // Description:
+  //     IsHexPublicKey.
+  //
+  // Inputs:
+  //     key: string
+  //         Caller-supplied key.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `isHexPublicKey`.
+  //
+  // Example:
+  //     const result = isHexPublicKey(key);
 
   // const result = isHexPublicKey(key);
   return key.length === 64 && /^[0-9a-fA-F]+$/.test(key);
 }
 
 export function publicKeyFromMaterial(material: string): string {
-  // PublicKeyFromMaterial.
+  // Description:
+  //     PublicKeyFromMaterial.
   //
-  // Parameters:
-  // - `material` — input value
+  // Inputs:
+  //     material: string
+  //         Caller-supplied material.
   //
-  // Returns:
-  // Text result.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: string
+  //         Return value from `publicKeyFromMaterial`.
   //
   // Example:
+  //     const result = publicKeyFromMaterial(material);
+  // Description:
+  //     PublicKeyFromMaterial.
+  //
+  // Inputs:
+  //     material: string
+  //         Caller-supplied material.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `publicKeyFromMaterial`.
+  //
+  // Example:
+  //     const result = publicKeyFromMaterial(material);
 
   // const result = publicKeyFromMaterial(material);
   const priv = seedBytes(material);
@@ -125,37 +198,68 @@ export function publicKeyFromMaterial(material: string): string {
 }
 
 export function sha256Hex(data: string): string {
-  // Sha256Hex.
+  // Description:
+  //     Sha256Hex.
   //
-  // Parameters:
-  // - `data` — input value
+  // Inputs:
+  //     data: string
+  //         Caller-supplied data.
   //
-  // Returns:
-  // Text result.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: string
+  //         Return value from `sha256Hex`.
   //
   // Example:
+  //     const result = sha256Hex(data);
+  // Description:
+  //     Sha256Hex.
+  //
+  // Inputs:
+  //     data: string
+  //         Caller-supplied data.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `sha256Hex`.
+  //
+  // Example:
+  //     const result = sha256Hex(data);
 
   // const result = sha256Hex(data);
   return bytesToHex(sha256(new TextEncoder().encode(data)));
 }
 
 export async function signAsync(data: string, keyMaterial: string): Promise<string> {
-  // SignAsync.
+  // Description:
+  //     SignAsync.
   //
-  // Parameters:
-  // - `data` — input value
-  // - `keyMaterial` — input value
+  // Inputs:
+  //     data: string
+  //         Caller-supplied data.
+  //     keyMaterial: string
+  //         Caller-supplied keyMaterial.
   //
-  // Returns:
-  // Success value on completion, or an error.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: Promise<string>
+  //         Return value from `signAsync`.
   //
   // Example:
+  //     const result = signAsync(data, keyMaterial);
+  // Description:
+  //     SignAsync.
+  //
+  // Inputs:
+  //     data: string
+  //         Caller-supplied data.
+  //     keyMaterial: string
+  //         Caller-supplied keyMaterial.
+  //
+  // Outputs:
+  //     result: Promise<string>
+  //         Return value from `signAsync`.
+  //
+  // Example:
+  //     const result = signAsync(data, keyMaterial);
 
   // const result = signAsync(data, keyMaterial);
   const priv = keyMaterial.length === 64 && isHexPublicKey(keyMaterial)
@@ -166,19 +270,36 @@ export async function signAsync(data: string, keyMaterial: string): Promise<stri
 }
 
 export function sign(data: string, keyMaterial: string): string {
-  // Sign.
+  // Description:
+  //     Sign.
   //
-  // Parameters:
-  // - `data` — input value
-  // - `keyMaterial` — input value
+  // Inputs:
+  //     data: string
+  //         Caller-supplied data.
+  //     keyMaterial: string
+  //         Caller-supplied keyMaterial.
   //
-  // Returns:
-  // Text result.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: string
+  //         Return value from `sign`.
   //
   // Example:
+  //     const result = sign(data, keyMaterial);
+  // Description:
+  //     Sign.
+  //
+  // Inputs:
+  //     data: string
+  //         Caller-supplied data.
+  //     keyMaterial: string
+  //         Caller-supplied keyMaterial.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `sign`.
+  //
+  // Example:
+  //     const result = sign(data, keyMaterial);
 
   // const result = sign(data, keyMaterial);
   const priv = keyMaterial.length === 64 && isHexPublicKey(keyMaterial)
@@ -188,20 +309,40 @@ export function sign(data: string, keyMaterial: string): string {
 }
 
 export function verifySignature(data: string, signature: string, key: string): boolean {
-  // VerifySignature.
+  // Description:
+  //     VerifySignature.
   //
-  // Parameters:
-  // - `data` — input value
-  // - `signature` — input value
-  // - `key` — input value
+  // Inputs:
+  //     data: string
+  //         Caller-supplied data.
+  //     signature: string
+  //         Caller-supplied signature.
+  //     key: string
+  //         Caller-supplied key.
   //
-  // Returns:
-  // `true` or `false`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: boolean
+  //         Return value from `verifySignature`.
   //
   // Example:
+  //     const result = verifySignature(data, signature, key);
+  // Description:
+  //     VerifySignature.
+  //
+  // Inputs:
+  //     data: string
+  //         Caller-supplied data.
+  //     signature: string
+  //         Caller-supplied signature.
+  //     key: string
+  //         Caller-supplied key.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `verifySignature`.
+  //
+  // Example:
+  //     const result = verifySignature(data, signature, key);
 
   // const result = verifySignature(data, signature, key);
   try {
@@ -236,20 +377,40 @@ export function createRobotIdentity(
   publicKey: string,
   trust: TrustLevel = "trusted",
 ): RobotIdentity {
-  // CreateRobotIdentity.
+  // Description:
+  //     CreateRobotIdentity.
   //
-  // Parameters:
-  // - `id` — input value
-  // - `publicKey` — input value
-  // - `trust` — optional input
+  // Inputs:
+  //     id: string
+  //         Caller-supplied id.
+  //     publicKey: string
+  //         Caller-supplied publicKey.
+  //     trust: TrustLevel = "trusted"
+  //         Caller-supplied trust.
   //
-  // Returns:
-  // `RobotIdentity`.
-  //
-  // Options:
-  // - `trust` — optional parameter
+  // Outputs:
+  //     result: RobotIdentity
+  //         Return value from `createRobotIdentity`.
   //
   // Example:
+  //     const result = createRobotIdentity(id, publicKey, trust);
+  // Description:
+  //     CreateRobotIdentity.
+  //
+  // Inputs:
+  //     id: string
+  //         Caller-supplied id.
+  //     publicKey: string
+  //         Caller-supplied publicKey.
+  //     trust: TrustLevel = "trusted"
+  //         Caller-supplied trust.
+  //
+  // Outputs:
+  //     result: RobotIdentity
+  //         Return value from `createRobotIdentity`.
+  //
+  // Example:
+  //     const result = createRobotIdentity(id, publicKey, trust);
 
   // const result = createRobotIdentity(id, publicKey, trust);
   return {
@@ -713,12 +874,14 @@ export class SecurityContext {
     // None.
     //
     // Example:
+
     // const material = ctx.wireSessionMaterial();
 
     return `${this.wireCertPath ?? "spanda-local"}:${this.wireKeySecret ?? "spanda-local-key"}`;
   }
 
   preparePublish(path: string, payload: string, sourceId: string, messageType = "Unknown"): void {
+
     // Authorize and validate an outbound publish against secure endpoint policy.
     const policy = this.secureEndpoints.policyOrOpen(path);
     this.enforceTrustBoundary(messageType, policy);
@@ -731,6 +894,7 @@ export class SecurityContext {
   }
 
   checkSecurityFaults(path: string, payload: string): void {
+
     // Apply injected security fault simulation when enabled.
     if (this.securityFaultsActive.has("InvalidSignature")) {
       throw new Error("signature invalid");
@@ -779,18 +943,32 @@ export const KNOWN_CAPABILITIES = [
 ] as const;
 
 export function isKnownCapability(cap: string): boolean {
-  // IsKnownCapability.
+  // Description:
+  //     IsKnownCapability.
   //
-  // Parameters:
-  // - `cap` — input value
+  // Inputs:
+  //     cap: string
+  //         Caller-supplied cap.
   //
-  // Returns:
-  // `true` or `false`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: boolean
+  //         Return value from `isKnownCapability`.
   //
   // Example:
+  //     const result = isKnownCapability(cap);
+  // Description:
+  //     IsKnownCapability.
+  //
+  // Inputs:
+  //     cap: string
+  //         Caller-supplied cap.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `isKnownCapability`.
+  //
+  // Example:
+  //     const result = isKnownCapability(cap);
 
   // const result = isKnownCapability(cap);
   return (KNOWN_CAPABILITIES as readonly string[]).includes(cap);

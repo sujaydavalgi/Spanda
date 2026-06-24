@@ -438,18 +438,30 @@ export class Interpreter {
   }
 
   private loadProgramMetadata(program: Program): void {
-    // LoadProgramMetadata.
+    // Description:
+    //     LoadProgramMetadata.
     //
-    // Parameters:
-    // - `program` — input value
+    // Inputs:
+    //     program: Program
+    //         Caller-supplied program.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = loadProgramMetadata(program);
+    // Description:
+    //     LoadProgramMetadata.
+    //
+    // Inputs:
+    //     program: Program
+    //         Caller-supplied program.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = loadProgramMetadata(program);
 
     // const result = loadProgramMetadata(program);
     this.enumVariants.clear();
@@ -514,19 +526,31 @@ export class Interpreter {
   }
 
   private loadRoboticsPlatformMetadata(program: Program): void {
-    // Load fleet groupings and program-level safety zone policies.
+    // Description:
+    //     LoadRoboticsPlatformMetadata.
     //
-    // Parameters:
-    // - `program` — parsed program
+    // Inputs:
+    //     program: Program
+    //         Caller-supplied program.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
-    // loadRoboticsPlatformMetadata(program);
+    //     const result = loadRoboticsPlatformMetadata(program);
+    // Description:
+    //     LoadRoboticsPlatformMetadata.
+    //
+    // Inputs:
+    //     program: Program
+    //         Caller-supplied program.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+
+    //     const result = loadRoboticsPlatformMetadata(program);
 
     this.fleets = new FleetRegistry();
     this.programSafetyZones = new ProgramSafetyZoneRegistry();
@@ -558,19 +582,31 @@ export class Interpreter {
   }
 
   private loadConnectivityMetadata(program: Program): void {
-    // Load geofence zones and connectivity policies from the program AST.
+    // Description:
+    //     LoadConnectivityMetadata.
     //
-    // Parameters:
-    // - `program` — parsed program
+    // Inputs:
+    //     program: Program
+    //         Caller-supplied program.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
-    // loadConnectivityMetadata(program);
+    //     const result = loadConnectivityMetadata(program);
+    // Description:
+    //     LoadConnectivityMetadata.
+    //
+    // Inputs:
+    //     program: Program
+    //         Caller-supplied program.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+
+    //     const result = loadConnectivityMetadata(program);
 
     this.geofences = program.geofences.map(geofenceFromDecl);
     this.connectivityPolicies = program.connectivityPolicies.map(connectivityPolicyFromDecl);
@@ -595,19 +631,31 @@ export class Interpreter {
   }
 
   private currentGpsLatLon(): [number, number] {
-    // Read simulated GPS coordinates from robot pose (x=lat, y=lon).
+    // Description:
+    //     CurrentGpsLatLon.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Tuple of latitude and longitude in degrees.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: [number, number]
+    //         Return value from `currentGpsLatLon`.
     //
     // Example:
-    // const [lat, lon] = currentGpsLatLon();
+    //     const result = currentGpsLatLon();
+    // Description:
+    //     CurrentGpsLatLon.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: [number, number]
+    //         Return value from `currentGpsLatLon`.
+    //
+    // Example:
+
+    //     const result = currentGpsLatLon();
 
     const state = this.options.backend.getState();
     const { lat, lon } = applyGpsPositionFaults(
@@ -620,19 +668,29 @@ export class Interpreter {
   }
 
   private runGeofenceTriggers(): void {
-    // Dispatch geofence entered/exited handlers when pose crosses a fence boundary.
+    // Description:
+    //     RunGeofenceTriggers.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
-    // runGeofenceTriggers();
+    //     const result = runGeofenceTriggers();
+    // Description:
+    //     RunGeofenceTriggers.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+
+    //     const result = runGeofenceTriggers();
 
     if (this.geofences.length === 0) {
       return;
@@ -664,19 +722,29 @@ export class Interpreter {
   }
 
   private runConnectivityMaintenance(): void {
-    // Run periodic geofence and failover maintenance during simulation ticks.
+    // Description:
+    //     RunConnectivityMaintenance.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
-    // runConnectivityMaintenance();
+    //     const result = runConnectivityMaintenance();
+    // Description:
+    //     RunConnectivityMaintenance.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+
+    //     const result = runConnectivityMaintenance();
 
     this.runGeofenceTriggers();
     this.runConnectivityTriggers();
@@ -684,6 +752,18 @@ export class Interpreter {
   }
 
   private pollTransportInbound(): void {
+    // Description:
+    //     PollTransportInbound.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = pollTransportInbound();
+
     // Poll external transport adapters and verify inbound wire frames.
     const inbound = this.commBus.pollInbound(this.defaultTransport);
     for (const [topicPath, envelope] of inbound) {
@@ -709,6 +789,21 @@ export class Interpreter {
   }
 
   private dispatchMessageTriggers(topicName: string, topicPath: string): void {
+    // Description:
+    //     DispatchMessageTriggers.
+    //
+    // Inputs:
+    //     topicName: string
+    //         Caller-supplied topicName.
+    //     topicPath: string
+    //         Caller-supplied topicPath.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = dispatchMessageTriggers(topicName, topicPath);
+
     // Dispatch message triggers for an inbound topic path when handlers exist.
     for (const [eventName, handler] of this.eventHandlers) {
       if (eventName === `message:${topicName}` || eventName === `message:${topicPath}`) {
@@ -718,19 +813,29 @@ export class Interpreter {
   }
 
   private runConnectivityTriggers(): void {
-    // Dispatch connectivity triggers from comm faults and GPS availability.
+    // Description:
+    //     RunConnectivityTriggers.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
-    // runConnectivityTriggers();
+    //     const result = runConnectivityTriggers();
+    // Description:
+    //     RunConnectivityTriggers.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+
+    //     const result = runConnectivityTriggers();
 
     for (const fault of this.commBus.activeFaults()) {
       const mapped = faultToConnectivity(fault);
@@ -755,6 +860,20 @@ export class Interpreter {
   }
 
   private activeConnectivityFaults(): Set<string> {
+    // Description:
+    //     ActiveConnectivityFaults.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: Set<string>
+    //         Return value from `activeConnectivityFaults`.
+    //
+    // Example:
+
+    //     const result = activeConnectivityFaults();
+
     const faults = new Set(this.injectedFaults);
     for (const fault of this.commBus.activeFaults()) {
       faults.add(fault);
@@ -763,6 +882,24 @@ export class Interpreter {
   }
 
   private activateConnectivityLink(policyName: string, link: string, reason: string): void {
+    // Description:
+    //     ActivateConnectivityLink.
+    //
+    // Inputs:
+    //     policyName: string
+    //         Caller-supplied policyName.
+    //     link: string
+    //         Caller-supplied link.
+    //     reason: string
+    //         Caller-supplied reason.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+
+    //     const result = activateConnectivityLink(policyName, link, reason);
+
     this.activeConnectivityLink = link;
     this.defaultTransport = connectivityLinkToTransport(link);
     this.commBus.reconnectTransport(this.defaultTransport);
@@ -772,20 +909,35 @@ export class Interpreter {
   }
 
   private applyConnectivityFailover(domain: string, event: string): void {
-    // Update active link and default transport when a policy failover applies.
+    // Description:
+    //     ApplyConnectivityFailover.
     //
-    // Parameters:
-    // - `domain` — connectivity domain (network, gps, …)
-    // - `event` — trigger event name
+    // Inputs:
+    //     domain: string
+    //         Caller-supplied domain.
+    //     event: string
+    //         Caller-supplied event.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
-    // applyConnectivityFailover("network", "disconnected");
+    //     const result = applyConnectivityFailover(domain, event);
+    // Description:
+    //     ApplyConnectivityFailover.
+    //
+    // Inputs:
+    //     domain: string
+    //         Caller-supplied domain.
+    //     event: string
+    //         Caller-supplied event.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+
+    //     const result = applyConnectivityFailover(domain, event);
 
     if (domain !== "network" || event !== "disconnected") return;
 
@@ -812,18 +964,32 @@ export class Interpreter {
   }
 
   private evalContract(expr: Expr): boolean {
-    // EvalContract.
+    // Description:
+    //     EvalContract.
     //
-    // Parameters:
-    // - `expr` — input value
+    // Inputs:
+    //     expr: Expr
+    //         Caller-supplied expr.
     //
-    // Returns:
-    // true or false.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: boolean
+    //         Return value from `evalContract`.
     //
     // Example:
+    //     const result = evalContract(expr);
+    // Description:
+    //     EvalContract.
+    //
+    // Inputs:
+    //     expr: Expr
+    //         Caller-supplied expr.
+    //
+    // Outputs:
+    //     result: boolean
+    //         Return value from `evalContract`.
+    //
+    // Example:
+    //     const result = evalContract(expr);
 
     // const result = evalContract(expr);
     const val = this.evalExpr(expr);
@@ -839,21 +1005,42 @@ export class Interpreter {
     ensures: Expr | null,
     invariant: Expr | null,
   ): void {
-    // ExecuteWithContracts.
+    // Description:
+    //     ExecuteWithContracts.
     //
-    // Parameters:
-    // - `body` — input value
-    // - `requires` — input value
-    // - `ensures` — input value
-    // - `invariant` — input value
+    // Inputs:
+    //     body: Stmt[]
+    //         Caller-supplied body.
+    //     requires: Expr | null
+    //         Caller-supplied requires.
+    //     ensures: Expr | null
+    //         Caller-supplied ensures.
+    //     invariant: Expr | null
+    //         Caller-supplied invariant.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = executeWithContracts(body, requires, ensures, invariant);
+    // Description:
+    //     ExecuteWithContracts.
+    //
+    // Inputs:
+    //     body: Stmt[]
+    //         Caller-supplied body.
+    //     requires: Expr | null
+    //         Caller-supplied requires.
+    //     ensures: Expr | null
+    //         Caller-supplied ensures.
+    //     invariant: Expr | null
+    //         Caller-supplied invariant.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = executeWithContracts(body, requires, ensures, invariant);
 
     // const result = executeWithContracts(body, requires, ensures, invariant);
     if (requires && !this.evalContract(requires)) {
@@ -874,18 +1061,28 @@ export class Interpreter {
 }
 
   private runVerifyRules(): void {
-    // RunVerifyRules.
+    // Description:
+    //     RunVerifyRules.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = runVerifyRules();
+    // Description:
+    //     RunVerifyRules.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = runVerifyRules();
 
     // const result = runVerifyRules();
     if (this.verifyRules.length === 0) return;
@@ -908,18 +1105,30 @@ export class Interpreter {
 }
 
   private executeTaskLoop(task: TaskDecl): void {
-    // ExecuteTaskLoop.
+    // Description:
+    //     ExecuteTaskLoop.
     //
-    // Parameters:
-    // - `task` — input value
+    // Inputs:
+    //     task: TaskDecl
+    //         Caller-supplied task.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = executeTaskLoop(task);
+    // Description:
+    //     ExecuteTaskLoop.
+    //
+    // Inputs:
+    //     task: TaskDecl
+    //         Caller-supplied task.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = executeTaskLoop(task);
 
     // const result = executeTaskLoop(task);
     const { body, intervalMs, requires, ensures, invariant, name, priority, budget } = task;
@@ -943,18 +1152,32 @@ export class Interpreter {
 }
 
   private priorityRank(priority: TaskPriority): number {
-    // PriorityRank.
+    // Description:
+    //     PriorityRank.
     //
-    // Parameters:
-    // - `priority` — input value
+    // Inputs:
+    //     priority: TaskPriority
+    //         Caller-supplied priority.
     //
-    // Returns:
-    // Numeric result.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: number
+    //         Return value from `priorityRank`.
     //
     // Example:
+    //     const result = priorityRank(priority);
+    // Description:
+    //     PriorityRank.
+    //
+    // Inputs:
+    //     priority: TaskPriority
+    //         Caller-supplied priority.
+    //
+    // Outputs:
+    //     result: number
+    //         Return value from `priorityRank`.
+    //
+    // Example:
+    //     const result = priorityRank(priority);
 
     // const result = priorityRank(priority);
     switch (priority) {
@@ -974,20 +1197,40 @@ export class Interpreter {
     durationMs: number,
     intervalMs: number,
   ): string | null {
-    // TaskBudgetViolation.
+    // Description:
+    //     TaskBudgetViolation.
     //
-    // Parameters:
-    // - `budget` — input value
-    // - `durationMs` — input value
-    // - `intervalMs` — input value
+    // Inputs:
+    //     budget: ResourceBudgetDecl
+    //         Caller-supplied budget.
+    //     durationMs: number
+    //         Caller-supplied durationMs.
+    //     intervalMs: number
+    //         Caller-supplied intervalMs.
     //
-    // Returns:
-    // Some value on success, otherwise none.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: string | null
+    //         Return value from `taskBudgetViolation`.
     //
     // Example:
+    //     const result = taskBudgetViolation(budget, durationMs, intervalMs);
+    // Description:
+    //     TaskBudgetViolation.
+    //
+    // Inputs:
+    //     budget: ResourceBudgetDecl
+    //         Caller-supplied budget.
+    //     durationMs: number
+    //         Caller-supplied durationMs.
+    //     intervalMs: number
+    //         Caller-supplied intervalMs.
+    //
+    // Outputs:
+    //     result: string | null
+    //         Return value from `taskBudgetViolation`.
+    //
+    // Example:
+    //     const result = taskBudgetViolation(budget, durationMs, intervalMs);
 
     // const result = taskBudgetViolation(budget, durationMs, intervalMs);
     const duty = (durationMs / Math.max(intervalMs, 1)) * 100;
@@ -1010,25 +1253,60 @@ export class Interpreter {
     invariant: Expr | null,
     budget: ResourceBudgetDecl | null,
   ): boolean {
-    // RunScheduledTask.
+    // Description:
+    //     RunScheduledTask.
     //
-    // Parameters:
-    // - `name` — input value
-    // - `priority` — input value
-    // - `intervalMs` — input value
-    // - `body` — input value
-    // - `requires` — input value
-    // - `ensures` — input value
-    // - `invariant` — input value
-    // - `budget` — input value
+    // Inputs:
+    //     name: string
+    //         Caller-supplied name.
+    //     priority: TaskPriority
+    //         Caller-supplied priority.
+    //     intervalMs: number
+    //         Caller-supplied intervalMs.
+    //     body: Stmt[]
+    //         Caller-supplied body.
+    //     requires: Expr | null
+    //         Caller-supplied requires.
+    //     ensures: Expr | null
+    //         Caller-supplied ensures.
+    //     invariant: Expr | null
+    //         Caller-supplied invariant.
+    //     budget: ResourceBudgetDecl | null
+    //         Caller-supplied budget.
     //
-    // Returns:
-    // true or false.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: boolean
+    //         Return value from `runScheduledTask`.
     //
     // Example:
+    //     const result = runScheduledTask(name, priority, intervalMs, body, requires, ensures, invariant, budget);
+    // Description:
+    //     RunScheduledTask.
+    //
+    // Inputs:
+    //     name: string
+    //         Caller-supplied name.
+    //     priority: TaskPriority
+    //         Caller-supplied priority.
+    //     intervalMs: number
+    //         Caller-supplied intervalMs.
+    //     body: Stmt[]
+    //         Caller-supplied body.
+    //     requires: Expr | null
+    //         Caller-supplied requires.
+    //     ensures: Expr | null
+    //         Caller-supplied ensures.
+    //     invariant: Expr | null
+    //         Caller-supplied invariant.
+    //     budget: ResourceBudgetDecl | null
+    //         Caller-supplied budget.
+    //
+    // Outputs:
+    //     result: boolean
+    //         Return value from `runScheduledTask`.
+    //
+    // Example:
+    //     const result = runScheduledTask(name, priority, intervalMs, body, requires, ensures, invariant, budget);
 
     // const result = runScheduledTask(name, priority, intervalMs, body, requires, ensures, invariant, budget);
     const RUNTIME_TASK_COST_MS = 5;
@@ -1072,22 +1350,48 @@ export class Interpreter {
     invariant: Expr | null,
     taskName?: string,
   ): boolean {
-    // ExecuteTaskIteration.
+    // Description:
+    //     ExecuteTaskIteration.
     //
-    // Parameters:
-    // - `body` — input value
-    // - `requires` — input value
-    // - `ensures` — input value
-    // - `invariant` — input value
-    // - `taskName?` — optional input
+    // Inputs:
+    //     body: Stmt[]
+    //         Caller-supplied body.
+    //     requires: Expr | null
+    //         Caller-supplied requires.
+    //     ensures: Expr | null
+    //         Caller-supplied ensures.
+    //     invariant: Expr | null
+    //         Caller-supplied invariant.
+    //     taskName?: string
+    //         Caller-supplied taskName?.
     //
-    // Returns:
-    // true or false.
-    //
-    // Options:
-    // - `taskName?` — optional parameter
+    // Outputs:
+    //     result: boolean
+    //         Return value from `executeTaskIteration`.
     //
     // Example:
+    //     const result = executeTaskIteration(body, requires, ensures, invariant, taskName?);
+    // Description:
+    //     ExecuteTaskIteration.
+    //
+    // Inputs:
+    //     body: Stmt[]
+    //         Caller-supplied body.
+    //     requires: Expr | null
+    //         Caller-supplied requires.
+    //     ensures: Expr | null
+    //         Caller-supplied ensures.
+    //     invariant: Expr | null
+    //         Caller-supplied invariant.
+    //     taskName?: string
+    //         Caller-supplied taskName?.
+    //
+    // Outputs:
+    //     result: boolean
+    //         Return value from `executeTaskIteration`.
+    //
+    // Example:
+    //     const result = executeTaskIteration(body, requires, ensures, invariant, taskName?);
 
     // const result = executeTaskIteration(body, requires, ensures, invariant, taskName?);
     if (requires && !this.evalContract(requires)) {
@@ -1110,18 +1414,30 @@ export class Interpreter {
 }
 
   private executeMultiplexedTasks(tasks: TaskDecl[]): void {
-    // ExecuteMultiplexedTasks.
+    // Description:
+    //     ExecuteMultiplexedTasks.
     //
-    // Parameters:
-    // - `tasks` — input value
+    // Inputs:
+    //     tasks: TaskDecl[]
+    //         Caller-supplied tasks.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = executeMultiplexedTasks(tasks);
+    // Description:
+    //     ExecuteMultiplexedTasks.
+    //
+    // Inputs:
+    //     tasks: TaskDecl[]
+    //         Caller-supplied tasks.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = executeMultiplexedTasks(tasks);
 
     // const result = executeMultiplexedTasks(tasks);
     if (tasks.length === 0) return;
@@ -1198,18 +1514,28 @@ export class Interpreter {
 }
 
   private refreshTwinShadowFromBackend(): void {
-    // RefreshTwinShadowFromBackend.
+    // Description:
+    //     RefreshTwinShadowFromBackend.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = refreshTwinShadowFromBackend();
+    // Description:
+    //     RefreshTwinShadowFromBackend.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = refreshTwinShadowFromBackend();
 
     // const result = refreshTwinShadowFromBackend();
     if (!this.twinRuntime) return;
@@ -1237,18 +1563,28 @@ export class Interpreter {
 }
 
   private updateTwinSnapshot(): void {
-    // UpdateTwinSnapshot.
+    // Description:
+    //     UpdateTwinSnapshot.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = updateTwinSnapshot();
+    // Description:
+    //     UpdateTwinSnapshot.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = updateTwinSnapshot();
 
     // const result = updateTwinSnapshot();
     if (!this.twinRuntime) return;
@@ -1269,18 +1605,32 @@ export class Interpreter {
 }
 
   private twinFieldFromExpr(expr: Expr): string {
-    // TwinFieldFromExpr.
+    // Description:
+    //     TwinFieldFromExpr.
     //
-    // Parameters:
-    // - `expr` — input value
+    // Inputs:
+    //     expr: Expr
+    //         Caller-supplied expr.
     //
-    // Returns:
-    // Text result.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: string
+    //         Return value from `twinFieldFromExpr`.
     //
     // Example:
+    //     const result = twinFieldFromExpr(expr);
+    // Description:
+    //     TwinFieldFromExpr.
+    //
+    // Inputs:
+    //     expr: Expr
+    //         Caller-supplied expr.
+    //
+    // Outputs:
+    //     result: string
+    //         Return value from `twinFieldFromExpr`.
+    //
+    // Example:
+    //     const result = twinFieldFromExpr(expr);
 
     // const result = twinFieldFromExpr(expr);
     if (expr.kind === "LiteralExpr" && typeof expr.value === "string") return expr.value;
@@ -1294,19 +1644,36 @@ export class Interpreter {
     method: string,
     expr: import("../ast/nodes.js").CallExpr,
   ): RuntimeValue {
-    // EvalTwinMethod.
+    // Description:
+    //     EvalTwinMethod.
     //
-    // Parameters:
-    // - `method` — input value
-    // - `expr` — input value
+    // Inputs:
+    //     method: string
+    //         Caller-supplied method.
+    //     expr: import("../ast/nodes.js").CallExpr
+    //         Caller-supplied expr.
     //
-    // Returns:
-    // RuntimeValue.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `evalTwinMethod`.
     //
     // Example:
+    //     const result = evalTwinMethod(method, expr);
+    // Description:
+    //     EvalTwinMethod.
+    //
+    // Inputs:
+    //     method: string
+    //         Caller-supplied method.
+    //     expr: import("../ast/nodes.js").CallExpr
+    //         Caller-supplied expr.
+    //
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `evalTwinMethod`.
+    //
+    // Example:
+    //     const result = evalTwinMethod(method, expr);
 
     // const result = evalTwinMethod(method, expr);
     if (!this.twinRuntime) {
@@ -1388,21 +1755,42 @@ export class Interpreter {
     target: string | undefined,
     line: number,
   ): void {
-    // CheckAgentCapability.
+    // Description:
+    //     CheckAgentCapability.
     //
-    // Parameters:
-    // - `agent` — input value
-    // - `action` — input value
-    // - `target` — input value
-    // - `line` — input value
+    // Inputs:
+    //     agent: string
+    //         Caller-supplied agent.
+    //     action: string
+    //         Caller-supplied action.
+    //     target: string | undefined
+    //         Caller-supplied target.
+    //     line: number
+    //         Caller-supplied line.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = checkAgentCapability(agent, action, target, line);
+    // Description:
+    //     CheckAgentCapability.
+    //
+    // Inputs:
+    //     agent: string
+    //         Caller-supplied agent.
+    //     action: string
+    //         Caller-supplied action.
+    //     target: string | undefined
+    //         Caller-supplied target.
+    //     line: number
+    //         Caller-supplied line.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = checkAgentCapability(agent, action, target, line);
 
     // const result = checkAgentCapability(agent, action, target, line);
     const caps = this.agentCapabilities.get(agent) ?? [];
@@ -1423,18 +1811,30 @@ export class Interpreter {
 }
 
   private dispatchEvent(eventName: string): void {
-    // DispatchEvent.
+    // Description:
+    //     DispatchEvent.
     //
-    // Parameters:
-    // - `eventName` — input value
+    // Inputs:
+    //     eventName: string
+    //         Caller-supplied eventName.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = dispatchEvent(eventName);
+    // Description:
+    //     DispatchEvent.
+    //
+    // Inputs:
+    //     eventName: string
+    //         Caller-supplied eventName.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = dispatchEvent(eventName);
 
     // const result = dispatchEvent(eventName);
     const body = this.eventHandlers.get(eventName);
@@ -1451,19 +1851,34 @@ export class Interpreter {
 }
 
   private executeEnter(stateName: string, line: number): void {
-    // ExecuteEnter.
+    // Description:
+    //     ExecuteEnter.
     //
-    // Parameters:
-    // - `stateName` — input value
-    // - `line` — input value
+    // Inputs:
+    //     stateName: string
+    //         Caller-supplied stateName.
+    //     line: number
+    //         Caller-supplied line.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = executeEnter(stateName, line);
+    // Description:
+    //     ExecuteEnter.
+    //
+    // Inputs:
+    //     stateName: string
+    //         Caller-supplied stateName.
+    //     line: number
+    //         Caller-supplied line.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = executeEnter(stateName, line);
 
     // const result = executeEnter(stateName, line);
     let transitioned = false;
@@ -1490,18 +1905,30 @@ export class Interpreter {
 }
 
   private setupRobot(robot: RobotDecl): void {
-    // SetupRobot.
+    // Description:
+    //     SetupRobot.
     //
-    // Parameters:
-    // - `robot` — input value
+    // Inputs:
+    //     robot: RobotDecl
+    //         Caller-supplied robot.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = setupRobot(robot);
+    // Description:
+    //     SetupRobot.
+    //
+    // Inputs:
+    //     robot: RobotDecl
+    //         Caller-supplied robot.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = setupRobot(robot);
 
     // const result = setupRobot(robot);
     this.currentRobot = robot;
@@ -1877,6 +2304,19 @@ export class Interpreter {
 }
 
   private reliabilityHost() {
+    // Description:
+    //     ReliabilityHost.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+
+    //     const result = reliabilityHost();
+
     return {
       executeBlock: (stmts: Stmt[]) => this.executeBlock(stmts),
       log: (message: string) => this.options.onLog?.(message),
@@ -1885,18 +2325,32 @@ export class Interpreter {
   }
 
   private evalSafetyZone(zone: SafetyZoneDecl): SafetyZoneRuntime {
-    // EvalSafetyZone.
+    // Description:
+    //     EvalSafetyZone.
     //
-    // Parameters:
-    // - `zone` — input value
+    // Inputs:
+    //     zone: SafetyZoneDecl
+    //         Caller-supplied zone.
     //
-    // Returns:
-    // SafetyZoneRuntime.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: SafetyZoneRuntime
+    //         Return value from `evalSafetyZone`.
     //
     // Example:
+    //     const result = evalSafetyZone(zone);
+    // Description:
+    //     EvalSafetyZone.
+    //
+    // Inputs:
+    //     zone: SafetyZoneDecl
+    //         Caller-supplied zone.
+    //
+    // Outputs:
+    //     result: SafetyZoneRuntime
+    //         Return value from `evalSafetyZone`.
+    //
+    // Example:
+    //     const result = evalSafetyZone(zone);
 
     // const result = evalSafetyZone(zone);
     const base: SafetyZoneRuntime = {
@@ -1919,7 +2373,20 @@ export class Interpreter {
     return base;
 }
 
-  private defineTopic(topic: import("../ast/nodes.js").TopicDecl): void {    // Resolve the filesystem path for the next step.
+  private defineTopic(topic: import("../ast/nodes.js").TopicDecl): void {
+    // Description:
+    //     DefineTopic.
+    //
+    // Inputs:
+    //     topic: import("../ast/nodes.js").TopicDecl
+    //         Caller-supplied topic.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = defineTopic(topic);
+    // Resolve the filesystem path for the next step.
     const path = topic.topic ?? `/${topic.name}`;
 
     // continue when topic.secure.
@@ -1946,18 +2413,30 @@ export class Interpreter {
 }
 
   private executeBlock(stmts: Stmt[]): void {
-    // ExecuteBlock.
+    // Description:
+    //     ExecuteBlock.
     //
-    // Parameters:
-    // - `stmts` — input value
+    // Inputs:
+    //     stmts: Stmt[]
+    //         Caller-supplied stmts.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = executeBlock(stmts);
+    // Description:
+    //     ExecuteBlock.
+    //
+    // Inputs:
+    //     stmts: Stmt[]
+    //         Caller-supplied stmts.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = executeBlock(stmts);
 
     // const result = executeBlock(stmts);
     for (const stmt of stmts) {
@@ -1969,18 +2448,32 @@ export class Interpreter {
 }
 
   private executeBlockWithReturn(stmts: Stmt[]): RuntimeValue {
-    // ExecuteBlockWithReturn.
+    // Description:
+    //     ExecuteBlockWithReturn.
     //
-    // Parameters:
-    // - `stmts` — input value
+    // Inputs:
+    //     stmts: Stmt[]
+    //         Caller-supplied stmts.
     //
-    // Returns:
-    // RuntimeValue.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `executeBlockWithReturn`.
     //
     // Example:
+    //     const result = executeBlockWithReturn(stmts);
+    // Description:
+    //     ExecuteBlockWithReturn.
+    //
+    // Inputs:
+    //     stmts: Stmt[]
+    //         Caller-supplied stmts.
+    //
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `executeBlockWithReturn`.
+    //
+    // Example:
+    //     const result = executeBlockWithReturn(stmts);
 
     // const result = executeBlockWithReturn(stmts);
     this.returning = false;
@@ -1997,19 +2490,36 @@ export class Interpreter {
 }
 
   private callModuleFunction(func: ModuleFnDecl, args: Expr[]): RuntimeValue {
-    // CallModuleFunction.
+    // Description:
+    //     CallModuleFunction.
     //
-    // Parameters:
-    // - `func` — input value
-    // - `args` — input value
+    // Inputs:
+    //     func: ModuleFnDecl
+    //         Caller-supplied func.
+    //     args: Expr[]
+    //         Caller-supplied args.
     //
-    // Returns:
-    // RuntimeValue.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `callModuleFunction`.
     //
     // Example:
+    //     const result = callModuleFunction(func, args);
+    // Description:
+    //     CallModuleFunction.
+    //
+    // Inputs:
+    //     func: ModuleFnDecl
+    //         Caller-supplied func.
+    //     args: Expr[]
+    //         Caller-supplied args.
+    //
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `callModuleFunction`.
+    //
+    // Example:
+    //     const result = callModuleFunction(func, args);
 
     // const result = callModuleFunction(func, args);
     if (func.isAsync) {
@@ -2034,18 +2544,30 @@ export class Interpreter {
 }
 
   private executeStmt(stmt: Stmt): void {
-    // ExecuteStmt.
+    // Description:
+    //     ExecuteStmt.
     //
-    // Parameters:
-    // - `stmt` — input value
+    // Inputs:
+    //     stmt: Stmt
+    //         Caller-supplied stmt.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = executeStmt(stmt);
+    // Description:
+    //     ExecuteStmt.
+    //
+    // Inputs:
+    //     stmt: Stmt
+    //         Caller-supplied stmt.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = executeStmt(stmt);
 
     // const result = executeStmt(stmt);
     switch (stmt.kind) {
@@ -2365,18 +2887,32 @@ export class Interpreter {
 }
 
   private evalExpr(expr: Expr): RuntimeValue {
-    // EvalExpr.
+    // Description:
+    //     EvalExpr.
     //
-    // Parameters:
-    // - `expr` — input value
+    // Inputs:
+    //     expr: Expr
+    //         Caller-supplied expr.
     //
-    // Returns:
-    // RuntimeValue.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `evalExpr`.
     //
     // Example:
+    //     const result = evalExpr(expr);
+    // Description:
+    //     EvalExpr.
+    //
+    // Inputs:
+    //     expr: Expr
+    //         Caller-supplied expr.
+    //
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `evalExpr`.
+    //
+    // Example:
+    //     const result = evalExpr(expr);
 
     // const result = evalExpr(expr);
     switch (expr.kind) {
@@ -2521,18 +3057,32 @@ export class Interpreter {
 }
 
   private evalStructLiteral(expr: import("../ast/nodes.js").StructLiteralExpr): RuntimeValue {
-    // EvalStructLiteral.
+    // Description:
+    //     EvalStructLiteral.
     //
-    // Parameters:
-    // - `expr` — input value
+    // Inputs:
+    //     expr: import("../ast/nodes.js").StructLiteralExpr
+    //         Caller-supplied expr.
     //
-    // Returns:
-    // RuntimeValue.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `evalStructLiteral`.
     //
     // Example:
+    //     const result = evalStructLiteral(expr);
+    // Description:
+    //     EvalStructLiteral.
+    //
+    // Inputs:
+    //     expr: import("../ast/nodes.js").StructLiteralExpr
+    //         Caller-supplied expr.
+    //
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `evalStructLiteral`.
+    //
+    // Example:
+    //     const result = evalStructLiteral(expr);
 
     // const result = evalStructLiteral(expr);
     const values: Record<string, RuntimeValue> = {};
@@ -2558,18 +3108,32 @@ export class Interpreter {
 }
 
   private evalMember(expr: import("../ast/nodes.js").MemberExpr): RuntimeValue {
-    // EvalMember.
+    // Description:
+    //     EvalMember.
     //
-    // Parameters:
-    // - `expr` — input value
+    // Inputs:
+    //     expr: import("../ast/nodes.js").MemberExpr
+    //         Caller-supplied expr.
     //
-    // Returns:
-    // RuntimeValue.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `evalMember`.
     //
     // Example:
+    //     const result = evalMember(expr);
+    // Description:
+    //     EvalMember.
+    //
+    // Inputs:
+    //     expr: import("../ast/nodes.js").MemberExpr
+    //         Caller-supplied expr.
+    //
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `evalMember`.
+    //
+    // Example:
+    //     const result = evalMember(expr);
 
     // const result = evalMember(expr);
     if (expr.object.kind === "IdentExpr") {
@@ -2676,6 +3240,24 @@ export class Interpreter {
     text: string,
     expr: import("../ast/nodes.js").CallExpr,
   ): RuntimeValue {
+    // Description:
+    //     EvalStringRegexMethod.
+    //
+    // Inputs:
+    //     method: string
+    //         Caller-supplied method.
+    //     text: string
+    //         Caller-supplied text.
+    //     expr: import("../ast/nodes.js").CallExpr
+    //         Caller-supplied expr.
+    //
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `evalStringRegexMethod`.
+    //
+    // Example:
+    //     const result = evalStringRegexMethod(method, text, expr);
+
     // Dispatch string regex methods against compiled patterns.
     const patternArg = expr.args[0] ? this.evalExpr(expr.args[0]) : { kind: "void" as const };
     if (patternArg.kind !== "regex") {
@@ -2719,6 +3301,20 @@ export class Interpreter {
   }
 
   private sleepWallMs(ms: number): void {
+    // Description:
+    //     SleepWallMs.
+    //
+    // Inputs:
+    //     ms: number
+    //         Caller-supplied ms.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+
+    //     const result = sleepWallMs(ms);
+
     if (ms <= 0) {
       return;
     }
@@ -2729,18 +3325,32 @@ export class Interpreter {
   }
 
   private evalCall(expr: import("../ast/nodes.js").CallExpr): RuntimeValue {
-    // EvalCall.
+    // Description:
+    //     EvalCall.
     //
-    // Parameters:
-    // - `expr` — input value
+    // Inputs:
+    //     expr: import("../ast/nodes.js").CallExpr
+    //         Caller-supplied expr.
     //
-    // Returns:
-    // RuntimeValue.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `evalCall`.
     //
     // Example:
+    //     const result = evalCall(expr);
+    // Description:
+    //     EvalCall.
+    //
+    // Inputs:
+    //     expr: import("../ast/nodes.js").CallExpr
+    //         Caller-supplied expr.
+    //
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `evalCall`.
+    //
+    // Example:
+    //     const result = evalCall(expr);
 
     // const result = evalCall(expr);
     if (expr.callee.kind === "IdentExpr") {
@@ -3003,18 +3613,32 @@ export class Interpreter {
 }
 
   private readSensorValue(target: Extract<RuntimeValue, { kind: "sensor" }>): RuntimeValue {
-    // ReadSensorValue.
+    // Description:
+    //     ReadSensorValue.
     //
-    // Parameters:
-    // - `target` — input value
+    // Inputs:
+    //     target: Extract<RuntimeValue, { kind: "sensor" }>
+    //         Caller-supplied target.
     //
-    // Returns:
-    // RuntimeValue.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `readSensorValue`.
     //
     // Example:
+    //     const result = readSensorValue(target);
+    // Description:
+    //     ReadSensorValue.
+    //
+    // Inputs:
+    //     target: Extract<RuntimeValue, { kind: "sensor" }>
+    //         Caller-supplied target.
+    //
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `readSensorValue`.
+    //
+    // Example:
+    //     const result = readSensorValue(target);
 
     // const result = readSensorValue(target);
     const state = this.options.backend.getState();
@@ -3064,18 +3688,30 @@ export class Interpreter {
   }
 
   private readFusedObservation(): RuntimeValue {
-    // ReadFusedObservation.
+    // Description:
+    //     ReadFusedObservation.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // RuntimeValue.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `readFusedObservation`.
     //
     // Example:
+    //     const result = readFusedObservation();
+    // Description:
+    //     ReadFusedObservation.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `readFusedObservation`.
+    //
+    // Example:
+    //     const result = readFusedObservation();
 
     // const result = readFusedObservation();
     const fields: Record<string, RuntimeValue> = {};
@@ -3113,6 +3749,24 @@ export class Interpreter {
     method: string,
     line: number,
   ): RuntimeValue {
+    // Description:
+    //     EvalMissionMethod.
+    //
+    // Inputs:
+    //     runtime: MissionRuntime
+    //         Caller-supplied runtime.
+    //     method: string
+    //         Caller-supplied method.
+    //     line: number
+    //         Caller-supplied line.
+    //
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `evalMissionMethod`.
+    //
+    // Example:
+    //     const result = evalMissionMethod(runtime, method, line);
+
     // Dispatch mission lifecycle methods on the active mission controller.
     switch (method) {
       case "start":
@@ -3142,6 +3796,19 @@ export class Interpreter {
   }
 
   private executeNavigateStmt(stmt: import("../ast/nodes.js").NavigateStmt): void {
+    // Description:
+    //     ExecuteNavigateStmt.
+    //
+    // Inputs:
+    //     stmt: import("../ast/nodes.js").NavigateStmt
+    //         Caller-supplied stmt.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = executeNavigateStmt(stmt);
+
     // Execute navigate { goal: ... } sugar over navigation.goal/navigate.
     const line = stmt.span.start.line;
     const goalText = getString(this.evalExpr(stmt.goal));
@@ -3178,6 +3845,22 @@ export class Interpreter {
   }
 
   private evalSlamMethod(method: string, line: number): RuntimeValue {
+    // Description:
+    //     EvalSlamMethod.
+    //
+    // Inputs:
+    //     method: string
+    //         Caller-supplied method.
+    //     line: number
+    //         Caller-supplied line.
+    //
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `evalSlamMethod`.
+    //
+    // Example:
+    //     const result = evalSlamMethod(method, line);
+
     // Dispatch SLAM adapter helpers for map and localization stubs.
     if (method === "localize") {
       const state = this.options.backend.getState();
@@ -3220,6 +3903,24 @@ export class Interpreter {
     method: string,
     expr: import("../ast/nodes.js").CallExpr,
   ): RuntimeValue {
+    // Description:
+    //     EvalNavigationMethod.
+    //
+    // Inputs:
+    //     target: { kind: "navigation_control"; goal: string | null }
+    //         Caller-supplied target.
+    //     method: string
+    //         Caller-supplied method.
+    //     expr: import("../ast/nodes.js").CallExpr
+    //         Caller-supplied expr.
+    //
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `evalNavigationMethod`.
+    //
+    // Example:
+    //     const result = evalNavigationMethod(target, method, expr);
+
     // Dispatch navigation helpers for goals, paths, and cost maps.
     const line = expr.span.start.line;
     switch (method) {
@@ -3303,6 +4004,24 @@ export class Interpreter {
     method: string,
     expr: import("../ast/nodes.js").CallExpr,
   ): RuntimeValue {
+    // Description:
+    //     EvalFleetMethod.
+    //
+    // Inputs:
+    //     registry: FleetRegistry
+    //         Caller-supplied registry.
+    //     method: string
+    //         Caller-supplied method.
+    //     expr: import("../ast/nodes.js").CallExpr
+    //         Caller-supplied expr.
+    //
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `evalFleetMethod`.
+    //
+    // Example:
+    //     const result = evalFleetMethod(registry, method, expr);
+
     // Dispatch fleet coordination helpers for member lookup.
     const line = expr.span.start.line;
     switch (method) {
@@ -3324,19 +4043,36 @@ export class Interpreter {
   }
 
   private evalBuiltinFunction(name: string, expr: import("../ast/nodes.js").CallExpr): RuntimeValue {
-    // EvalBuiltinFunction.
+    // Description:
+    //     EvalBuiltinFunction.
     //
-    // Parameters:
-    // - `name` — input value
-    // - `expr` — input value
+    // Inputs:
+    //     name: string
+    //         Caller-supplied name.
+    //     expr: import("../ast/nodes.js").CallExpr
+    //         Caller-supplied expr.
     //
-    // Returns:
-    // RuntimeValue.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `evalBuiltinFunction`.
     //
     // Example:
+    //     const result = evalBuiltinFunction(name, expr);
+    // Description:
+    //     EvalBuiltinFunction.
+    //
+    // Inputs:
+    //     name: string
+    //         Caller-supplied name.
+    //     expr: import("../ast/nodes.js").CallExpr
+    //         Caller-supplied expr.
+    //
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `evalBuiltinFunction`.
+    //
+    // Example:
+    //     const result = evalBuiltinFunction(name, expr);
 
     // const result = evalBuiltinFunction(name, expr);
     switch (name) {
@@ -3491,20 +4227,38 @@ export class Interpreter {
     args: Expr[],
     line: number,
   ): {
-    // EvalSpawnTarget.
+    // Description:
+    //     EvalSpawnTarget.
     //
-    // Parameters:
-    // - `callee` — input value
-    // - `args` — input value
-    // - `line` — input value
+    // Inputs:
+    //     callee: Expr
+    //         Caller-supplied callee.
+    //     args: Expr[]
+    //         Caller-supplied args.
+    //     line: number
+    //         Caller-supplied line.
     //
-    // Returns:
-    // .
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = evalSpawnTarget(callee, args, line);
+    // Description:
+    //     EvalSpawnTarget.
+    //
+    // Inputs:
+    //     callee: Expr
+    //         Caller-supplied callee.
+    //     args: Expr[]
+    //         Caller-supplied args.
+    //     line: number
+    //         Caller-supplied line.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = evalSpawnTarget(callee, args, line);
 
  // const result = evalSpawnTarget(callee, args, line);
  funcName: string; args: RuntimeValue[] } {
@@ -3516,20 +4270,40 @@ export class Interpreter {
   }
 
   private executeSpawnJob(funcName: string, args: RuntimeValue[], line: number): RuntimeValue {
-    // ExecuteSpawnJob.
+    // Description:
+    //     ExecuteSpawnJob.
     //
-    // Parameters:
-    // - `funcName` — input value
-    // - `args` — input value
-    // - `line` — input value
+    // Inputs:
+    //     funcName: string
+    //         Caller-supplied funcName.
+    //     args: RuntimeValue[]
+    //         Caller-supplied args.
+    //     line: number
+    //         Caller-supplied line.
     //
-    // Returns:
-    // RuntimeValue.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `executeSpawnJob`.
     //
     // Example:
+    //     const result = executeSpawnJob(funcName, args, line);
+    // Description:
+    //     ExecuteSpawnJob.
+    //
+    // Inputs:
+    //     funcName: string
+    //         Caller-supplied funcName.
+    //     args: RuntimeValue[]
+    //         Caller-supplied args.
+    //     line: number
+    //         Caller-supplied line.
+    //
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `executeSpawnJob`.
+    //
+    // Example:
+    //     const result = executeSpawnJob(funcName, args, line);
 
     // const result = executeSpawnJob(funcName, args, line);
     const func =
@@ -3555,19 +4329,36 @@ export class Interpreter {
 }
 
   private resolveTaskHandle(id: number, line: number): RuntimeValue {
-    // ResolveTaskHandle.
+    // Description:
+    //     ResolveTaskHandle.
     //
-    // Parameters:
-    // - `id` — input value
-    // - `line` — input value
+    // Inputs:
+    //     id: number
+    //         Caller-supplied id.
+    //     line: number
+    //         Caller-supplied line.
     //
-    // Returns:
-    // RuntimeValue.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `resolveTaskHandle`.
     //
     // Example:
+    //     const result = resolveTaskHandle(id, line);
+    // Description:
+    //     ResolveTaskHandle.
+    //
+    // Inputs:
+    //     id: number
+    //         Caller-supplied id.
+    //     line: number
+    //         Caller-supplied line.
+    //
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `resolveTaskHandle`.
+    //
+    // Example:
+    //     const result = resolveTaskHandle(id, line);
 
     // const result = resolveTaskHandle(id, line);
     const handle = this.concurrency.getHandle(id);
@@ -3585,19 +4376,36 @@ export class Interpreter {
 }
 
   private resolveFuture(future: RuntimeValue, line: number): RuntimeValue {
-    // ResolveFuture.
+    // Description:
+    //     ResolveFuture.
     //
-    // Parameters:
-    // - `future` — input value
-    // - `line` — input value
+    // Inputs:
+    //     future: RuntimeValue
+    //         Caller-supplied future.
+    //     line: number
+    //         Caller-supplied line.
     //
-    // Returns:
-    // RuntimeValue.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `resolveFuture`.
     //
     // Example:
+    //     const result = resolveFuture(future, line);
+    // Description:
+    //     ResolveFuture.
+    //
+    // Inputs:
+    //     future: RuntimeValue
+    //         Caller-supplied future.
+    //     line: number
+    //         Caller-supplied line.
+    //
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `resolveFuture`.
+    //
+    // Example:
+    //     const result = resolveFuture(future, line);
 
     // const result = resolveFuture(future, line);
     if (future.kind === "future") {
@@ -3611,18 +4419,28 @@ export class Interpreter {
 }
 
   private processSpawnQueue(): void {
-    // ProcessSpawnQueue.
+    // Description:
+    //     ProcessSpawnQueue.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = processSpawnQueue();
+    // Description:
+    //     ProcessSpawnQueue.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = processSpawnQueue();
 
     // const result = processSpawnQueue();
     for (const id of this.concurrency.drainFireAndForgetQueue()) {
@@ -3631,18 +4449,32 @@ export class Interpreter {
 }
 
   private goalTextFromValue(value: RuntimeValue): string | undefined {
-    // GoalTextFromValue.
+    // Description:
+    //     GoalTextFromValue.
     //
-    // Parameters:
-    // - `value` — input value
+    // Inputs:
+    //     value: RuntimeValue
+    //         Caller-supplied value.
     //
-    // Returns:
-    // Some value on success, otherwise none.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: string | undefined
+    //         Return value from `goalTextFromValue`.
     //
     // Example:
+    //     const result = goalTextFromValue(value);
+    // Description:
+    //     GoalTextFromValue.
+    //
+    // Inputs:
+    //     value: RuntimeValue
+    //         Caller-supplied value.
+    //
+    // Outputs:
+    //     result: string | undefined
+    //         Return value from `goalTextFromValue`.
+    //
+    // Example:
+    //     const result = goalTextFromValue(value);
 
     // const result = goalTextFromValue(value);
     if (value.kind === "goal") return value.text;
@@ -3652,7 +4484,21 @@ export class Interpreter {
     return undefined;
 }
 
-  private resolveReasonGoal(expr: import("../ast/nodes.js").CallExpr): string | undefined {    // Compute explicit for the following logic.
+  private resolveReasonGoal(expr: import("../ast/nodes.js").CallExpr): string | undefined {
+    // Description:
+    //     ResolveReasonGoal.
+    //
+    // Inputs:
+    //     expr: import("../ast/nodes.js").CallExpr
+    //         Caller-supplied expr.
+    //
+    // Outputs:
+    //     result: string | undefined
+    //         Return value from `resolveReasonGoal`.
+    //
+    // Example:
+    //     const result = resolveReasonGoal(expr);
+    // Compute explicit for the following logic.
     const explicit = this.getNamedArgValue(expr, "goal");
 
     // continue when kind differs from "void".
@@ -3672,18 +4518,32 @@ export class Interpreter {
 }
 
   private enrichReasonGoal(goalText: string | undefined): string | undefined {
-    // EnrichReasonGoal.
+    // Description:
+    //     EnrichReasonGoal.
     //
-    // Parameters:
-    // - `goalText` — input value
+    // Inputs:
+    //     goalText: string | undefined
+    //         Caller-supplied goalText.
     //
-    // Returns:
-    // Some value on success, otherwise none.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: string | undefined
+    //         Return value from `enrichReasonGoal`.
     //
     // Example:
+    //     const result = enrichReasonGoal(goalText);
+    // Description:
+    //     EnrichReasonGoal.
+    //
+    // Inputs:
+    //     goalText: string | undefined
+    //         Caller-supplied goalText.
+    //
+    // Outputs:
+    //     result: string | undefined
+    //         Return value from `enrichReasonGoal`.
+    //
+    // Example:
+    //     const result = enrichReasonGoal(goalText);
 
     // const result = enrichReasonGoal(goalText);
     if (!this.currentAgent) return goalText;
@@ -3701,18 +4561,32 @@ export class Interpreter {
 }
 
   private evalSafetyValidate(expr: import("../ast/nodes.js").CallExpr): RuntimeValue {
-    // EvalSafetyValidate.
+    // Description:
+    //     EvalSafetyValidate.
     //
-    // Parameters:
-    // - `expr` — input value
+    // Inputs:
+    //     expr: import("../ast/nodes.js").CallExpr
+    //         Caller-supplied expr.
     //
-    // Returns:
-    // RuntimeValue.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `evalSafetyValidate`.
     //
     // Example:
+    //     const result = evalSafetyValidate(expr);
+    // Description:
+    //     EvalSafetyValidate.
+    //
+    // Inputs:
+    //     expr: import("../ast/nodes.js").CallExpr
+    //         Caller-supplied expr.
+    //
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `evalSafetyValidate`.
+    //
+    // Example:
+    //     const result = evalSafetyValidate(expr);
 
     // const result = evalSafetyValidate(expr);
     const arg = expr.args[0] ? this.evalExpr(expr.args[0]) : this.getNamedArgValue(expr, "proposal");
@@ -3739,19 +4613,36 @@ export class Interpreter {
 }
 
   private evalRobotMethod(method: string, expr: import("../ast/nodes.js").CallExpr): RuntimeValue {
-    // EvalRobotMethod.
+    // Description:
+    //     EvalRobotMethod.
     //
-    // Parameters:
-    // - `method` — input value
-    // - `expr` — input value
+    // Inputs:
+    //     method: string
+    //         Caller-supplied method.
+    //     expr: import("../ast/nodes.js").CallExpr
+    //         Caller-supplied expr.
     //
-    // Returns:
-    // RuntimeValue.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `evalRobotMethod`.
     //
     // Example:
+    //     const result = evalRobotMethod(method, expr);
+    // Description:
+    //     EvalRobotMethod.
+    //
+    // Inputs:
+    //     method: string
+    //         Caller-supplied method.
+    //     expr: import("../ast/nodes.js").CallExpr
+    //         Caller-supplied expr.
+    //
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `evalRobotMethod`.
+    //
+    // Example:
+    //     const result = evalRobotMethod(method, expr);
 
     // const result = evalRobotMethod(method, expr);
     const state = this.options.backend.getState();
@@ -3797,21 +4688,44 @@ export class Interpreter {
     method: string,
     expr: import("../ast/nodes.js").CallExpr,
   ): RuntimeValue {
-    // ExecuteActuatorMethod.
+    // Description:
+    //     ExecuteActuatorMethod.
     //
-    // Parameters:
-    // - `name` — input value
-    // - `actuatorType` — input value
-    // - `method` — input value
-    // - `expr` — input value
+    // Inputs:
+    //     name: string
+    //         Caller-supplied name.
+    //     actuatorType: string
+    //         Caller-supplied actuatorType.
+    //     method: string
+    //         Caller-supplied method.
+    //     expr: import("../ast/nodes.js").CallExpr
+    //         Caller-supplied expr.
     //
-    // Returns:
-    // RuntimeValue.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `executeActuatorMethod`.
     //
     // Example:
+    //     const result = executeActuatorMethod(name, actuatorType, method, expr);
+    // Description:
+    //     ExecuteActuatorMethod.
+    //
+    // Inputs:
+    //     name: string
+    //         Caller-supplied name.
+    //     actuatorType: string
+    //         Caller-supplied actuatorType.
+    //     method: string
+    //         Caller-supplied method.
+    //     expr: import("../ast/nodes.js").CallExpr
+    //         Caller-supplied expr.
+    //
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `executeActuatorMethod`.
+    //
+    // Example:
+    //     const result = executeActuatorMethod(name, actuatorType, method, expr);
 
     // const result = executeActuatorMethod(name, actuatorType, method, expr);
     const motionMethods = ["drive", "move_to", "set_thrust", "grip", "release", "open", "hover", "follow"];
@@ -3920,30 +4834,84 @@ export class Interpreter {
     return { kind: "void" };
 }
 
-  private getNamedArgValue(expr: import("../ast/nodes.js").CallExpr, name: string): RuntimeValue {    // Compute arg for the following logic.
+  private getNamedArgValue(expr: import("../ast/nodes.js").CallExpr, name: string): RuntimeValue {
+    // Description:
+    //     GetNamedArgValue.
+    //
+    // Inputs:
+    //     expr: import("../ast/nodes.js").CallExpr
+    //         Caller-supplied expr.
+    //     name: string
+    //         Caller-supplied name.
+    //
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `getNamedArgValue`.
+    //
+    // Example:
+    //     const result = getNamedArgValue(expr, name);
+    // Compute arg for the following logic.
     const arg = expr.namedArgs.find((a) => a.name === name);
     return arg ? this.evalExpr(arg.value) : { kind: "void" };
 }
 
-  private getNamedArgNumber(expr: import("../ast/nodes.js").CallExpr, name: string, defaultVal: number): number {    // Return getNamedArgValue to the caller.
+  private getNamedArgNumber(expr: import("../ast/nodes.js").CallExpr, name: string, defaultVal: number): number {
+    // Description:
+    //     GetNamedArgNumber.
+    //
+    // Inputs:
+    //     expr: import("../ast/nodes.js").CallExpr
+    //         Caller-supplied expr.
+    //     name: string
+    //         Caller-supplied name.
+    //     defaultVal: number
+    //         Caller-supplied defaultVal.
+    //
+    // Outputs:
+    //     result: number
+    //         Return value from `getNamedArgNumber`.
+    //
+    // Example:
+    //     const result = getNamedArgNumber(expr, name, defaultVal);
+    // Return getNamedArgValue to the caller.
     return getNumber(this.getNamedArgValue(expr, name), defaultVal);
 }
 
   private evalBinary(op: string, left: RuntimeValue, right: RuntimeValue): RuntimeValue {
-    // EvalBinary.
+    // Description:
+    //     EvalBinary.
     //
-    // Parameters:
-    // - `op` — input value
-    // - `left` — input value
-    // - `right` — input value
+    // Inputs:
+    //     op: string
+    //         Caller-supplied op.
+    //     left: RuntimeValue
+    //         Caller-supplied left.
+    //     right: RuntimeValue
+    //         Caller-supplied right.
     //
-    // Returns:
-    // RuntimeValue.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `evalBinary`.
     //
     // Example:
+    //     const result = evalBinary(op, left, right);
+    // Description:
+    //     EvalBinary.
+    //
+    // Inputs:
+    //     op: string
+    //         Caller-supplied op.
+    //     left: RuntimeValue
+    //         Caller-supplied left.
+    //     right: RuntimeValue
+    //         Caller-supplied right.
+    //
+    // Outputs:
+    //     result: RuntimeValue
+    //         Return value from `evalBinary`.
+    //
+    // Example:
+    //     const result = evalBinary(op, left, right);
 
     // const result = evalBinary(op, left, right);
     if (op === "and") {
@@ -3990,18 +4958,30 @@ export class Interpreter {
 }
 
   private checkSafetyBeforeMotion(): boolean {
-    // CheckSafetyBeforeMotion.
+    // Description:
+    //     CheckSafetyBeforeMotion.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // true or false.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: boolean
+    //         Return value from `checkSafetyBeforeMotion`.
     //
     // Example:
+    //     const result = checkSafetyBeforeMotion();
+    // Description:
+    //     CheckSafetyBeforeMotion.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: boolean
+    //         Return value from `checkSafetyBeforeMotion`.
+    //
+    // Example:
+    //     const result = checkSafetyBeforeMotion();
 
     // const result = checkSafetyBeforeMotion();
     const state = this.options.backend.getState();

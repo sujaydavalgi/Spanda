@@ -25,22 +25,111 @@ export type SecurityReport = {
 };
 
 function emptyReport(): SecurityReport {
+  // Description:
+  //     EmptyReport.
+  //
+  // Inputs:
+  //     None.
+  //
+  // Outputs:
+  //     result: SecurityReport
+  //         Return value from `emptyReport`.
+  //
+  // Example:
+
+  //     const result = emptyReport();
+
   return { findings: [] };
 }
 
 function pushError(report: SecurityReport, message: string, line: number, column: number): void {
+  // Description:
+  //     PushError.
+  //
+  // Inputs:
+  //     report: SecurityReport
+  //         Caller-supplied report.
+  //     message: string
+  //         Caller-supplied message.
+  //     line: number
+  //         Caller-supplied line.
+  //     column: number
+  //         Caller-supplied column.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+  //     const result = pushError(report, message, line, column);
+
   report.findings.push({ severity: "error", message, line, column });
 }
 
 function pushWarning(report: SecurityReport, message: string, line: number, column: number): void {
+  // Description:
+  //     PushWarning.
+  //
+  // Inputs:
+  //     report: SecurityReport
+  //         Caller-supplied report.
+  //     message: string
+  //         Caller-supplied message.
+  //     line: number
+  //         Caller-supplied line.
+  //     column: number
+  //         Caller-supplied column.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+  //     const result = pushWarning(report, message, line, column);
+
   report.findings.push({ severity: "warning", message, line, column });
 }
 
 function pushInfo(report: SecurityReport, message: string, line: number, column: number): void {
+  // Description:
+  //     PushInfo.
+  //
+  // Inputs:
+  //     report: SecurityReport
+  //         Caller-supplied report.
+  //     message: string
+  //         Caller-supplied message.
+  //     line: number
+  //         Caller-supplied line.
+  //     column: number
+  //         Caller-supplied column.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+  //     const result = pushInfo(report, message, line, column);
+
   report.findings.push({ severity: "info", message, line, column });
 }
 
 function secretIsCryptoMaterial(secret: SecretDecl): boolean {
+  // Description:
+  //     SecretIsCryptoMaterial.
+  //
+  // Inputs:
+  //     secret: SecretDecl
+  //         Caller-supplied secret.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `secretIsCryptoMaterial`.
+  //
+  // Example:
+
+  //     const result = secretIsCryptoMaterial(secret);
+
   return (
     secret.name.includes("key") ||
     secret.name.includes("cert") ||
@@ -49,6 +138,23 @@ function secretIsCryptoMaterial(secret: SecretDecl): boolean {
 }
 
 function parseMode(field: string, value: string): boolean {
+  // Description:
+  //     ParseMode.
+  //
+  // Inputs:
+  //     field: string
+  //         Caller-supplied field.
+  //     value: string
+  //         Caller-supplied value.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `parseMode`.
+  //
+  // Example:
+
+  //     const result = parseMode(field, value);
+
   switch (field) {
     case "encryption":
       return value === "none" || value === "optional" || value === "required";
@@ -69,6 +175,30 @@ function validateSecureBlock(
   column: number,
   report: SecurityReport,
 ): void {
+  // Description:
+  //     ValidateSecureBlock.
+  //
+  // Inputs:
+  //     block: SecureBlockDecl
+  //         Caller-supplied block.
+  //     hasIdentity: boolean
+  //         Caller-supplied hasIdentity.
+  //     kind: string
+  //         Caller-supplied kind.
+  //     line: number
+  //         Caller-supplied line.
+  //     column: number
+  //         Caller-supplied column.
+  //     report: SecurityReport
+  //         Caller-supplied report.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+  //     const result = validateSecureBlock(block, hasIdentity, kind, line, column, report);
+
   const needsIdentity =
     block.signed ||
     block.encryption === "required" ||
@@ -99,6 +229,28 @@ function validateTopic(
   boundaries: TrustBoundaryRegistry,
   report: SecurityReport,
 ): void {
+  // Description:
+  //     ValidateTopic.
+  //
+  // Inputs:
+  //     topic: TopicDecl
+  //         Caller-supplied topic.
+  //     hasIdentity: boolean
+  //         Caller-supplied hasIdentity.
+  //     hasKeyOrCert: boolean
+  //         Caller-supplied hasKeyOrCert.
+  //     boundaries: TrustBoundaryRegistry
+  //         Caller-supplied boundaries.
+  //     report: SecurityReport
+  //         Caller-supplied report.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+  //     const result = validateTopic(topic, hasIdentity, hasKeyOrCert, boundaries, report);
+
   if (topic.secure) {
     validateSecureBlock(
       topic.secure,
@@ -140,6 +292,24 @@ function validateTopic(
 }
 
 function validateBus(bus: BusDecl, hasKeyOrCert: boolean, report: SecurityReport): void {
+  // Description:
+  //     ValidateBus.
+  //
+  // Inputs:
+  //     bus: BusDecl
+  //         Caller-supplied bus.
+  //     hasKeyOrCert: boolean
+  //         Caller-supplied hasKeyOrCert.
+  //     report: SecurityReport
+  //         Caller-supplied report.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+  //     const result = validateBus(bus, hasKeyOrCert, report);
+
   if (bus.encryption === "required" && !hasKeyOrCert) {
     pushError(
       report,
@@ -159,6 +329,24 @@ function validateBus(bus: BusDecl, hasKeyOrCert: boolean, report: SecurityReport
 }
 
 function analyzeRobot(robot: RobotDecl, report: SecurityReport, audit: boolean): void {
+  // Description:
+  //     AnalyzeRobot.
+  //
+  // Inputs:
+  //     robot: RobotDecl
+  //         Caller-supplied robot.
+  //     report: SecurityReport
+  //         Caller-supplied report.
+  //     audit: boolean
+  //         Caller-supplied audit.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+  //     const result = analyzeRobot(robot, report, audit);
+
   const boundaries = new TrustBoundaryRegistry();
   for (const tb of robot.trustBoundaries) {
     try {
@@ -260,20 +448,37 @@ function analyzeRobot(robot: RobotDecl, report: SecurityReport, audit: boolean):
 }
 
 export function analyzeProgram(program: Program, audit = false): SecurityReport {
-  // Run static security analysis over a parsed program AST.
+  // Description:
+  //     AnalyzeProgram.
   //
-  // Parameters:
-  // - `program` — parsed Spanda program
-  // - `audit` — include informational audit hints
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     audit = false: input value
+  //         Caller-supplied audit = false.
   //
-  // Returns:
-  // SecurityReport with findings.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: SecurityReport
+  //         Return value from `analyzeProgram`.
   //
   // Example:
-  // const report = analyzeProgram(program, true);
+  //     const result = analyzeProgram(program, audit = false);
+  // Description:
+  //     AnalyzeProgram.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     audit = false: input value
+  //         Caller-supplied audit = false.
+  //
+  // Outputs:
+  //     result: SecurityReport
+  //         Return value from `analyzeProgram`.
+  //
+  // Example:
+
+  //     const result = analyzeProgram(program, audit = false);
 
   const report = emptyReport();
   for (const robot of program.robots) analyzeRobot(robot, report, audit);
@@ -281,6 +486,20 @@ export function analyzeProgram(program: Program, audit = false): SecurityReport 
 }
 
 export function securityCheck(source: string): SecurityReport {
+  // Description:
+  //     SecurityCheck.
+  //
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //
+  // Outputs:
+  //     result: SecurityReport
+  //         Return value from `securityCheck`.
+  //
+  // Example:
+  //     const result = securityCheck(source);
+
   // Run static security validation on Spanda source text.
   const tokens = tokenize(source);
   const program = parse(tokens);
@@ -288,6 +507,20 @@ export function securityCheck(source: string): SecurityReport {
 }
 
 export function securityAudit(source: string): SecurityReport {
+  // Description:
+  //     SecurityAudit.
+  //
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //
+  // Outputs:
+  //     result: SecurityReport
+  //         Return value from `securityAudit`.
+  //
+  // Example:
+  //     const result = securityAudit(source);
+
   // Produce an audit-oriented security report including informational events.
   const tokens = tokenize(source);
   const program = parse(tokens);
@@ -295,5 +528,20 @@ export function securityAudit(source: string): SecurityReport {
 }
 
 export function reportHasErrors(report: SecurityReport): boolean {
+  // Description:
+  //     ReportHasErrors.
+  //
+  // Inputs:
+  //     report: SecurityReport
+  //         Caller-supplied report.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `reportHasErrors`.
+  //
+  // Example:
+
+  //     const result = reportHasErrors(report);
+
   return report.findings.some((f) => f.severity === "error");
 }

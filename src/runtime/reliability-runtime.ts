@@ -31,6 +31,7 @@ export class ReliabilityRuntime {
   missionTrace: MissionTrace | null = null;
 
   loadFromRobot(robot: RobotDecl, recordTrace: boolean, traceSource?: string): void {
+
     // Reset and load reliability declarations from a robot block.
     this.pipelines.clear();
     this.modes.clear();
@@ -56,6 +57,7 @@ export class ReliabilityRuntime {
   }
 
   enterMode(mode: string, host: ReliabilityHost): void {
+
     // Switch operating mode and execute its body when declared.
     this.activeMode = mode;
     const body = this.modes.get(mode);
@@ -69,6 +71,7 @@ export class ReliabilityRuntime {
   }
 
   executePipeline(name: string, host: ReliabilityHost): void {
+
     // Run a named pipeline and record budget telemetry.
     const pipeline = this.pipelines.get(name);
     if (!pipeline) {
@@ -98,6 +101,7 @@ export class ReliabilityRuntime {
   }
 
   checkWatchdogs(host: ReliabilityHost): void {
+
     // Evaluate watchdog timeouts against task heartbeats.
     for (const watchdog of this.watchdogs) {
       const referenceMs = watchdog.target
@@ -137,11 +141,39 @@ export class ReliabilityRuntime {
   }
 }
 
-export function pipelineFromDecl(decl: PipelineDecl): { name: string; budgetMs: number; body: Stmt[] } {
+export function pipelineFromDecl(decl: PipelineDecl): {
+  // Description:
+  //     PipelineFromDecl.
+  //
+  // Inputs:
+  //     decl: PipelineDecl
+  //         Caller-supplied decl.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+ // const result = pipelineFromDecl(decl);
+ name: string; budgetMs: number; body: Stmt[] } {
   return { name: decl.name, budgetMs: decl.budgetMs, body: decl.body };
 }
 
 export function watchdogFromDecl(decl: WatchdogDecl): {
+  // Description:
+  //     WatchdogFromDecl.
+  //
+  // Inputs:
+  //     decl: WatchdogDecl
+  //         Caller-supplied decl.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+  //     const result = watchdogFromDecl(decl);
+
   name: string;
   target?: string;
   timeoutMs: number;

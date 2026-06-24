@@ -30,18 +30,32 @@ export class Ros2AdapterStub implements Ros2Adapter {
   private published: Array<{ topic: string; messageType: string; value: RuntimeValue }> = [];
 
   async connect(options: Ros2ConnectOptions): Promise<void> {
-    // Connect.
+    // Description:
+    //     Connect.
     //
-    // Parameters:
-    // - `options` — input value
+    // Inputs:
+    //     options: Ros2ConnectOptions
+    //         Caller-supplied options.
     //
-    // Returns:
-    // Success value on completion, or an error.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: Promise<void>
+    //         Return value from `connect`.
     //
     // Example:
+    //     const result = connect(options);
+    // Description:
+    //     Connect.
+    //
+    // Inputs:
+    //     options: Ros2ConnectOptions
+    //         Caller-supplied options.
+    //
+    // Outputs:
+    //     result: Promise<void>
+    //         Return value from `connect`.
+    //
+    // Example:
+    //     const result = connect(options);
 
     // const result = connect(options);
     this.connected = true;
@@ -49,18 +63,30 @@ export class Ros2AdapterStub implements Ros2Adapter {
 }
 
   async disconnect(): Promise<void> {
-    // Disconnect.
+    // Description:
+    //     Disconnect.
     //
-    // Parameters:
-    // None.
+    // Inputs:
+    //     None.
     //
-    // Returns:
-    // Success value on completion, or an error.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: Promise<void>
+    //         Return value from `disconnect`.
     //
     // Example:
+    //     const result = disconnect();
+    // Description:
+    //     Disconnect.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: Promise<void>
+    //         Return value from `disconnect`.
+    //
+    // Example:
+    //     const result = disconnect();
 
     // const result = disconnect();
     this.connected = false;

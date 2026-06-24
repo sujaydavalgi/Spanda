@@ -91,55 +91,94 @@ type SymbolEntry = {
 };
 
 export function typeCheck(program: Program): void {
-  // TypeCheck.
+  // Description:
+  //     TypeCheck.
   //
-  // Parameters:
-  // - `program` — input value
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
   //
-  // Returns:
-  // Nothing.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     None.
   //
   // Example:
+  //     const result = typeCheck(program);
+  // Description:
+  //     TypeCheck.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+  //     const result = typeCheck(program);
 
   // const result = typeCheck(program);
   check(program);
 }
 
 export function check(program: Program): void {
-  // Check input.
+  // Description:
+  //     Check.
   //
-  // Parameters:
-  // - `program` — input value
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
   //
-  // Returns:
-  // Nothing.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     None.
   //
   // Example:
+  //     const result = check(program);
+  // Description:
+  //     Check.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+  //     const result = check(program);
 
   // const result = check(program);
   checkWithRegistry(program, undefined);
 }
 
 export function checkWithRegistry(program: Program, registry: ModuleRegistry | undefined): void {
-  // CheckWithRegistry.
+  // Description:
+  //     CheckWithRegistry.
   //
-  // Parameters:
-  // - `program` — input value
-  // - `registry` — input value
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     registry: ModuleRegistry | undefined
+  //         Caller-supplied registry.
   //
-  // Returns:
-  // Nothing.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     None.
   //
   // Example:
+  //     const result = checkWithRegistry(program, registry);
+  // Description:
+  //     CheckWithRegistry.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //     registry: ModuleRegistry | undefined
+  //         Caller-supplied registry.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+  //     const result = checkWithRegistry(program, registry);
 
   // const result = checkWithRegistry(program, registry);
   const checker = new TypeChecker(registry);
@@ -325,18 +364,30 @@ class TypeChecker {
   }
 
   private checkHardwareProgram(program: Program): void {
-    // CheckHardwareProgram.
+    // Description:
+    //     CheckHardwareProgram.
     //
-    // Parameters:
-    // - `program` — input value
+    // Inputs:
+    //     program: Program
+    //         Caller-supplied program.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = checkHardwareProgram(program);
+    // Description:
+    //     CheckHardwareProgram.
+    //
+    // Inputs:
+    //     program: Program
+    //         Caller-supplied program.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = checkHardwareProgram(program);
 
     // const result = checkHardwareProgram(program);
     const profileNames = new Set(program.hardwareProfiles.map((p) => p.name));
@@ -384,7 +435,20 @@ class TypeChecker {
     }
 }
 
-  private checkMessage(decl: import("../comm/index.js").MessageDecl): void {    // Process each field.
+  private checkMessage(decl: import("../comm/index.js").MessageDecl): void {
+    // Description:
+    //     CheckMessage.
+    //
+    // Inputs:
+    //     decl: import("../comm/index.js").MessageDecl
+    //         Caller-supplied decl.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = checkMessage(decl);
+    // Process each field.
     for (const field of decl.fields) {
       let known = !!this.messageRegistry.resolveType(field.typeName) || !!resolveTypeAlias(field.typeName);
 
@@ -417,36 +481,62 @@ class TypeChecker {
 }
 
   private resolveMessageType(name: string): SpandaType | null {
-    // ResolveMessageType.
+    // Description:
+    //     ResolveMessageType.
     //
-    // Parameters:
-    // - `name` — input value
+    // Inputs:
+    //     name: string
+    //         Caller-supplied name.
     //
-    // Returns:
-    // Some value on success, otherwise none.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: SpandaType | null
+    //         Return value from `resolveMessageType`.
     //
     // Example:
+    //     const result = resolveMessageType(name);
+    // Description:
+    //     ResolveMessageType.
+    //
+    // Inputs:
+    //     name: string
+    //         Caller-supplied name.
+    //
+    // Outputs:
+    //     result: SpandaType | null
+    //         Return value from `resolveMessageType`.
+    //
+    // Example:
+    //     const result = resolveMessageType(name);
 
     // const result = resolveMessageType(name);
     return this.messageRegistry.resolveType(name);
 }
 
   private checkStruct(decl: import("../foundations.js").StructDecl): void {
-    // CheckStruct.
+    // Description:
+    //     CheckStruct.
     //
-    // Parameters:
-    // - `decl` — input value
+    // Inputs:
+    //     decl: import("../foundations.js").StructDecl
+    //         Caller-supplied decl.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = checkStruct(decl);
+    // Description:
+    //     CheckStruct.
+    //
+    // Inputs:
+    //     decl: import("../foundations.js").StructDecl
+    //         Caller-supplied decl.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = checkStruct(decl);
 
     // const result = checkStruct(decl);
     const typeParams = decl.typeParams ?? [];
@@ -482,37 +572,66 @@ class TypeChecker {
 }
 
   private enumPayloadKey(enumName: string, variant: string): string {
-    // EnumPayloadKey.
+    // Description:
+    //     EnumPayloadKey.
     //
-    // Parameters:
-    // - `enumName` — input value
-    // - `variant` — input value
+    // Inputs:
+    //     enumName: string
+    //         Caller-supplied enumName.
+    //     variant: string
+    //         Caller-supplied variant.
     //
-    // Returns:
-    // Text result.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: string
+    //         Return value from `enumPayloadKey`.
     //
     // Example:
+    //     const result = enumPayloadKey(enumName, variant);
+    // Description:
+    //     EnumPayloadKey.
+    //
+    // Inputs:
+    //     enumName: string
+    //         Caller-supplied enumName.
+    //     variant: string
+    //         Caller-supplied variant.
+    //
+    // Outputs:
+    //     result: string
+    //         Return value from `enumPayloadKey`.
+    //
+    // Example:
+    //     const result = enumPayloadKey(enumName, variant);
 
     // const result = enumPayloadKey(enumName, variant);
     return `${enumName}\0${variant}`;
 }
 
   private checkEnum(decl: import("../foundations.js").EnumDecl): void {
-    // CheckEnum.
+    // Description:
+    //     CheckEnum.
     //
-    // Parameters:
-    // - `decl` — input value
+    // Inputs:
+    //     decl: import("../foundations.js").EnumDecl
+    //         Caller-supplied decl.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = checkEnum(decl);
+    // Description:
+    //     CheckEnum.
+    //
+    // Inputs:
+    //     decl: import("../foundations.js").EnumDecl
+    //         Caller-supplied decl.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = checkEnum(decl);
 
     // const result = checkEnum(decl);
     if (decl.variants.length === 0) {
@@ -553,7 +672,20 @@ class TypeChecker {
     }
 }
 
-  private checkTrait(decl: import("../foundations.js").TraitDecl): void {    // continue when length equals 0.
+  private checkTrait(decl: import("../foundations.js").TraitDecl): void {
+    // Description:
+    //     CheckTrait.
+    //
+    // Inputs:
+    //     decl: import("../foundations.js").TraitDecl
+    //         Caller-supplied decl.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = checkTrait(decl);
+    // continue when length equals 0.
     if (decl.methods.length === 0) {
       this.error(`Trait '${decl.name}' must declare at least one method`, decl.span.start.line, decl.span.start.column);
     }
@@ -570,18 +702,32 @@ class TypeChecker {
 }
 
   private typeNameToSpanda(typeName: string): SpandaType {
-    // TypeNameToSpanda.
+    // Description:
+    //     TypeNameToSpanda.
     //
-    // Parameters:
-    // - `typeName` — input value
+    // Inputs:
+    //     typeName: string
+    //         Caller-supplied typeName.
     //
-    // Returns:
-    // SpandaType.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: SpandaType
+    //         Return value from `typeNameToSpanda`.
     //
     // Example:
+    //     const result = typeNameToSpanda(typeName);
+    // Description:
+    //     TypeNameToSpanda.
+    //
+    // Inputs:
+    //     typeName: string
+    //         Caller-supplied typeName.
+    //
+    // Outputs:
+    //     result: SpandaType
+    //         Return value from `typeNameToSpanda`.
+    //
+    // Example:
+    //     const result = typeNameToSpanda(typeName);
 
     // const result = typeNameToSpanda(typeName);
     try {
@@ -607,20 +753,38 @@ class TypeChecker {
 }
 
   private validateTypeAnnotation(ty: SpandaType, line: number, column: number): void {
-    // ValidateTypeAnnotation.
+    // Description:
+    //     ValidateTypeAnnotation.
     //
-    // Parameters:
-    // - `ty` — input value
-    // - `line` — input value
-    // - `column` — input value
+    // Inputs:
+    //     ty: SpandaType
+    //         Caller-supplied ty.
+    //     line: number
+    //         Caller-supplied line.
+    //     column: number
+    //         Caller-supplied column.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = validateTypeAnnotation(ty, line, column);
+    // Description:
+    //     ValidateTypeAnnotation.
+    //
+    // Inputs:
+    //     ty: SpandaType
+    //         Caller-supplied ty.
+    //     line: number
+    //         Caller-supplied line.
+    //     column: number
+    //         Caller-supplied column.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = validateTypeAnnotation(ty, line, column);
 
     // const result = validateTypeAnnotation(ty, line, column);
     if (ty.kind === "named") {
@@ -664,18 +828,32 @@ class TypeChecker {
 }
 
   private resolveTypeAnn(ty: SpandaType): SpandaType {
-    // ResolveTypeAnn.
+    // Description:
+    //     ResolveTypeAnn.
     //
-    // Parameters:
-    // - `ty` — input value
+    // Inputs:
+    //     ty: SpandaType
+    //         Caller-supplied ty.
     //
-    // Returns:
-    // SpandaType.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: SpandaType
+    //         Return value from `resolveTypeAnn`.
     //
     // Example:
+    //     const result = resolveTypeAnn(ty);
+    // Description:
+    //     ResolveTypeAnn.
+    //
+    // Inputs:
+    //     ty: SpandaType
+    //         Caller-supplied ty.
+    //
+    // Outputs:
+    //     result: SpandaType
+    //         Return value from `resolveTypeAnn`.
+    //
+    // Example:
+    //     const result = resolveTypeAnn(ty);
 
     // const result = resolveTypeAnn(ty);
     if (ty.kind === "named" && this.typeParamScope.has(ty.name)) {
@@ -694,54 +872,94 @@ class TypeChecker {
 }
 
   private static futureType(inner: SpandaType): SpandaType {
-    // FutureType.
+    // Description:
+    //     FutureType.
     //
-    // Parameters:
-    // - `inner` — input value
+    // Inputs:
+    //     inner: SpandaType
+    //         Caller-supplied inner.
     //
-    // Returns:
-    // SpandaType.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: SpandaType
+    //         Return value from `futureType`.
     //
     // Example:
+    //     const result = futureType(inner);
+    // Description:
+    //     FutureType.
+    //
+    // Inputs:
+    //     inner: SpandaType
+    //         Caller-supplied inner.
+    //
+    // Outputs:
+    //     result: SpandaType
+    //         Return value from `futureType`.
+    //
+    // Example:
+    //     const result = futureType(inner);
 
     // const result = futureType(inner);
     return { kind: "generic", name: "Future", typeArgs: [inner] };
 }
 
   private static taskHandleType(inner: SpandaType): SpandaType {
-    // TaskHandleType.
+    // Description:
+    //     TaskHandleType.
     //
-    // Parameters:
-    // - `inner` — input value
+    // Inputs:
+    //     inner: SpandaType
+    //         Caller-supplied inner.
     //
-    // Returns:
-    // SpandaType.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: SpandaType
+    //         Return value from `taskHandleType`.
     //
     // Example:
+    //     const result = taskHandleType(inner);
+    // Description:
+    //     TaskHandleType.
+    //
+    // Inputs:
+    //     inner: SpandaType
+    //         Caller-supplied inner.
+    //
+    // Outputs:
+    //     result: SpandaType
+    //         Return value from `taskHandleType`.
+    //
+    // Example:
+    //     const result = taskHandleType(inner);
 
     // const result = taskHandleType(inner);
     return { kind: "generic", name: "TaskHandle", typeArgs: [inner] };
 }
 
   private checkModuleFunctions(functions: ModuleFnDecl[]): void {
-    // CheckModuleFunctions.
+    // Description:
+    //     CheckModuleFunctions.
     //
-    // Parameters:
-    // - `functions` — input value
+    // Inputs:
+    //     functions: ModuleFnDecl[]
+    //         Caller-supplied functions.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = checkModuleFunctions(functions);
+    // Description:
+    //     CheckModuleFunctions.
+    //
+    // Inputs:
+    //     functions: ModuleFnDecl[]
+    //         Caller-supplied functions.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = checkModuleFunctions(functions);
 
     // const result = checkModuleFunctions(functions);
     for (const func of functions) {
@@ -790,18 +1008,30 @@ class TypeChecker {
 }
 
   private checkExternFunctions(functions: ExternFnDecl[]): void {
-    // CheckExternFunctions.
+    // Description:
+    //     CheckExternFunctions.
     //
-    // Parameters:
-    // - `functions` — input value
+    // Inputs:
+    //     functions: ExternFnDecl[]
+    //         Caller-supplied functions.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = checkExternFunctions(functions);
+    // Description:
+    //     CheckExternFunctions.
+    //
+    // Inputs:
+    //     functions: ExternFnDecl[]
+    //         Caller-supplied functions.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = checkExternFunctions(functions);
 
     // const result = checkExternFunctions(functions);
     for (const func of functions) {
@@ -816,19 +1046,34 @@ class TypeChecker {
 }
 
   private checkRobot(robot: RobotDecl, imported: Set<string>): void {
-    // CheckRobot.
+    // Description:
+    //     CheckRobot.
     //
-    // Parameters:
-    // - `robot` — input value
-    // - `imported` — input value
+    // Inputs:
+    //     robot: RobotDecl
+    //         Caller-supplied robot.
+    //     imported: Set<string>
+    //         Caller-supplied imported.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = checkRobot(robot, imported);
+    // Description:
+    //     CheckRobot.
+    //
+    // Inputs:
+    //     robot: RobotDecl
+    //         Caller-supplied robot.
+    //     imported: Set<string>
+    //         Caller-supplied imported.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = checkRobot(robot, imported);
 
     // const result = checkRobot(robot, imported);
     this.currentRobot = robot;
@@ -1483,18 +1728,30 @@ class TypeChecker {
 }
 
   private checkTraitImpl(decl: TraitImplDecl): void {
-    // CheckTraitImpl.
+    // Description:
+    //     CheckTraitImpl.
     //
-    // Parameters:
-    // - `decl` — input value
+    // Inputs:
+    //     decl: TraitImplDecl
+    //         Caller-supplied decl.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = checkTraitImpl(decl);
+    // Description:
+    //     CheckTraitImpl.
+    //
+    // Inputs:
+    //     decl: TraitImplDecl
+    //         Caller-supplied decl.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = checkTraitImpl(decl);
 
     // const result = checkTraitImpl(decl);
     const traitMethods = this.traitDefs.get(decl.traitName);
@@ -1594,18 +1851,30 @@ class TypeChecker {
 }
 
   private checkTopic(topic: TopicDecl): void {
-    // CheckTopic.
+    // Description:
+    //     CheckTopic.
     //
-    // Parameters:
-    // - `topic` — input value
+    // Inputs:
+    //     topic: TopicDecl
+    //         Caller-supplied topic.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = checkTopic(topic);
+    // Description:
+    //     CheckTopic.
+    //
+    // Inputs:
+    //     topic: TopicDecl
+    //         Caller-supplied topic.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = checkTopic(topic);
 
     // const result = checkTopic(topic);
     if (!this.resolveMessageType(topic.messageType)) {
@@ -1658,18 +1927,30 @@ class TypeChecker {
 }
 
   private checkService(service: ServiceDecl): void {
-    // CheckService.
+    // Description:
+    //     CheckService.
     //
-    // Parameters:
-    // - `service` — input value
+    // Inputs:
+    //     service: ServiceDecl
+    //         Caller-supplied service.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = checkService(service);
+    // Description:
+    //     CheckService.
+    //
+    // Inputs:
+    //     service: ServiceDecl
+    //         Caller-supplied service.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = checkService(service);
 
     // const result = checkService(service);
     if (service.requestType && service.responseType) {
@@ -1724,18 +2005,30 @@ class TypeChecker {
 }
 
   private checkAction(action: ActionDecl): void {
-    // CheckAction.
+    // Description:
+    //     CheckAction.
     //
-    // Parameters:
-    // - `action` — input value
+    // Inputs:
+    //     action: ActionDecl
+    //         Caller-supplied action.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = checkAction(action);
+    // Description:
+    //     CheckAction.
+    //
+    // Inputs:
+    //     action: ActionDecl
+    //         Caller-supplied action.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = checkAction(action);
 
     // const result = checkAction(action);
     if (action.requestType && action.feedbackType && action.resultType) {
@@ -1780,7 +2073,20 @@ class TypeChecker {
     });
 }
 
-  private checkSecureBlock(block: import("../foundations.js").SecureBlockDecl): void {    // continue when block.minTrust && !parseTrustLevel(block.minTrust).
+  private checkSecureBlock(block: import("../foundations.js").SecureBlockDecl): void {
+    // Description:
+    //     CheckSecureBlock.
+    //
+    // Inputs:
+    //     block: import("../foundations.js").SecureBlockDecl
+    //         Caller-supplied block.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = checkSecureBlock(block);
+    // continue when block.minTrust && !parseTrustLevel(block.minTrust).
     if (block.minTrust && !parseTrustLevel(block.minTrust)) {
       this.error(
         `unknown trust level '${block.minTrust}' in secure block`,
@@ -1804,18 +2110,30 @@ class TypeChecker {
 }
 
   private checkSafetyRule(rule: SafetyRule): void {
-    // CheckSafetyRule.
+    // Description:
+    //     CheckSafetyRule.
     //
-    // Parameters:
-    // - `rule` — input value
+    // Inputs:
+    //     rule: SafetyRule
+    //         Caller-supplied rule.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = checkSafetyRule(rule);
+    // Description:
+    //     CheckSafetyRule.
+    //
+    // Inputs:
+    //     rule: SafetyRule
+    //         Caller-supplied rule.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = checkSafetyRule(rule);
 
     // const result = checkSafetyRule(rule);
     if (rule.kind === "MaxSpeedRule") {
@@ -1842,18 +2160,30 @@ class TypeChecker {
 }
 
   private checkSafetyZone(zone: SafetyZoneDecl): void {
-    // CheckSafetyZone.
+    // Description:
+    //     CheckSafetyZone.
     //
-    // Parameters:
-    // - `zone` — input value
+    // Inputs:
+    //     zone: SafetyZoneDecl
+    //         Caller-supplied zone.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = checkSafetyZone(zone);
+    // Description:
+    //     CheckSafetyZone.
+    //
+    // Inputs:
+    //     zone: SafetyZoneDecl
+    //         Caller-supplied zone.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = checkSafetyZone(zone);
 
     // const result = checkSafetyZone(zone);
     const x = this.checkExpr(zone.x);
@@ -1887,18 +2217,30 @@ class TypeChecker {
 }
 
   private checkAiModel(model: import("../ast/nodes.js").AiModelDecl): void {
-    // CheckAiModel.
+    // Description:
+    //     CheckAiModel.
     //
-    // Parameters:
-    // - `model` — input value
+    // Inputs:
+    //     model: import("../ast/nodes.js").AiModelDecl
+    //         Caller-supplied model.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = checkAiModel(model);
+    // Description:
+    //     CheckAiModel.
+    //
+    // Inputs:
+    //     model: import("../ast/nodes.js").AiModelDecl
+    //         Caller-supplied model.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = checkAiModel(model);
 
     // const result = checkAiModel(model);
     if (!AI_MODEL_TYPES[model.modelType]) {
@@ -1925,18 +2267,30 @@ class TypeChecker {
 }
 
   private checkAgent(agent: import("../ast/nodes.js").AgentDecl): void {
-    // CheckAgent.
+    // Description:
+    //     CheckAgent.
     //
-    // Parameters:
-    // - `agent` — input value
+    // Inputs:
+    //     agent: import("../ast/nodes.js").AgentDecl
+    //         Caller-supplied agent.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = checkAgent(agent);
+    // Description:
+    //     CheckAgent.
+    //
+    // Inputs:
+    //     agent: import("../ast/nodes.js").AgentDecl
+    //         Caller-supplied agent.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = checkAgent(agent);
 
     // const result = checkAgent(agent);
 
@@ -1987,19 +2341,34 @@ class TypeChecker {
   }
 
   private checkCapability(agentName: string, cap: CapabilityDecl): void {
-    // CheckCapability.
+    // Description:
+    //     CheckCapability.
     //
-    // Parameters:
-    // - `agentName` — input value
-    // - `cap` — input value
+    // Inputs:
+    //     agentName: string
+    //         Caller-supplied agentName.
+    //     cap: CapabilityDecl
+    //         Caller-supplied cap.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = checkCapability(agentName, cap);
+    // Description:
+    //     CheckCapability.
+    //
+    // Inputs:
+    //     agentName: string
+    //         Caller-supplied agentName.
+    //     cap: CapabilityDecl
+    //         Caller-supplied cap.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = checkCapability(agentName, cap);
 
     // const result = checkCapability(agentName, cap);
     const allowed = [
@@ -2058,18 +2427,30 @@ class TypeChecker {
 }
 
   private checkBehaviorBody(body: Stmt[]): void {
-    // CheckBehaviorBody.
+    // Description:
+    //     CheckBehaviorBody.
     //
-    // Parameters:
-    // - `body` — input value
+    // Inputs:
+    //     body: Stmt[]
+    //         Caller-supplied body.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = checkBehaviorBody(body);
+    // Description:
+    //     CheckBehaviorBody.
+    //
+    // Inputs:
+    //     body: Stmt[]
+    //         Caller-supplied body.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = checkBehaviorBody(body);
 
     // const result = checkBehaviorBody(body);
     const parentScope = new Map(this.symbols);
@@ -2088,18 +2469,30 @@ class TypeChecker {
 }
 
   private checkStmt(stmt: Stmt): void {
-    // CheckStmt.
+    // Description:
+    //     CheckStmt.
     //
-    // Parameters:
-    // - `stmt` — input value
+    // Inputs:
+    //     stmt: Stmt
+    //         Caller-supplied stmt.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = checkStmt(stmt);
+    // Description:
+    //     CheckStmt.
+    //
+    // Inputs:
+    //     stmt: Stmt
+    //         Caller-supplied stmt.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = checkStmt(stmt);
 
     // const result = checkStmt(stmt);
     switch (stmt.kind) {
@@ -2407,18 +2800,32 @@ class TypeChecker {
 }
 
   private checkExpr(expr: Expr): SpandaType {
-    // CheckExpr.
+    // Description:
+    //     CheckExpr.
     //
-    // Parameters:
-    // - `expr` — input value
+    // Inputs:
+    //     expr: Expr
+    //         Caller-supplied expr.
     //
-    // Returns:
-    // SpandaType.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: SpandaType
+    //         Return value from `checkExpr`.
     //
     // Example:
+    //     const result = checkExpr(expr);
+    // Description:
+    //     CheckExpr.
+    //
+    // Inputs:
+    //     expr: Expr
+    //         Caller-supplied expr.
+    //
+    // Outputs:
+    //     result: SpandaType
+    //         Return value from `checkExpr`.
+    //
+    // Example:
+    //     const result = checkExpr(expr);
 
     // const result = checkExpr(expr);
     switch (expr.kind) {
@@ -2593,18 +3000,32 @@ class TypeChecker {
 }
 
   private checkStructLiteral(expr: import("../ast/nodes.js").StructLiteralExpr): SpandaType {
-    // CheckStructLiteral.
+    // Description:
+    //     CheckStructLiteral.
     //
-    // Parameters:
-    // - `expr` — input value
+    // Inputs:
+    //     expr: import("../ast/nodes.js").StructLiteralExpr
+    //         Caller-supplied expr.
     //
-    // Returns:
-    // SpandaType.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: SpandaType
+    //         Return value from `checkStructLiteral`.
     //
     // Example:
+    //     const result = checkStructLiteral(expr);
+    // Description:
+    //     CheckStructLiteral.
+    //
+    // Inputs:
+    //     expr: import("../ast/nodes.js").StructLiteralExpr
+    //         Caller-supplied expr.
+    //
+    // Outputs:
+    //     result: SpandaType
+    //         Return value from `checkStructLiteral`.
+    //
+    // Example:
+    //     const result = checkStructLiteral(expr);
 
     // const result = checkStructLiteral(expr);
     const [baseName, typeArgNames] = splitInstantiatedTypeName(expr.typeName);
@@ -2684,18 +3105,32 @@ class TypeChecker {
 }
 
   private checkMatch(expr: import("../ast/nodes.js").MatchExpr): SpandaType {
-    // CheckMatch.
+    // Description:
+    //     CheckMatch.
     //
-    // Parameters:
-    // - `expr` — input value
+    // Inputs:
+    //     expr: import("../ast/nodes.js").MatchExpr
+    //         Caller-supplied expr.
     //
-    // Returns:
-    // SpandaType.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: SpandaType
+    //         Return value from `checkMatch`.
     //
     // Example:
+    //     const result = checkMatch(expr);
+    // Description:
+    //     CheckMatch.
+    //
+    // Inputs:
+    //     expr: import("../ast/nodes.js").MatchExpr
+    //         Caller-supplied expr.
+    //
+    // Outputs:
+    //     result: SpandaType
+    //         Return value from `checkMatch`.
+    //
+    // Example:
+    //     const result = checkMatch(expr);
 
     // const result = checkMatch(expr);
     const scrutineeType = this.checkExpr(expr.scrutinee);
@@ -2770,19 +3205,34 @@ class TypeChecker {
 }
 
   private checkMatchExhaustiveness(arms: MatchArm[], span: import("../ast/nodes.js").Span): void {
-    // CheckMatchExhaustiveness.
+    // Description:
+    //     CheckMatchExhaustiveness.
     //
-    // Parameters:
-    // - `arms` — input value
-    // - `span` — input value
+    // Inputs:
+    //     arms: MatchArm[]
+    //         Caller-supplied arms.
+    //     span: import("../ast/nodes.js").Span
+    //         Caller-supplied span.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = checkMatchExhaustiveness(arms, span);
+    // Description:
+    //     CheckMatchExhaustiveness.
+    //
+    // Inputs:
+    //     arms: MatchArm[]
+    //         Caller-supplied arms.
+    //     span: import("../ast/nodes.js").Span
+    //         Caller-supplied span.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = checkMatchExhaustiveness(arms, span);
 
     // const result = checkMatchExhaustiveness(arms, span);
     const armNames = new Set(arms.map((a) => a.variant));
@@ -2848,18 +3298,32 @@ class TypeChecker {
 }
 
   private checkMember(expr: import("../ast/nodes.js").MemberExpr): SpandaType {
-    // CheckMember.
+    // Description:
+    //     CheckMember.
     //
-    // Parameters:
-    // - `expr` — input value
+    // Inputs:
+    //     expr: import("../ast/nodes.js").MemberExpr
+    //         Caller-supplied expr.
     //
-    // Returns:
-    // SpandaType.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: SpandaType
+    //         Return value from `checkMember`.
     //
     // Example:
+    //     const result = checkMember(expr);
+    // Description:
+    //     CheckMember.
+    //
+    // Inputs:
+    //     expr: import("../ast/nodes.js").MemberExpr
+    //         Caller-supplied expr.
+    //
+    // Outputs:
+    //     result: SpandaType
+    //         Return value from `checkMember`.
+    //
+    // Example:
+    //     const result = checkMember(expr);
 
     // const result = checkMember(expr);
     if (expr.object.kind === "IdentExpr") {
@@ -3011,20 +3475,40 @@ class TypeChecker {
     args: Expr[],
     span: import("../ast/nodes.js").Span,
   ): SpandaType {
-    // CheckResultOptionCtor.
+    // Description:
+    //     CheckResultOptionCtor.
     //
-    // Parameters:
-    // - `name` — input value
-    // - `args` — input value
-    // - `span` — input value
+    // Inputs:
+    //     name: string
+    //         Caller-supplied name.
+    //     args: Expr[]
+    //         Caller-supplied args.
+    //     span: import("../ast/nodes.js").Span
+    //         Caller-supplied span.
     //
-    // Returns:
-    // SpandaType.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: SpandaType
+    //         Return value from `checkResultOptionCtor`.
     //
     // Example:
+    //     const result = checkResultOptionCtor(name, args, span);
+    // Description:
+    //     CheckResultOptionCtor.
+    //
+    // Inputs:
+    //     name: string
+    //         Caller-supplied name.
+    //     args: Expr[]
+    //         Caller-supplied args.
+    //     span: import("../ast/nodes.js").Span
+    //         Caller-supplied span.
+    //
+    // Outputs:
+    //     result: SpandaType
+    //         Return value from `checkResultOptionCtor`.
+    //
+    // Example:
+    //     const result = checkResultOptionCtor(name, args, span);
 
     // const result = checkResultOptionCtor(name, args, span);
     if (name === "Ok" || name === "Some") {
@@ -3061,18 +3545,32 @@ class TypeChecker {
 }
 
   private checkCall(expr: import("../ast/nodes.js").CallExpr): SpandaType {
-    // CheckCall.
+    // Description:
+    //     CheckCall.
     //
-    // Parameters:
-    // - `expr` — input value
+    // Inputs:
+    //     expr: import("../ast/nodes.js").CallExpr
+    //         Caller-supplied expr.
     //
-    // Returns:
-    // SpandaType.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: SpandaType
+    //         Return value from `checkCall`.
     //
     // Example:
+    //     const result = checkCall(expr);
+    // Description:
+    //     CheckCall.
+    //
+    // Inputs:
+    //     expr: import("../ast/nodes.js").CallExpr
+    //         Caller-supplied expr.
+    //
+    // Outputs:
+    //     result: SpandaType
+    //         Return value from `checkCall`.
+    //
+    // Example:
+    //     const result = checkCall(expr);
 
     // const result = checkCall(expr);
     if (expr.callee.kind === "IdentExpr") {
@@ -3555,19 +4053,36 @@ class TypeChecker {
 }
 
   private typesCompatible(expected: SpandaType, actual: SpandaType): boolean {
-    // TypesCompatible.
+    // Description:
+    //     TypesCompatible.
     //
-    // Parameters:
-    // - `expected` — input value
-    // - `actual` — input value
+    // Inputs:
+    //     expected: SpandaType
+    //         Caller-supplied expected.
+    //     actual: SpandaType
+    //         Caller-supplied actual.
     //
-    // Returns:
-    // true or false.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     result: boolean
+    //         Return value from `typesCompatible`.
     //
     // Example:
+    //     const result = typesCompatible(expected, actual);
+    // Description:
+    //     TypesCompatible.
+    //
+    // Inputs:
+    //     expected: SpandaType
+    //         Caller-supplied expected.
+    //     actual: SpandaType
+    //         Caller-supplied actual.
+    //
+    // Outputs:
+    //     result: boolean
+    //         Return value from `typesCompatible`.
+    //
+    // Example:
+    //     const result = typesCompatible(expected, actual);
 
     // const result = typesCompatible(expected, actual);
     if (expected.kind === actual.kind) {
@@ -3691,28 +4206,68 @@ class TypeChecker {
 }
 
   private assertNamedType(actual: SpandaType, typeName: string, line: number, column: number): void {
-    // AssertNamedType.
+    // Description:
+    //     AssertNamedType.
     //
-    // Parameters:
-    // - `actual` — input value
-    // - `typeName` — input value
-    // - `line` — input value
-    // - `column` — input value
+    // Inputs:
+    //     actual: SpandaType
+    //         Caller-supplied actual.
+    //     typeName: string
+    //         Caller-supplied typeName.
+    //     line: number
+    //         Caller-supplied line.
+    //     column: number
+    //         Caller-supplied column.
     //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
+    // Outputs:
+    //     None.
     //
     // Example:
+    //     const result = assertNamedType(actual, typeName, line, column);
+    // Description:
+    //     AssertNamedType.
+    //
+    // Inputs:
+    //     actual: SpandaType
+    //         Caller-supplied actual.
+    //     typeName: string
+    //         Caller-supplied typeName.
+    //     line: number
+    //         Caller-supplied line.
+    //     column: number
+    //         Caller-supplied column.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = assertNamedType(actual, typeName, line, column);
 
     // const result = assertNamedType(actual, typeName, line, column);
     if (actual.kind === "named" && actual.name === typeName) return;
     this.error(`Expected ${typeName}, got ${actual.kind}`, line, column);
 }
 
-  private assertCompatible(expected: SpandaType, actual: SpandaType, line: number, column: number): void {    // continue when kind equals kind === "void".
+  private assertCompatible(expected: SpandaType, actual: SpandaType, line: number, column: number): void {
+    // Description:
+    //     AssertCompatible.
+    //
+    // Inputs:
+    //     expected: SpandaType
+    //         Caller-supplied expected.
+    //     actual: SpandaType
+    //         Caller-supplied actual.
+    //     line: number
+    //         Caller-supplied line.
+    //     column: number
+    //         Caller-supplied column.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = assertCompatible(expected, actual, line, column);
+    // continue when kind equals kind === "void".
     if (expected.kind === "void" && actual.kind === "void") return;
 
     // continue when typesCompatible is falsy.
@@ -3731,7 +4286,24 @@ class TypeChecker {
     }
 }
 
-  private error(message: string, line: number, column: number): void {    // Call push on this instance.
+  private error(message: string, line: number, column: number): void {
+    // Description:
+    //     Error.
+    //
+    // Inputs:
+    //     message: string
+    //         Caller-supplied message.
+    //     line: number
+    //         Caller-supplied line.
+    //     column: number
+    //         Caller-supplied column.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     const result = error(message, line, column);
+    // Call push on this instance.
     this.errors.push({ message, line, column });
 }
 }

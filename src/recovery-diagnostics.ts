@@ -17,10 +17,40 @@ export type RecoveryDiagnostic = {
 };
 
 function normalizeAction(action: string): string {
+  // Description:
+  //     NormalizeAction.
+  //
+  // Inputs:
+  //     action: string
+  //         Caller-supplied action.
+  //
+  // Outputs:
+  //     result: string
+  //         Return value from `normalizeAction`.
+  //
+  // Example:
+
+  //     const result = normalizeAction(action);
+
   return action.toLowerCase().replace(/\s+/g, "");
 }
 
 function actionIsHighRisk(action: string): boolean {
+  // Description:
+  //     ActionIsHighRisk.
+  //
+  // Inputs:
+  //     action: string
+  //         Caller-supplied action.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `actionIsHighRisk`.
+  //
+  // Example:
+
+  //     const result = actionIsHighRisk(action);
+
   const lower = normalizeAction(action);
   return (
     lower.includes("resumemission") ||
@@ -31,6 +61,21 @@ function actionIsHighRisk(action: string): boolean {
 }
 
 function robotHasApprovalTopic(program: Program): boolean {
+  // Description:
+  //     RobotHasApprovalTopic.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     result: boolean
+  //         Return value from `robotHasApprovalTopic`.
+  //
+  // Example:
+
+  //     const result = robotHasApprovalTopic(program);
+
   for (const robot of program.robots ?? []) {
     for (const topic of robot.topics ?? []) {
       if (topic.messageType === "Approval") {
@@ -41,7 +86,21 @@ function robotHasApprovalTopic(program: Program): boolean {
   return false;
 }
 
-function firstHealthSpan(program: Program): { line: number; column: number } {
+function firstHealthSpan(program: Program): {
+  // Description:
+  //     FirstHealthSpan.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+
+ // const result = firstHealthSpan(program);
+ line: number; column: number } {
   const health = program.healthChecks?.[0];
   if (health?.span) {
     return { line: health.span.start.line, column: health.span.start.column };
@@ -59,6 +118,21 @@ function firstHealthSpan(program: Program): { line: number; column: number } {
 
 /** Collect recovery-policy diagnostics mirroring the Rust assurance crate. */
 export function collectRecoveryDiagnostics(program: Program): RecoveryDiagnostic[] {
+  // Description:
+  //     CollectRecoveryDiagnostics.
+  //
+  // Inputs:
+  //     program: Program
+  //         Caller-supplied program.
+  //
+  // Outputs:
+  //     result: RecoveryDiagnostic[]
+  //         Return value from `collectRecoveryDiagnostics`.
+  //
+  // Example:
+
+  //     const result = collectRecoveryDiagnostics(program);
+
   const diags: RecoveryDiagnostic[] = [];
   const recoveryPolicies = program.recoveryPolicies ?? [];
   const mitigations = program.mitigations ?? [];
@@ -134,6 +208,21 @@ export function collectRecoveryDiagnostics(program: Program): RecoveryDiagnostic
 
 /** Parse source and collect recovery diagnostics for LSP/check JSON. */
 export function recoveryDiagnosticsFromSource(source: string): RecoveryDiagnostic[] {
+  // Description:
+  //     RecoveryDiagnosticsFromSource.
+  //
+  // Inputs:
+  //     source: string
+  //         Caller-supplied source.
+  //
+  // Outputs:
+  //     result: RecoveryDiagnostic[]
+  //         Return value from `recoveryDiagnosticsFromSource`.
+  //
+  // Example:
+
+  //     const result = recoveryDiagnosticsFromSource(source);
+
   const program = parse(tokenize(source));
   return collectRecoveryDiagnostics(program);
 }

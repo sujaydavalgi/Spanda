@@ -12,55 +12,100 @@ export type AgentRuntime = {
 };
 
 export function createAgentRuntime(decl: AgentDecl, memory: MemoryStore | null): AgentRuntime {
-  // CreateAgentRuntime.
+  // Description:
+  //     CreateAgentRuntime.
   //
-  // Parameters:
-  // - `decl` — input value
-  // - `memory` — input value
+  // Inputs:
+  //     decl: AgentDecl
+  //         Caller-supplied decl.
+  //     memory: MemoryStore | null
+  //         Caller-supplied memory.
   //
-  // Returns:
-  // `AgentRuntime`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: AgentRuntime
+  //         Return value from `createAgentRuntime`.
   //
   // Example:
+  //     const result = createAgentRuntime(decl, memory);
+  // Description:
+  //     CreateAgentRuntime.
+  //
+  // Inputs:
+  //     decl: AgentDecl
+  //         Caller-supplied decl.
+  //     memory: MemoryStore | null
+  //         Caller-supplied memory.
+  //
+  // Outputs:
+  //     result: AgentRuntime
+  //         Return value from `createAgentRuntime`.
+  //
+  // Example:
+  //     const result = createAgentRuntime(decl, memory);
 
   // const result = createAgentRuntime(decl, memory);
   return { decl, memory };
 }
 
 export function agentToolNames(decl: AgentDecl): string[] {
-  // AgentToolNames.
+  // Description:
+  //     AgentToolNames.
   //
-  // Parameters:
-  // - `decl` — input value
+  // Inputs:
+  //     decl: AgentDecl
+  //         Caller-supplied decl.
   //
-  // Returns:
-  // `string[]`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: string[]
+  //         Return value from `agentToolNames`.
   //
   // Example:
+  //     const result = agentToolNames(decl);
+  // Description:
+  //     AgentToolNames.
+  //
+  // Inputs:
+  //     decl: AgentDecl
+  //         Caller-supplied decl.
+  //
+  // Outputs:
+  //     result: string[]
+  //         Return value from `agentToolNames`.
+  //
+  // Example:
+  //     const result = agentToolNames(decl);
 
   // const result = agentToolNames(decl);
   return decl.tools;
 }
 
 export function agentUsesModels(decl: AgentDecl): string[] {
-  // AgentUsesModels.
+  // Description:
+  //     AgentUsesModels.
   //
-  // Parameters:
-  // - `decl` — input value
+  // Inputs:
+  //     decl: AgentDecl
+  //         Caller-supplied decl.
   //
-  // Returns:
-  // `string[]`.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     result: string[]
+  //         Return value from `agentUsesModels`.
   //
   // Example:
+  //     const result = agentUsesModels(decl);
+  // Description:
+  //     AgentUsesModels.
+  //
+  // Inputs:
+  //     decl: AgentDecl
+  //         Caller-supplied decl.
+  //
+  // Outputs:
+  //     result: string[]
+  //         Return value from `agentUsesModels`.
+  //
+  // Example:
+  //     const result = agentUsesModels(decl);
 
   // const result = agentUsesModels(decl);
   return decl.usesAi;
@@ -71,19 +116,34 @@ export type PlanExecutor = {
 };
 
 export function executeAgentPlan(agent: AgentRuntime, executor: PlanExecutor): void {
-  // ExecuteAgentPlan.
+  // Description:
+  //     ExecuteAgentPlan.
   //
-  // Parameters:
-  // - `agent` — input value
-  // - `executor` — input value
+  // Inputs:
+  //     agent: AgentRuntime
+  //         Caller-supplied agent.
+  //     executor: PlanExecutor
+  //         Caller-supplied executor.
   //
-  // Returns:
-  // Nothing.
-  //
-  // Options:
-  // None.
+  // Outputs:
+  //     None.
   //
   // Example:
+  //     const result = executeAgentPlan(agent, executor);
+  // Description:
+  //     ExecuteAgentPlan.
+  //
+  // Inputs:
+  //     agent: AgentRuntime
+  //         Caller-supplied agent.
+  //     executor: PlanExecutor
+  //         Caller-supplied executor.
+  //
+  // Outputs:
+  //     None.
+  //
+  // Example:
+  //     const result = executeAgentPlan(agent, executor);
 
   // const result = executeAgentPlan(agent, executor);
   executor.executeBlock(agent.decl.planBody);

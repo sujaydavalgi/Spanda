@@ -442,7 +442,20 @@ export class Simulator implements RobotBackend {
     return [...this.actionLog];
   }
 
-  private simulateLidar(): number {    // Compute nearest for the following logic.
+  private simulateLidar(): number {
+    // Description:
+    //     SimulateLidar.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     result: number
+    //         Return value from `simulateLidar`.
+    //
+    // Example:
+    //     const result = simulateLidar();
+    // Compute nearest for the following logic.
     let nearest = this.lidarRange;
 
     // Process each obstacle.
@@ -456,7 +469,22 @@ export class Simulator implements RobotBackend {
         nearest = dist;
       }
     }
-    const wallDist = 5 - Math.abs(this.pose.x);
+    const wallDist = 5 - 
+  // Description:
+  //     CreateDefaultSimulator.
+  //
+  // Inputs:
+  //     config?: SimulatorConfig
+  //         Caller-supplied config?.
+  //
+  // Outputs:
+  //     result: Simulator
+  //         Return value from `createDefaultSimulator`.
+  //
+  // Example:
+
+// const result = createDefaultSimulator(config?);
+Math.abs(this.pose.x);
 
     // continue when wallDist > 0 && wallDist < nearest.
     if (wallDist > 0 && wallDist < nearest) nearest = wallDist;
@@ -465,18 +493,19 @@ export class Simulator implements RobotBackend {
 }
 
 export function createDefaultSimulator(config?: SimulatorConfig): Simulator {
-  // CreateDefaultSimulator.
+  // Description:
+  //     CreateDefaultSimulator.
   //
-  // Parameters:
-  // - `config?` — optional input
+  // Inputs:
+  //     config?: SimulatorConfig
+  //         Caller-supplied config?.
   //
-  // Returns:
-  // `Simulator`.
-  //
-  // Options:
-  // - `config?` — optional parameter
+  // Outputs:
+  //     result: Simulator
+  //         Return value from `createDefaultSimulator`.
   //
   // Example:
+  //     const result = createDefaultSimulator(config?);
 
   // const result = createDefaultSimulator(config?);
   return new Simulator(config);
