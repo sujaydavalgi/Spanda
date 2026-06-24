@@ -85,6 +85,7 @@
 | [safety-auditor.md](./safety-auditor.md) | **Autonomous safety auditor** |
 | [kill-switch.md](./kill-switch.md) | **Kill switch syntax, `remote_signed`, and `on kill_switch` handlers** |
 | [iot.md](./iot.md) | **IoT provider contracts, package dispatch, live bridge env flags** |
+| [telemetry-store.md](./telemetry-store.md) | **Persistent device/sensor/heartbeat storage (`spanda telemetry`)** |
 | [capability-traceability.md](./capability-traceability.md) | **Capability exposure and traceability matrices** |
 | [verification-diagnostics.md](./verification-diagnostics.md) | **`spanda check --verification-json`, LSP quick-fixes, kill-switch severity** |
 | [typed-handler-io.md](./typed-handler-io.md) | **Return types on behavior, task, trigger, event, and agent plan handlers** |

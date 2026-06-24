@@ -52,6 +52,7 @@ Platform overview: [platform-overview.md](./platform-overview.md)
 | **Real-time contracts** | `deadline`, `jitter <=`, `priority`, `critical isolated` on tasks; latency `pipeline` budgets |
 | **Reliability runtime** | Watchdogs, operating `mode` blocks, `recover from`, retry/fallback; topic QoS deadline detection |
 | **Mission trace replay** | `spanda sim --record`, `spanda replay`, `--deterministic`, `--playback`, `--wall-clock` |
+| **Persistent telemetry** | `--persist-telemetry`, `SPANDA_TELEMETRY_STORE=1`, `spanda telemetry` — JSONL store for device/sensor/heartbeat events |
 | **First-class regex** | Literals, `Regex` type, string methods, trigger/subscribe filters, `validate` rules |
 | **Lean-core workspace** | 50+ focused Rust crates; `spanda-core` facade; CLI/bindings use workspace deps directly ([crates/README.md](../crates/README.md)) |
 | **Verification & DX** | `spanda-capability` — traceability, minimum-hardware, health analysis; `spanda-readiness` — operational readiness, mission verification, safety reports; `spanda check --verification-json`; LSP verification diagnostics and quick-fixes |
@@ -149,6 +150,7 @@ See [tier-3-experimental.md](./tier-3-experimental.md) and [tier-3-golden-paths.
 | deadline / jitter / priority | **Stable** | Compile-time validation; runtime telemetry |
 | pipelines / watchdogs / modes | **Stable** | See `docs/reliability.md`, `docs/watchdogs.md`, `docs/degraded-modes.md` |
 | mission trace replay | **Stable** | `--record`, `spanda replay --deterministic` / `--playback` |
+| persistent telemetry store | **Stable** | `--persist-telemetry`, `spanda telemetry`; JSONL under `.spanda/` |
 | regex literals / filters | **Stable** | See `docs/regex.md` |
 | state machine / events | **Stable** | |
 | twin / replay | **Experimental** | Replay buffer; live sync simulated |
@@ -254,6 +256,7 @@ See [architecture.md](./architecture.md) for diagrams.
 - [realtime.md](./realtime.md) — deadline-aware tasks and wall-clock scheduling
 - [reliability.md](./reliability.md) — pipelines, watchdogs, recovery
 - [replay.md](./replay.md) — mission trace record and replay
+- [telemetry-store.md](./telemetry-store.md) — persistent device/sensor/heartbeat storage
 - [regex.md](./regex.md) — first-class regex
 - [vision.md](./vision.md) — long-term positioning
 - [product-strategy.md](./product-strategy.md) — v0.5 beta priorities

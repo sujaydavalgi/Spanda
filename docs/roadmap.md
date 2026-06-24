@@ -205,6 +205,7 @@ Foundation: Phases 1–35 complete — [lean-core-roadmap.md](./lean-core-roadma
 | `simulate_compatibility` fault injection | **Stable** |
 | Mission trace `--record` | **Stable** |
 | `spanda replay` (`--deterministic`, `--playback`) | **Stable** |
+| Persistent telemetry store (`--persist-telemetry`, `spanda telemetry`) | **Stable** — [telemetry-store.md](./telemetry-store.md) |
 | Wall-clock sim mode | **Stable** — [realtime.md](./realtime.md), [replay.md](./replay.md) |
 | Twin cloud SaaS | **Future** |
 | Full physics (Gazebo/Isaac class) | **Out of scope** — package bridges only |

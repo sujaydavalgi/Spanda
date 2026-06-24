@@ -86,7 +86,9 @@ Guide: [mission-continuity.md](../mission-continuity.md) · [continuity-policies
 
 **Verify:** `--target <Profile>`, `--all-targets`, `--simulate`, `--json`
 
-**Run / sim / fleet:** `--trace-scheduler`, `--trace-tasks`, `--trace-triggers`, `--trace-events`, `--trace-providers`, `--trace-realtime`, `--metrics-json`, `--record`, `--wall-clock`
+**Run / sim / fleet:** `--trace-scheduler`, `--trace-tasks`, `--trace-triggers`, `--trace-events`, `--trace-providers`, `--trace-realtime`, `--metrics-json`, `--record`, `--persist-telemetry`, `--wall-clock`
+
+**Telemetry store:** `spanda telemetry list|latest|heartbeats|stats|export` — see [telemetry-store.md](../telemetry-store.md)
 
 **Replay:** `--from T+mm:ss`, `--deterministic`, `--playback`
 
