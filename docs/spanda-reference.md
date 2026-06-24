@@ -1705,14 +1705,6 @@ Bosch BNO055 9-DOF absolute orientation IMU
 |-------------|-------|------------|
 | `BoschBNO055` | BNO055 | i2c, uart |
 
-#### `bosch.bme280` — bme280 v1.0.0
-
-Bosch BME280 environmental sensor (humidity, pressure, temperature)
-
-| Sensor type | Model | Interfaces |
-|-------------|-------|------------|
-| `BoschBME280` | BME280 | i2c, spi |
-
 #### `bosch.bmp388` — bmp388 v1.0.0
 
 Bosch BMP388 barometric pressure sensor
@@ -1720,6 +1712,14 @@ Bosch BMP388 barometric pressure sensor
 | Sensor type | Model | Interfaces |
 |-------------|-------|------------|
 | `BoschBMP388` | BMP388 | i2c, spi |
+
+#### `bosch.bme280` — bme280 v1.0.0
+
+Bosch BME280 environmental sensor (humidity, pressure, temperature)
+
+| Sensor type | Model | Interfaces |
+|-------------|-------|------------|
+| `BoschBME280` | BME280 | i2c, spi |
 
 ### DFRobot
 
@@ -1743,14 +1743,6 @@ GQ GMC geiger counter
 
 ### Hokuyo
 
-#### `hokuyo.utm30` — utm30 v1.0.0
-
-Hokuyo UTM-30LX-EW outdoor LiDAR
-
-| Sensor type | Model | Interfaces |
-|-------------|-------|------------|
-| `HokuyoUTM30` | UTM-30LX-EW | ethernet |
-
 #### `hokuyo.ust10` — ust10 v1.0.0
 
 Hokuyo UST-10LX 2D LiDAR
@@ -1758,6 +1750,14 @@ Hokuyo UST-10LX 2D LiDAR
 | Sensor type | Model | Interfaces |
 |-------------|-------|------------|
 | `HokuyoUST10` | UST-10LX | ethernet, uart |
+
+#### `hokuyo.utm30` — utm30 v1.0.0
+
+Hokuyo UTM-30LX-EW outdoor LiDAR
+
+| Sensor type | Model | Interfaces |
+|-------------|-------|------------|
+| `HokuyoUTM30` | UTM-30LX-EW | ethernet |
 
 ### Intel
 
@@ -1792,14 +1792,6 @@ Plantower PMS5003 particulate matter sensor
 
 ### SparkFun
 
-#### `sparkfun.lsm9ds1` — lsm9ds1 v1.0.0
-
-SparkFun LSM9DS1 9-DOF IMU breakout
-
-| Sensor type | Model | Interfaces |
-|-------------|-------|------------|
-| `SparkfunLSM9DS1` | LSM9DS1 | i2c, spi |
-
 #### `sparkfun.ec` — ec v1.0.0
 
 SparkFun conductivity sensor
@@ -1807,6 +1799,14 @@ SparkFun conductivity sensor
 | Sensor type | Model | Interfaces |
 |-------------|-------|------------|
 | `SparkfunEC` | EC | uart, gpio |
+
+#### `sparkfun.lsm9ds1` — lsm9ds1 v1.0.0
+
+SparkFun LSM9DS1 9-DOF IMU breakout
+
+| Sensor type | Model | Interfaces |
+|-------------|-------|------------|
+| `SparkfunLSM9DS1` | LSM9DS1 | i2c, spi |
 
 ### Vegetronix
 
@@ -1820,14 +1820,6 @@ Vegetronix soil moisture sensor
 
 ### Velodyne
 
-#### `velodyne.vlp32` — vlp32 v1.0.0
-
-Velodyne VLP-32C ultra puck
-
-| Sensor type | Model | Interfaces |
-|-------------|-------|------------|
-| `VelodyneVLP32` | VLP-32C | ethernet |
-
 #### `velodyne.vlp16` — vlp16 v1.0.0
 
 Velodyne VLP-16 3D LiDAR puck
@@ -1835,6 +1827,14 @@ Velodyne VLP-16 3D LiDAR puck
 | Sensor type | Model | Interfaces |
 |-------------|-------|------------|
 | `VelodyneVLP16` | VLP-16 | ethernet, usb |
+
+#### `velodyne.vlp32` — vlp32 v1.0.0
+
+Velodyne VLP-32C ultra puck
+
+| Sensor type | Model | Interfaces |
+|-------------|-------|------------|
+| `VelodyneVLP32` | VLP-32C | ethernet |
 
 ### Waveshare
 
@@ -1901,11 +1901,19 @@ The Spanda CLI drives the autonomous systems platform: check, verify, simulate, 
 - [`run`](./man/spanda-run.md)
 - [`sim`](./man/spanda-sim.md)
 - [`replay`](./man/spanda-replay.md)
+- [`test`](./man/spanda-test.md)
+- [`readiness`](./man/spanda-readiness.md)
+- [`assure`](./man/spanda-assure.md)
+- [`diagnose`](./man/spanda-diagnose.md)
+- [`heal`](./man/spanda-heal.md)
 - [`fleet`](./man/spanda-fleet.md)
-- [`heal` / `recover` / `recovery`](./man/spanda-recovery.md)
+- [`package`](./man/spanda-package.md)
+- [`trace`](./man/spanda-trace.md)
+- [`security`](./man/spanda-security.md)
 - [`fmt`](./man/spanda-fmt.md)
 - [`lint`](./man/spanda-lint.md)
 - [`doc`](./man/spanda-doc.md)
+- [`man`](./man/spanda-man.md)
 - [`reference`](./man/spanda-reference.md)
 - [`codegen`](./man/spanda-codegen.md)
 - [`debug`](./man/spanda-debug.md)
@@ -1939,6 +1947,14 @@ Type-check and parse a Spanda program or project.
 spanda check examples/rover.sd
 spanda check --project
 ```
+
+**EXIT STATUS**
+
+0 on success; 1 on parse, type, or lint errors.
+
+**FILES**
+
+`spanda.toml` — project manifest when using `--project`
 
 **SEE ALSO**
 
@@ -1974,6 +1990,14 @@ spanda verify robot.sd --target RoverV1
 spanda verify robot.sd --all-targets --simulate
 ```
 
+**EXIT STATUS**
+
+0 when compatible; 1 on verification failures or errors.
+
+**FILES**
+
+Hardware profile definitions in the program or `hardware/` package paths.
+
 **SEE ALSO**
 
 spanda-check(1), spanda-run(1)
@@ -2006,6 +2030,14 @@ Execute a Spanda program on the interpreter backend.
 spanda run examples/rover.sd
 spanda run robot.sd --trace-realtime --metrics-json
 ```
+
+**EXIT STATUS**
+
+0 on successful execution; 1 on runtime or compile errors.
+
+**FILES**
+
+Mission traces when using `--record` (default: `mission.trace`).
 
 **SEE ALSO**
 
@@ -2040,6 +2072,14 @@ spanda sim examples/rover.sd --record
 spanda sim robot.sd --wall-clock
 ```
 
+**EXIT STATUS**
+
+0 on successful simulation; 1 on errors.
+
+**FILES**
+
+Mission traces when using `--record`.
+
 **SEE ALSO**
 
 spanda-run(1), spanda-replay(1)
@@ -2073,9 +2113,209 @@ spanda replay mission.trace --deterministic
 spanda replay mission.trace --playback --from T+00:30
 ```
 
+**EXIT STATUS**
+
+0 when replay succeeds or deterministic check passes; 1 otherwise.
+
+**FILES**
+
+Input mission trace file (`.trace`).
+
 **SEE ALSO**
 
 spanda-sim(1), spanda-run(1)
+
+### spanda-test(1) {#cli-test}
+
+**NAME**
+
+`test` — Run in-language `test` blocks and package test suites for a Spanda project.
+
+**SYNOPSIS**
+
+```
+spanda test [--project <dir>]
+```
+
+**DESCRIPTION**
+
+Run in-language `test` blocks and package test suites for a Spanda project.
+
+**OPTIONS**
+
+`--project` — project root (default: current directory)
+
+**EXAMPLES**
+
+```bash
+spanda test
+spanda test --project examples/rover
+```
+
+**EXIT STATUS**
+
+0 when all tests pass; 1 on failures.
+
+**FILES**
+
+`spanda.toml`, `spanda.lock`, project `.sd` sources.
+
+**SEE ALSO**
+
+spanda-check(1), spanda-package(1)
+
+### spanda-readiness(1) {#cli-readiness}
+
+**NAME**
+
+`readiness` — Evaluate operational readiness: health, safety, fleet, and deployment gates.
+
+**SYNOPSIS**
+
+```
+spanda readiness [--json] [--readiness-json] <file.sd>
+```
+
+**DESCRIPTION**
+
+Evaluate operational readiness: health, safety, fleet, and deployment gates.
+
+**OPTIONS**
+
+`--json` / `--readiness-json` — structured readiness report
+
+**EXAMPLES**
+
+```bash
+spanda readiness robot.sd --readiness-json
+```
+
+**EXIT STATUS**
+
+0 when ready; 1 when blocking issues are found.
+
+**FILES**
+
+Readiness reports may reference `spanda.toml` safety metadata.
+
+**SEE ALSO**
+
+spanda-verify(1), spanda-assure(1)
+
+### spanda-assure(1) {#cli-assure}
+
+**NAME**
+
+`assure` — Run assurance workflows: anomaly coverage, prognostics, and assurance cases.
+
+**SYNOPSIS**
+
+```
+spanda assure [--json] <file.sd>
+```
+
+**DESCRIPTION**
+
+Run assurance workflows: anomaly coverage, prognostics, and assurance cases.
+
+**OPTIONS**
+
+`--json` — machine-readable assurance report
+
+**EXAMPLES**
+
+```bash
+spanda assure robot.sd --json
+```
+
+**EXIT STATUS**
+
+0 when assurance checks pass; 1 on gaps or violations.
+
+**FILES**
+
+Assurance metadata in program declarations.
+
+**SEE ALSO**
+
+spanda-readiness(1), spanda-diagnose(1)
+
+### spanda-diagnose(1) {#cli-diagnose}
+
+**NAME**
+
+`diagnose` — Diagnose failures from static analysis and optional mission traces.
+
+**SYNOPSIS**
+
+```
+spanda diagnose [--json] <file.sd> [<mission.trace>]
+```
+
+**DESCRIPTION**
+
+Diagnose failures from static analysis and optional mission traces.
+
+**OPTIONS**
+
+`--json` — structured diagnosis report
+
+**EXAMPLES**
+
+```bash
+spanda diagnose robot.sd
+spanda diagnose robot.sd mission.trace
+```
+
+**EXIT STATUS**
+
+0 when diagnosis completes; 1 on errors.
+
+**FILES**
+
+Optional mission trace input.
+
+**SEE ALSO**
+
+spanda-assure(1), spanda-heal(1)
+
+### spanda-heal(1) {#cli-heal}
+
+**NAME**
+
+`heal` — Execute self-healing and recovery policies declared in the program.
+
+**SYNOPSIS**
+
+```
+spanda heal [--json] <file.sd>
+```
+
+**DESCRIPTION**
+
+Execute self-healing and recovery policies declared in the program.
+
+**OPTIONS**
+
+`--json` — recovery report
+
+**EXAMPLES**
+
+```bash
+spanda heal robot.sd --json
+```
+
+**EXIT STATUS**
+
+0 when recovery succeeds; 1 on unrecoverable faults.
+
+**FILES**
+
+Recovery policies in `.sd` source.
+
+**SEE ALSO**
+
+spanda-diagnose(1), spanda-recovery(1)
 
 ### spanda-fleet(1) {#cli-fleet}
 
@@ -2103,9 +2343,137 @@ Same trace flags as `spanda run`.
 spanda fleet run examples/communication/multi_robot_fleet.sd
 ```
 
+**EXIT STATUS**
+
+0 on successful fleet run; 1 on errors.
+
+**FILES**
+
+Fleet mesh state when using remote agents.
+
 **SEE ALSO**
 
 spanda-run(1)
+
+### spanda-package(1) {#cli-package}
+
+**NAME**
+
+`package` — Manage Spanda packages: manifests, dependencies, builds, and registry operations.
+
+**SYNOPSIS**
+
+```
+spanda <init|build|test|add|remove|install|publish|registry> [options]
+```
+
+**DESCRIPTION**
+
+Manage Spanda packages: manifests, dependencies, builds, and registry operations.
+
+**OPTIONS**
+
+See `spanda init`, `build`, `test`, `add`, `remove`, `install`, `publish`, `registry search`, `registry info`.
+
+**EXAMPLES**
+
+```bash
+spanda init my-robot
+spanda add std.robotics
+spanda publish
+```
+
+**EXIT STATUS**
+
+0 on success; 1 on manifest, lockfile, or registry errors.
+
+**FILES**
+
+`spanda.toml`, `spanda.lock`, `packages/` registry mirror.
+
+**SEE ALSO**
+
+spanda-check(1), spanda-test(1)
+
+### spanda-trace(1) {#cli-trace}
+
+**NAME**
+
+`trace` — Record scheduler, task, trigger, and event traces from a program run.
+
+**SYNOPSIS**
+
+```
+spanda trace [--json] [--out <file>] <file.sd>
+```
+
+**DESCRIPTION**
+
+Record scheduler, task, trigger, and event traces from a program run.
+
+**OPTIONS**
+
+`--out` — trace output path
+`--json` — structured trace summary
+
+**EXAMPLES**
+
+```bash
+spanda trace robot.sd --out mission.trace
+```
+
+**EXIT STATUS**
+
+0 on success; 1 on runtime errors.
+
+**FILES**
+
+Output trace file (`.trace`).
+
+**SEE ALSO**
+
+spanda-replay(1), spanda-run(1)
+
+### spanda-security(1) {#cli-security}
+
+**NAME**
+
+`security` — Validate security policies, identities, and audit configuration.
+
+**SYNOPSIS**
+
+```
+spanda security <check|audit> [--json] <file.sd>
+```
+
+**DESCRIPTION**
+
+Validate security policies, identities, and audit configuration.
+
+**OPTIONS**
+
+`check` — static security validation
+`audit` — audit log review
+`--json` — machine-readable report
+
+**EXAMPLES**
+
+```bash
+spanda security check robot.sd --json
+spanda security audit robot.sd
+```
+
+**EXIT STATUS**
+
+0 when policies pass; 1 on violations.
+
+**FILES**
+
+Security metadata in program and `spanda.toml` when present.
+
+**SEE ALSO**
+
+spanda-verify(1), spanda-readiness(1)
 
 ### spanda-fmt(1) {#cli-fmt}
 
@@ -2132,6 +2500,14 @@ Format Spanda source to canonical style.
 ```bash
 spanda fmt examples/rover.sd
 ```
+
+**EXIT STATUS**
+
+0 on success; 1 on parse errors.
+
+**FILES**
+
+In-place `.sd` source file.
 
 **SEE ALSO**
 
@@ -2163,6 +2539,14 @@ Run linter rules beyond parse/type checking.
 spanda lint robot.sd
 ```
 
+**EXIT STATUS**
+
+0 when no lint issues; 1 when issues are found.
+
+**FILES**
+
+Input `.sd` source file.
+
 **SEE ALSO**
 
 spanda-check(1)
@@ -2171,62 +2555,123 @@ spanda-check(1)
 
 **NAME**
 
-`doc` — Generate JavaDoc-style API docs for a single `.sd` module.
+`doc` — Generate JavaDoc-style API docs for `.sd` modules (markdown or HTML).
 
 **SYNOPSIS**
 
 ```
-spanda doc [--json] [--out <file.md>] <file.sd>
+spanda doc [--json] [--html] [--out <file>] <file.sd|dir/>
 ```
 
 **DESCRIPTION**
 
-Generate JavaDoc-style API docs for a single `.sd` module.
+Generate JavaDoc-style API docs for `.sd` modules (markdown or HTML).
 
 **OPTIONS**
 
-`--out` — write markdown to file instead of stdout
+`--out` — write output file or directory
+`--html` — emit HTML instead of markdown
+`--json` — wrap output in JSON
 
 **EXAMPLES**
 
 ```bash
 spanda doc module.sd --out module-api.md
+spanda doc --html examples/
 ```
+
+**EXIT STATUS**
+
+0 on success; 1 on lex/parse errors.
+
+**FILES**
+
+Output docs under `--out` or stdout.
 
 **SEE ALSO**
 
-spanda-reference(1)
+spanda-reference(1), spanda-man(1)
+
+### spanda-man(1) {#cli-man}
+
+**NAME**
+
+`man` — Display man-page style documentation for Spanda CLI commands.
+
+**SYNOPSIS**
+
+```
+spanda man [<command>] [--roff]
+```
+
+**DESCRIPTION**
+
+Display man-page style documentation for Spanda CLI commands.
+
+**OPTIONS**
+
+`--roff` — emit roff for Unix `man` viewers
+No argument — list available pages
+
+**EXAMPLES**
+
+```bash
+spanda man
+spanda man verify
+spanda man run --roff
+```
+
+**EXIT STATUS**
+
+0 on success; 1 when the command page is not found.
+
+**FILES**
+
+Man pages are generated from compiler metadata into `docs/man/`.
+
+**SEE ALSO**
+
+spanda-reference(1), spanda-doc(1)
 
 ### spanda-reference(1) {#cli-reference}
 
 **NAME**
 
-`reference` — Emit the full Spanda language reference (this document).
+`reference` — Emit the full Spanda language reference and optional man pages.
 
 **SYNOPSIS**
 
 ```
-spanda reference [--json] [--out <file.md>]
+spanda reference [--json] [--out <file.md>] [--man-dir <dir>]
 ```
 
 **DESCRIPTION**
 
-Emit the full Spanda language reference (this document).
+Emit the full Spanda language reference and optional man pages.
 
 **OPTIONS**
 
-`--out` — write to file
+`--out` — write reference markdown
+`--man-dir` — write man pages
 `--json` — wrap markdown in JSON
 
 **EXAMPLES**
 
 ```bash
-spanda reference --out docs/spanda-reference.md
+spanda reference --out docs/spanda-reference.md --man-dir docs/man
 ```
+
+**EXIT STATUS**
+
+0 on success.
+
+**FILES**
+
+`docs/spanda-reference.md`, `docs/man/` when generating.
 
 **SEE ALSO**
 
-spanda-doc(1)
+spanda-doc(1), spanda-man(1)
 
 ### spanda-codegen(1) {#cli-codegen}
 
@@ -2253,6 +2698,14 @@ Generate deployable artifacts from a Spanda program.
 ```bash
 spanda codegen --target wasm robot.sd --out robot.wasm
 ```
+
+**EXIT STATUS**
+
+0 on success; 1 on codegen errors.
+
+**FILES**
+
+Generated artifact at `--out`.
 
 **SEE ALSO**
 
@@ -2283,6 +2736,14 @@ Start an interactive debug session.
 ```bash
 spanda debug robot.sd --break 42
 ```
+
+**EXIT STATUS**
+
+0 on clean exit; 1 on errors.
+
+**FILES**
+
+Debug session uses source `.sd` file.
 
 **SEE ALSO**
 

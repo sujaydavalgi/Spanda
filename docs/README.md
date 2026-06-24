@@ -106,6 +106,7 @@
 | [cellular.md](./cellular.md) | **LTE/4G/5G hardware and roaming** |
 | [spanda-architecture.md](./spanda-architecture.md) | Architecture diagram, compiler pipeline, safety model |
 | [spanda-language.md](./spanda-language.md) | Language reference for modules, traits, tasks, twins, hardware |
+| [language-reference/](./language-reference/README.md) | **Language reference topics** — syntax, types, agents, safety, packages |
 | [spanda-reference.md](./spanda-reference.md) | **Spanda language API** — keywords, `std.*`, builtins, CLI (JavaDoc + man style) |
 | [api-documentation.md](./api-documentation.md) | **API doc hierarchy** — language vs compiler vs JSON contract |
 | [api-reference.md](./api-reference.md) | **Rust/TypeScript compiler API** — crates grouped by lean-core layer |

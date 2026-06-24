@@ -24,6 +24,14 @@ Generate deployable artifacts from a Spanda program.
 spanda codegen --target wasm robot.sd --out robot.wasm
 ```
 
+## EXIT STATUS
+
+0 on success; 1 on codegen errors.
+
+## FILES
+
+Generated artifact at `--out`.
+
 ## SEE ALSO
 
 spanda-deploy(1), spanda-compile-native(1), [spanda(1)](./spanda.md), [spanda-reference.md](../spanda-reference.md)

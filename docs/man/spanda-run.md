@@ -27,6 +27,14 @@ spanda run examples/rover.sd
 spanda run robot.sd --trace-realtime --metrics-json
 ```
 
+## EXIT STATUS
+
+0 on successful execution; 1 on runtime or compile errors.
+
+## FILES
+
+Mission traces when using `--record` (default: `mission.trace`).
+
 ## SEE ALSO
 
 spanda-sim(1), spanda-replay(1), [spanda(1)](./spanda.md), [spanda-reference.md](../spanda-reference.md)

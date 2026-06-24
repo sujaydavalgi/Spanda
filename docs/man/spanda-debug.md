@@ -24,6 +24,14 @@ Start an interactive debug session.
 spanda debug robot.sd --break 42
 ```
 
+## EXIT STATUS
+
+0 on clean exit; 1 on errors.
+
+## FILES
+
+Debug session uses source `.sd` file.
+
 ## SEE ALSO
 
 spanda-run(1), [spanda(1)](./spanda.md), [spanda-reference.md](../spanda-reference.md)

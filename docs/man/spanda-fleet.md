@@ -24,6 +24,14 @@ Same trace flags as `spanda run`.
 spanda fleet run examples/communication/multi_robot_fleet.sd
 ```
 
+## EXIT STATUS
+
+0 on successful fleet run; 1 on errors.
+
+## FILES
+
+Fleet mesh state when using remote agents.
+
 ## SEE ALSO
 
 spanda-run(1), [spanda(1)](./spanda.md), [spanda-reference.md](../spanda-reference.md)

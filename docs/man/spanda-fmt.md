@@ -24,6 +24,14 @@ Format Spanda source to canonical style.
 spanda fmt examples/rover.sd
 ```
 
+## EXIT STATUS
+
+0 on success; 1 on parse errors.
+
+## FILES
+
+In-place `.sd` source file.
+
 ## SEE ALSO
 
 spanda-check(1), [spanda(1)](./spanda.md), [spanda-reference.md](../spanda-reference.md)
