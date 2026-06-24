@@ -56,7 +56,7 @@ import {
 import { callExternBridge } from "../ffi/subprocess-bridge.js";
 import { ConcurrencyRuntime } from "../concurrency.js";
 import { recordSensorReading, recordTaskHeartbeat, recordTopicPublish } from "../telemetry-store.js";
-import type { MissionTrace } from "../replay.js";
+import type { MissionTrace, ReplayStateSnapshot } from "../replay.js";
 import { createHealthPollState, pollRuntimeHealthChanges, type HealthPollState } from "./health-runtime.js";
 import type { ModuleRegistry } from "../modules/index.js";
 import type { ExternFnDecl, ModuleFnDecl, ResourceBudgetDecl, TaskDecl, TaskPriority } from "../foundations.js";
@@ -2343,6 +2343,24 @@ export class Interpreter {
     this.runConnectivityMaintenance();
 }
 
+  private captureReplayState(): ReplayStateSnapshot {
+    const state = this.options.backend.getState();
+    return {
+      pose: {
+        x: state.pose.x,
+        y: state.pose.y,
+        theta: state.pose.theta,
+        z: state.pose.z,
+      },
+      velocity: {
+        linear: state.velocity.linear,
+        angular: state.velocity.angular,
+      },
+      emergencyStop: state.emergencyStop ?? this.safetyMonitor?.isEmergencyStop() ?? false,
+      activeMode: this.reliability.activeMode,
+    };
+  }
+
   private reliabilityHost() {
     // Description:
     //     ReliabilityHost.
@@ -2690,6 +2708,12 @@ export class Interpreter {
             topic.topicPath,
             value,
             this.reliability.simTimeMs,
+          );
+          this.reliability.recordMissionEvent(
+            this.reliabilityHost(),
+            "topic_publish",
+            { topic: topic.topicPath },
+            this.captureReplayState(),
           );
           this.options.onLog?.(`publish ${topic.topicPath}`);
         }

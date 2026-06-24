@@ -10,10 +10,12 @@ import {
   loadMissionTrace,
   parseReplayOffset,
   playbackFrames,
+  replayMissionDeterministic,
   traceFramesFrom,
 } from "./replay.js";
 import {
   envPersistEnabled,
+  listTelemetrySessions,
   readAllEvents,
   readHeartbeatIndexForStore,
   resolveHeartbeatIndexPath,
@@ -214,42 +216,8 @@ function formatEvent(event: TelemetryEvent): string {
   }
 }
 
-type TelemetrySessionSummary = {
-  session_id: string;
-  source?: string;
-  start_ms: number;
-  end_ms?: number;
-  mission_trace_path?: string;
-  event_count: number;
-};
-
-function listSessions(): TelemetrySessionSummary[] {
-  const events = readAllEvents();
-  const summaries = new Map<string, TelemetrySessionSummary>();
-  for (const event of events) {
-    if (event.kind !== "session") {
-      continue;
-    }
-    const existing = summaries.get(event.session_id) ?? {
-      session_id: event.session_id,
-      start_ms: event.timestamp_ms,
-      event_count: 0,
-    };
-    if (event.phase === "start") {
-      existing.start_ms = event.timestamp_ms;
-      existing.source = event.source;
-    } else if (event.phase === "end") {
-      existing.end_ms = event.timestamp_ms;
-      if (event.mission_trace_path) {
-        existing.mission_trace_path = event.mission_trace_path;
-      }
-    }
-    summaries.set(event.session_id, existing);
-  }
-  for (const summary of summaries.values()) {
-    summary.event_count = queryEvents({ sessionId: summary.session_id }).length;
-  }
-  return [...summaries.values()].sort((left, right) => right.start_ms - left.start_ms);
+function missionTraceForSession(sessionId: string): string | undefined {
+  return listTelemetrySessions().find((session) => session.session_id === sessionId)?.mission_trace_path;
 }
 
 function computeStats(): TelemetryStats {
@@ -437,10 +405,6 @@ function renderOtlp(): string {
   }, null, 2);
 }
 
-function missionTraceForSession(sessionId: string): string | undefined {
-  return listSessions().find((session) => session.session_id === sessionId)?.mission_trace_path;
-}
-
 function parseReplayArgs(args: string[]): {
   sessionId?: string;
   from?: string;
@@ -495,8 +459,35 @@ function runTelemetryReplay(args: string[]): number {
     return 1;
   }
   if (deterministic) {
-    console.error("Deterministic replay verification requires the native Rust CLI");
-    return 1;
+    const offsetMs = from ? parseReplayOffset(from) : 0;
+    const verification = replayMissionDeterministic(tracePath, { fromMs: offsetMs });
+    if (json) {
+      console.log(
+        JSON.stringify(
+          {
+            ok: verification.ok,
+            source: loadMissionTrace(tracePath).source,
+            deterministic: true,
+            offset_ms: offsetMs,
+            matched: verification.matched,
+            mismatches: verification.mismatches,
+          },
+          null,
+          2,
+        ),
+      );
+    } else if (verification.ok) {
+      console.log(
+        `✓ Deterministic replay verified for ${tracePath} (${verification.matched} frames from ${offsetMs}ms)`,
+      );
+    } else {
+      console.error(`✗ Deterministic replay mismatch for ${tracePath}:`);
+      for (const mismatch of verification.mismatches) {
+        console.error(`  ${mismatch}`);
+      }
+      return 1;
+    }
+    return verification.ok ? 0 : 1;
   }
   const trace = loadMissionTrace(tracePath);
   const offsetMs = from ? parseReplayOffset(from) : 0;
@@ -823,7 +814,7 @@ export function runTelemetryCli(sub: string, args: string[]): number {
         return runTelemetryServe(args);
       case "sessions": {
         const json = args.includes("--json");
-        const sessions = listSessions();
+        const sessions = listTelemetrySessions();
         if (json) {
           console.log(JSON.stringify(sessions, null, 2));
         } else if (sessions.length === 0) {

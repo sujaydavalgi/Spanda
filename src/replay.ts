@@ -4,7 +4,11 @@
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname } from "node:path";
+import { dirname, join } from "node:path";
+import { tokenize } from "./lexer/index.js";
+import { parse } from "./parser/index.js";
+import { Interpreter } from "./runtime/interpreter.js";
+import { createDefaultSimulator } from "./simulator/index.js";
 
 export type TraceFrame = {
   simTimeMs: number;
@@ -381,8 +385,51 @@ export function serializeMissionTrace(trace: MissionTrace): string {
   return JSON.stringify(trace, null, 2);
 }
 
+function normalizeReplayState(raw: Record<string, unknown>): ReplayStateSnapshot | undefined {
+  if (!raw) {
+    return undefined;
+  }
+  const pose = raw.pose as Record<string, number> | undefined;
+  const velocity = raw.velocity as Record<string, number> | undefined;
+  if (!pose || !velocity) {
+    return undefined;
+  }
+  return {
+    pose: {
+      x: pose.x,
+      y: pose.y,
+      theta: pose.theta,
+      z: pose.z,
+    },
+    velocity: {
+      linear: velocity.linear,
+      angular: velocity.angular,
+    },
+    emergencyStop: Boolean(raw.emergencyStop ?? raw.emergency_stop),
+    activeMode: (raw.activeMode ?? raw.active_mode) as string | undefined,
+  };
+}
+
+function normalizeTraceFrame(raw: Record<string, unknown>): TraceFrame {
+  return {
+    simTimeMs: Number(raw.simTimeMs ?? raw.sim_time_ms ?? 0),
+    event: String(raw.event ?? ""),
+    payload: raw.payload,
+    state: raw.state ? normalizeReplayState(raw.state as Record<string, unknown>) : undefined,
+  };
+}
+
 export function deserializeMissionTrace(text: string): MissionTrace {
-  return JSON.parse(text) as MissionTrace;
+  const parsed = JSON.parse(text) as Record<string, unknown>;
+  const frames = Array.isArray(parsed.frames)
+    ? parsed.frames.map((frame) => normalizeTraceFrame(frame as Record<string, unknown>))
+    : [];
+  return {
+    version: Number(parsed.version ?? 1),
+    source: String(parsed.source ?? ""),
+    deterministic: Boolean(parsed.deterministic),
+    frames,
+  };
 }
 
 export function loadMissionTrace(path: string): MissionTrace {
@@ -403,4 +450,41 @@ export function saveMissionTrace(trace: MissionTrace, path: string): void {
     mkdirSync(parent, { recursive: true });
   }
   writeFileSync(path, serializeMissionTrace(trace), "utf8");
+}
+
+export function resolveTraceSource(traceFile: string, source: string): string {
+  if (existsSync(source)) {
+    return source;
+  }
+  const candidate = join(dirname(traceFile), source);
+  if (existsSync(candidate)) {
+    return candidate;
+  }
+  return source;
+}
+
+export function replayMissionDeterministic(
+  traceFile: string,
+  options?: { fromMs?: number; maxLoopIterations?: number },
+): TraceVerification {
+  const expected = loadMissionTrace(traceFile);
+  const sourcePath = resolveTraceSource(traceFile, expected.source);
+  const source = readFileSync(sourcePath, "utf8");
+  const program = parse(tokenize(source));
+  const interpreter = new Interpreter({
+    backend: createDefaultSimulator(),
+    maxLoopIterations: options?.maxLoopIterations ?? 20,
+    recordTrace: true,
+    traceSource: expected.source,
+  });
+  interpreter.run(program);
+  const actual = interpreter.takeMissionTrace();
+  if (!actual) {
+    return {
+      ok: false,
+      matched: 0,
+      mismatches: ["No mission trace recorded during replay run"],
+    };
+  }
+  return verifyTraces(expected, actual, options?.fromMs ?? 0);
 }

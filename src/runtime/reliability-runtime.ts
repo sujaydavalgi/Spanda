@@ -5,7 +5,7 @@
 
 import type { RobotDecl, Stmt } from "../ast/nodes.js";
 import type { PipelineDecl, WatchdogDecl } from "../foundations.js";
-import { createMissionTrace, recordTraceFrame, type MissionTrace } from "../replay.js";
+import { createMissionTrace, recordTraceFrame, recordTraceFrameWithState, type MissionTrace, type ReplayStateSnapshot } from "../replay.js";
 import { recordTaskHeartbeat } from "../telemetry-store.js";
 
 const RUNTIME_TASK_COST_MS = 5;
@@ -134,6 +134,23 @@ export class ReliabilityRuntime {
       return;
     }
     recordTraceFrame(this.missionTrace, host.getSimTimeMs(), event, payload);
+  }
+
+  recordMissionEvent(
+    host: ReliabilityHost,
+    event: string,
+    payload: unknown,
+    state?: ReplayStateSnapshot,
+  ): void {
+    if (!this.missionTrace) {
+      return;
+    }
+    const simTimeMs = host.getSimTimeMs();
+    if (state) {
+      recordTraceFrameWithState(this.missionTrace, simTimeMs, event, payload, state);
+      return;
+    }
+    recordTraceFrame(this.missionTrace, simTimeMs, event, payload);
   }
 
   takeMissionTrace(): MissionTrace | null {

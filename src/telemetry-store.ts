@@ -200,6 +200,51 @@ export function readAllEvents(): TelemetryEvent[] {
     .map((line) => JSON.parse(line) as TelemetryEvent);
 }
 
+export type TelemetrySessionSummary = {
+  session_id: string;
+  source?: string;
+  start_ms: number;
+  end_ms?: number;
+  mission_trace_path?: string;
+  event_count: number;
+};
+
+function eventMatchesSession(event: TelemetryEvent, sessionId: string): boolean {
+  if (event.kind === "session" && event.session_id === sessionId) {
+    return true;
+  }
+  return "session_id" in event && event.session_id === sessionId;
+}
+
+export function listTelemetrySessions(): TelemetrySessionSummary[] {
+  const events = readAllEvents();
+  const summaries = new Map<string, TelemetrySessionSummary>();
+  for (const event of events) {
+    if (event.kind !== "session") {
+      continue;
+    }
+    const existing = summaries.get(event.session_id) ?? {
+      session_id: event.session_id,
+      start_ms: event.timestamp_ms,
+      event_count: 0,
+    };
+    if (event.phase === "start") {
+      existing.start_ms = event.timestamp_ms;
+      existing.source = event.source;
+    } else if (event.phase === "end") {
+      existing.end_ms = event.timestamp_ms;
+      if (event.mission_trace_path) {
+        existing.mission_trace_path = event.mission_trace_path;
+      }
+    }
+    summaries.set(event.session_id, existing);
+  }
+  for (const summary of summaries.values()) {
+    summary.event_count = events.filter((event) => eventMatchesSession(event, summary.session_id)).length;
+  }
+  return [...summaries.values()].sort((left, right) => right.start_ms - left.start_ms);
+}
+
 function ensureParent(path: string): void {
   const parent = dirname(path);
   if (!existsSync(parent)) {
