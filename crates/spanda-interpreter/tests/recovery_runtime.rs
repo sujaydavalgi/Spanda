@@ -289,4 +289,12 @@ robot RoverBeta {
         "expected mesh recovery relay log, got: {:?}",
         result.logs
     );
+    assert!(
+        result
+            .logs
+            .iter()
+            .any(|l| l.contains("fleet_mesh: takeover")),
+        "expected mesh continuity relay on reassign, got: {:?}",
+        result.logs
+    );
 }

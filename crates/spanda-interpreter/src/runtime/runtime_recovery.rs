@@ -12,12 +12,37 @@ use spanda_assurance::{
 };
 use spanda_ast::nodes::{Program, RobotDecl};
 use spanda_comm::CommBus;
-use spanda_deploy_http::{relay_recovery_via_mesh, FleetRecoveryRequest};
+use spanda_deploy_http::{
+    relay_continuity_via_mesh, relay_recovery_via_mesh, FleetContinuityRequest,
+    FleetRecoveryRequest,
+};
 use spanda_error::SpandaError;
 use spanda_runtime::robotics::MissionState;
 use spanda_runtime::value::RuntimeValue;
 use std::cell::RefCell;
 use std::rc::Rc;
+
+fn action_triggers_continuity_handoff(action: &str) -> bool {
+    // Description:
+    //     Decide whether a recovery action should also relay fleet continuity.
+    //
+    // Inputs:
+    //     action: &str
+    //         Recovery action text from a policy branch.
+    //
+    // Outputs:
+    //     result: bool
+    //         True when the action reassigns or promotes fleet mission work.
+    //
+    // Example:
+    //     let handoff = action_triggers_continuity_handoff("reassign mission");
+
+    let lower = action.to_ascii_lowercase();
+    lower.contains("reassign")
+        || lower.contains("promote")
+        || lower.contains("replace")
+        || lower.contains("redistribute")
+}
 
 fn parse_speed_cap(action: &str) -> Option<f64> {
     // Description:
@@ -613,6 +638,54 @@ impl<B: RobotBackend> Interpreter<B> {
                     "members": members,
                 }),
             );
+
+            if action_triggers_continuity_handoff(action) {
+                let failed = members.first().cloned().unwrap_or_default();
+                let request = FleetContinuityRequest {
+                    failed_robot: failed.clone(),
+                    successor: members.get(1).cloned(),
+                    mission: None,
+                    progress_percent: None,
+                    trigger: Some("robot_failed".into()),
+                    fleet_name: Some(fleet_name.clone()),
+                    from_robot: Some(failed),
+                    members: members.clone(),
+                };
+                let payload = serde_json::to_string(&request).map_err(|e| SpandaError::Runtime {
+                    message: e.to_string(),
+                    line: 0,
+                })?;
+                self.comm_bus.publish(
+                    "/fleet/continuity",
+                    "Command",
+                    RuntimeValue::String { value: payload },
+                    self.default_transport,
+                    Some(&source),
+                );
+                if let Some(url) = mesh_url.as_deref() {
+                    match relay_continuity_via_mesh(url, &request, mesh_token.as_deref()) {
+                        Ok(resp) => {
+                            self.log(format!(
+                                "fleet_mesh: takeover '{}' relayed={} failed={}",
+                                request.failed_robot, resp.relayed, resp.failed
+                            ));
+                            self.record_mission_event(
+                                "fleet_mesh_continuity",
+                                serde_json::json!({
+                                    "fleet": fleet_name,
+                                    "failed": request.failed_robot,
+                                    "successor": request.successor,
+                                    "relayed": resp.relayed,
+                                    "failed_agents": resp.failed,
+                                }),
+                            );
+                        }
+                        Err(err) => {
+                            self.log(format!("fleet_mesh: takeover relay failed: {err}"));
+                        }
+                    }
+                }
+            }
         }
         Ok(())
     }
