@@ -6,10 +6,14 @@ pub mod runtime;
 pub mod simulator;
 
 pub use options::{
-    ObstacleConfig, RecoveryRunOptions, RecoveryRunResult, RunOptions, RunResult, TestRunResult,
+    ContinuityRunOptions, ContinuityRunResult, ObstacleConfig, RecoveryRunOptions,
+    RecoveryRunResult, RunOptions, RunResult, TestRunResult,
 };
 pub use run::{run_program, run_tests_with_registry};
-pub use runtime::{execute_recovery_on_program, RecoveryExecutionSnapshot};
+pub use runtime::{
+    continuity_context_from_request, execute_continuity_on_program, execute_recovery_on_program,
+    ContinuityExecutionSnapshot, RecoveryExecutionSnapshot,
+};
 pub use runtime::{Interpreter, InterpreterOptions, RobotBackend};
 pub use simulator::{create_default_simulator, Obstacle, Simulator, SimulatorConfig};
 pub use spanda_error::SpandaError;

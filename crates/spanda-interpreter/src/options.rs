@@ -160,3 +160,26 @@ pub struct RecoveryRunResult {
     pub mission_paused: bool,
     pub speed_cap: Option<f64>,
 }
+
+/// Options for targeted interpreter continuity takeover without a full run loop.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct ContinuityRunOptions {
+    #[serde(default)]
+    pub robot_name: Option<String>,
+    #[serde(default)]
+    pub successor: Option<String>,
+    #[serde(default)]
+    pub grant_operator_approval: bool,
+    #[serde(default)]
+    pub inbound_comm_messages: Vec<(String, String)>,
+}
+
+/// Outcome of interpreter-backed continuity takeover execution.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ContinuityRunResult {
+    pub takeover: spanda_assurance::TakeoverReport,
+    pub logs: Vec<String>,
+    pub mission_progress_percent: f64,
+    pub handoff_from: Option<String>,
+    pub mission_paused: bool,
+}

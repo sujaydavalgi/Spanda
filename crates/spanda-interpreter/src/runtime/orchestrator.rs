@@ -1972,6 +1972,8 @@ mod runtime_navigation;
 mod runtime_program;
 #[path = "runtime_recovery.rs"]
 mod runtime_recovery;
+#[path = "runtime_continuity.rs"]
+mod runtime_continuity;
 #[path = "runtime_reliability.rs"]
 mod runtime_reliability;
 #[path = "runtime_robot.rs"]
@@ -1998,3 +2000,6 @@ mod runtime_twin;
 mod runtime_world_model;
 
 pub use runtime_recovery::{execute_recovery_on_program, RecoveryExecutionSnapshot};
+pub use runtime_continuity::{
+    execute_continuity_on_program, continuity_context_from_request, ContinuityExecutionSnapshot,
+};

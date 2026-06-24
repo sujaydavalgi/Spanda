@@ -10,8 +10,9 @@ Extracted from `spanda-core` for the lean-core package architecture.
 |--------|---------|
 | Core (`lib.rs`) | `http_request`, `parse_http_url`, TLS server/client, deploy agent request/response parsing |
 | `fleet_recovery` | `FleetRecoveryRequest`, `FleetRecoveryResponse`, `relay_recovery_via_mesh` — HTTP client for `POST /v1/fleet/recovery` on the fleet mesh coordinator |
+| `fleet_continuity` | `FleetContinuityRequest`, `FleetContinuityResponse`, `relay_continuity_via_mesh` — HTTP client for `POST /v1/fleet/continuity` on the fleet mesh coordinator |
 
-The `fleet_recovery` client is used by the runtime (`spanda-interpreter`) and re-exported through `spanda-fleet` so recovery mesh relay does not create a crate dependency cycle.
+The `fleet_recovery` and `fleet_continuity` clients are used by the runtime (`spanda-interpreter`) and re-exported through `spanda-fleet` so mesh relay does not create a crate dependency cycle.
 
 ## Example
 
