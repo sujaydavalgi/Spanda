@@ -138,6 +138,36 @@ pub fn record_task_heartbeat(
     store.touch_heartbeat(&task_name, timestamp_ms, history_interval_ms, robot_id)
 }
 
+/// Record a device or fleet agent heartbeat when persistence is enabled.
+pub fn record_device_heartbeat(
+    device_id: impl Into<String>,
+    timestamp_ms: f64,
+    robot_id: Option<&str>,
+    protocol: Option<&str>,
+    history_interval_ms: f64,
+) -> TelemetryStoreResult<()> {
+    if !persist_enabled() {
+        return Ok(());
+    }
+    let device_id = device_id.into();
+    let mut store = global_store().lock().unwrap();
+    store.touch_device_heartbeat(
+        &device_id,
+        timestamp_ms,
+        history_interval_ms,
+        robot_id,
+        protocol,
+    )
+}
+
+/// Return true when a telemetry metric name represents a liveness heartbeat.
+pub fn is_heartbeat_metric(metric: &str) -> bool {
+    matches!(
+        metric.to_ascii_lowercase().as_str(),
+        "heartbeat" | "liveness" | "alive" | "ping"
+    )
+}
+
 /// Record a health status transition when persistence is enabled.
 pub fn record_health_event(
     target: impl Into<String>,
@@ -169,8 +199,10 @@ pub struct TelemetryStats {
     pub device_events: usize,
     pub sensor_events: usize,
     pub heartbeat_events: usize,
+    pub device_heartbeat_events: usize,
     pub health_events: usize,
     pub tracked_tasks: usize,
+    pub tracked_devices: usize,
 }
 
 /// Append-only JSONL store with heartbeat index sidecar.
@@ -180,6 +212,7 @@ pub struct PersistentTelemetryStore {
     heartbeat_path: PathBuf,
     heartbeat_index: HeartbeatIndex,
     last_heartbeat_history: HashMap<String, f64>,
+    last_device_heartbeat_history: HashMap<String, f64>,
 }
 
 impl PersistentTelemetryStore {
@@ -190,6 +223,7 @@ impl PersistentTelemetryStore {
             heartbeat_path,
             heartbeat_index,
             last_heartbeat_history: HashMap::new(),
+            last_device_heartbeat_history: HashMap::new(),
         }
     }
 
@@ -239,6 +273,37 @@ impl PersistentTelemetryStore {
                 task_name: task_name.to_string(),
                 timestamp_ms,
                 robot_id: robot_id.map(str::to_string),
+            })?;
+        }
+        Ok(())
+    }
+
+    pub fn touch_device_heartbeat(
+        &mut self,
+        device_id: &str,
+        timestamp_ms: f64,
+        history_interval_ms: f64,
+        robot_id: Option<&str>,
+        protocol: Option<&str>,
+    ) -> TelemetryStoreResult<()> {
+        self.heartbeat_index
+            .devices
+            .insert(device_id.to_string(), timestamp_ms);
+        write_heartbeat_index(&self.heartbeat_path, &self.heartbeat_index)?;
+
+        let last = self
+            .last_device_heartbeat_history
+            .get(device_id)
+            .copied()
+            .unwrap_or(f64::MIN);
+        if timestamp_ms - last >= history_interval_ms {
+            self.last_device_heartbeat_history
+                .insert(device_id.to_string(), timestamp_ms);
+            self.append(TelemetryEvent::DeviceHeartbeat {
+                device_id: device_id.to_string(),
+                timestamp_ms,
+                robot_id: robot_id.map(str::to_string),
+                protocol: protocol.map(str::to_string),
             })?;
         }
         Ok(())
@@ -316,6 +381,7 @@ impl PersistentTelemetryStore {
         let mut stats = TelemetryStats {
             total_events: events.len(),
             tracked_tasks: self.heartbeat_index.tasks.len(),
+            tracked_devices: self.heartbeat_index.devices.len(),
             ..TelemetryStats::default()
         };
         for event in events {
@@ -323,6 +389,7 @@ impl PersistentTelemetryStore {
                 TelemetryEvent::Device { .. } => stats.device_events += 1,
                 TelemetryEvent::Sensor { .. } => stats.sensor_events += 1,
                 TelemetryEvent::Heartbeat { .. } => stats.heartbeat_events += 1,
+                TelemetryEvent::DeviceHeartbeat { .. } => stats.device_heartbeat_events += 1,
                 TelemetryEvent::Health { .. } => stats.health_events += 1,
             }
         }
@@ -366,6 +433,7 @@ fn matches_query(event: &TelemetryEvent, query: &TelemetryQuery) -> bool {
             TelemetryEvent::Device { .. } => "device",
             TelemetryEvent::Sensor { .. } => "sensor",
             TelemetryEvent::Heartbeat { .. } => "heartbeat",
+            TelemetryEvent::DeviceHeartbeat { .. } => "device_heartbeat",
             TelemetryEvent::Health { .. } => "health",
         };
         if event_kind != kind.as_str() {
@@ -374,6 +442,14 @@ fn matches_query(event: &TelemetryEvent, query: &TelemetryQuery) -> bool {
     }
     match event {
         TelemetryEvent::Device { device_id, .. } => {
+            query.sensor_id.is_none()
+                && query.task_name.is_none()
+                && query
+                    .device_id
+                    .as_ref()
+                    .is_none_or(|expected| expected == device_id)
+        }
+        TelemetryEvent::DeviceHeartbeat { device_id, .. } => {
             query.sensor_id.is_none()
                 && query.task_name.is_none()
                 && query

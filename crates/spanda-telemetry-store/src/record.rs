@@ -34,6 +34,16 @@ pub enum TelemetryEvent {
         #[serde(skip_serializing_if = "Option::is_none")]
         robot_id: Option<String>,
     },
+    /// IoT device or fleet agent liveness sample.
+    #[serde(rename = "device_heartbeat")]
+    DeviceHeartbeat {
+        device_id: String,
+        timestamp_ms: f64,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        robot_id: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        protocol: Option<String>,
+    },
     /// Health status transition.
     #[serde(rename = "health")]
     Health {
@@ -48,14 +58,17 @@ impl TelemetryEvent {
         match self {
             Self::Device { timestamp_ms, .. }
             | Self::Sensor { timestamp_ms, .. }
-            | Self::Heartbeat { timestamp_ms, .. }
+            |             Self::Heartbeat { timestamp_ms, .. }
+            | Self::DeviceHeartbeat { timestamp_ms, .. }
             | Self::Health { timestamp_ms, .. } => *timestamp_ms,
         }
     }
 }
 
-/// Latest heartbeat per task for fast liveness queries.
+/// Latest heartbeat per task and device for fast liveness queries.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct HeartbeatIndex {
     pub tasks: std::collections::HashMap<String, f64>,
+    #[serde(default)]
+    pub devices: std::collections::HashMap<String, f64>,
 }

@@ -115,6 +115,43 @@ fn record_health_event_appends_to_store() {
 }
 
 #[test]
+fn device_heartbeat_updates_index_and_history() {
+    let dir = tempdir().unwrap();
+    let store_path = dir.path().join("telemetry.jsonl");
+    let heartbeat_path = dir.path().join("heartbeats.json");
+    let mut store = PersistentTelemetryStore::open(store_path, heartbeat_path.clone());
+
+    store
+        .touch_device_heartbeat("temp-1", 1000.0, 5000.0, None, Some("mqtt"))
+        .unwrap();
+    store
+        .touch_device_heartbeat("temp-1", 2000.0, 5000.0, None, Some("mqtt"))
+        .unwrap();
+    store
+        .touch_device_heartbeat("temp-1", 7000.0, 5000.0, None, Some("mqtt"))
+        .unwrap();
+
+    let device_heartbeats: Vec<_> = store
+        .read_all()
+        .unwrap()
+        .into_iter()
+        .filter(|event| matches!(event, TelemetryEvent::DeviceHeartbeat { .. }))
+        .collect();
+    assert_eq!(device_heartbeats.len(), 2);
+    assert_eq!(
+        store.heartbeat_index().devices.get("temp-1"),
+        Some(&7000.0)
+    );
+}
+
+#[test]
+fn is_heartbeat_metric_detects_liveness_names() {
+    assert!(spanda_telemetry_store::is_heartbeat_metric("heartbeat"));
+    assert!(spanda_telemetry_store::is_heartbeat_metric("Liveness"));
+    assert!(!spanda_telemetry_store::is_heartbeat_metric("battery"));
+}
+
+#[test]
 fn env_persist_enabled_accepts_true_literal() {
     std::env::set_var("SPANDA_TELEMETRY_STORE", "true");
     assert!(env_persist_enabled());
