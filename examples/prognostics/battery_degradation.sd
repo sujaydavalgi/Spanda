@@ -1,0 +1,21 @@
+hardware RoverV1 {
+    sensors [BatteryMonitor];
+    actuators [DifferentialDrive];
+}
+
+prognostics BatteryDegradation {
+    predict battery.remaining_useful_life;
+    warn_if remaining_useful_life < 30 min;
+}
+
+health_check BatteryHealth for robot Rover {
+    check battery.level >= 15%;
+}
+
+robot Rover {
+    sensor battery: BatteryMonitor;
+    actuator wheels: DifferentialDrive;
+
+    safety { max_speed = 0.8 m/s; }
+    behavior charge_return() { wheels.drive(0.1 m/s); }
+}

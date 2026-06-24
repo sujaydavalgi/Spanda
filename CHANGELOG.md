@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Mission assurance platform:** new `spanda-assurance` crate with core interfaces (knowledge model, state estimation, anomaly detection, diagnosis, prognostics, mitigation, mode management, mission planning, resilience, assurance evidence) and static analysis integrated with readiness, health, traceability, and hardware verification.
+- **Mission assurance language:** `knowledge_model`, `state_estimator`, `anomaly_detector`, `on anomaly`, `prognostics`, `mitigation`, `operating_mode`, `mission_plan`, `resilience_policy`, and `assurance_case` declarations.
+- **Mission assurance CLI:** `spanda assure`, `spanda anomaly scan`, `spanda prognostics`, `spanda mission verify`, and `spanda resilience check`; enhanced `spanda diagnose` for traces and programs.
+- **Official packages:** `spanda-assurance`, `spanda-knowledge-model`, `spanda-anomaly`, `spanda-diagnosis`, `spanda-prognostics`, `spanda-mission-planning`, `spanda-resilience`.
+- **Examples:** `examples/assurance/`, `examples/anomaly/`, `examples/diagnostics/`, `examples/prognostics/`, `examples/resilience/`, `examples/mission/`.
+- **Docs:** [mission-assurance.md](docs/mission-assurance.md), [knowledge-models.md](docs/knowledge-models.md), [anomaly-detection.md](docs/anomaly-detection.md), [diagnostics.md](docs/diagnostics.md), [prognostics.md](docs/prognostics.md), [resilience.md](docs/resilience.md), [assurance-cases.md](docs/assurance-cases.md).
+
 - **Readiness polish:** CI smoke (`scripts/readiness_smoke.sh`), agent `/v1/readiness` integration tests, `spanda deploy|fleet agent readiness` CLI, TypeScript fallbacks for all operational commands (`src/operational.ts`), span-aware LSP readiness diagnostics, `POST /v1/program` on deploy agents, bundled `root_cause_analysis` example, and fleet dashboard aggregates in the web Operations panel.
 
 - **Readiness gap closure (phases 1–4):** `--target`, `--runtime`, `--inject-health-faults`, and `--agent-json` on `spanda readiness`; `spanda check --readiness-json` for IDE diagnostics; `spanda demo readiness`; bundled showcase examples synced to the CLI crate.

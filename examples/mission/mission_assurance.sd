@@ -1,0 +1,46 @@
+hardware WarehouseBot {
+    sensors [GPS, Camera, Lidar];
+    actuators [DifferentialDrive];
+    connectivity [WiFi, LTE];
+}
+
+mission_plan WarehousePatrol {
+    step navigate_to_aisle;
+    step scan_shelves;
+    step return_to_dock;
+    constraint battery.level >= 20%;
+    constraint connectivity.signal >= 50%;
+}
+
+knowledge_model WarehouseModel {
+    component gps;
+    component lidar;
+    component camera;
+    dependency navigation requires [gps, lidar];
+    dependency inventory_scan requires [camera];
+}
+
+assurance_case WarehouseMissionCase {
+    evidence hardware_verification;
+    evidence capability_traceability;
+    evidence health_checks;
+    evidence mission_verification;
+}
+
+health_check WarehouseHealth for robot Bot {
+    check battery.level >= 20%;
+}
+
+robot Bot {
+    sensor gps: GPS;
+    sensor camera: Camera;
+    sensor lidar: Lidar;
+    actuator wheels: DifferentialDrive;
+
+    mission Patrol {
+        required_capabilities [navigation, inventory_scan];
+    }
+
+    safety { max_speed = 1.0 m/s; }
+    behavior patrol() { wheels.drive(0.4 m/s); }
+}

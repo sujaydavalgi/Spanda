@@ -1,0 +1,36 @@
+hardware RoverV1 {
+    sensors [GPS, Camera, Lidar];
+    actuators [DifferentialDrive];
+    connectivity [WiFi, LTE];
+}
+
+operating_mode NormalMode { normal; }
+operating_mode DegradedMode { degraded; }
+operating_mode SafeMode { safe; }
+
+resilience_policy RecoveryPolicy {
+    strategy sensor_failover;
+    strategy speed_reduction;
+    strategy operator_alert;
+}
+
+mitigation SensorDegradation {
+    if lidar.failed {
+        reduce_speed 0.3 m/s;
+        enter degraded_mode;
+    }
+    if gps.failed {
+        switch_to visual_odometry;
+        enter degraded_mode;
+    }
+}
+
+robot Rover {
+    sensor gps: GPS;
+    sensor camera: Camera;
+    sensor lidar: Lidar;
+    actuator wheels: DifferentialDrive;
+
+    safety { max_speed = 1.2 m/s; }
+    behavior patrol() { wheels.drive(0.5 m/s); }
+}

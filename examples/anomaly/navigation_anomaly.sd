@@ -1,0 +1,34 @@
+hardware RoverV1 {
+    sensors [GPS, Camera, Lidar];
+    actuators [DifferentialDrive];
+    connectivity [WiFi];
+}
+
+knowledge_model NavModel {
+    component gps;
+    component lidar;
+    dependency navigation requires [gps, lidar];
+}
+
+anomaly_detector NavigationAnomaly {
+    expected gps.accuracy <= 3 m;
+    expected localization.confidence >= 0.85;
+}
+
+on anomaly NavigationAnomaly severity High {
+    enter degraded_mode;
+    audit.record("navigation_anomaly");
+}
+
+health_check NavHealth for robot Rover {
+    check gps.fix >= 4;
+}
+
+robot Rover {
+    sensor gps: GPS;
+    sensor lidar: Lidar;
+    actuator wheels: DifferentialDrive;
+
+    safety { max_speed = 1.0 m/s; }
+    behavior navigate() { wheels.drive(0.3 m/s); }
+}

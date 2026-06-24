@@ -1,0 +1,36 @@
+hardware RoverV1 {
+    sensors [GPS, Camera];
+    actuators [DifferentialDrive];
+    connectivity [WiFi];
+}
+
+knowledge_model GpsModel {
+    component gps;
+    dependency navigation requires [gps];
+}
+
+mitigation GPSFailureMitigation {
+    if gps.failed {
+        switch_to visual_odometry;
+        enter degraded_mode;
+        audit.record("gps_failure");
+    }
+}
+
+on anomaly GpsAnomaly severity Critical {
+    diagnose root_cause;
+    enter safe_mode;
+}
+
+anomaly_detector GpsAnomaly {
+    expected gps.accuracy <= 5 m;
+}
+
+robot Rover {
+    sensor gps: GPS;
+    sensor camera: Camera;
+    actuator wheels: DifferentialDrive;
+
+    safety { max_speed = 1.0 m/s; }
+    behavior patrol() { wheels.drive(0.2 m/s); }
+}
