@@ -75,6 +75,7 @@ spanda telemetry latest [--device <id> [--metric <name>] | --sensor <id> | --tas
 spanda telemetry heartbeats [--json]
 spanda telemetry devices [--json]
 spanda telemetry stats [--json]
+spanda telemetry info [--json]
 spanda telemetry sessions [--json]
 spanda telemetry replay --session <id> [--from T+mm:ss] [--deterministic] [--playback] [--json]
 spanda telemetry export [--out <file.jsonl>]
@@ -152,6 +153,6 @@ Device liveness is recorded when:
 
 Implementation: `crates/spanda-telemetry-store` (`TelemetryEvent`, `PersistentTelemetryStore`).
 
-TypeScript mirror: `src/telemetry-store.ts` records sensor reads, topic publishes, task/device heartbeats, and simplified health transitions when `persistTelemetry` is set on `run()` or `SPANDA_TELEMETRY_STORE=1`. `spanda telemetry` falls back to `src/telemetry-cli.ts` when the native CLI is unavailable.
+TypeScript mirror: `src/telemetry-store.ts` records sensor reads, topic publishes, task/device heartbeats, health transitions, session boundaries, and `runtime_metrics` when `persistTelemetry` is set on `run()` or `SPANDA_TELEMETRY_STORE=1`. With `SPANDA_TELEMETRY_BACKEND=sqlite`, Node.js 22+ (`node:sqlite`) is required for the TS path; otherwise use the native Rust CLI. `spanda telemetry` tries the native Rust CLI first, then falls back to `src/telemetry-cli.ts` (including `serve`, `replay --session` inspect/playback, and `info`).
 
 See also [iot.md](./iot.md), [watchdogs.md](./watchdogs.md), [replay.md](./replay.md).

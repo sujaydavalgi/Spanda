@@ -13,7 +13,7 @@ export SPANDA_TELEMETRY_HEARTBEAT_PATH="${STORE_DIR}/heartbeats.json"
 SPANDA=(cargo run --quiet -p spanda --)
 
 echo "== sim with --persist-telemetry =="
-"${SPANDA[@]}" sim examples/end_to_end/validated_telemetry.sd --persist-telemetry >/dev/null
+"${SPANDA[@]}" sim examples/end_to_end/validated_telemetry.sd --persist-telemetry --record >/dev/null
 
 echo "== telemetry stats =="
 STATS="$("${SPANDA[@]}" telemetry stats)"
@@ -32,7 +32,17 @@ echo "${SESSIONS}"
 echo "${SESSIONS}" | grep -q '\[session\]'
 SESSIONS_JSON="$("${SPANDA[@]}" telemetry sessions --json)"
 echo "${SESSIONS_JSON}" | grep -q 'validated_telemetry'
-SESSION_ID="$(echo "${SESSIONS}" | sed -n 's/.*\[session\].* \([^ ]*\) phase=start.*/\1/p' | head -1)"
+SESSION_ID="$(echo "${SESSIONS_JSON}" | python3 -c 'import json,sys; data=json.load(sys.stdin); print(next((s["session_id"] for s in data if s.get("mission_trace_path")), data[0]["session_id"] if data else ""))')"
+echo "== telemetry info =="
+INFO="$("${SPANDA[@]}" telemetry info)"
+echo "${INFO}"
+echo "${INFO}" | grep -q 'Backend:'
+if [[ -n "${SESSION_ID}" ]]; then
+  echo "== telemetry replay linked session =="
+  REPLAY="$("${SPANDA[@]}" telemetry replay --session "${SESSION_ID}" 2>&1 | head -3)"
+  echo "${REPLAY}"
+  echo "${REPLAY}" | grep -q 'Replay'
+fi
 FILTERED="$("${SPANDA[@]}" telemetry list --session "${SESSION_ID}" --kind sensor --limit 1)"
 echo "${FILTERED}"
 echo "${FILTERED}" | grep -q "session=${SESSION_ID}"

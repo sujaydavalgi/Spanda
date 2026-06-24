@@ -921,10 +921,10 @@ const CLI_COMMANDS: &[CliCommand] = &[
     CliCommand {
         name: "spanda-telemetry",
         section: 1,
-        synopsis: "spanda telemetry list|latest|heartbeats|devices|stats|export|prometheus|otlp|serve|sessions|replay [flags]",
+        synopsis: "spanda telemetry list|latest|heartbeats|devices|stats|export|prometheus|otlp|serve|sessions|replay|info [flags]",
         description: "Query the persistent telemetry store written by `--persist-telemetry` or `SPANDA_TELEMETRY_STORE=1`.",
-        options: "`list` — filter by device, sensor, task, session, kind, since, limit\n`latest` — most recent device metric, sensor read, task heartbeat, or device liveness\n`heartbeats` / `devices` — index sidecar for tasks and devices\n`stats` — event counts (includes session and runtime_metrics)\n`sessions` — list persisted run sessions with linked mission traces\n`replay` — replay the mission trace linked to a session (`--record` runs)\n`export` — copy JSONL log\n`prometheus` — Prometheus text exposition\n`otlp` — OTLP/JSON metrics export\n`serve` — HTTP server (`/metrics`, `/otlp/v1/metrics`, `/healthz`)",
-        examples: "spanda telemetry stats\nspanda telemetry sessions --json\nspanda telemetry replay --session rover-123 --deterministic",
+        options: "`list` — filter by device, sensor, task, session, kind, since, limit\n`latest` — most recent device metric, sensor read, task heartbeat, or device liveness\n`heartbeats` / `devices` — index sidecar for tasks and devices\n`stats` — event counts (includes session and runtime_metrics)\n`info` — backend, paths, retention, migration backup\n`sessions` — list persisted run sessions with linked mission traces\n`replay` — replay the mission trace linked to a session (`--record` runs)\n`export` — copy event log (JSONL from SQLite when needed)\n`prometheus` — Prometheus text exposition\n`otlp` — OTLP/JSON metrics export\n`serve` — HTTP server (`/metrics`, `/otlp/v1/metrics`, `/healthz`)",
+        examples: "spanda telemetry stats\nspanda telemetry info\nspanda telemetry sessions --json\nspanda telemetry replay --session rover-123 --deterministic",
         exit_status: "0 on success; 1 when the store cannot be read.",
         files: "`.spanda/telemetry-store.jsonl` or `.spanda/telemetry-store.db` when `SPANDA_TELEMETRY_BACKEND=sqlite` (override with `SPANDA_TELEMETRY_STORE_PATH`).",
         see_also: "spanda-run(1), spanda-sim(1)",
