@@ -163,6 +163,25 @@ pub enum ResiliencePolicyDecl {
     },
 }
 
+/// Conditional branch inside a recovery policy (`on gps.failed { ... }`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct RecoveryPolicyBranch {
+    pub condition: String,
+    pub actions: Vec<String>,
+    pub span: Span,
+}
+
+/// Recovery policy declaration for self-healing workflows.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "kind")]
+pub enum RecoveryPolicyDecl {
+    RecoveryPolicyDecl {
+        name: String,
+        branches: Vec<RecoveryPolicyBranch>,
+        span: Span,
+    },
+}
+
 /// Assurance case linking evidence sources.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind")]

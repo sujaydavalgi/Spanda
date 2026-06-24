@@ -622,6 +622,7 @@ impl Parser {
         let mut operating_modes = Vec::new();
         let mut mission_plans = Vec::new();
         let mut resilience_policies = Vec::new();
+        let mut recovery_policies = Vec::new();
         let mut assurance_cases = Vec::new();
         let mut robots = Vec::new();
 
@@ -699,6 +700,8 @@ impl Parser {
                 assurance_cases.push(self.parse_assurance_case()?);
             } else if self.check(TokenType::Ident) && self.peek().lexeme == "resilience_policy" {
                 resilience_policies.push(self.parse_resilience_policy()?);
+            } else if self.check(TokenType::Ident) && self.peek().lexeme == "recovery_policy" {
+                recovery_policies.push(self.parse_recovery_policy()?);
             } else if self.check(TokenType::Ident) && self.peek().lexeme == "mission_plan" {
                 mission_plans.push(self.parse_mission_plan()?);
             } else if self.check(TokenType::Ident) && self.peek().lexeme == "operating_mode" {
@@ -752,6 +755,7 @@ impl Parser {
             operating_modes,
             mission_plans,
             resilience_policies,
+            recovery_policies,
             assurance_cases,
             robots,
             span: self.span_from(&start, self.previous()),
@@ -8530,10 +8534,7 @@ impl Parser {
                     self.advance();
                 }
                 learned_backend = Some(self.parse_dotted_name("Expected learned backend path")?);
-                self.expect(
-                    TokenType::Semicolon,
-                    "Expected ';' after learned backend",
-                )?;
+                self.expect(TokenType::Semicolon, "Expected ';' after learned backend")?;
             } else if self.check(TokenType::Ident) && self.peek().lexeme == "expected" {
                 self.advance();
                 let metric = self.parse_dotted_name("Expected metric path")?;
@@ -8718,6 +8719,45 @@ impl Parser {
         Ok(ResiliencePolicyDecl::ResiliencePolicyDecl {
             name,
             strategies,
+            span: self.span_from(&start, &end),
+        })
+    }
+
+    fn parse_recovery_policy(
+        &mut self,
+    ) -> Result<spanda_ast::assurance_decl::RecoveryPolicyDecl, SpandaError> {
+        use spanda_ast::assurance_decl::{RecoveryPolicyBranch, RecoveryPolicyDecl};
+        let start = self.advance();
+        let name = self.parse_label("Expected recovery_policy name")?;
+        self.expect(TokenType::Lbrace, "Expected '{' after recovery_policy name")?;
+        let mut branches = Vec::new();
+        while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+            if self.check(TokenType::On) {
+                self.advance();
+                let condition = self.parse_dotted_name("Expected recovery policy condition")?;
+                self.expect(TokenType::Lbrace, "Expected '{' after on condition")?;
+                let mut actions = Vec::new();
+                while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+                    actions.push(self.parse_action_statement()?);
+                }
+                self.expect(TokenType::Rbrace, "Expected '}' to close on branch")?;
+                branches.push(RecoveryPolicyBranch {
+                    condition,
+                    actions,
+                    span: self.span_from(&start, self.previous()),
+                });
+            } else {
+                return Err(SpandaError::Parse {
+                    message: "Expected 'on' branch in recovery_policy".into(),
+                    line: self.peek().line,
+                    column: self.peek().column,
+                });
+            }
+        }
+        let end = self.expect(TokenType::Rbrace, "Expected '}' to close recovery_policy")?;
+        Ok(RecoveryPolicyDecl::RecoveryPolicyDecl {
+            name,
+            branches,
             span: self.span_from(&start, &end),
         })
     }

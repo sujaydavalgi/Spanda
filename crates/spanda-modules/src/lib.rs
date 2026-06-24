@@ -241,6 +241,7 @@ mod tests {
             operating_modes: vec![],
             mission_plans: vec![],
             resilience_policies: vec![],
+            recovery_policies: vec![],
             assurance_cases: vec![],
             robots: vec![],
             span: empty_span(),

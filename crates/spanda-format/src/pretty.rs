@@ -371,6 +371,7 @@ impl PrettyPrinter {
             operating_modes,
             mission_plans,
             resilience_policies,
+            recovery_policies,
             assurance_cases,
             kill_switches,
             health_checks,
@@ -516,6 +517,9 @@ impl PrettyPrinter {
             spanned_decls.push(span_of(decl));
         }
         for decl in resilience_policies {
+            spanned_decls.push(span_of(decl));
+        }
+        for decl in recovery_policies {
             spanned_decls.push(span_of(decl));
         }
         for decl in assurance_cases {
@@ -823,8 +827,7 @@ impl PrettyPrinter {
                         self.write(&format!("{name} = {}", val.out));
 
                         // Append unit only when it is not already part of a unit literal.
-                        if !matches!(value, Expr::UnitLiteralExpr { .. })
-                            && *unit != UnitKind::None
+                        if !matches!(value, Expr::UnitLiteralExpr { .. }) && *unit != UnitKind::None
                         {
                             self.space();
                             self.write(unit.as_str());
@@ -1648,7 +1651,9 @@ impl HasSpan for spanda_ast::assurance_decl::StateEstimatorDecl {
 impl HasSpan for spanda_ast::assurance_decl::AnomalyDetectorDecl {
     fn span(&self) -> &Span {
         match self {
-            spanda_ast::assurance_decl::AnomalyDetectorDecl::AnomalyDetectorDecl { span, .. } => span,
+            spanda_ast::assurance_decl::AnomalyDetectorDecl::AnomalyDetectorDecl {
+                span, ..
+            } => span,
         }
     }
 }
@@ -1696,9 +1701,17 @@ impl HasSpan for spanda_ast::assurance_decl::MissionPlanDecl {
 impl HasSpan for spanda_ast::assurance_decl::ResiliencePolicyDecl {
     fn span(&self) -> &Span {
         match self {
-            spanda_ast::assurance_decl::ResiliencePolicyDecl::ResiliencePolicyDecl { span, .. } => {
-                span
-            }
+            spanda_ast::assurance_decl::ResiliencePolicyDecl::ResiliencePolicyDecl {
+                span, ..
+            } => span,
+        }
+    }
+}
+
+impl HasSpan for spanda_ast::assurance_decl::RecoveryPolicyDecl {
+    fn span(&self) -> &Span {
+        match self {
+            spanda_ast::assurance_decl::RecoveryPolicyDecl::RecoveryPolicyDecl { span, .. } => span,
         }
     }
 }
