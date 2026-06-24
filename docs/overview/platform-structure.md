@@ -2,7 +2,9 @@
 
 [← Overview](./README.md)
 
-High-level shape of the platform. The language is the expressive core; verification, safety, simulation, and operations wrap around it.
+> **Canonical guide:** [platform-overview.md](../platform-overview.md) (per-component detail, workflow, platform vs language)
+
+High-level platform tree:
 
 ```
 Spanda Platform
@@ -21,12 +23,4 @@ Spanda Platform
 └── Spanda Providers
 ```
 
-## Platform vs language
-
-| | **Spanda Platform** | **Spanda Language** |
-|---|---------------------|---------------------|
-| **What it is** | End-to-end toolchain for designing, verifying, simulating, deploying, and operating autonomous systems | The `.sd` programming language — one core component |
-| **Scope** | Runtime, verification, safety, simulation, replay, health, fleet, packages, providers | Syntax, types, robot primitives, safety types, units, compile-time checks |
-| **How you use it** | `spanda check`, `verify`, `sim`, `replay`, `fleet`, `install`, `demo`, … | Write `.sd`; declare `robot`, `sensor`, `actuator`, `safety`, `deploy` |
-
-Deep dive: [platform-overview.md](../platform-overview.md) · Components: [platform-components.md](./platform-components.md)
+Component summary table: [platform-components.md](./platform-components.md)

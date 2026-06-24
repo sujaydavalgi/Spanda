@@ -116,23 +116,14 @@ More samples: [docs/overview/code-samples.md](docs/overview/code-samples.md) · 
 |-------|--------|
 | Feature status | [docs/feature-status.md](docs/feature-status.md) |
 | Mission assurance | [docs/mission-assurance.md](docs/mission-assurance.md) |
-| Architecture | [docs/architecture.md](docs/architecture.md) · [docs/overview/architecture.md](docs/overview/architecture.md) |
+| Architecture | [docs/overview/architecture.md](docs/overview/architecture.md) (pipeline) · [docs/architecture.md](docs/architecture.md) (full) |
 | CLI reference | [docs/overview/cli.md](docs/overview/cli.md) · [docs/spanda-reference.md](docs/spanda-reference.md) |
-| Packages & registry | [docs/packages.md](docs/packages.md) · [docs/registry.md](docs/registry.md) |
+| Packages & registry | [docs/overview/packages.md](docs/overview/packages.md) · [docs/packages.md](docs/packages.md) |
 | Roadmap | [docs/roadmap.md](docs/roadmap.md) |
 
 ### Overview subpages
 
-| Topic | Guide |
-|-------|--------|
-| Platform structure | [docs/overview/platform-structure.md](docs/overview/platform-structure.md) |
-| Components | [docs/overview/platform-components.md](docs/overview/platform-components.md) |
-| What makes Spanda different | [docs/overview/differentiators.md](docs/overview/differentiators.md) |
-| Workspace layers | [docs/overview/layers.md](docs/overview/layers.md) |
-| Examples & `std.*` library | [docs/overview/library.md](docs/overview/library.md) |
-| Package ecosystem | [docs/overview/packages.md](docs/overview/packages.md) |
-| Web playground | [docs/overview/web-playground.md](docs/overview/web-playground.md) |
-| Philosophy (expanded) | [docs/overview/philosophy.md](docs/overview/philosophy.md) |
+Full index: [docs/overview/README.md](docs/overview/README.md) — platform structure, components, differentiators, layers, library, packages, web playground, CLI, code samples, demos.
 
 ---
 

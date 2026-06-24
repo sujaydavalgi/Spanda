@@ -2,6 +2,8 @@
 
 [← Overview](./README.md)
 
+> **Examples ladder & `std.*`:** [library.md](./library.md) · **`.sd` samples:** [code-samples.md](./code-samples.md)
+
 ## Quick start (5 minutes)
 
 ```bash
@@ -38,16 +40,4 @@ Showcase index: [examples/showcase/README.md](../../examples/showcase/README.md)
 | Hands-on course | [Spanda 101](../spanda-101/README.md) | ~3 hours |
 | Quickstart | [Getting started](../getting-started.md) | ~10 min |
 
-## Examples library
-
-**[examples/README.md](../../examples/README.md)** — master index.
-
-| Tier | Path | Highlights |
-|------|------|------------|
-| Basics | `examples/basics/` | Robot blocks → fusion |
-| Features | `examples/features/` | One file per capability |
-| Integration | `examples/integration/` | Triggers, concurrency, verify |
-| End-to-end | `examples/end_to_end/` | Patrol, fleet, replay |
-| Assurance | `examples/showcase/assurance/`, `examples/anomaly/` | Mission assurance |
-
-Mission assurance hub: [mission-assurance.md](../mission-assurance.md)
+Master examples index: [examples/README.md](../../examples/README.md)
