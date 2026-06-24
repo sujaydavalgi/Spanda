@@ -202,6 +202,13 @@ function quickFixInsert(item: CompatItem, source: string): QuickFixInsert | null
   if (category === "continuity:handoff") {
     return { line: fallbackLine, column: fallbackColumn, text: `${CONTINUITY_POLICY_SNIPPET}\n\n` };
   }
+  if (category === "continuity:mission") {
+    return {
+      line: fallbackLine,
+      column: fallbackColumn,
+      text: "mission_plan PatrolMission {\n    step navigate;\n    step execute;\n}\n\n",
+    };
+  }
   if (!item.suggested_fix) {
     return null;
   }

@@ -125,20 +125,6 @@ fn recovery_has_handoff_action(program: &Program) -> bool {
 }
 
 fn fleet_member_count(program: &Program) -> usize {
-    // Description:
-    //     Count fleet members declared across all fleets.
-    //
-    // Inputs:
-    //     program: &Program
-    //         Parsed Spanda program.
-    //
-    // Outputs:
-    //     result: usize
-    //         Total number of fleet member references.
-    //
-    // Example:
-    //     let members = fleet_member_count(program);
-
     let Program::Program { fleets, .. } = program;
     fleets
         .iter()
@@ -147,6 +133,21 @@ fn fleet_member_count(program: &Program) -> usize {
             members.len()
         })
         .sum()
+}
+
+fn continuity_has_resume_or_checkpoint_action(program: &Program) -> bool {
+    let Program::Program {
+        continuity_policies, ..
+    } = program;
+    continuity_policies.iter().any(|policy| {
+        let ContinuityPolicyDecl::ContinuityPolicyDecl { branches, .. } = policy;
+        branches.iter().any(|branch| {
+            branch.actions.iter().any(|action| {
+                let lower = normalize_action(action);
+                lower.contains("resume") || lower.contains("checkpoint")
+            })
+        })
+    })
 }
 
 /// Collect continuity-policy diagnostics for static analysis and IDE hints.
@@ -168,6 +169,7 @@ pub fn collect_continuity_diagnostics(program: &Program) -> Vec<VerificationDiag
     let Program::Program {
         continuity_policies,
         recovery_policies,
+        mission_plans,
         fleets,
         ..
     } = program;
@@ -234,6 +236,34 @@ pub fn collect_continuity_diagnostics(program: &Program) -> Vec<VerificationDiag
             category: "continuity:handoff".into(),
             suggested_fix: Some(
                 "continuity_policy FleetContinuity {\n    on robot.failed {\n        resume from checkpoint;\n        reassign mission;\n    }\n}"
+                    .into(),
+            ),
+        });
+    }
+
+    if continuity_has_resume_or_checkpoint_action(program) && mission_plans.is_empty() {
+        let policy = continuity_policies.first();
+        let line = policy
+            .map(|p| {
+                let ContinuityPolicyDecl::ContinuityPolicyDecl { span, .. } = p;
+                span.start.line
+            })
+            .unwrap_or(1);
+        let column = policy
+            .map(|p| {
+                let ContinuityPolicyDecl::ContinuityPolicyDecl { span, .. } = p;
+                span.start.column
+            })
+            .unwrap_or(1);
+        diags.push(VerificationDiagnostic {
+            message: "continuity_policy resumes from checkpoint but no mission_plan is declared"
+                .into(),
+            line,
+            column,
+            severity: "warning".into(),
+            category: "continuity:mission".into(),
+            suggested_fix: Some(
+                "mission_plan PatrolMission {\n    step navigate;\n    step execute;\n}"
                     .into(),
             ),
         });
@@ -326,5 +356,19 @@ robot R { sensor gps: GPS; actuator w: DifferentialDrive; safety { max_speed = 1
         ).unwrap()).unwrap();
         let diags = collect_continuity_diagnostics(&program);
         assert!(diags.iter().any(|d| d.category == "continuity:approval"));
+    }
+
+    #[test]
+    fn warns_when_resume_lacks_mission_plan() {
+        let program = parse(tokenize(
+            r#"
+continuity_policy ResumeOnly {
+    on robot.failed { resume from checkpoint; }
+}
+robot R { sensor gps: GPS; actuator w: DifferentialDrive; safety { max_speed = 1 m/s; } behavior b() {} }
+"#,
+        ).unwrap()).unwrap();
+        let diags = collect_continuity_diagnostics(&program);
+        assert!(diags.iter().any(|d| d.category == "continuity:mission"));
     }
 }

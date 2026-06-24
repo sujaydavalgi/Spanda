@@ -42,4 +42,22 @@ robot R {
     const items = readinessDiagnostics(source);
     expect(items.some((d) => d.category === "continuity:approval")).toBe(true);
   });
+
+  it("warns when resume lacks mission_plan", () => {
+    const program = parse(
+      tokenize(`
+continuity_policy ResumeOnly {
+  on robot.failed { resume from checkpoint; }
+}
+robot R {
+  sensor gps: GPS;
+  actuator w: DifferentialDrive;
+  safety { max_speed = 1 m/s; }
+  behavior b() {}
+}
+`),
+    );
+    const diags = collectContinuityDiagnostics(program);
+    expect(diags.some((d) => d.category === "continuity:mission")).toBe(true);
+  });
 });

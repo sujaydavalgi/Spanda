@@ -132,6 +132,20 @@ function fleetMemberCount(program: Program): number {
   return (program.fleets ?? []).reduce((sum, fleet) => sum + fleet.members.length, 0);
 }
 
+function continuityHasResumeOrCheckpoint(program: Program): boolean {
+  for (const policy of program.continuityPolicies ?? []) {
+    for (const branch of policy.branches) {
+      for (const action of branch.actions) {
+        const lower = normalizeAction(action);
+        if (lower.includes("resume") || lower.includes("checkpoint")) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
 /** Collect continuity-policy diagnostics mirroring the Rust assurance crate. */
 export function collectContinuityDiagnostics(program: Program): ContinuityDiagnostic[] {
   // Description:
@@ -151,6 +165,7 @@ export function collectContinuityDiagnostics(program: Program): ContinuityDiagno
   const diags: ContinuityDiagnostic[] = [];
   const continuityPolicies = program.continuityPolicies ?? [];
   const recoveryPolicies = program.recoveryPolicies ?? [];
+  const missionPlans = program.missionPlans ?? [];
   const fleets = program.fleets ?? [];
   const approvalPath = robotHasApprovalTopic(program);
   const hasContinuity = continuityPolicies.length > 0;
@@ -179,6 +194,18 @@ export function collectContinuityDiagnostics(program: Program): ContinuityDiagno
       category: "continuity:handoff",
       suggested_fix:
         "continuity_policy FleetContinuity {\n    on robot.failed {\n        resume from checkpoint;\n        reassign mission;\n    }\n}",
+    });
+  }
+
+  if (continuityHasResumeOrCheckpoint(program) && missionPlans.length === 0) {
+    const policy = continuityPolicies[0];
+    diags.push({
+      message: "continuity_policy resumes from checkpoint but no mission_plan is declared",
+      line: policy?.span?.start.line ?? 1,
+      column: policy?.span?.start.column ?? 1,
+      severity: "warning",
+      category: "continuity:mission",
+      suggested_fix: "mission_plan PatrolMission {\n    step navigate;\n    step execute;\n}",
     });
   }
 
