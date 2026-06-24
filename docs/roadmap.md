@@ -35,7 +35,7 @@ Platform overview: [platform-overview.md](./platform-overview.md) · Feature tru
 | Language declarations (`knowledge_model`, `state_estimator`, `anomaly_detector`, …) | **Stable** |
 | CLI (`assure`, `anomaly scan`, `state estimate`, `prognostics`, `mission verify`, `resilience check`, `mitigation plan`) | **Stable** |
 | Runtime `state_estimator` → fusion bindings | **Experimental** |
-| Learned anomaly backends (`learned backend`, `spanda-anomaly`) | **Experimental** |
+| Learned anomaly backends (`learned backend`, `spanda-anomaly`) | **Experimental** — runtime `scan_learned` hook |
 | Full ML inference / advanced fusion algorithms | **Future** — package backends |
 
 See [mission-assurance.md](./mission-assurance.md), [state-estimation.md](./state-estimation.md).

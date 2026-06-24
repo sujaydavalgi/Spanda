@@ -44,6 +44,8 @@ Integrates with existing **health checks** — failed health checks surface as a
 
 ## Runtime
 
+During health polling, detectors with `learned backend` invoke the package provider (`assurance.anomaly::scan_learned`) with observed confidence derived from runtime health. Scores above zero add the detector to the anomaly trigger set and fire matching `on anomaly` handlers.
+
 Program-level `state_estimator` declarations register fusion bindings at robot setup. A single estimator aliases `fusion` (same as `observe { }`); named estimators are available as `{Name}.read()`.
 
 ## Package
@@ -52,4 +54,4 @@ Heavy detection algorithms: **`spanda-anomaly`** (`assurance.anomaly`).
 
 ## Example
 
-See `examples/anomaly/navigation_anomaly.sd`.
+See `examples/anomaly/navigation_anomaly.sd` and `examples/anomaly/learned_navigation.sd`.
