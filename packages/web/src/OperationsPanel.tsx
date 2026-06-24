@@ -6,6 +6,7 @@ import {
   type ReadinessDashboard,
 } from "@spanda/core/readiness.js";
 import { fetchAgentReadiness } from "./readiness-agent.js";
+import { fetchAgentContinuity, type AgentContinuityResponse } from "./continuity-agent.js";
 
 type Props = {
   source: string;
@@ -75,6 +76,7 @@ export function OperationsPanel({ source }: Props) {
   const [dashboard, setDashboard] = useState<ReadinessDashboard | null>(null);
   const [agentUrl, setAgentUrl] = useState("");
   const [agentReport, setAgentReport] = useState<ReadinessReport | null>(null);
+  const [agentContinuity, setAgentContinuity] = useState<AgentContinuityResponse | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [includeRuntime, setIncludeRuntime] = useState(true);
@@ -90,6 +92,7 @@ export function OperationsPanel({ source }: Props) {
       setReport(result);
       setDashboard(readinessDashboardFromReports([result]));
       setAgentReport(null);
+      setAgentContinuity(null);
     } catch (e) {
       setError(String(e));
       setReport(null);
@@ -126,9 +129,16 @@ export function OperationsPanel({ source }: Props) {
         robots: readiness.robots ?? [],
       });
       setDashboard(null);
+      try {
+        const continuity = await fetchAgentContinuity(agentUrl.trim());
+        setAgentContinuity(continuity);
+      } catch {
+        setAgentContinuity(null);
+      }
     } catch (e) {
       setError(String(e));
       setAgentReport(null);
+      setAgentContinuity(null);
     } finally {
       setBusy(false);
     }
@@ -262,6 +272,47 @@ export function OperationsPanel({ source }: Props) {
               </li>
             ))}
           </ul>
+        </div>
+      )}
+
+      {agentContinuity && (
+        <div className="panel operations-summary">
+          <h2>Mission continuity</h2>
+          <dl>
+            <dt>Active handoff</dt>
+            <dd>{agentContinuity.continuity_active ?? "none"}</dd>
+            <dt>Successor</dt>
+            <dd>{agentContinuity.continuity_successor ?? "—"}</dd>
+            <dt>Mode</dt>
+            <dd>{agentContinuity.continuity_mode ?? "—"}</dd>
+            <dt>Validation</dt>
+            <dd>{agentContinuity.continuity_validation ?? "—"}</dd>
+            <dt>Engine</dt>
+            <dd>{agentContinuity.continuity_engine ?? "—"}</dd>
+            <dt>Mission progress</dt>
+            <dd>
+              {agentContinuity.mission_progress_percent != null
+                ? `${agentContinuity.mission_progress_percent}%`
+                : "—"}
+            </dd>
+            {agentContinuity.mission_handoff_from && (
+              <>
+                <dt>Handoff from</dt>
+                <dd>{agentContinuity.mission_handoff_from}</dd>
+              </>
+            )}
+          </dl>
+          {agentContinuity.last_continuity_commands &&
+            agentContinuity.last_continuity_commands.length > 0 && (
+              <>
+                <h3>Recent continuity commands</h3>
+                <ul>
+                  {agentContinuity.last_continuity_commands.map((cmd, i) => (
+                    <li key={i}>{cmd}</li>
+                  ))}
+                </ul>
+              </>
+            )}
         </div>
       )}
 
