@@ -345,6 +345,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: rustup target add wasm32-unknown-unknown
+      - run: cargo check -p spanda-telemetry-store --target wasm32-unknown-unknown --no-default-features
       - run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
       - run: npm run build:wasm
       - uses: actions/setup-node@v4
