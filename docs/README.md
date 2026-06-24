@@ -23,12 +23,19 @@
 | [tutorials/README.md](./tutorials/README.md) | **Master index — all tutorials, walkthroughs, and example paths** |
 | [../examples/README.md](../examples/README.md) | **Runnable examples library — ladder, topics, CI** |
 | [../README.md](../README.md) | Project landing page (links to overview subpages) |
-| [overview/README.md](./overview/README.md) | **Expanded project home — philosophy, differentiators, CLI, examples** |
-| [overview/philosophy.md](./overview/philosophy.md) | Vision, why Spanda, minimal code sample |
-| [overview/differentiators.md](./overview/differentiators.md) | Capability matrix and pillars |
+| [overview/README.md](./overview/README.md) | **Expanded project home — platform, architecture, CLI, library, packages** |
+| [overview/platform-structure.md](./overview/platform-structure.md) | Platform tree and platform vs language |
+| [overview/platform-components.md](./overview/platform-components.md) | What each platform component does |
+| [overview/architecture.md](./overview/architecture.md) | Compiler pipeline overview |
+| [overview/layers.md](./overview/layers.md) | Workspace crate layers |
+| [overview/philosophy.md](./overview/philosophy.md) | Philosophy, what Spanda is, why Spanda (expanded) |
+| [overview/differentiators.md](./overview/differentiators.md) | What makes Spanda different |
+| [overview/library.md](./overview/library.md) | Examples library and `std.*` standard library |
+| [overview/packages.md](./overview/packages.md) | Package ecosystem and registry |
+| [overview/web-playground.md](./overview/web-playground.md) | Browser playground (WASM) |
 | [overview/code-samples.md](./overview/code-samples.md) | Flagship `.sd` examples |
 | [overview/cli.md](./overview/cli.md) | CLI quick reference |
-| [overview/demos-and-examples.md](./overview/demos-and-examples.md) | `spanda demo` and examples library |
+| [overview/demos-and-examples.md](./overview/demos-and-examples.md) | `spanda demo` and showcase pillars |
 | [getting-started.md](./getting-started.md) | **First robot in 10 minutes** |
 | [spanda-for-dummies/README.md](./spanda-for-dummies/README.md) | **Spanda for Dummies — plain-English no-jargon guide** |
 | [spanda-101/README.md](./spanda-101/README.md) | **Spanda 101 — 10-lesson tutorial series (basics → end-to-end)** |

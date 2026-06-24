@@ -14,30 +14,23 @@ Repository: [github.com/Davalgi/Spanda](https://github.com/Davalgi/Spanda)
 
 ---
 
-## Quick start
+## Philosophy
 
-```bash
-git clone https://github.com/Davalgi/Spanda.git
-cd Spanda && ./scripts/install.sh
+Hardware is the body.  
+Sensors are the senses.  
+AI models are the mind.  
+Actuators are the muscles.  
+Spanda is the intelligent pulse that transforms perception into action.
 
-spanda demo rover          # flagship platform demo
-spanda demo assurance      # mission assurance CLI suite
-spanda check examples/showcase/killer_demo.sd
-spanda verify examples/showcase/hardware_compatibility.sd --json
-spanda sim examples/showcase/killer_demo.sd
-```
-
-Install options: [docs/installation.md](docs/installation.md) · First project: [docs/getting-started.md](docs/getting-started.md)
+**Spanda** is a Sanskrit term meaning *the divine pulse* — the creative vibration of consciousness and energy that manifests as expansion and contraction, the first stir of awareness that creates and sustains the universe.
 
 ---
 
-## What you get
+## What is Spanda?
 
-| | | |
-|---|---|---|
-| **Language (.sd)** | **Safety validation** | **Hardware verify** |
-| **Simulation & replay** | **Mission assurance** | **Packages (37)** |
-| **Health & readiness** | **Fleet & OTA** | **ROS2 / IoT / AI bridges** |
+Spanda is an **autonomous systems platform** built around the **Spanda Language** — a typed programming language where sensors, AI models, actuators, safety rules, and deployment targets are first-class concepts in source code.
+
+You write a `robot` block with sensors, actuators, safety zones, and agents. The compiler enforces physical units, validates AI proposals before they reach hardware, and checks that your program fits the deployment target before you ship.
 
 ```spanda
 robot SafePatrol {
@@ -59,7 +52,52 @@ robot SafePatrol {
 }
 ```
 
-More samples: [docs/overview/code-samples.md](docs/overview/code-samples.md)
+---
+
+## Why Spanda?
+
+Building autonomous systems today means stitching together Python scripts, C++ drivers, ROS2 nodes, safety monitors, and deployment checklists — with no single platform that treats **AI output as untrusted**, **hardware fit as compile-time**, and **safety as mandatory**.
+
+**Traditional languages focus on:** algorithms, data structures, applications.
+
+**Spanda focuses on:** autonomous systems, safety, hardware awareness, capability verification, simulation, and operational health.
+
+Spanda is the coordination layer where perception, planning, safety validation, simulation, verification, and deployment live together — with the `.sd` language as the expressive core.
+
+---
+
+## Quick start
+
+```bash
+# Install (from clone)
+git clone https://github.com/Davalgi/Spanda.git
+cd Spanda && ./scripts/install.sh
+# Or: cargo install --path crates/spanda-cli --locked
+
+spanda demo rover          # flagship platform demo
+spanda demo assurance      # mission assurance CLI suite
+
+# Or step by step:
+spanda check examples/showcase/killer_demo.sd      # type-check
+spanda verify examples/showcase/hardware_compatibility.sd  # hardware fit
+spanda sim examples/showcase/killer_demo.sd        # simulate
+```
+
+Install options: [docs/installation.md](docs/installation.md) · First project: [docs/getting-started.md](docs/getting-started.md)
+
+Video script: [docs/demo-script.md](docs/demo-script.md) · Killer demo: [docs/killer-demo.md](docs/killer-demo.md)
+
+---
+
+## What you get
+
+| | | |
+|---|---|---|
+| **Language (.sd)** | **Safety validation** | **Hardware verify** |
+| **Simulation & replay** | **Mission assurance** | **Packages (37)** |
+| **Health & readiness** | **Fleet & OTA** | **ROS2 / IoT / AI bridges** |
+
+More samples: [docs/overview/code-samples.md](docs/overview/code-samples.md) · Demos: [docs/overview/demos-and-examples.md](docs/overview/demos-and-examples.md)
 
 ---
 
@@ -67,7 +105,7 @@ More samples: [docs/overview/code-samples.md](docs/overview/code-samples.md)
 
 | Start here | Description |
 |------------|-------------|
-| **[docs/overview/](docs/overview/README.md)** | **Expanded project home** (philosophy, differentiators, CLI, demos) |
+| **[docs/overview/](docs/overview/README.md)** | Expanded project home — platform, architecture, CLI, library |
 | [docs/getting-started.md](docs/getting-started.md) | First robot in 10 minutes |
 | [docs/platform-overview.md](docs/platform-overview.md) | Platform components and workflow |
 | [docs/tutorials/README.md](docs/tutorials/README.md) | Tutorials and learning paths |
@@ -78,10 +116,23 @@ More samples: [docs/overview/code-samples.md](docs/overview/code-samples.md)
 |-------|--------|
 | Feature status | [docs/feature-status.md](docs/feature-status.md) |
 | Mission assurance | [docs/mission-assurance.md](docs/mission-assurance.md) |
-| Architecture | [docs/architecture.md](docs/architecture.md) |
+| Architecture | [docs/architecture.md](docs/architecture.md) · [docs/overview/architecture.md](docs/overview/architecture.md) |
 | CLI reference | [docs/overview/cli.md](docs/overview/cli.md) · [docs/spanda-reference.md](docs/spanda-reference.md) |
 | Packages & registry | [docs/packages.md](docs/packages.md) · [docs/registry.md](docs/registry.md) |
 | Roadmap | [docs/roadmap.md](docs/roadmap.md) |
+
+### Overview subpages
+
+| Topic | Guide |
+|-------|--------|
+| Platform structure | [docs/overview/platform-structure.md](docs/overview/platform-structure.md) |
+| Components | [docs/overview/platform-components.md](docs/overview/platform-components.md) |
+| What makes Spanda different | [docs/overview/differentiators.md](docs/overview/differentiators.md) |
+| Workspace layers | [docs/overview/layers.md](docs/overview/layers.md) |
+| Examples & `std.*` library | [docs/overview/library.md](docs/overview/library.md) |
+| Package ecosystem | [docs/overview/packages.md](docs/overview/packages.md) |
+| Web playground | [docs/overview/web-playground.md](docs/overview/web-playground.md) |
+| Philosophy (expanded) | [docs/overview/philosophy.md](docs/overview/philosophy.md) |
 
 ---
 
