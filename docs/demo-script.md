@@ -76,7 +76,17 @@ Narrate: incident review and regression without hardware.
 
 ---
 
-## 2:50 — Close (10s)
+## 2:50 — Continuity (optional, 20s)
+
+```bash
+spanda demo continuity
+```
+
+Narrate: ScannerAlpha fails at 72%; ScannerBeta resumes from checkpoint with assurance evidence.
+
+---
+
+## 3:10 — Close (10s)
 
 > "Install, verify, simulate, and replay in under fifteen minutes. Start with `spanda demo rover`."
 
@@ -92,5 +102,6 @@ On-screen: [github.com/Davalgi/Spanda](https://github.com/Davalgi/Spanda) · `do
 | Safety only | `spanda demo safety` |
 | Hardware verify | `spanda demo verify` |
 | Health | `spanda demo health` |
+| Continuity | `spanda demo continuity` |
 
 Related: [killer-demo.md](./killer-demo.md) · [examples/showcase/README.md](../examples/showcase/README.md)

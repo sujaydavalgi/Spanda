@@ -89,6 +89,8 @@ Deep dives on one capability. Read after a beginner track.
 | Capability traceability | [capability-traceability.md](../capability-traceability.md) | `spanda trace capabilities …` |
 | Fleet / swarm health | [fleet-health.md](../fleet-health.md), [swarm-health.md](../swarm-health.md) | `examples/features/fleet_health_require.sd` |
 | Mission assurance | [mission-assurance.md](../mission-assurance.md) | `examples/showcase/assurance/`, `examples/anomaly/`, … |
+| Mission continuity | [continuity-walkthrough.md](./continuity-walkthrough.md), [mission-continuity.md](../mission-continuity.md) | `examples/showcase/continuity/`, `spanda demo continuity` |
+| Self-healing | [self-healing.md](../self-healing.md) | `examples/showcase/self_healing/`, `spanda demo self-healing` |
 | State estimation | [state-estimation.md](../state-estimation.md) | `examples/basics/11_observe_and_fusion.sd`, `examples/robotics/sensor_fusion.sd` |
 | Anomaly detection | [anomaly-detection.md](../anomaly-detection.md) | `examples/anomaly/learned_navigation.sd` |
 | Diagnostics | [diagnostics.md](../diagnostics.md) | `examples/diagnostics/gps_failure.sd` |

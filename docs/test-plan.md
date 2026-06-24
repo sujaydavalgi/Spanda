@@ -13,6 +13,8 @@
 | Fusion | observe + fusion | `tests/fusion.rs` |
 | Twin replay | mirror, replay frames | `tests/twin_replay.rs` |
 | Integration | all `examples/*.sd` compile + run | `tests/integration.rs` |
+| Continuity | runtime takeover, checkpoints, CLI JSON | `crates/spanda-interpreter/tests/continuity_runtime.rs`, `crates/spanda-cli/tests/continuity_cli.rs`, `crates/spanda-assurance/src/continuity_checkpoint.rs` |
+| Swarm continuity | member-lost handoff planning | `crates/spanda-fleet/src/swarm_continuity.rs` |
 | Negative | `ai_safety_violation.sd` fails | `tests/integration.rs` |
 
 **Current count:** ~115 Rust tests (52 unit + 63 integration).
@@ -26,6 +28,7 @@
 | Runtime hardening | contracts, capabilities, verify |
 | Golden (Rust CLI) | `tests/golden/rust.test.ts` |
 | LSP diagnostics | `tests/lsp.test.ts` via `spanda check` + `spanda verify` |
+| Mission continuity mirror | `tests/mission-continuity.test.ts`, `tests/continuity-diagnostics.test.ts` |
 
 **Current count:** 121 vitest tests.
 

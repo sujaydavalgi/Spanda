@@ -18,6 +18,7 @@ This is the flagship demonstration for Spanda v0.5 beta. Run it locally or adapt
 | 4 | `spanda verify --json` | Hardware compatibility report (memory, sensors, timing, battery) |
 | 5 | `spanda sim` | Robot moves; `stop_if` triggers near simulated obstacles |
 | 6 | Fault injection | Verify warns when battery degradation is simulated |
+| 7 | Mission continuity (optional) | `spanda demo continuity` — takeover at 72% checkpoint |
 
 ---
 
@@ -141,6 +142,21 @@ spanda verify examples/showcase/killer_demo.sd --simulate
 ```
 
 **Talking point:** Deploy risk is visible in the verify report, not only in post-mortems.
+
+---
+
+## Step 7 — Mission continuity (optional, ~30s)
+
+When a fleet robot fails mid-mission, Spanda plans takeover and checkpoint resume:
+
+```bash
+spanda demo continuity
+# or
+spanda continuity examples/showcase/continuity/warehouse.sd \
+  --failed ScannerAlpha --progress 72 --trigger robot_failed
+```
+
+**Talking point:** Who can take over, at what progress, with what evidence — before operators guess.
 
 ---
 

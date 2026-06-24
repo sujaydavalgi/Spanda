@@ -178,6 +178,21 @@ Peer topic: `fleet_takeover` (JSON `FleetContinuityRequest` payload).
 
 Agent status reports `continuity_engine`, `continuity_successor`, `mission_progress_percent`, and `continuity_validation`.
 
+### Durable checkpoints
+
+Mission state snapshots persist to `.spanda/mission-checkpoints.json` (override with `SPANDA_CONTINUITY_CHECKPOINTS`). When a robot fails, the interpreter writes a checkpoint; successors load persisted progress on cold/hot/resume takeover. TypeScript mirror: `src/continuity-checkpoint.ts`.
+
+### Swarm continuity
+
+When a swarm member is lost, plan handoff during swarm coordination:
+
+```bash
+spanda swarm coordinate examples/showcase/swarm_takeover/swarm.sd \
+  --failed DroneTwo --progress 55 --mesh-url http://coordinator:9700
+```
+
+JSON output includes `continuity_handoff` per swarm group when `--failed` is set.
+
 ---
 
 ## Static diagnostics

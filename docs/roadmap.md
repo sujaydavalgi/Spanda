@@ -94,7 +94,7 @@ See [mission-assurance.md](./mission-assurance.md), [state-estimation.md](./stat
 | Runtime dispatch (modes, speed caps, connectivity, mission pause) | **Experimental** |
 | Operator approval (env, Approval topics, mission `requires approval`) | **Experimental** |
 | Fleet mesh recovery (`POST /v1/fleet/recovery`, `SPANDA_FLEET_MESH_URL`) | **Experimental** |
-| Recovery reassign → continuity mesh relay | **Experimental** |
+| Recovery reassign → continuity mesh relay | **Stable** | Fleet recovery `reassign mission` relays continuity when mesh URL is set |
 | Fleet agent assurance recovery (`POST /v1/recovery/execute`, deployed program) | **Experimental** |
 | Fleet agent interpreter recovery (`execute_recovery_on_program`, `recovery_engine`) | **Experimental** |
 | TypeScript recovery diagnostics (LSP fallback) | **Stable** |
@@ -119,8 +119,10 @@ See [self-healing.md](./self-healing.md), [recovery-policies.md](./recovery-poli
 | `spanda demo continuity` + showcase examples | **Stable** |
 | Official package `spanda-mission-continuity` (`assurance.continuity`) | **Stable** |
 | Language `continuity_policy` declarations | **Stable** |
-| Runtime takeover dispatch on fleet agents | **Experimental** |
-| Recovery reassign → continuity mesh relay | **Experimental** |
+| Durable checkpoint store (`.spanda/mission-checkpoints.json`) | **Stable** |
+| Runtime takeover dispatch (interpreter + fleet agents) | **Stable** |
+| Swarm member continuity (`spanda swarm coordinate --failed`) | **Stable** |
+| TypeScript mission continuity mirror + checkpoint store | **Stable** |
 
 See [mission-continuity.md](./mission-continuity.md) and [continuity-policies.md](./continuity-policies.md).
 

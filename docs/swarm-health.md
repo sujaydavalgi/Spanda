@@ -22,6 +22,7 @@ health_check SwarmHealth for swarm DroneSwarm {
 ```bash
 spanda swarm coordinate examples/robotics/swarm_coordination.sd
 spanda swarm coordinate examples/robotics/swarm_coordination.sd --mesh-url http://127.0.0.1:8787
+spanda swarm coordinate examples/showcase/swarm_takeover/swarm.sd --failed DroneTwo --progress 55 --mesh-url http://127.0.0.1:8787
 spanda health robot examples/robotics/swarm_coordination.sd --json
 ```
 
@@ -34,3 +35,4 @@ Fleet health refinement runs via `apply_fleet_health_checks` when programs decla
 - [Health Checks](./health-checks.md)
 - [Fleet Health](./fleet-health.md)
 - [Concurrency](./concurrency.md) — swarm policies and mesh relay
+- [Mission Continuity](./mission-continuity.md) — swarm member lost takeover and succession

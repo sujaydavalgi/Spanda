@@ -329,7 +329,7 @@ See **[crates/README.md](../crates/README.md)** for the full workspace index. Su
 | Pipeline | `spanda-driver`, `spanda-lexer`, `spanda-parser`, `spanda-typecheck`, `spanda-sir`, `spanda-error` |
 | Runtime | `spanda-interpreter`, `spanda-runtime`, `spanda-runtime-host`, `spanda-comm`, `spanda-safety`, `spanda-hal` |
 | Transport | `spanda-transport`, `spanda-transport-routing`, `spanda-transport-{ros2,mqtt,dds,websocket}` |
-| Domain | `spanda-hardware`, `spanda-fleet`, `spanda-ota`, `spanda-certify`, `spanda-connectivity` |
+| Domain | `spanda-hardware`, `spanda-fleet`, `spanda-assurance` (continuity, recovery, mission assurance), `spanda-ota`, `spanda-certify`, `spanda-connectivity` |
 | Tooling | `spanda-format`, `spanda-lint`, `spanda-codegen`, `spanda-docs`, `spanda-modules` |
 | Packages | `spanda-package`, `spanda-providers` |
 | Apps | `spanda-cli`, `spanda-node`, `spanda-wasm`, `spanda-dap`, `spanda-llvm`, `spanda-rt` |
@@ -344,6 +344,7 @@ Optional: `spanda-ros2-rclrs-native` (in-process ROS 2, excluded from default wo
 - [spanda-language.md](./spanda-language.md) — language reference
 - [triggers.md](./triggers.md) — trigger-driven execution
 - [concurrency.md](./concurrency.md) — tasks, spawn, channels, fleet CLI
+- [mission-continuity.md](./mission-continuity.md) — takeover, delegation, succession, checkpoints
 - [feature-status.md](./feature-status.md) — stable vs experimental
 - [ffi-and-ecosystem.md](./ffi-and-ecosystem.md) — Python/C++/ROS2 interop
 - [api-contract.json](./api-contract.json) — JSON output schemas
