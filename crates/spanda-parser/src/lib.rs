@@ -8522,8 +8522,19 @@ impl Parser {
             "Expected '{' after anomaly_detector name",
         )?;
         let mut expected = Vec::new();
+        let mut learned_backend = None;
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
-            if self.check(TokenType::Ident) && self.peek().lexeme == "expected" {
+            if self.check(TokenType::Ident) && self.peek().lexeme == "learned" {
+                self.advance();
+                if self.check(TokenType::Ident) && self.peek().lexeme == "backend" {
+                    self.advance();
+                }
+                learned_backend = Some(self.parse_dotted_name("Expected learned backend path")?);
+                self.expect(
+                    TokenType::Semicolon,
+                    "Expected ';' after learned backend",
+                )?;
+            } else if self.check(TokenType::Ident) && self.peek().lexeme == "expected" {
                 self.advance();
                 let metric = self.parse_dotted_name("Expected metric path")?;
                 let op = self.parse_comparison_op()?;
@@ -8537,7 +8548,7 @@ impl Parser {
                 });
             } else {
                 return Err(SpandaError::Parse {
-                    message: "Expected 'expected' rule in anomaly_detector".into(),
+                    message: "Expected 'learned' or 'expected' rule in anomaly_detector".into(),
                     line: self.peek().line,
                     column: self.peek().column,
                 });
@@ -8546,6 +8557,7 @@ impl Parser {
         let end = self.expect(TokenType::Rbrace, "Expected '}' to close anomaly_detector")?;
         Ok(AnomalyDetectorDecl::AnomalyDetectorDecl {
             name,
+            learned_backend,
             expected,
             span: self.span_from(&start, &end),
         })

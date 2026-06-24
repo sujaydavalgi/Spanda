@@ -57,6 +57,8 @@ pub struct ExpectedBehavior {
 pub enum AnomalyDetectorDecl {
     AnomalyDetectorDecl {
         name: String,
+        #[serde(default)]
+        learned_backend: Option<String>,
         expected: Vec<ExpectedBehavior>,
         span: Span,
     },

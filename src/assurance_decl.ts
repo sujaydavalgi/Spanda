@@ -39,6 +39,7 @@ export type ExpectedBehavior = {
 export type AnomalyDetectorDecl = {
   kind: "AnomalyDetectorDecl";
   name: string;
+  learnedBackend: string | null;
   expected: ExpectedBehavior[];
   span: Span;
 };

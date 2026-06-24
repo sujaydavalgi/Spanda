@@ -56,6 +56,7 @@ export type AnomalyReport = {
   detectors: Array<{ detector: string; rules: string[] }>;
   handlers: string[];
   anomalies: Anomaly[];
+  learned: Array<{ detector: string; backend: string }>;
   passed: boolean;
 };
 
@@ -217,6 +218,20 @@ export function buildAssuranceReport(program: Program, sourceLabel: string): Ass
   };
 }
 
+export function learnedModelsTs(program: Program): Array<{ detector: string; backend: string }> {
+  const importBackend = (program.imports ?? []).find(
+    (imp) => imp.path.includes("assurance.anomaly") || imp.path.endsWith("anomaly"),
+  )?.path;
+  const learned: Array<{ detector: string; backend: string }> = [];
+  for (const decl of program.anomalyDetectors ?? []) {
+    const backend = decl.learnedBackend ?? importBackend ?? null;
+    if (backend) {
+      learned.push({ detector: decl.name, backend });
+    }
+  }
+  return learned;
+}
+
 export function scanAnomaliesTs(program: Program): AnomalyReport {
   const detectors = (program.anomalyDetectors ?? []).map((decl) => ({
     detector: decl.name,
@@ -253,7 +268,7 @@ export function scanAnomaliesTs(program: Program): AnomalyReport {
 
   const passed = !anomalies.some((a) => a.severity === "Critical" || a.severity === "High");
 
-  return { detectors, handlers, anomalies, passed };
+  return { detectors, handlers, anomalies, learned: learnedModelsTs(program), passed };
 }
 
 export function evaluatePrognosticsTs(program: Program): PrognosticsReport {

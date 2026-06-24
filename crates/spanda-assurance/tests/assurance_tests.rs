@@ -140,3 +140,50 @@ robot R {
     assert_eq!(models[0].detector, "NavML");
     assert!(models[0].backend.contains("anomaly"));
 }
+
+#[test]
+fn learned_models_detect_explicit_backend() {
+    use spanda_assurance::learned_models;
+    let source = r#"
+anomaly_detector NavML {
+    learned backend assurance.anomaly;
+    expected gps.accuracy <= 3 m;
+}
+
+robot R {
+    sensor gps: GPS;
+    actuator w: DifferentialDrive;
+    safety { max_speed = 1 m/s; }
+    behavior b() {}
+}
+"#;
+    let program = parse_source(source);
+    let models = learned_models(&program);
+    assert_eq!(models.len(), 1);
+    assert_eq!(models[0].backend, "assurance.anomaly");
+}
+
+#[test]
+fn anomaly_scan_includes_learned_models() {
+    use spanda_assurance::scan_anomalies;
+    let source = r#"
+anomaly_detector NavML {
+    learned backend assurance.anomaly;
+    expected gps.accuracy <= 3 m;
+}
+
+on anomaly NavML severity High {
+    enter safe_mode;
+}
+
+robot R {
+    sensor gps: GPS;
+    actuator w: DifferentialDrive;
+    safety { max_speed = 1 m/s; }
+    behavior b() {}
+}
+"#;
+    let program = parse_source(source);
+    let report = scan_anomalies(&program);
+    assert_eq!(report.learned.len(), 1);
+}

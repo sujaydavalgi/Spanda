@@ -60,6 +60,12 @@ pub fn format_anomaly(report: &AnomalyReport, format: ReportFormat) -> String {
         ),
         ReportFormat::Text => {
             let mut out = format!("Anomaly Report\nPassed: {}\n", report.passed);
+            for model in &report.learned {
+                out.push_str(&format!(
+                    "* learned {} via {}\n",
+                    model.detector, model.backend
+                ));
+            }
             for a in &report.anomalies {
                 out.push_str(&format!(
                     "* {} {} expected {} observed {}\n",

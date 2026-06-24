@@ -11,6 +11,7 @@ pub struct AnomalyReport {
     pub detectors: Vec<ExpectedBehaviorModel>,
     pub handlers: Vec<String>,
     pub anomalies: Vec<Anomaly>,
+    pub learned: Vec<LearnedBehaviorModel>,
     pub passed: bool,
 }
 
@@ -120,10 +121,13 @@ pub fn scan_anomalies(program: &Program) -> AnomalyReport {
         )
     });
 
+    let learned = learned_models(program);
+
     AnomalyReport {
         detectors,
         handlers,
         anomalies,
+        learned,
         passed,
     }
 }
@@ -135,7 +139,7 @@ pub fn learned_models(program: &Program) -> Vec<LearnedBehaviorModel> {
         anomaly_detectors,
         ..
     } = program;
-    let backend = imports.iter().find_map(|imp| {
+    let import_backend = imports.iter().find_map(|imp| {
         let spanda_ast::nodes::ImportDecl::ImportDecl { path, .. } = imp;
         if path.contains("assurance.anomaly") || path.ends_with("anomaly") {
             Some(path.clone())
@@ -143,17 +147,21 @@ pub fn learned_models(program: &Program) -> Vec<LearnedBehaviorModel> {
             None
         }
     });
-    let Some(backend) = backend else {
-        return Vec::new();
-    };
     anomaly_detectors
         .iter()
-        .map(|decl| {
-            let AnomalyDetectorDecl::AnomalyDetectorDecl { name, .. } = decl;
-            LearnedBehaviorModel {
+        .filter_map(|decl| {
+            let AnomalyDetectorDecl::AnomalyDetectorDecl {
+                name,
+                learned_backend,
+                ..
+            } = decl;
+            let backend = learned_backend
+                .clone()
+                .or_else(|| import_backend.clone())?;
+            Some(LearnedBehaviorModel {
                 detector: name.clone(),
-                backend: backend.clone(),
-            }
+                backend,
+            })
         })
         .collect()
 }

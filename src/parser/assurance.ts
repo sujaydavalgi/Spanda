@@ -183,8 +183,16 @@ export function parseAnomalyDetector(ctx: AssuranceParseCtx): AnomalyDetectorDec
   const name = ctx.parseLabel("Expected anomaly_detector name");
   ctx.expect("LBRACE", "Expected '{' after anomaly_detector name");
   const expected: ExpectedBehavior[] = [];
+  let learnedBackend: string | null = null;
   while (!ctx.check("RBRACE") && !ctx.check("EOF")) {
-    if (ctx.check("IDENT") && ctx.peek().lexeme === "expected") {
+    if (ctx.check("IDENT") && ctx.peek().lexeme === "learned") {
+      ctx.advance();
+      if (ctx.check("IDENT") && ctx.peek().lexeme === "backend") {
+        ctx.advance();
+      }
+      learnedBackend = ctx.parseDottedName("Expected learned backend path");
+      ctx.expect("SEMICOLON", "Expected ';' after learned backend");
+    } else if (ctx.check("IDENT") && ctx.peek().lexeme === "expected") {
       ctx.advance();
       const metric = ctx.parseDottedName("Expected metric path");
       const operator = parseComparisonOp(ctx);
@@ -193,11 +201,11 @@ export function parseAnomalyDetector(ctx: AssuranceParseCtx): AnomalyDetectorDec
       expected.push({ metric, operator, threshold, span: ctx.spanFrom(start, ctx.previous()) });
     } else {
       const t = ctx.peek();
-      throw new ParseError("Expected 'expected' rule in anomaly_detector", t.line, t.column);
+      throw new ParseError("Expected 'learned' or 'expected' rule in anomaly_detector", t.line, t.column);
     }
   }
   const end = ctx.expect("RBRACE", "Expected '}' to close anomaly_detector");
-  return { kind: "AnomalyDetectorDecl", name, expected, span: ctx.spanFrom(start, end) };
+  return { kind: "AnomalyDetectorDecl", name, learnedBackend, expected, span: ctx.spanFrom(start, end) };
 }
 
 export function parseAnomalyHandler(ctx: AssuranceParseCtx): AnomalyHandlerDecl {
