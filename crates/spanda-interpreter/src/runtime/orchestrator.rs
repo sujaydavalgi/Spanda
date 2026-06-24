@@ -678,6 +678,10 @@ impl<B: RobotBackend> Interpreter<B> {
         std::mem::take(&mut self.telemetry)
     }
 
+    pub fn sim_time_ms(&self) -> f64 {
+        self.sim_time_ms
+    }
+
     pub fn twin_replay_export(&self) -> Option<serde_json::Value> {
         // Description:
 

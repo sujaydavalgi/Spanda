@@ -51,6 +51,24 @@ pub enum TelemetryEvent {
         status: String,
         timestamp_ms: f64,
     },
+    /// Run session boundary (start/end) linking source and mission trace.
+    #[serde(rename = "session")]
+    Session {
+        session_id: String,
+        phase: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        source: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        mission_trace_path: Option<String>,
+        timestamp_ms: f64,
+    },
+    /// End-of-run scheduler telemetry snapshot (`--metrics-json` payload).
+    #[serde(rename = "runtime_metrics")]
+    RuntimeMetrics {
+        session_id: String,
+        metrics: serde_json::Value,
+        timestamp_ms: f64,
+    },
 }
 
 impl TelemetryEvent {
@@ -60,7 +78,9 @@ impl TelemetryEvent {
             | Self::Sensor { timestamp_ms, .. }
             |             Self::Heartbeat { timestamp_ms, .. }
             | Self::DeviceHeartbeat { timestamp_ms, .. }
-            | Self::Health { timestamp_ms, .. } => *timestamp_ms,
+            | Self::Health { timestamp_ms, .. }
+            | Self::Session { timestamp_ms, .. }
+            | Self::RuntimeMetrics { timestamp_ms, .. } => *timestamp_ms,
         }
     }
 }

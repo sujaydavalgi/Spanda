@@ -32,6 +32,10 @@ pub fn run_program(program: &Program, options: RunOptions) -> Result<RunResult, 
     //     let result = spanda_interpreter::run::run_program(progra, options);
 
     spanda_telemetry_store::configure_session_persist(options.persist_telemetry);
+    let trace_source = options.trace_source.clone();
+    if options.persist_telemetry {
+        let _ = spanda_telemetry_store::begin_run_session(trace_source.as_deref());
+    }
 
     let obstacles: Vec<Obstacle> = options
         .obstacles
@@ -61,7 +65,6 @@ pub fn run_program(program: &Program, options: RunOptions) -> Result<RunResult, 
     let logs: Rc<RefCell<Vec<String>>> = Rc::new(RefCell::new(Vec::new()));
     let logs_cb = logs.clone();
     let trace_realtime = options.trace_realtime;
-    let trace_source = options.trace_source.clone();
     let record_trace = options.record_trace;
     let scheduler_clock = if options.replay_deterministic {
         SchedulerClock::Sim
@@ -110,9 +113,11 @@ pub fn run_program(program: &Program, options: RunOptions) -> Result<RunResult, 
         },
     );
     let state = interp.run(program, options.entry_behavior.as_deref())?;
+    let sim_time_ms = interp.sim_time_ms();
     let events = interp.robot_backend().event_log();
     let metrics = interp.take_telemetry();
     let mission_trace = interp.take_mission_trace();
+    let mut mission_trace_path = None;
     if record_trace {
         if let Some(trace) = &mission_trace {
             let path = options.trace_output.clone().unwrap_or_else(|| {
@@ -124,7 +129,15 @@ pub fn run_program(program: &Program, options: RunOptions) -> Result<RunResult, 
                 }
             });
             trace.save(&path)?;
+            mission_trace_path = Some(path);
         }
+    }
+    if options.persist_telemetry {
+        let _ = spanda_telemetry_store::end_run_session(
+            mission_trace_path.as_deref(),
+            Some(&metrics),
+            sim_time_ms,
+        );
     }
     let twin_replay = interp.twin_replay_export();
     if let Some(path) = &options.twin_export_path {

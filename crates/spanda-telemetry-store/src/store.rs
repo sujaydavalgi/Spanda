@@ -13,8 +13,10 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Mutex, OnceLock};
 use std::time::{SystemTime, UNIX_EPOCH};
+use spanda_runtime::telemetry::RuntimeTelemetry;
 
 static SESSION_ENABLED: AtomicBool = AtomicBool::new(false);
+static ACTIVE_SESSION_ID: OnceLock<Mutex<Option<String>>> = OnceLock::new();
 static GLOBAL_STORE: OnceLock<Mutex<PersistentTelemetryStore>> = OnceLock::new();
 
 /// Default append-only event log under the project `.spanda/` directory.
@@ -56,6 +58,76 @@ pub fn env_persist_enabled() -> bool {
 /// Enable or disable persistence for the current process session.
 pub fn configure_session_persist(enabled: bool) {
     SESSION_ENABLED.store(enabled, Ordering::SeqCst);
+    if !enabled {
+        clear_active_session();
+    }
+}
+
+fn active_session_slot() -> &'static Mutex<Option<String>> {
+    ACTIVE_SESSION_ID.get_or_init(|| Mutex::new(None))
+}
+
+/// Begin a telemetry session for correlating events with mission traces.
+pub fn begin_run_session(source: Option<&str>) -> TelemetryStoreResult<String> {
+    if !persist_enabled() {
+        return Ok(String::new());
+    }
+    let session_id = new_session_id(source);
+    *active_session_slot().lock().unwrap() = Some(session_id.clone());
+    append_event(TelemetryEvent::Session {
+        session_id: session_id.clone(),
+        phase: "start".into(),
+        source: source.map(str::to_string),
+        mission_trace_path: None,
+        timestamp_ms: wall_timestamp_ms(),
+    })?;
+    Ok(session_id)
+}
+
+/// End the active telemetry session and optionally link a mission trace path.
+pub fn end_run_session(
+    mission_trace_path: Option<&str>,
+    metrics: Option<&RuntimeTelemetry>,
+    timestamp_ms: f64,
+) -> TelemetryStoreResult<()> {
+    if !persist_enabled() {
+        return Ok(());
+    }
+    let session_id = active_session_slot().lock().unwrap().take();
+    let Some(session_id) = session_id else {
+        return Ok(());
+    };
+    append_event(TelemetryEvent::Session {
+        session_id: session_id.clone(),
+        phase: "end".into(),
+        source: None,
+        mission_trace_path: mission_trace_path.map(str::to_string),
+        timestamp_ms,
+    })?;
+    if let Some(metrics) = metrics {
+        let payload = serde_json::to_value(metrics)
+            .map_err(|error| TelemetryStoreError::Serialization(error.to_string()))?;
+        append_event(TelemetryEvent::RuntimeMetrics {
+            session_id,
+            metrics: payload,
+            timestamp_ms,
+        })?;
+    }
+    Ok(())
+}
+
+fn clear_active_session() {
+    if let Some(slot) = ACTIVE_SESSION_ID.get() {
+        *slot.lock().unwrap() = None;
+    }
+}
+
+fn new_session_id(source: Option<&str>) -> String {
+    let stem = source
+        .and_then(|path| Path::new(path).file_stem())
+        .and_then(|name| name.to_str())
+        .unwrap_or("program");
+    format!("{stem}-{}", wall_timestamp_ms())
 }
 
 /// Return true when persistence is enabled via env or the current session.
@@ -204,6 +276,7 @@ pub struct TelemetryQuery {
     pub sensor_id: Option<String>,
     pub task_name: Option<String>,
     pub kind: Option<String>,
+    pub session_id: Option<String>,
     pub since_ms: Option<f64>,
     pub limit: Option<usize>,
 }
@@ -217,6 +290,8 @@ pub struct TelemetryStats {
     pub heartbeat_events: usize,
     pub device_heartbeat_events: usize,
     pub health_events: usize,
+    pub session_events: usize,
+    pub runtime_metrics_events: usize,
     pub tracked_tasks: usize,
     pub tracked_devices: usize,
 }
@@ -262,6 +337,35 @@ impl PersistentTelemetryStore {
             .append(true)
             .open(&self.store_path)?;
         writeln!(file, "{line}")?;
+        self.maybe_compact()?;
+        Ok(())
+    }
+
+    fn maybe_compact(&mut self) -> TelemetryStoreResult<()> {
+        let max_events = resolve_max_events();
+        let Some(max_events) = max_events else {
+            return Ok(());
+        };
+        let events = self.read_all()?;
+        if events.len() <= max_events {
+            return Ok(());
+        }
+        let start = events.len() - max_events;
+        let trimmed: Vec<TelemetryEvent> = events.into_iter().skip(start).collect();
+        self.rewrite_all(&trimmed)
+    }
+
+    fn rewrite_all(&self, events: &[TelemetryEvent]) -> TelemetryStoreResult<()> {
+        if let Some(parent) = self.store_path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        let mut body = String::new();
+        for event in events {
+            body.push_str(&serde_json::to_string(event)
+                .map_err(|error| TelemetryStoreError::Serialization(error.to_string()))?);
+            body.push('\n');
+        }
+        fs::write(&self.store_path, body)?;
         Ok(())
     }
 
@@ -346,10 +450,22 @@ impl PersistentTelemetryStore {
     }
 
     pub fn query(&self, query: &TelemetryQuery) -> TelemetryStoreResult<Vec<TelemetryEvent>> {
-        let mut events: Vec<TelemetryEvent> = self
-            .read_all()?
+        let all = self.read_all()?;
+        let session_window = query
+            .session_id
+            .as_ref()
+            .and_then(|session_id| session_time_window(&all, session_id));
+        let mut events: Vec<TelemetryEvent> = all
             .into_iter()
-            .filter(|event| matches_query(event, query))
+            .filter(|event| {
+                if let Some((start_ms, end_ms)) = session_window {
+                    let ts = event.timestamp_ms();
+                    if ts < start_ms || ts > end_ms {
+                        return false;
+                    }
+                }
+                matches_query(event, query)
+            })
             .collect();
         if let Some(limit) = query.limit {
             if events.len() > limit {
@@ -407,6 +523,8 @@ impl PersistentTelemetryStore {
                 TelemetryEvent::Heartbeat { .. } => stats.heartbeat_events += 1,
                 TelemetryEvent::DeviceHeartbeat { .. } => stats.device_heartbeat_events += 1,
                 TelemetryEvent::Health { .. } => stats.health_events += 1,
+                TelemetryEvent::Session { .. } => stats.session_events += 1,
+                TelemetryEvent::RuntimeMetrics { .. } => stats.runtime_metrics_events += 1,
             }
         }
         Ok(stats)
@@ -438,6 +556,37 @@ fn write_heartbeat_index(path: &Path, index: &HeartbeatIndex) -> TelemetryStoreR
     Ok(())
 }
 
+fn resolve_max_events() -> Option<usize> {
+    std::env::var("SPANDA_TELEMETRY_MAX_EVENTS")
+        .ok()
+        .and_then(|value| value.parse().ok())
+        .filter(|max| *max > 0)
+}
+
+fn session_time_window(events: &[TelemetryEvent], session_id: &str) -> Option<(f64, f64)> {
+    let mut start_ms = None;
+    let mut end_ms = None;
+    for event in events {
+        if let TelemetryEvent::Session {
+            session_id: id,
+            phase,
+            timestamp_ms,
+            ..
+        } = event
+        {
+            if id != session_id {
+                continue;
+            }
+            if phase == "start" {
+                start_ms = Some(*timestamp_ms);
+            } else if phase == "end" {
+                end_ms = Some(*timestamp_ms);
+            }
+        }
+    }
+    Some((start_ms?, end_ms?))
+}
+
 fn matches_query(event: &TelemetryEvent, query: &TelemetryQuery) -> bool {
     if let Some(since_ms) = query.since_ms {
         if event.timestamp_ms() < since_ms {
@@ -451,6 +600,8 @@ fn matches_query(event: &TelemetryEvent, query: &TelemetryQuery) -> bool {
             TelemetryEvent::Heartbeat { .. } => "heartbeat",
             TelemetryEvent::DeviceHeartbeat { .. } => "device_heartbeat",
             TelemetryEvent::Health { .. } => "health",
+            TelemetryEvent::Session { .. } => "session",
+            TelemetryEvent::RuntimeMetrics { .. } => "runtime_metrics",
         };
         if event_kind != kind.as_str() {
             return false;
@@ -490,6 +641,9 @@ fn matches_query(event: &TelemetryEvent, query: &TelemetryQuery) -> bool {
                     .is_none_or(|expected| expected == task_name)
         }
         TelemetryEvent::Health { .. } => {
+            query.device_id.is_none() && query.sensor_id.is_none() && query.task_name.is_none()
+        }
+        TelemetryEvent::Session { .. } | TelemetryEvent::RuntimeMetrics { .. } => {
             query.device_id.is_none() && query.sensor_id.is_none() && query.task_name.is_none()
         }
     }
