@@ -143,4 +143,8 @@ echo "== showcase smoke: composite program trust =="
 chmod +x scripts/trust_program_smoke.sh
 ./scripts/trust_program_smoke.sh
 
+echo "== showcase smoke: secure boot contracts =="
+chmod +x scripts/secure_boot_smoke.sh
+./scripts/secure_boot_smoke.sh
+
 echo "Showcase smoke tests passed."

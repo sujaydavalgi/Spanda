@@ -1,5 +1,6 @@
 //! Verify-time integrity hashing and baseline comparison for program artifacts.
 
+use crate::secure_boot::evaluate_secure_boot_coverage;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use spanda_ast::foundations::{
@@ -45,6 +46,8 @@ pub struct IntegrityReport {
     pub artifacts: Vec<IntegrityArtifact>,
     #[serde(default)]
     pub agent_artifacts: Vec<IntegrityArtifact>,
+    #[serde(default)]
+    pub secure_boot: crate::secure_boot::SecureBootCoverage,
     pub passed: bool,
 }
 
@@ -242,6 +245,8 @@ pub fn generate_integrity_report(
             .iter()
             .all(|artifact| artifact.status == ArtifactIntegrityStatus::Trusted)
     };
+    let secure_boot = evaluate_secure_boot_coverage(program);
+    let rollup_passed = passed && secure_boot.passed;
 
     IntegrityReport {
         program: source_label.into(),
@@ -249,7 +254,8 @@ pub fn generate_integrity_report(
         agent: None,
         artifacts,
         agent_artifacts: Vec::new(),
-        passed,
+        secure_boot,
+        passed: rollup_passed,
     }
 }
 
@@ -432,6 +438,18 @@ pub fn format_integrity_report(report: &IntegrityReport, format: IntegrityFormat
             lines.push(format!(
                 "  [{:?}] {}:{} — {}",
                 artifact.status, artifact.artifact_type, artifact.name, artifact.hash
+            ));
+        }
+    }
+    if !report.secure_boot.contracts.is_empty() {
+        lines.push(format!(
+            "Secure boot: score {}/100 passed={}",
+            report.secure_boot.score, report.secure_boot.passed
+        ));
+        for entry in &report.secure_boot.contracts {
+            lines.push(format!(
+                "  {} via {} — {}/100 ({})",
+                entry.contract, entry.package, entry.trust_score, entry.detail
             ));
         }
     }

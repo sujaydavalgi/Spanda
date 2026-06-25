@@ -25,6 +25,42 @@ fn warehouse_tamper_check_is_suspicious_not_compromised() {
 }
 
 #[test]
+fn secure_boot_import_reports_contract_coverage() {
+    let source = r#"
+import trust.jetson;
+hardware JetsonRover { sensors [ GPS ]; actuators [ DifferentialDrive ]; }
+robot Rover {
+  uses hardware JetsonRover;
+  sensor gps: GPS;
+  actuator wheels: DifferentialDrive;
+  behavior patrol() { wheels.drive(0.1 m/s); }
+}
+deploy Rover to JetsonRover;
+"#;
+    let tokens = tokenize(source).expect("tokenize");
+    let program = parse(tokens).expect("parse");
+    let report = generate_tamper_check(&program, "jetson.sd");
+    assert!(
+        report
+            .findings
+            .iter()
+            .any(|finding| finding.category == "secure_boot"),
+        "expected secure_boot finding, got {:?}",
+        report.findings
+    );
+    assert!(
+        !report
+            .findings
+            .iter()
+            .any(|finding| {
+                finding.category == "package"
+                    && finding.message.contains("trust.jetson")
+            }),
+        "secure-boot import should not emit generic third-party package warning"
+    );
+}
+
+#[test]
 fn readiness_rover_missing_kill_switch_fails() {
     let program = parse_file("../../examples/showcase/readiness/rover.sd");
     let report = generate_tamper_check(&program, "rover.sd");

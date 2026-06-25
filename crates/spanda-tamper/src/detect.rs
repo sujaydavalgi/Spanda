@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use spanda_ast::foundations::DeployDecl;
 use spanda_ast::nodes::{ImportDecl, Program, RobotDecl};
 use crate::policy::tamper_policy_coverage;
+use crate::secure_boot::{evaluate_secure_boot_coverage, is_secure_boot_contract};
 use spanda_readiness::{audit_program, ReadinessSeverity};
 use spanda_security::{security_analyze_program, SecuritySeverity};
 use spanda_threat::{analyze_threat_model, ThreatRisk};
@@ -118,6 +119,7 @@ pub fn generate_tamper_check(program: &Program, source_label: &str) -> TamperRep
     }
 
     collect_structural_findings(program, &mut findings);
+    collect_secure_boot_findings(program, &mut findings);
 
     let (has_tamper_policy, branch_count) = tamper_policy_coverage(program);
     if has_tamper_policy {
@@ -249,6 +251,9 @@ fn collect_structural_findings(program: &Program, findings: &mut Vec<TamperFindi
 
     for import in imports {
         let ImportDecl::ImportDecl { path, span } = import;
+        if is_secure_boot_contract(path) {
+            continue;
+        }
         findings.push(TamperFinding {
             category: "package".into(),
             severity: TamperSeverity::Medium,
@@ -260,6 +265,54 @@ fn collect_structural_findings(program: &Program, findings: &mut Vec<TamperFindi
 
     for robot in robots {
         collect_robot_integrity(robot, findings);
+    }
+}
+
+fn collect_secure_boot_findings(program: &Program, findings: &mut Vec<TamperFinding>) {
+    let coverage = evaluate_secure_boot_coverage(program);
+    for entry in &coverage.contracts {
+        if entry.passed {
+            findings.push(TamperFinding {
+                category: "secure_boot".into(),
+                severity: TamperSeverity::Info,
+                message: format!(
+                    "Secure-boot contract `{}` verified via {}",
+                    entry.contract, entry.package
+                ),
+                evidence: Some(format!("trust_score={}/100", entry.trust_score)),
+                line: None,
+            });
+        } else {
+            findings.push(TamperFinding {
+                category: "secure_boot".into(),
+                severity: TamperSeverity::High,
+                message: format!(
+                    "Secure-boot contract `{}` package trust below threshold",
+                    entry.contract
+                ),
+                evidence: Some(format!(
+                    "{} score {}/100 — {}",
+                    entry.package, entry.trust_score, entry.detail
+                )),
+                line: None,
+            });
+        }
+    }
+    if coverage.contracts.is_empty() {
+        let Program::Program {
+            hardware_profiles,
+            deployments,
+            ..
+        } = program;
+        if !hardware_profiles.is_empty() && !deployments.is_empty() {
+            findings.push(TamperFinding {
+                category: "secure_boot".into(),
+                severity: TamperSeverity::Info,
+                message: "Hardware deploy without secure-boot contract import".into(),
+                evidence: Some("import trust.jetson or trust.pi for attestation stubs".into()),
+                line: None,
+            });
+        }
     }
 }
 
