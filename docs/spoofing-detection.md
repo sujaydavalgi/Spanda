@@ -41,6 +41,8 @@ Integrates with `tamper_policy` and `recovery_policy` — default: alert + audit
 
 **Package-backed extensions** — `spanda-gps` (`positioning.gps`) and `spanda-fusion` (`assurance.fusion`) export spoofing backend contracts; core heuristics live in `spanda-spoofing` and `spanda-connectivity` (`haversine_m`, `GpsSpoofing` fault simulation).
 
+**Optional ML backend** — set `SPANDA_SPOOFING_ML_ENDPOINT` to an HTTP URL that accepts trace JSON and returns `{ "alerts": [...] }` to merge model alerts into `spoof-check` trace analysis.
+
 ## Demo
 
 `examples/showcase/gps_spoofing/` — program with fusion + spoof handler passes coverage; `spoof.trace` demonstrates impossible GPS jump and explicit spoof alert.

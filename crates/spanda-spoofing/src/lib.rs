@@ -2,6 +2,7 @@
 //!
 pub mod coverage;
 pub mod detect;
+pub mod ml;
 pub mod trace;
 
 pub use coverage::{analyze_spoofing_coverage, SpoofingCoverageCheck};

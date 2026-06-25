@@ -1,0 +1,13 @@
+module trust.jetson;
+
+export fn secure_boot_backend_name() -> String {
+    return "spanda-trust-jetson";
+}
+
+export fn attestation_contract_version() -> String {
+    return "jetson-secure-boot-v1";
+}
+
+export fn read_boot_state() -> Int {
+    return 1;
+}

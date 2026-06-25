@@ -117,7 +117,8 @@ pub fn generate_trace_spoof_check(trace: &MissionTrace, source_label: &str) -> S
     // Example:
     // let report = generate_trace_spoof_check(&trace, "mission.trace");
 
-    let alerts = analyze_trace_spoofing(trace, DEFAULT_MAX_GROUND_SPEED_M_S);
+    let mut alerts = analyze_trace_spoofing(trace, DEFAULT_MAX_GROUND_SPEED_M_S);
+    crate::ml::merge_ml_spoofing_alerts(trace, &mut alerts);
     let passed = !alerts.iter().any(|alert| {
         matches!(
             alert.severity,

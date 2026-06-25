@@ -1,0 +1,13 @@
+module trust.pi;
+
+export fn secure_boot_backend_name() -> String {
+    return "spanda-trust-pi";
+}
+
+export fn attestation_contract_version() -> String {
+    return "pi-secure-boot-v1";
+}
+
+export fn read_boot_state() -> Int {
+    return 1;
+}

@@ -1,0 +1,16 @@
+[package]
+name = "spanda-trust-jetson"
+version = "0.1.0"
+description = "Jetson secure boot and attestation contract stubs"
+license = "Apache-2.0"
+
+[safety]
+level = "platform"
+
+[capabilities]
+required = [
+  "trust.attest",
+]
+
+[hardware]
+requirements = []
