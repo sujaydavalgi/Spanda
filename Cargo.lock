@@ -1371,6 +1371,7 @@ dependencies = [
  "spanda-explain",
  "spanda-fleet",
  "spanda-format",
+ "spanda-graph",
  "spanda-hardware",
  "spanda-lexer",
  "spanda-lint",
@@ -1748,6 +1749,19 @@ dependencies = [
  "spanda-comm",
  "spanda-driver",
  "spanda-error",
+ "spanda-lexer",
+ "spanda-parser",
+]
+
+[[package]]
+name = "spanda-graph"
+version = "0.4.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "spanda-ast",
+ "spanda-capability",
+ "spanda-config",
  "spanda-lexer",
  "spanda-parser",
 ]
