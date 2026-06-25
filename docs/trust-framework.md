@@ -28,6 +28,6 @@ Per package: **Trusted** · **Modified** · **Unknown**
 
 ## Integration
 
-Feeds readiness trust factor, deployment gates, scorecard security category, and tamper response policies.
+Feeds readiness trust factor, deployment gates, scorecard security category, tamper response policies, and `spanda explain` composite_trust section.
 
 See [package-trust.md](./package-trust.md) · [tamper-detection.md](./tamper-detection.md) · [trust-boundaries.md](./trust-boundaries.md) · [platform-maturity-roadmap.md](./platform-maturity-roadmap.md).

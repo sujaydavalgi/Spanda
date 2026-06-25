@@ -1789,6 +1789,7 @@ dependencies = [
  "spanda-parser",
  "spanda-readiness",
  "spanda-runtime",
+ "spanda-trust",
 ]
 
 [[package]]

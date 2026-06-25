@@ -8,14 +8,16 @@ use spanda_hardware::{verify_program_compatibility, VerifyOptions};
 use spanda_package::evaluate_package_trust;
 use spanda_readiness::{
     evaluate_deployment_gates, evaluate_readiness, evaluate_safety_coverage, generate_safety_report,
-    verify_mission, DeploymentGatePolicy, ReadinessOptions,
+    verify_mission, DeploymentGate, DeploymentGatePolicy, ReadinessOptions,
 };
+use spanda_trust::{evaluate_composite_trust, CompositeTrustOptions};
 
 use crate::report::{ExplainReport, ExplainSection};
 
 /// Optional configuration context for program explain reports.
 #[derive(Debug, Clone, Default)]
 pub struct ExplainProgramOptions<'a> {
+    pub source: Option<&'a str>,
     pub system_config: Option<&'a ResolvedSystemConfig>,
     pub baseline_config: Option<&'a ResolvedSystemConfig>,
 }
@@ -95,6 +97,35 @@ pub fn explain_program_with_options(
     sections.push(explain_readiness(program, source_label).sections[0].clone());
     sections.push(explain_verify(program, source_label).sections[0].clone());
     sections.push(explain_safety(program, source_label).sections[0].clone());
+    if let Some(source) = options.source {
+        let project_root = options
+            .system_config
+            .map(|cfg| cfg.project_root.clone());
+        let trust = evaluate_composite_trust(
+            program,
+            source,
+            source_label,
+            &CompositeTrustOptions { project_root },
+        );
+        sections.push(ExplainSection {
+            topic: "composite_trust".into(),
+            summary: format!(
+                "Composite trust {}/100 tier={} status={}",
+                trust.score, trust.tier, trust.integrity_status
+            ),
+            details: trust
+                .categories
+                .iter()
+                .map(|category| {
+                    format!(
+                        "{}: {}/100 (weight {}%) — {}",
+                        category.name, category.score, category.weight, category.detail
+                    )
+                })
+                .chain(trust.recommendations.into_iter().map(|item| format!("recommendation: {item}")))
+                .collect(),
+        });
+    }
     let contract = verify_contract(program, source_label);
     sections.push(ExplainSection {
         topic: "contract".into(),
@@ -136,35 +167,66 @@ pub fn explain_program_with_options(
         };
         let gates = evaluate_deployment_gates(
             program,
-            source_label,
+            options.source.unwrap_or(source_label),
             &readiness_options,
             &DeploymentGatePolicy::default(),
         );
+        let mut gate_details: Vec<String> = gates
+            .gates
+            .iter()
+            .map(|gate| {
+                format!(
+                    "{}: {}",
+                    gate.name,
+                    if gate.passed {
+                        gate.message.clone()
+                    } else {
+                        format!("FAIL — {}", gate.message)
+                    }
+                )
+            })
+            .collect();
+        if let Some(source) = options.source {
+            let project_root = Some(cfg.project_root.clone());
+            let trust = evaluate_composite_trust(
+                program,
+                source,
+                source_label,
+                &CompositeTrustOptions { project_root },
+            );
+            let composite_gate = DeploymentGate {
+                name: "composite_trust".into(),
+                passed: trust.score >= 60 && trust.passed,
+                message: format!(
+                    "composite trust {}/100 tier={} status={}",
+                    trust.score, trust.tier, trust.integrity_status
+                ),
+            };
+            gate_details.push(format!(
+                "{}: {}",
+                composite_gate.name,
+                if composite_gate.passed {
+                    composite_gate.message.clone()
+                } else {
+                    format!("FAIL — {}", composite_gate.message)
+                }
+            ));
+        }
+        let all_passed = gate_details.iter().all(|line| !line.contains("FAIL —"));
         sections.push(ExplainSection {
             topic: "deployment_gates".into(),
-            summary: if gates.passed {
+            summary: if all_passed {
                 "All deployment gates passed".into()
             } else {
                 format!(
                     "{} deployment gate(s) failed",
-                    gates.gates.iter().filter(|gate| !gate.passed).count()
+                    gate_details
+                        .iter()
+                        .filter(|line| line.contains("FAIL —"))
+                        .count()
                 )
             },
-            details: gates
-                .gates
-                .iter()
-                .map(|gate| {
-                    format!(
-                        "{}: {}",
-                        gate.name,
-                        if gate.passed {
-                            gate.message.clone()
-                        } else {
-                            format!("FAIL — {}", gate.message)
-                        }
-                    )
-                })
-                .collect(),
+            details: gate_details,
         });
         if !cfg.packages.is_empty() {
             let mut details = Vec::new();

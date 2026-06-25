@@ -80,6 +80,7 @@ pub fn cmd_explain_program(args: &[String]) {
     ensure_config_valid(system_config.as_ref().map(|arc| arc.as_ref()));
     let baseline_config = flag_value(args, "--baseline").map(|path| resolve_baseline(&path));
     let explain_options = ExplainProgramOptions {
+        source: Some(&source),
         system_config: system_config.as_deref(),
         baseline_config: baseline_config.as_deref(),
     };

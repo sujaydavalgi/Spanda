@@ -16,7 +16,9 @@ echo "== graph =="
 run_spanda graph "$FILE" --format text >/dev/null
 
 echo "== explain =="
-run_spanda explain "$FILE" >/dev/null
+EXPLAIN="$(run_spanda explain "$FILE" 2>&1 || true)"
+echo "$EXPLAIN" | head -5
+echo "$EXPLAIN" | grep -q "composite_trust"
 
 echo "== trust =="
 run_spanda trust spanda-mqtt >/dev/null
