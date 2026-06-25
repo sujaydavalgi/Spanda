@@ -148,6 +148,7 @@
 | [explainability.md](./explainability.md) | **`spanda explain` — code, missions, failures, decisions** |
 | [drift-detection.md](./drift-detection.md) | **Configuration drift — expected vs actual** |
 | [threat-modeling.md](./threat-modeling.md) | **Pre-deploy threat modeling** |
+| [mission-diff.md](./mission-diff.md) | **Mission differencing and change-impact** |
 | [policy-engine.md](./policy-engine.md) | **Declarative operational policies** |
 | [compliance-profiles.md](./compliance-profiles.md) | **Industry verification profile templates** |
 | [chaos-engineering.md](./chaos-engineering.md) | **Chaos injection and resilience validation** |

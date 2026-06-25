@@ -289,7 +289,7 @@ When each area ships: update `CHANGELOG.md`, `feature-status.md`, `getting-start
 |-------------|-----|-------|
 | Drift detection | `spanda drift <file> [--agent <id>]` | `spanda-drift` |
 | Threat model | `spanda threat-model <file>` | `spanda-threat` | Security fixture scoring |
-| Mission diff | `spanda diff <a.sd> <b.sd>` | `spanda-diff` |
+| Mission diff | `spanda diff <a.sd> <b.sd>` | `spanda-diff` | Showcase rover pair |
 | Scorecard | `spanda score <file>` | `spanda-score` |
 | Policy (verify) | `policy { }` syntax + `spanda verify --policy` | `spanda-policy` |
 

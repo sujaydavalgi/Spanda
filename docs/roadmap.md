@@ -51,7 +51,7 @@ Full analysis: [platform-maturity-roadmap.md](./platform-maturity-roadmap.md)
 | 10 | Readiness trend analysis | Operate | P2.2 | **Planned** |
 | 11 | Package trust framework | Verify, Build | P0.4 | **Experimental** |
 | 12 | Architecture decision records | Build | P2.5 | **Planned** |
-| 13 | Mission differencing | Build, Verify | P1.3 | **Planned** |
+| 13 | Mission differencing | Build, Verify | P1.3 | **Experimental** |
 | 14 | Deployment gates | Deploy | P0.2 | **Experimental** |
 | 15 | Autonomous systems scorecard | Operate | P1.4 | **Planned** |
 | 16 | Hack / tamper detection | Verify, Operate, Recover | P3.1 | **Future** |
