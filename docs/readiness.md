@@ -15,6 +15,7 @@ spanda readiness examples/showcase/readiness/rover.sd --runtime
 spanda readiness examples/showcase/readiness/rover.sd --runtime --inject-health-faults
 spanda readiness examples/showcase/readiness/rover.sd --json
 spanda readiness examples/showcase/readiness/rover.sd --agent-json
+spanda readiness examples/showcase/secure_boot/rover.sd --agent Rover@Jetson
 spanda check examples/showcase/readiness/rover.sd --readiness-json --json
 spanda demo readiness
 ```

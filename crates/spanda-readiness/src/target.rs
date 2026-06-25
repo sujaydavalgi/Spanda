@@ -71,5 +71,6 @@ pub fn readiness_options_from_flags(
         inject_health_faults,
         system_config: None,
         baseline_config: None,
+        agent_drift: Vec::new(),
     }
 }

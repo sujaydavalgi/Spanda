@@ -174,6 +174,10 @@ pub struct ReadinessOptions {
     /// Approved baseline configuration for drift comparison.
     #[serde(skip)]
     pub baseline_config: Option<std::sync::Arc<spanda_config::ResolvedSystemConfig>>,
+
+    /// Live agent snapshots compared against program deploy expectations.
+    #[serde(skip)]
+    pub agent_drift: Vec<(spanda_config::ExpectedAgentState, spanda_config::AgentDriftSnapshot)>,
 }
 
 /// Twin readiness comparison status.

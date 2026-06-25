@@ -123,3 +123,29 @@ fn drift_severity_to_readiness(
         spanda_config::DriftSeverity::Critical => crate::types::ReadinessSeverity::Critical,
     }
 }
+
+/// Readiness issues when a live agent snapshot drifts from program deploy expectations.
+pub fn agent_drift_issues(
+    expected: &spanda_config::ExpectedAgentState,
+    actual: &spanda_config::AgentDriftSnapshot,
+) -> Vec<(String, crate::types::ReadinessSeverity, String)> {
+    spanda_config::detect_agent_drift(expected, actual)
+        .into_iter()
+        .filter(|finding| finding.severity >= spanda_config::DriftSeverity::Medium)
+        .map(|finding| {
+            (
+                agent_drift_factor(&finding.message).to_string(),
+                drift_severity_to_readiness(finding.severity),
+                finding.message,
+            )
+        })
+        .collect()
+}
+
+fn agent_drift_factor(message: &str) -> &'static str {
+    if message.contains("attestation") || message.contains("boot_state") {
+        "Attestation"
+    } else {
+        "Agent"
+    }
+}

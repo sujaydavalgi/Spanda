@@ -1,7 +1,16 @@
 //! CLI commands for operational readiness and mission assurance.
 
 use crate::config_load::{ensure_config_valid, load_system_config};
+use spanda_config::{expected_agent_states, AgentDriftSnapshot};
+use spanda_fleet::{
+    default_fleet_agents_path, fleet_agent_status, load_fleet_agent_registry, lookup_fleet_agent,
+    FleetAgentStatusResponse,
+};
 use spanda_lexer::tokenize;
+use spanda_ota::{
+    agent_status, default_agents_path, hash_program_artifact, load_agent_registry, lookup_agent,
+    AgentStatusResponse,
+};
 use spanda_parser::parse;
 use spanda_readiness::{
     analyze_failure, audit_program, build_runtime_context_with_config, evaluate_fleet_readiness,
@@ -128,6 +137,7 @@ fn parse_readiness_cli(args: &[String]) -> ParsedReadinessCli {
     let mut agent_json = false;
     let mut config_path: Option<String> = None;
     let mut baseline_path: Option<String> = None;
+    let mut agent_filter: Option<String> = None;
     let mut history_path: Option<String> = None;
     let mut record = false;
     let mut compliance_profile: Option<String> = None;
@@ -188,6 +198,14 @@ fn parse_readiness_cli(args: &[String]) -> ParsedReadinessCli {
                 }
                 baseline_path = Some(args[i].clone());
             }
+            "--agent" => {
+                i += 1;
+                if i >= args.len() {
+                    eprintln!("--agent requires a deploy target (Robot@Hardware or Robot)");
+                    process::exit(1);
+                }
+                agent_filter = Some(args[i].clone());
+            }
             other if !other.starts_with('-') && file.is_none() => file = Some(other.to_string()),
             other => {
                 eprintln!("Unknown argument: {other}");
@@ -238,6 +256,15 @@ fn parse_readiness_cli(args: &[String]) -> ParsedReadinessCli {
     );
     options.system_config = system_config.clone();
     options.baseline_config = baseline_config;
+    if let Some(filter) = agent_filter.as_deref() {
+        populate_agent_drift(
+            &program,
+            &file,
+            filter,
+            system_config.as_deref(),
+            &mut options,
+        );
+    }
     ParsedReadinessCli {
         format,
         file,
@@ -247,6 +274,94 @@ fn parse_readiness_cli(args: &[String]) -> ParsedReadinessCli {
         compliance_profile,
         history_path,
         system_config,
+    }
+}
+
+fn populate_agent_drift(
+    program: &spanda_ast::nodes::Program,
+    program_path: &str,
+    agent_filter: &str,
+    system_config: Option<&spanda_config::ResolvedSystemConfig>,
+    options: &mut ReadinessOptions,
+) {
+    let program_hash = hash_program_artifact(program_path);
+    let expected_states =
+        expected_agent_states(program, system_config, program_hash.as_deref());
+    let expected = expected_states
+        .into_iter()
+        .find(|state| agent_filter == state.target_key || agent_filter == state.robot_name)
+        .unwrap_or_else(|| {
+            eprintln!("--agent '{agent_filter}' does not match any deploy target in program");
+            process::exit(1);
+        });
+    let deploy_registry = load_agent_registry(&default_agents_path());
+    let fleet_registry = load_fleet_agent_registry(&default_fleet_agents_path());
+    let snapshot = fetch_agent_snapshot(
+        &expected.target_key,
+        &expected.robot_name,
+        Some(agent_filter),
+        &deploy_registry,
+        &fleet_registry,
+    )
+    .unwrap_or_else(|error| {
+        eprintln!("Failed to fetch agent status: {error}");
+        process::exit(1);
+    });
+    options.agent_drift.push((expected, snapshot));
+}
+
+fn fetch_agent_snapshot(
+    target_key: &str,
+    robot_name: &str,
+    agent_filter: Option<&str>,
+    deploy_registry: &spanda_ota::DeployAgentRegistry,
+    fleet_registry: &spanda_fleet::FleetAgentRegistry,
+) -> Result<AgentDriftSnapshot, String> {
+    let deploy_key = if agent_filter.is_some_and(|filter| filter.contains('@')) {
+        agent_filter.unwrap()
+    } else {
+        target_key
+    };
+    if let Some(entry) = lookup_agent(deploy_registry, deploy_key) {
+        let status = agent_status(entry)?;
+        return Ok(snapshot_from_deploy_status(deploy_key, &status));
+    }
+    let fleet_robot = agent_filter.unwrap_or(robot_name);
+    let entry = lookup_fleet_agent(fleet_registry, fleet_robot)
+        .ok_or_else(|| format!("no agent registered for '{fleet_robot}'"))?;
+    let status = fleet_agent_status(entry)?;
+    Ok(snapshot_from_fleet_status(fleet_robot, &status))
+}
+
+fn snapshot_from_deploy_status(id: &str, status: &AgentStatusResponse) -> AgentDriftSnapshot {
+    AgentDriftSnapshot {
+        agent_id: id.to_string(),
+        target: Some(status.target.clone()),
+        robot_name: status.robot_name.clone(),
+        hardware_profile: status.hardware_profile.clone(),
+        firmware_version: status.firmware_version.clone(),
+        program_hash: status.program_hash.clone(),
+        current_version: Some(status.current_version.clone()),
+        packages: status.packages.clone(),
+        healthy: status.healthy,
+        attestation_contract: status.attestation_contract.clone(),
+        attestation_verified: status.attestation_verified,
+        boot_state: status.boot_state.clone(),
+    }
+}
+
+fn snapshot_from_fleet_status(id: &str, status: &FleetAgentStatusResponse) -> AgentDriftSnapshot {
+    AgentDriftSnapshot {
+        agent_id: id.to_string(),
+        target: None,
+        robot_name: status.robot_name.clone(),
+        hardware_profile: status.hardware_profile.clone(),
+        firmware_version: status.firmware_version.clone(),
+        program_hash: status.program_hash.clone(),
+        current_version: None,
+        packages: status.packages.clone(),
+        healthy: status.healthy,
+        ..AgentDriftSnapshot::default()
     }
 }
 
@@ -781,7 +896,7 @@ pub fn readiness_dispatch(args: &[String]) {
 
     if args.is_empty() {
         eprintln!(
-            "Usage: spanda readiness <file.sd> [--record] [--profile <name>] [--target <profile>] [--runtime] [--inject-health-faults] [--json|--agent-json|--markdown|--html]\n\
+            "Usage: spanda readiness <file.sd> [--baseline <dir|spanda.toml>] [--agent <Robot@Hardware>] [--record] [--profile <name>] [--target <profile>] [--runtime] [--inject-health-faults] [--json|--agent-json|--markdown|--html]\n\
              spanda readiness trends <file.sd> [--forecast 7d] [--history <path>] [--json]"
         );
         process::exit(1);

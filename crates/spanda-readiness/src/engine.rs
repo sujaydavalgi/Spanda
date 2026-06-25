@@ -184,6 +184,19 @@ pub fn evaluate_readiness_with_runtime(
         }
     }
 
+    for (expected, actual) in &options.agent_drift {
+        for (factor, severity, message) in crate::config::agent_drift_issues(expected, actual) {
+            issues.push(ReadinessIssue {
+                factor,
+                severity,
+                message,
+                suggested_action: Some(
+                    "Run spanda drift --agent or verify deploy agent attestation status".into(),
+                ),
+            });
+        }
+    }
+
     let cap_report = check_minimum_capabilities(program);
     let cap_score = score_from_compatible(cap_report.compatible, cap_report.errors.len());
     factor_scores.push(factor_row(

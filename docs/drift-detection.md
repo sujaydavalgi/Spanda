@@ -21,6 +21,9 @@ spanda config drift --baseline configs/approved/ rover.sd --json
 
 # Readiness with baseline drift gates
 spanda readiness rover.sd --config spanda.toml --baseline configs/approved/
+
+# Readiness with live deploy agent attestation drift
+spanda readiness examples/showcase/secure_boot/rover.sd --agent Rover@Jetson
 ```
 
 ## Comparison dimensions
@@ -63,6 +66,7 @@ See [hardware-attestation.md](./hardware-attestation.md).
 - Semantic config comparison: `spanda-config::drift`
 - Agent snapshot comparison: `expected_agent_states` + `detect_agent_drift`
 - Readiness baseline gates: `spanda readiness --baseline`
+- Readiness agent attestation gates: `spanda readiness --agent <Robot@Hardware>`
 
 ## Related
 
