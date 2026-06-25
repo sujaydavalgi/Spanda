@@ -5,6 +5,7 @@ pub mod detect;
 pub mod diagnosis;
 pub mod fleet;
 pub mod integrity;
+pub mod policy;
 pub mod runtime;
 
 pub use assurance::{
@@ -28,5 +29,8 @@ pub use integrity::{
     apply_agent_integrity, compare_agent_integrity, format_integrity_report,
     generate_integrity_report, AgentIntegrityActual, AgentIntegrityExpected,
     ArtifactIntegrityStatus, IntegrityArtifact, IntegrityFormat, IntegrityReport,
+};
+pub use policy::{
+    actions_for_tamper_event, extract_tamper_policies, tamper_policy_coverage, TamperPolicySpec,
 };
 pub use runtime::{generate_runtime_tamper_check, MissionTrace, TraceFrame};

@@ -552,6 +552,8 @@ pub enum Program {
         #[serde(default)]
         recovery_policies: Vec<crate::assurance_decl::RecoveryPolicyDecl>,
         #[serde(default)]
+        tamper_policies: Vec<crate::assurance_decl::TamperPolicyDecl>,
+        #[serde(default)]
         continuity_policies: Vec<crate::assurance_decl::ContinuityPolicyDecl>,
         #[serde(default)]
         operational_policies: Vec<crate::policy_decl::OperationalPolicyDecl>,

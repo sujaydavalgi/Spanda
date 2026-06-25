@@ -3,6 +3,7 @@
 use serde::{Deserialize, Serialize};
 use spanda_ast::foundations::DeployDecl;
 use spanda_ast::nodes::{ImportDecl, Program, RobotDecl};
+use crate::policy::tamper_policy_coverage;
 use spanda_readiness::{audit_program, ReadinessSeverity};
 use spanda_security::{security_analyze_program, SecuritySeverity};
 use spanda_threat::{analyze_threat_model, ThreatRisk};
@@ -117,6 +118,28 @@ pub fn generate_tamper_check(program: &Program, source_label: &str) -> TamperRep
     }
 
     collect_structural_findings(program, &mut findings);
+
+    let (has_tamper_policy, branch_count) = tamper_policy_coverage(program);
+    if has_tamper_policy {
+        findings.push(TamperFinding {
+            category: "tamper_policy".into(),
+            severity: TamperSeverity::Info,
+            message: format!("tamper_policy declared with {branch_count} response branch(es)"),
+            evidence: None,
+            line: None,
+        });
+    } else if findings
+        .iter()
+        .any(|finding| finding.severity >= TamperSeverity::Medium)
+    {
+        findings.push(TamperFinding {
+            category: "tamper_policy".into(),
+            severity: TamperSeverity::Low,
+            message: "Declare tamper_policy branches for automated tamper response".into(),
+            evidence: Some("on tamper severity Critical { enter SafeMode; }".into()),
+            line: None,
+        });
+    }
 
     let trust_score = compute_trust_score(&findings);
     let status = derive_status(&findings, trust_score);

@@ -25,6 +25,19 @@ pub fn parse(tokens: Vec<Token>) -> Result<Program, SpandaError> {
     Parser::new(tokens).parse_program()
 }
 
+fn normalize_tamper_policy_condition(parts: &[String]) -> String {
+    match parts {
+        [tamper, severity, level] if tamper == "tamper" && severity == "severity" => {
+            format!("tamper.severity.{level}")
+        }
+        [tamper, signal, rest @ ..] if tamper == "tamper" && signal == "signal" => {
+            format!("tamper.signal.{}", rest.join("."))
+        }
+        [gps, spoofed] if gps == "gps" && spoofed == "spoofed" => "gps.spoofed".into(),
+        _ => parts.join("."),
+    }
+}
+
 struct Parser {
     tokens: Vec<Token>,
     pos: usize,
@@ -706,6 +719,7 @@ impl Parser {
         let mut mission_plans = Vec::new();
         let mut resilience_policies = Vec::new();
         let mut recovery_policies = Vec::new();
+        let mut tamper_policies = Vec::new();
         let mut continuity_policies = Vec::new();
         let mut operational_policies = Vec::new();
         let mut assurance_cases = Vec::new();
@@ -795,6 +809,8 @@ impl Parser {
                 resilience_policies.push(self.parse_resilience_policy()?);
             } else if self.check(TokenType::Ident) && self.peek().lexeme == "recovery_policy" {
                 recovery_policies.push(self.parse_recovery_policy()?);
+            } else if self.check(TokenType::Ident) && self.peek().lexeme == "tamper_policy" {
+                tamper_policies.push(self.parse_tamper_policy()?);
             } else if self.check(TokenType::Ident) && self.peek().lexeme == "continuity_policy" {
                 continuity_policies.push(self.parse_continuity_policy()?);
             } else if self.check(TokenType::Ident) && self.peek().lexeme == "mission_plan" {
@@ -853,6 +869,7 @@ impl Parser {
             mission_plans,
             resilience_policies,
             recovery_policies,
+            tamper_policies,
             continuity_policies,
             operational_policies,
             assurance_cases,
@@ -9819,6 +9836,61 @@ impl Parser {
             branches,
             span: self.span_from(&start, &end),
         })
+    }
+
+    fn parse_tamper_policy(
+        &mut self,
+    ) -> Result<spanda_ast::assurance_decl::TamperPolicyDecl, SpandaError> {
+        use spanda_ast::assurance_decl::{TamperPolicyBranch, TamperPolicyDecl};
+        let start = self.advance();
+        let name = self.parse_label("Expected tamper_policy name")?;
+        self.expect(TokenType::Lbrace, "Expected '{' after tamper_policy name")?;
+        let mut branches = Vec::new();
+        while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+            if self.check(TokenType::On) {
+                self.advance();
+                let condition = self.parse_tamper_policy_condition()?;
+                self.expect(TokenType::Lbrace, "Expected '{' after on condition")?;
+                let mut actions = Vec::new();
+                while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+                    actions.push(self.parse_action_statement()?);
+                }
+                self.expect(TokenType::Rbrace, "Expected '}' to close on branch")?;
+                branches.push(TamperPolicyBranch {
+                    condition,
+                    actions,
+                    span: self.span_from(&start, self.previous()),
+                });
+            } else {
+                return Err(SpandaError::Parse {
+                    message: "Expected 'on' branch in tamper_policy".into(),
+                    line: self.peek().line,
+                    column: self.peek().column,
+                });
+            }
+        }
+        let end = self.expect(TokenType::Rbrace, "Expected '}' to close tamper_policy")?;
+        Ok(TamperPolicyDecl::TamperPolicyDecl {
+            name,
+            branches,
+            span: self.span_from(&start, &end),
+        })
+    }
+
+    fn parse_tamper_policy_condition(&mut self) -> Result<String, SpandaError> {
+        let mut parts = Vec::new();
+        while self.check(TokenType::Ident) {
+            parts.push(self.parse_label("Expected tamper policy condition token")?);
+        }
+        if parts.is_empty() {
+            let token = self.peek();
+            return Err(SpandaError::Parse {
+                message: "Expected tamper policy condition after 'on'".into(),
+                line: token.line,
+                column: token.column,
+            });
+        }
+        Ok(normalize_tamper_policy_condition(&parts))
     }
 
     fn parse_continuity_policy(

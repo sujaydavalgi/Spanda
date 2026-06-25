@@ -163,6 +163,25 @@ pub enum ResiliencePolicyDecl {
     },
 }
 
+/// Conditional branch inside a tamper policy (`on tamper severity Critical { ... }`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct TamperPolicyBranch {
+    pub condition: String,
+    pub actions: Vec<String>,
+    pub span: Span,
+}
+
+/// Tamper policy declaration for automated tamper response.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "kind")]
+pub enum TamperPolicyDecl {
+    TamperPolicyDecl {
+        name: String,
+        branches: Vec<TamperPolicyBranch>,
+        span: Span,
+    },
+}
+
 /// Conditional branch inside a recovery policy (`on gps.failed { ... }`).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RecoveryPolicyBranch {

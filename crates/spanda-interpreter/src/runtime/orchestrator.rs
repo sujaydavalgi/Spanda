@@ -30,6 +30,7 @@ use spanda_runtime::world_model::WorldModelRuntime;
 use spanda_runtime_host::core_runtime_host;
 use spanda_safety::{Pose2d, SafetyMonitor, SafetyZoneRuntime};
 use spanda_security::SecurityContext;
+use spanda_tamper::{TamperPolicySpec, TamperSeverity};
 use spanda_transport_routing::RoutingCommBus;
 use spanda_typecheck::ModuleRegistry;
 use std::cell::RefCell;
@@ -433,6 +434,8 @@ pub struct Interpreter<B: RobotBackend> {
     seen_fault_keys: std::collections::HashSet<String>,
     applied_health_reactions: std::collections::HashSet<String>,
     applied_anomaly_handlers: std::collections::HashSet<String>,
+    tamper_policies: Vec<TamperPolicySpec>,
+    applied_tamper_branches: std::collections::HashSet<String>,
     learned_anomaly_triggers: std::collections::HashSet<String>,
     learned_anomaly_ema: std::collections::HashMap<String, f64>,
     kill_switch_defs: HashMap<String, spanda_ast::foundations::KillSwitchDecl>,
@@ -555,6 +558,8 @@ impl<B: RobotBackend> Interpreter<B> {
             seen_fault_keys: std::collections::HashSet::new(),
             applied_health_reactions: std::collections::HashSet::new(),
             applied_anomaly_handlers: std::collections::HashSet::new(),
+            tamper_policies: Vec::new(),
+            applied_tamper_branches: std::collections::HashSet::new(),
             learned_anomaly_triggers: std::collections::HashSet::new(),
             learned_anomaly_ema: std::collections::HashMap::new(),
             kill_switch_defs: HashMap::new(),
@@ -1279,6 +1284,7 @@ impl<B: RobotBackend> Interpreter<B> {
         }
         self.load_program_metadata(program);
         self.cache_health_program(program);
+        self.cache_tamper_policies(program);
         self.cache_fault_program(program);
         self.cache_kill_switches(program);
         if let Some(ref policy_name) = self.options.enforce_policy.clone() {
@@ -1316,6 +1322,7 @@ impl<B: RobotBackend> Interpreter<B> {
                 self.comm_bus.inject_fault(fault);
                 self.hardware_monitor.inject_fault(fault.to_string());
                 self.security.inject_security_fault(fault);
+                self.invoke_tamper_policies(fault, TamperSeverity::Critical);
             }
             self.log("security: injected default security fault scenarios".into());
         }
@@ -1679,6 +1686,7 @@ impl<B: RobotBackend> Interpreter<B> {
             mission_plans: vec![],
             resilience_policies: vec![],
             recovery_policies: vec![],
+            tamper_policies: vec![],
             continuity_policies: vec![],
             operational_policies: vec![],
             assurance_cases: vec![],
@@ -2022,6 +2030,8 @@ mod runtime_safety;
 mod runtime_scheduler;
 #[path = "runtime_security.rs"]
 mod runtime_security;
+#[path = "runtime_tamper.rs"]
+mod runtime_tamper;
 #[path = "runtime_sensors.rs"]
 mod runtime_sensors;
 #[path = "runtime_setup.rs"]

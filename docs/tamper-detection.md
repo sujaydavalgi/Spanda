@@ -35,6 +35,8 @@ spanda diagnose tamper --fleet fleet_tamper/manifest.json [--json]
 
 Verify-time `spanda tamper-check` composes threat modeling, safety audit, security analysis, and structural integrity signals. Runtime analysis accepts `.trace` files (or `--runtime`) for capability denials and tamper events. `spanda diagnose tamper <trace>` adds tamper source, affected components, impact, timeline, and recovery recommendations. `spanda tamper-check --fleet <manifest.json>` correlates tamper signals across fleet member traces (shared agents, simultaneous events, coordinated denials).
 
+**Tamper policies:** declare `tamper_policy` blocks with `on tamper severity Critical { ... }` or `on tamper signal capability_denied { ... }` branches. At runtime, matching signals dispatch recovery actions (`enter SafeMode`, `stop_all_actuators()`, `audit.record(...)`). See `examples/showcase/tamper_policy/`.
+
 ## Integration
 
 Readiness · Assurance · Diagnosis · Health · Security · Capability verification · Hardware verification · Trust score · Audit · Replay

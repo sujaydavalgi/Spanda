@@ -242,6 +242,7 @@ mod tests {
             mission_plans: vec![],
             resilience_policies: vec![],
             recovery_policies: vec![],
+            tamper_policies: vec![],
             continuity_policies: vec![],
             operational_policies: vec![],
             assurance_cases: vec![],

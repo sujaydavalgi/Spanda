@@ -394,6 +394,8 @@ tamper_policy CriticalResponse {
 
 **Actions:** Alert · Audit · Degraded Mode · Safe Mode · Kill Switch · Human Approval · Mission Pause · Mission Abort.
 
+Branches match runtime signals (`tamper severity Critical`, `tamper signal capability_denied`, `gps spoofed`) and dispatch through the recovery action runtime (`enter SafeMode`, `stop_all_actuators()`, `audit.record(...)`). Shipped — see `examples/showcase/tamper_policy/`.
+
 ### Reports
 
 | Report | CLI | Formats |
@@ -413,6 +415,7 @@ tamper_policy CriticalResponse {
 | `examples/showcase/package_tampering/` | Modified package import lowers trust score |
 | `examples/showcase/mission_tampering/` | Mission hash drift since approval |
 | `examples/showcase/runtime_intrusion/` | Unexpected capability usage in mission trace |
+| `examples/showcase/tamper_policy/` | Declarative tamper_policy response on security faults |
 
 ### Remaining gaps (honest)
 

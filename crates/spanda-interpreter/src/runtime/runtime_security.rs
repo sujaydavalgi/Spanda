@@ -4,6 +4,7 @@
 use super::{Interpreter, IntoSpandaError, RobotBackend, RuntimeError};
 use spanda_error::SpandaError;
 use spanda_security::{SecurePolicy, TrustLevel};
+use spanda_tamper::TamperSeverity;
 
 impl<B: RobotBackend> Interpreter<B> {
     pub(super) fn check_agent_capability(
@@ -76,6 +77,7 @@ impl<B: RobotBackend> Interpreter<B> {
                 "agent: denied {agent} {action}{}",
                 target.map(|t| format!("({t})")).unwrap_or_default()
             ));
+            self.invoke_tamper_policies("agent_capability_denied", TamperSeverity::High);
             if let Some(rt) = self.audit_runtime.as_mut() {
                 let _ = self.security.audit_security_event(
                     rt,

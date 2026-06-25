@@ -1911,6 +1911,7 @@ dependencies = [
  "spanda-runtime-host",
  "spanda-safety",
  "spanda-security",
+ "spanda-tamper",
  "spanda-telemetry-store",
  "spanda-transport",
  "spanda-transport-routing",

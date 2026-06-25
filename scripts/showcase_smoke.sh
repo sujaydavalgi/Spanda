@@ -131,4 +131,8 @@ echo "== showcase smoke: security assurance =="
 chmod +x scripts/security_assurance_smoke.sh
 ./scripts/security_assurance_smoke.sh
 
+echo "== showcase smoke: tamper policy =="
+chmod +x scripts/tamper_policy_smoke.sh
+./scripts/tamper_policy_smoke.sh
+
 echo "Showcase smoke tests passed."
