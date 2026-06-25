@@ -206,7 +206,7 @@ Ordered by **adoption impact × trust impact ÷ implementation risk**.
 | P3.2 | **Explainability reports** (trace decisions) | `spanda explain decision <trace>` shipped; richer replay v3 traces planned |
 | P3.3 | **AI generate / suggest** | Mock-first templates with parse+typecheck gate; `spanda generate`, `spanda suggest` |
 | P3.4 | **Runtime policy enforcement** | `spanda run|sim --enforce-policy` for max_speed and operation_hours |
-| P3.5 | **Spoofing detection** (GPS/sensor) | Package-backed; hardware-specific |
+| P3.5 | **Spoofing detection** (GPS/sensor) | `spanda spoof-check` for program coverage + trace plausibility; package backends for hardware-specific models |
 
 ---
 
@@ -312,6 +312,7 @@ When each area ships: update `CHANGELOG.md`, `feature-status.md`, `getting-start
 | Tamper framework | `spanda tamper-check` (verify-time); `spanda integrity` (verify-time); runtime tamper (planned) |
 | Explainability | `spanda explain decision <trace>` |
 | AI assist | `spanda generate`, `spanda suggest` (mock-first, guardrailed) |
+| Spoofing detection | `spanda spoof-check <file.sd\|file.trace>` (coverage + trace plausibility) |
 | Showcase demos | `examples/showcase/gps_spoofing/`, `package_tampering/`, … |
 
 ---
@@ -372,7 +373,7 @@ flowchart TB
 | Config / mission tampering | Hash compare vs audit baseline | B |
 | Package tampering | Signature + registry trust score | A |
 | Firmware modification | Declared hash vs agent report | D |
-| GPS / sensor spoofing | IMU cross-check, plausibility bounds | D (package) |
+| GPS / sensor spoofing | IMU cross-check, plausibility bounds | D — `spanda spoof-check` shipped; vendor ML in packages |
 | Replay attacks | Nonce + timestamp on signed comm | Exists (`simulate_compatibility`) |
 | Runtime injection | Capability usage monitor vs grants | D |
 | Safety rule modification | AST hash at certify time | B |

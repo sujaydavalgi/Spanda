@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "source": "examples/showcase/gps_spoofing/rover.sd",
+  "deterministic": true,
+  "frames": [
+    {
+      "sim_time_ms": 0.0,
+      "event": "gps_reading",
+      "payload": {
+        "lat": 37.7749,
+        "lon": -122.4194,
+        "fix_quality": "good"
+      }
+    },
+    {
+      "sim_time_ms": 500.0,
+      "event": "gps_reading",
+      "payload": {
+        "lat": 37.8049,
+        "lon": -122.4194,
+        "fix_quality": "poor"
+      }
+    },
+    {
+      "sim_time_ms": 500.0,
+      "event": "emit gps.spoofed",
+      "payload": {
+        "reason": "imu_disagreement"
+      }
+    }
+  ]
+}

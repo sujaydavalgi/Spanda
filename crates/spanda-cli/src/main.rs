@@ -23,6 +23,7 @@ mod generate_cli;
 mod adr_cli;
 mod integrity_cli;
 mod tamper_cli;
+mod spoof_cli;
 mod fault_cli;
 mod network_cli;
 mod package;
@@ -261,6 +262,7 @@ fn usage() {
            spanda estimate <file.sd> [--target <profile>] [--json]\n\
            spanda adr <file.sd> [--json] [--out <dir>]\n\
            spanda tamper-check <file.sd> [--json]\n\
+           spanda spoof-check <file.sd|file.trace> [--json]\n\
            spanda integrity <file.sd> [--baseline <file.sd>] [--agent <Robot@Hardware>] [--config <spanda.toml>] [--json]\n\
            spanda generate mission|robot|health-policy [--json] [--out <file.sd>]\n\
            spanda suggest <file.sd> [--json]\n",
@@ -1625,6 +1627,12 @@ fn main() {
 
     if command == "tamper-check" {
         tamper_cli::tamper_check_dispatch(&args[2..]);
+        let _ = io::stdout().flush();
+        return;
+    }
+
+    if command == "spoof-check" {
+        spoof_cli::spoof_check_dispatch(&args[2..]);
         let _ = io::stdout().flush();
         return;
     }

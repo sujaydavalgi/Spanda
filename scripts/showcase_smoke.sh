@@ -107,4 +107,8 @@ echo "== showcase smoke: generate =="
 chmod +x scripts/generate_smoke.sh
 ./scripts/generate_smoke.sh
 
+echo "== showcase smoke: spoof =="
+chmod +x scripts/spoof_smoke.sh
+./scripts/spoof_smoke.sh
+
 echo "Showcase smoke tests passed."
