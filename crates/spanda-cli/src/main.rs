@@ -20,6 +20,7 @@ mod score_cli;
 mod chaos_cli;
 mod estimate_cli;
 mod adr_cli;
+mod integrity_cli;
 mod tamper_cli;
 mod fault_cli;
 mod network_cli;
@@ -257,7 +258,8 @@ fn usage() {
            spanda chaos <file.sd> [--inject gps-failure,...] [--json]\n\
            spanda estimate <file.sd> [--target <profile>] [--json]\n\
            spanda adr <file.sd> [--json] [--out <dir>]\n\
-           spanda tamper-check <file.sd> [--json]\n",
+           spanda tamper-check <file.sd> [--json]\n\
+           spanda integrity <file.sd> [--baseline <file.sd>] [--json]\n",
         deploy_ota::deploy_usage_lines()
     );
 }
@@ -1619,6 +1621,12 @@ fn main() {
 
     if command == "tamper-check" {
         tamper_cli::tamper_check_dispatch(&args[2..]);
+        let _ = io::stdout().flush();
+        return;
+    }
+
+    if command == "integrity" {
+        integrity_cli::integrity_dispatch(&args[2..]);
         let _ = io::stdout().flush();
         return;
     }
