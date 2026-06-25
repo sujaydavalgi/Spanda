@@ -103,4 +103,8 @@ echo "== showcase smoke: policy runtime =="
 chmod +x scripts/policy_runtime_smoke.sh
 ./scripts/policy_runtime_smoke.sh
 
+echo "== showcase smoke: generate =="
+chmod +x scripts/generate_smoke.sh
+./scripts/generate_smoke.sh
+
 echo "Showcase smoke tests passed."

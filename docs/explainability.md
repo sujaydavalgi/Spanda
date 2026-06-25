@@ -31,16 +31,14 @@ With `--config`, reports add **configuration validation**, **deployment gates pr
 
 ## AI-assisted development (Area 1)
 
-Related commands (Phase D, guardrailed):
+**Experimental** — see [ai-assisted-development.md](./ai-assisted-development.md).
 
 ```bash
-spanda generate mission
+spanda generate mission [--out patrol.sd]
 spanda generate robot
 spanda generate health-policy
 spanda suggest rover.sd
 ```
-
-All generated output must pass `spanda check` and `spanda verify` before deploy. No auto-deploy.
 
 ## Crate
 

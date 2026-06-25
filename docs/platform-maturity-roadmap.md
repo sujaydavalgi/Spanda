@@ -16,7 +16,7 @@ Each area is classified by lifecycle phase, maturity tier, and primary outcome.
 
 | # | Area | Phase(s) | Tier | Outcome | New crate (proposed) |
 |---|------|----------|------|---------|----------------------|
-| 1 | AI-assisted development (`generate`, `explain`, `suggest`) | Build, Operate | Future | Faster authoring; explain failures | `spanda-explain` |
+| 1 | AI-assisted development (`generate`, `explain`, `suggest`) | Build, Operate | Experimental (mock-first) | Faster authoring; explain failures | `spanda-generate` |
 | 2 | Dependency graph visualization | Build, Operate | Experimental | System understandability | `spanda-graph` |
 | 3 | Threat modeling | Verify, Deploy | Planned | Pre-deploy security awareness | `spanda-threat` |
 | 4 | Configuration drift detection | Deploy, Operate | Experimental | Expected vs actual parity | `spanda-config::drift` |
@@ -204,7 +204,7 @@ Ordered by **adoption impact × trust impact ÷ implementation risk**.
 |----------|------|-----------|
 | P3.1 | **Tamper / integrity framework** | Verify-time `spanda tamper-check` shipped; runtime integrity and `spanda integrity` planned |
 | P3.2 | **Explainability reports** (trace decisions) | `spanda explain decision <trace>` shipped; richer replay v3 traces planned |
-| P3.3 | **AI generate / suggest** | Guardrailed codegen; mock-first; human review required |
+| P3.3 | **AI generate / suggest** | Mock-first templates with parse+typecheck gate; `spanda generate`, `spanda suggest` |
 | P3.4 | **Runtime policy enforcement** | `spanda run|sim --enforce-policy` for max_speed and operation_hours |
 | P3.5 | **Spoofing detection** (GPS/sensor) | Package-backed; hardware-specific |
 
@@ -311,7 +311,7 @@ When each area ships: update `CHANGELOG.md`, `feature-status.md`, `getting-start
 |-------------|-----|
 | Tamper framework | `spanda tamper-check` (verify-time); `spanda integrity` (verify-time); runtime tamper (planned) |
 | Explainability | `spanda explain decision <trace>` |
-| AI assist | `spanda generate`, `spanda suggest` (guardrailed) |
+| AI assist | `spanda generate`, `spanda suggest` (mock-first, guardrailed) |
 | Showcase demos | `examples/showcase/gps_spoofing/`, `package_tampering/`, … |
 
 ---
