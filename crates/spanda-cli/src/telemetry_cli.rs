@@ -475,6 +475,7 @@ fn cmd_replay(args: &[String]) {
         playback,
         false,
         json,
+        None,
     );
 }
 

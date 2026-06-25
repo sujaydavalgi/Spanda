@@ -1,9 +1,10 @@
 //! CLI commands for operational readiness and mission assurance.
 
+use crate::config_load::{ensure_config_valid, load_system_config};
 use spanda_lexer::tokenize;
 use spanda_parser::parse;
 use spanda_readiness::{
-    analyze_failure, audit_program, build_runtime_context, evaluate_fleet_readiness,
+    analyze_failure, audit_program, build_runtime_context_with_config, evaluate_fleet_readiness,
     evaluate_readiness_with_runtime, evaluate_safety_coverage, evaluate_twin_readiness,
     format_audit, format_failure_analysis, format_fleet_readiness, format_mission_verification,
     format_readiness, format_safety_coverage, format_safety_report, generate_safety_report,
@@ -19,7 +20,7 @@ struct ParsedReadinessCli {
     file: String,
     options: ReadinessOptions,
     agent_json: bool,
-    system_config: Option<spanda_config::ResolvedSystemConfig>,
+    system_config: Option<std::sync::Arc<spanda_config::ResolvedSystemConfig>>,
 }
 
 fn read_file(path: &str) -> String {
@@ -167,31 +168,17 @@ fn parse_readiness_cli(args: &[String]) -> ParsedReadinessCli {
     });
     let source = read_file(&file);
     let program = parse_program(&source);
-    let system_config = config_path.as_ref().map(|path| {
-        let root = std::path::Path::new(path)
-            .parent()
-            .unwrap_or_else(|| std::path::Path::new("."));
-        spanda_config::ConfigResolver::new()
-            .with_validation(true)
-            .resolve_from_dir(root)
-            .unwrap_or_else(|e| {
-                eprintln!("Failed to load config: {e}");
-                process::exit(1);
-            })
-    });
+    let system_config = load_system_config(
+        std::path::Path::new(&file),
+        config_path.as_deref().map(std::path::Path::new),
+    );
+    ensure_config_valid(system_config.as_ref().map(|arc| arc.as_ref()));
     if target.is_none() {
         if let Some(ref cfg) = system_config {
-            if let Some(robot) = cfg
-                .device_tree
-                .fleet
-                .as_ref()
-                .and_then(|f| f.robots.first())
-            {
-                target = robot.hardware_profile.clone();
-            }
+            target = spanda_config::default_verify_target(cfg);
         }
     }
-    let options = readiness_options_from_flags(
+    let mut options = readiness_options_from_flags(
         &program,
         target,
         include_runtime,
@@ -199,6 +186,7 @@ fn parse_readiness_cli(args: &[String]) -> ParsedReadinessCli {
         simulate,
         strict,
     );
+    options.system_config = system_config.clone();
     ParsedReadinessCli {
         format,
         file,
@@ -229,9 +217,13 @@ fn evaluate_with_options(
 
     //     let result = spanda_cli::readiness_cli::evaluate_with_options(progra, options);
 
-    let runtime = options
-        .include_runtime
-        .then(|| build_runtime_context(program, options.inject_health_faults));
+    let runtime = options.include_runtime.then(|| {
+        build_runtime_context_with_config(
+            program,
+            options.inject_health_faults,
+            options.system_config.as_deref(),
+        )
+    });
     evaluate_readiness_with_runtime(program, options, runtime.as_ref())
 }
 
@@ -252,21 +244,6 @@ pub fn cmd_readiness(args: &[String]) {
     //     let result = spanda_cli::readiness_cli::cmd_readiness(args);
 
     let parsed = parse_readiness_cli(args);
-    if let Some(ref cfg) = parsed.system_config {
-        if !cfg.validation.passed {
-            eprintln!(
-                "Configuration validation failed ({} errors); see `spanda config validate`",
-                cfg.validation.error_count()
-            );
-            if parsed.format == ReportFormat::Json {
-                println!(
-                    "{}",
-                    serde_json::to_string_pretty(&cfg.validation).unwrap_or_default()
-                );
-            }
-            process::exit(1);
-        }
-    }
     let source = read_file(&parsed.file);
 
     // Emit the same JSON envelope as deploy/fleet `GET /v1/readiness`.

@@ -1,10 +1,12 @@
 //! Mission trace replay helpers shared by CLI commands.
 
+use crate::config_load::{apply_system_config_to_run_options, load_system_config};
 use spanda_driver::{playback_mission, replay_mission, RunOptions};
 use spanda_runtime::replay::{parse_replay_offset, MissionTrace};
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process;
+use std::sync::Arc;
 
 /// Replay or inspect a mission trace with optional deterministic verification.
 pub fn human_replay(
@@ -14,6 +16,7 @@ pub fn human_replay(
     playback: bool,
     show_faults: bool,
     as_json: bool,
+    config_flag: Option<&Path>,
 ) {
     let trace = MissionTrace::load(trace_file).unwrap_or_else(|error| {
         eprintln!("{error}");
@@ -43,15 +46,9 @@ pub fn human_replay(
     let frames = trace.frames_from(offset_ms);
 
     if playback {
-        let (report, state) = playback_mission(
-            trace_file,
-            RunOptions {
-                replay_from_ms: Some(offset_ms),
-                playback_wall_clock: true,
-                ..Default::default()
-            },
-        )
-        .unwrap_or_else(|error| {
+        let source_path = resolve_trace_source(trace_file, &trace.source);
+        let run_opts = replay_run_options(&source_path, config_flag, offset_ms, true, false);
+        let (report, state) = playback_mission(trace_file, run_opts).unwrap_or_else(|error| {
             eprintln!("Playback failed: {error}");
             process::exit(1);
         });
@@ -87,22 +84,12 @@ pub fn human_replay(
             eprintln!("Failed to read trace source '{source_path}': {error}");
             process::exit(1);
         });
-        let (_, verification) = replay_mission(
-            &source,
-            trace_file,
-            RunOptions {
-                max_loop_iterations: 20,
-                record_trace: true,
-                trace_source: Some(trace.source.clone()),
-                replay_from_ms: Some(offset_ms),
-                replay_deterministic: true,
-                ..Default::default()
-            },
-        )
-        .unwrap_or_else(|error| {
-            eprintln!("Replay failed: {error}");
-            process::exit(1);
-        });
+        let run_opts = replay_run_options(&source_path, config_flag, offset_ms, false, true);
+        let (_, verification) =
+            replay_mission(&source, trace_file, run_opts).unwrap_or_else(|error| {
+                eprintln!("Replay failed: {error}");
+                process::exit(1);
+            });
         if as_json {
             println!(
                 "{}",
@@ -160,6 +147,28 @@ pub fn human_replay(
     if frames.len() > 20 {
         println!("  ... {} more frames", frames.len() - 20);
     }
+}
+
+fn replay_run_options(
+    source_path: &str,
+    config_flag: Option<&Path>,
+    offset_ms: f64,
+    playback_wall_clock: bool,
+    replay_deterministic: bool,
+) -> RunOptions {
+    let path = PathBuf::from(source_path);
+    let cfg: Option<Arc<spanda_config::ResolvedSystemConfig>> =
+        load_system_config(&path, config_flag);
+    let base = RunOptions {
+        max_loop_iterations: 20,
+        record_trace: replay_deterministic,
+        trace_source: Some(source_path.to_string()),
+        replay_from_ms: Some(offset_ms),
+        replay_deterministic,
+        playback_wall_clock,
+        ..Default::default()
+    };
+    apply_system_config_to_run_options(cfg, base, &path)
 }
 
 fn resolve_trace_source(trace_file: &str, source: &str) -> String {

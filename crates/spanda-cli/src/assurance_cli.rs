@@ -1,10 +1,13 @@
 //! CLI commands for mission assurance and autonomous operations.
 
+use crate::config_load::{ensure_config_valid, load_system_config_from_cli_args};
+
 use spanda_assurance::{
-    assure_program, check_resilience, diagnose_from_trace, diagnose_program, evaluate_prognostics,
-    evaluate_recovery_coverage, evaluate_state_assurance, format_anomaly, format_assurance,
-    format_diagnosis, format_mission_assurance, format_prognostics, format_recovery_coverage,
-    format_resilience, format_state, scan_anomalies, verify_mission_assurance,
+    assure_program_with_config, check_resilience, diagnose_from_trace,
+    diagnose_program_with_config, evaluate_prognostics, evaluate_recovery_coverage_with_config,
+    evaluate_state_assurance, format_anomaly, format_assurance, format_diagnosis,
+    format_mission_assurance, format_prognostics, format_recovery_coverage, format_resilience,
+    format_state, scan_anomalies, verify_mission_assurance_with_config,
 };
 use spanda_lexer::tokenize;
 use spanda_parser::parse;
@@ -113,8 +116,18 @@ fn file_arg(args: &[String]) -> String {
         })
 }
 
+fn assurance_config(
+    args: &[String],
+) -> Option<std::sync::Arc<spanda_config::ResolvedSystemConfig>> {
+    load_system_config_from_cli_args(args)
+}
+
 /// `spanda assure <file.sd> [--json|--markdown|--html]`
 pub fn cmd_assure(args: &[String]) {
+    let cfg = assurance_config(args);
+    if let Some(ref c) = cfg {
+        ensure_config_valid(Some(c.as_ref()));
+    }
     // Description:
     //     Cmd assure.
     //
@@ -133,7 +146,7 @@ pub fn cmd_assure(args: &[String]) {
     let file = file_arg(args);
     let source = read_file(&file);
     let program = parse_program(&source);
-    let summary = assure_program(&program, &file);
+    let summary = assure_program_with_config(&program, &file, cfg.as_ref().map(|a| a.as_ref()));
     let output = match format {
         ReportFormat::Json => serde_json::to_string_pretty(&summary).unwrap_or_default(),
         _ => format_assurance(&summary.assurance, format),
@@ -173,6 +186,10 @@ pub fn cmd_anomaly_scan(args: &[String]) {
 
 /// `spanda diagnose <mission.trace|file.sd> [--json|--markdown|--html]`
 pub fn cmd_diagnose_assurance(args: &[String]) {
+    let cfg = assurance_config(args);
+    if let Some(ref c) = cfg {
+        ensure_config_valid(Some(c.as_ref()));
+    }
     // Description:
     //     Cmd diagnose assurance.
     //
@@ -197,7 +214,7 @@ pub fn cmd_diagnose_assurance(args: &[String]) {
     } else {
         let source = read_file(&file);
         let program = parse_program(&source);
-        diagnose_program(&program)
+        diagnose_program_with_config(&program, cfg.as_ref().map(|a| a.as_ref()))
     };
     println!("{}", format_diagnosis(&report, format));
     if !report.passed {
@@ -234,6 +251,10 @@ pub fn cmd_prognostics(args: &[String]) {
 
 /// `spanda mission verify <file.sd> [--json|--markdown|--html]`
 pub fn cmd_mission_verify(args: &[String]) {
+    let cfg = assurance_config(args);
+    if let Some(ref c) = cfg {
+        ensure_config_valid(Some(c.as_ref()));
+    }
     // Description:
     //     Cmd mission verify.
     //
@@ -252,7 +273,7 @@ pub fn cmd_mission_verify(args: &[String]) {
     let file = file_arg(args);
     let source = read_file(&file);
     let program = parse_program(&source);
-    let report = verify_mission_assurance(&program);
+    let report = verify_mission_assurance_with_config(&program, cfg.as_ref().map(|a| a.as_ref()));
     println!("{}", format_mission_assurance(&report, format));
     if !report.passed {
         process::exit(1);
@@ -469,6 +490,10 @@ pub fn mitigation_dispatch(args: &[String]) {
 
 /// `spanda recovery-coverage <file.sd> [--json] [--format markdown]`
 pub fn cmd_recovery_coverage(args: &[String]) {
+    let cfg = assurance_config(args);
+    if let Some(ref c) = cfg {
+        ensure_config_valid(Some(c.as_ref()));
+    }
     let json = args.iter().any(|a| a == "--json");
     let markdown = args.iter().any(|a| a == "--markdown")
         || args
@@ -477,6 +502,7 @@ pub fn cmd_recovery_coverage(args: &[String]) {
     let file = file_arg(args);
     let source = read_file(&file);
     let program = parse_program(&source);
-    let report = evaluate_recovery_coverage(&program, &file);
+    let report =
+        evaluate_recovery_coverage_with_config(&program, &file, cfg.as_ref().map(|a| a.as_ref()));
     println!("{}", format_recovery_coverage(&report, json, markdown));
 }

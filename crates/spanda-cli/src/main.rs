@@ -3,6 +3,7 @@
 mod assurance_cli;
 mod certify_cli;
 mod config_cli;
+mod config_load;
 mod continuity_cli;
 mod contract_cli;
 mod decision_cli;
@@ -32,8 +33,8 @@ use spanda_docs::{
     markdown_man_to_roff,
 };
 use spanda_driver::{
-    check, compile, lower_to_sir, run, run_debug, tokenize, verify_compatibility_with_registry,
-    RunOptions, RunResult,
+    check, compile, compile_with_registry, lower_to_sir, run, run_debug, tokenize, RunOptions,
+    RunResult,
 };
 use spanda_error::SpandaError;
 use spanda_format::format_source;
@@ -55,7 +56,7 @@ use std::io::{self, Write};
 use std::path::Path;
 use std::process;
 
-fn run_options_for_file(file: &str, opts: RunOptions) -> RunOptions {
+fn run_options_for_file(file: &str, opts: RunOptions, config_flag: Option<&Path>) -> RunOptions {
     // Description:
     //     Run options for file.
     //
@@ -64,6 +65,8 @@ fn run_options_for_file(file: &str, opts: RunOptions) -> RunOptions {
     //         Caller-supplied file.
     //     opts: RunOptions
     //         Caller-supplied opts.
+    //     config_flag: Option<&Path>
+    //         Optional explicit spanda.toml path.
     //
     // Outputs:
     //     result: RunOptions
@@ -71,15 +74,12 @@ fn run_options_for_file(file: &str, opts: RunOptions) -> RunOptions {
     //
     // Example:
 
-    //     let result = spanda_cli::main::run_options_for_file(file, opts);
+    //     let result = spanda_cli::main::run_options_for_file(file, opts, None);
 
-    let mut opts = opts;
     let path = Path::new(file);
-    opts.official_packages = package::official_packages_for_source(path);
-    if let Some(registry) = package::module_registry_for_source(path) {
-        opts.module_registry = Some(registry);
-    }
-    opts
+    let cfg = config_load::load_system_config(path, config_flag);
+    config_load::ensure_config_valid(cfg.as_ref().map(|a| a.as_ref()));
+    config_load::apply_system_config_to_run_options(cfg, opts, path)
 }
 
 #[cfg(not(feature = "llvm"))]
@@ -183,7 +183,7 @@ fn usage() {
            spanda compatibility [--json] [--target <HardwareProfile>] [--all-targets] [--simulate] [--strict-certify] <file.sd>\n\
            spanda run [--json] [--verbose] [--twin-export <replay.json>] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] [--trace-providers] [--trace-realtime] [--metrics-json] [--record] [--persist-telemetry] [--enforce-certify] <file.sd>\n\
            spanda sim [--json] [--replay] [--twin-export <replay.json>] [--trace-realtime] [--metrics-json] [--record] [--persist-telemetry] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] [--trace-providers] [--enforce-certify] <file.sd>\n\
-           spanda replay <mission.trace> [--from T+mm:ss] [--deterministic] [--playback]\n\
+           spanda replay <mission.trace> [--from T+mm:ss] [--deterministic] [--playback] [--config <spanda.toml>]\n\
            spanda twin export <file.sd> --out <replay.json>\n\
            spanda fleet run [--json] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] [--persist-telemetry] <file.sd>\n\
            spanda fleet orchestrate [--json] [--remote] [--mesh-url <http(s)://host:port>] [--mesh-token <t>] <file.sd>\n\
@@ -553,7 +553,12 @@ fn human_run(source: &str, file: &str, command: &str, opts: RunOptions) {
     }
 }
 
-fn human_verify(source: &str, file: &str, options: &VerifyOptions) {
+fn human_verify(
+    source: &str,
+    file: &str,
+    options: &VerifyOptions,
+    system_config: Option<&spanda_config::ResolvedSystemConfig>,
+) {
     // Description:
     //     Human verify.
     //
@@ -571,59 +576,59 @@ fn human_verify(source: &str, file: &str, options: &VerifyOptions) {
     // Example:
     //     let result = spanda_cli::main::human_verify(source, file, options);
 
-    // Match on verify compatibility and handle each case.
-    let registry = package::module_registry_for_source(Path::new(file));
-    match verify_compatibility_with_registry(source, options, registry.as_ref()) {
-        Ok(report) => {
-            println!("Hardware compatibility: {file}");
-
-            // Emit output when target provides a t.
-            if let Some(t) = &report.target {
-                println!("Target: {t}\n");
-            }
-
-            // Handle each entry in items.
-            for item in &report.items {
-                let icon = match item.severity {
-                    CompatSeverity::Pass => "✓",
-                    CompatSeverity::Warning => "⚠",
-                    CompatSeverity::Error => "✗",
-                };
-                println!("  {icon} [{}] {}", item.category, item.message);
-            }
-
-            // Emit output when matrix provides a matrix.
-            if let Some(matrix) = &report.matrix {
-                println!("\n── Compatibility Matrix ──");
-
-                // Process each cell.
-                for cell in &matrix.cells {
-                    let icon = if cell.compatible { "✓" } else { "✗" };
-                    println!("  {icon} {} → {}", cell.robot, cell.target);
-                }
-                let compatible = matrix.cells.iter().filter(|c| c.compatible).count();
-                let total = matrix.cells.len();
-                println!("\n{compatible}/{total} robot × target pairs compatible");
-                return;
-            }
-
-            // Take this path when report.compatible.
-            if report.compatible {
-                println!("\n✓ Deployment compatible");
-            } else {
-                println!("\n✗ Deployment incompatible");
+    let registry = system_config
+        .and_then(|c| spanda_modules::load_project_modules(&c.project_root).ok())
+        .or_else(|| package::module_registry_for_source(Path::new(file)));
+    let program = if let Some(ref reg) = registry {
+        match compile_with_registry(source, reg) {
+            Ok(c) => c.program,
+            Err(e) => {
+                eprintln!("Error: {e}");
                 process::exit(1);
             }
         }
-        Err(e) => {
-            eprintln!("Error: {e}");
-
-            // Process each diagnostic.
-            for d in e.diagnostics() {
-                eprintln!("  [{}:{}] {}", d.line, d.column, d.message);
+    } else {
+        match compile(source) {
+            Ok(c) => c.program,
+            Err(e) => {
+                eprintln!("Error: {e}");
+                process::exit(1);
             }
-            process::exit(1);
         }
+    };
+    let report = config_load::verify_with_system_config(&program, system_config, options.clone());
+    println!("Hardware compatibility: {file}");
+
+    if let Some(t) = &report.target {
+        println!("Target: {t}\n");
+    }
+
+    for item in &report.items {
+        let icon = match item.severity {
+            CompatSeverity::Pass => "✓",
+            CompatSeverity::Warning => "⚠",
+            CompatSeverity::Error => "✗",
+        };
+        println!("  {icon} [{}] {}", item.category, item.message);
+    }
+
+    if let Some(matrix) = &report.matrix {
+        println!("\n── Compatibility Matrix ──");
+        for cell in &matrix.cells {
+            let icon = if cell.compatible { "✓" } else { "✗" };
+            println!("  {icon} {} → {}", cell.robot, cell.target);
+        }
+        let compatible = matrix.cells.iter().filter(|c| c.compatible).count();
+        let total = matrix.cells.len();
+        println!("\n{compatible}/{total} robot × target pairs compatible");
+        return;
+    }
+
+    if report.compatible {
+        println!("\n✓ Deployment compatible");
+    } else {
+        println!("\n✗ Deployment incompatible");
+        process::exit(1);
     }
 }
 
@@ -843,30 +848,40 @@ fn fleet_dispatch(args: &[String]) {
     let mut trace_triggers = false;
     let mut trace_events = false;
     let mut persist_telemetry = false;
+    let mut config_path: Option<String> = None;
     let mut file: Option<String> = None;
-
-    // Apply each command-line argument.
-    for arg in args.iter().skip(1) {
-        // Match on as str and handle each case.
-        match arg.as_str() {
+    let fleet_args: Vec<String> = args.iter().skip(1).cloned().collect();
+    let mut i = 0usize;
+    while i < fleet_args.len() {
+        match fleet_args[i].as_str() {
             "--json" => json = true,
             "--trace-scheduler" => trace_scheduler = true,
             "--trace-tasks" => trace_tasks = true,
             "--trace-triggers" => trace_triggers = true,
             "--trace-events" => trace_events = true,
             "--persist-telemetry" => persist_telemetry = true,
+            "--config" => {
+                i += 1;
+                if i >= fleet_args.len() {
+                    eprintln!("--config requires a path to spanda.toml");
+                    process::exit(1);
+                }
+                config_path = Some(fleet_args[i].clone());
+            }
             other if !other.starts_with('-') && file.is_none() => file = Some(other.to_string()),
             other => {
                 eprintln!("Unknown argument: {other}");
                 process::exit(1);
             }
         }
+        i += 1;
     }
     let file = file.unwrap_or_else(|| {
         eprintln!("Missing file path");
         process::exit(1);
     });
     let source = read_source(&file);
+    let config_flag = config_path.as_deref().map(Path::new);
 
     // Take this path when json.
     if json {
@@ -878,6 +893,7 @@ fn fleet_dispatch(args: &[String]) {
             trace_triggers,
             trace_events,
             persist_telemetry,
+            config_flag,
         );
     } else {
         human_fleet_run(
@@ -888,6 +904,7 @@ fn fleet_dispatch(args: &[String]) {
             trace_triggers,
             trace_events,
             persist_telemetry,
+            config_flag,
         );
     }
 }
@@ -900,6 +917,7 @@ fn human_fleet_run(
     trace_triggers: bool,
     trace_events: bool,
     persist_telemetry: bool,
+    config_flag: Option<&Path>,
 ) {
     // Description:
     //     Human fleet run.
@@ -987,6 +1005,7 @@ fn human_fleet_run(
             persist_telemetry,
             ..Default::default()
         },
+        config_flag,
     );
 
     // Match on run and handle each case.
@@ -1042,6 +1061,7 @@ fn print_fleet_json(
     trace_triggers: bool,
     trace_events: bool,
     persist_telemetry: bool,
+    config_flag: Option<&Path>,
 ) {
     // Description:
     //     Print fleet json.
@@ -1079,6 +1099,7 @@ fn print_fleet_json(
             persist_telemetry,
             ..Default::default()
         },
+        config_flag,
     );
     print_run_json(run(source, opts));
 }
@@ -1724,6 +1745,7 @@ fn main() {
     let mut inject_health_faults = false;
     let mut persist_telemetry = false;
     let mut inject_failure: Option<String> = None;
+    let mut config_path: Option<String> = None;
     let mut i = 2;
 
     // Repeat while i < args.len().
@@ -1779,6 +1801,14 @@ fn main() {
                 trigger_kill_switch = Some(args[i].clone());
             }
             "--inject-health-faults" => inject_health_faults = true,
+            "--config" => {
+                i += 1;
+                if i >= args.len() {
+                    eprintln!("--config requires a path to spanda.toml");
+                    process::exit(1);
+                }
+                config_path = Some(args[i].clone());
+            }
             "--inject-failure" => {
                 i += 1;
                 inject_failure = args.get(i).cloned();
@@ -1916,6 +1946,7 @@ fn main() {
             replay_playback,
             replay_show_faults,
             json,
+            config_path.as_deref().map(Path::new),
         );
         let _ = io::stdout().flush();
         return;
@@ -1995,18 +2026,41 @@ fn main() {
                 process::exit(1);
             });
             let source = read_source(&file);
-            let options = VerifyOptions {
-                target: target.clone(),
+            let config_flag = config_path.as_deref().map(Path::new);
+            let system_config = config_load::load_system_config(Path::new(&file), config_flag);
+            config_load::ensure_config_valid(system_config.as_ref().map(|a| a.as_ref()));
+            let mut options = VerifyOptions {
+                target: target.clone().or_else(|| {
+                    system_config
+                        .as_ref()
+                        .and_then(|c| spanda_config::default_verify_target(c))
+                }),
                 all_targets,
                 simulate,
                 strict_certify,
             };
-            let registry = package::module_registry_for_source(Path::new(&file));
+            if options.target.is_some() {
+                options.all_targets = false;
+            }
+            let registry = system_config
+                .as_ref()
+                .and_then(|c| spanda_modules::load_project_modules(&c.project_root).ok())
+                .or_else(|| package::module_registry_for_source(Path::new(&file)));
 
             // Take this path when json.
             if json {
-                let result =
-                    verify_compatibility_with_registry(&source, &options, registry.as_ref());
+                let result = (|| {
+                    let program = if let Some(ref reg) = registry {
+                        compile_with_registry(&source, reg)?.program
+                    } else {
+                        compile(&source)?.program
+                    };
+                    Ok(config_load::verify_with_system_config(
+                        &program,
+                        system_config.as_deref(),
+                        options.clone(),
+                    ))
+                })();
                 let failed = match &result {
                     Ok(report) => !options.all_targets && !report.compatible,
                     Err(_) => true,
@@ -2018,7 +2072,7 @@ fn main() {
                     process::exit(1);
                 }
             } else {
-                human_verify(&source, &file, &options);
+                human_verify(&source, &file, &options, system_config.as_deref());
             }
             if traceability || verify_capabilities || verify_health || minimum_capabilities {
                 trace_cli::verify_extensions(
@@ -2039,6 +2093,7 @@ fn main() {
             });
             let source = read_source(&file);
             let max_loop_iterations = if command == "sim" || verbose { 20 } else { 10 };
+            let config_flag = config_path.as_deref().map(Path::new);
             let opts = run_options_for_file(
                 &file,
                 RunOptions {
@@ -2069,6 +2124,7 @@ fn main() {
                     persist_telemetry,
                     ..Default::default()
                 },
+                config_flag,
             );
 
             // Take this path when json.

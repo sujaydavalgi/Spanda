@@ -1,5 +1,7 @@
 //! CLI commands for self-healing and recovery framework.
 
+use crate::config_load::{ensure_config_valid, load_system_config_from_cli_args};
+
 use spanda_assurance::{
     analyze_failure_with_recovery, diagnose_from_trace, evaluate_recovery, format_recovery,
     load_merged_recovery_knowledge, recovery_from_diagnosis, simulate_failure_recovery,
@@ -178,6 +180,9 @@ fn build_report(file: &str, args: &[String]) -> RecoveryReport {
 
 /// `spanda heal <file.sd|mission.trace> [--json|--markdown|--html] [--failure <kind>]`
 pub fn cmd_heal(args: &[String]) {
+    if let Some(cfg) = load_system_config_from_cli_args(args) {
+        ensure_config_valid(Some(cfg.as_ref()));
+    }
     // Description:
     //     Cmd heal.
     //
@@ -203,6 +208,9 @@ pub fn cmd_heal(args: &[String]) {
 
 /// `spanda recover <file.sd> [--json] [--failure <kind>]`
 pub fn cmd_recover(args: &[String]) {
+    if let Some(cfg) = load_system_config_from_cli_args(args) {
+        ensure_config_valid(Some(cfg.as_ref()));
+    }
     // Description:
     //     Cmd recover.
     //
