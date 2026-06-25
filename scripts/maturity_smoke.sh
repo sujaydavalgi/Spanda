@@ -20,8 +20,11 @@ EXPLAIN="$(run_spanda explain "$FILE" 2>&1 || true)"
 echo "$EXPLAIN" | head -5
 echo "$EXPLAIN" | grep -q "composite_trust"
 
-echo "== trust =="
+echo "== trust package =="
 run_spanda trust spanda-mqtt >/dev/null
+
+echo "== trust program =="
+run_spanda trust "$FILE" 2>&1 | grep -q "Composite trust:"
 
 echo "== deploy gate =="
 GATE_OUT="$(run_spanda deploy gate "$FILE" 2>&1 || true)"

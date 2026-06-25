@@ -663,6 +663,7 @@ fn demo_maturity(root: &Path) {
     run_spanda_args(&["graph", sd, "--format", "text"]);
     run_spanda_args(&["explain", sd]);
     run_spanda_args(&["trust", "spanda-mqtt"]);
+    run_spanda_args(&["trust", sd]);
     run_spanda_args_allow_fail(&["deploy", "gate", sd]);
 
     println!("\nDemo complete. See docs/platform-maturity-roadmap.md and docs/dependency-graphs.md");

@@ -159,6 +159,7 @@
 | [tamper-detection.md](./tamper-detection.md) | **Hack / tamper detection framework** |
 | [integrity-verification.md](./integrity-verification.md) | **Configuration and artifact integrity** |
 | [trust-framework.md](./trust-framework.md) | **Composite trust scoring** |
+| [hardware-attestation.md](./hardware-attestation.md) | **Secure-boot contracts and live attestation** |
 | [spoofing-detection.md](./spoofing-detection.md) | **GPS and sensor spoofing detection** |
 | [security-assurance.md](./security-assurance.md) | **Security assurance rollup reports** |
 | [compiler-backend-roadmap.md](./compiler-backend-roadmap.md) | **LLVM / native codegen evolution** |
