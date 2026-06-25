@@ -54,7 +54,7 @@ Full analysis: [platform-maturity-roadmap.md](./platform-maturity-roadmap.md)
 | 13 | Mission differencing | Build, Verify | P1.3 | **Experimental** |
 | 14 | Deployment gates | Deploy | P0.2 | **Experimental** |
 | 15 | Autonomous systems scorecard | Operate | P1.4 | **Experimental** |
-| 16 | Hack / tamper detection | Verify, Operate, Recover | P3.1 | **Future** |
+| 16 | Hack / tamper detection | Verify, Operate, Recover | P3.1 | **Experimental** (verify-time) |
 
 ### Phased delivery
 
@@ -63,7 +63,7 @@ Full analysis: [platform-maturity-roadmap.md](./platform-maturity-roadmap.md)
 | A | v0.5+ (Q3–Q4 2026) | Understand & trust | `spanda graph`, `explain`, `package trust`, deployment gates |
 | B | v0.6 (Q1 2027) | Operate & compare | drift, threat model, mission diff, scorecard, policy (verify) |
 | C | v0.7 (Q2 2027) | Resilience & planning | chaos, readiness trends, estimate, compliance profiles, ADR |
-| D | v1.0 (2027) | Full trust platform | tamper/integrity, explainability traces, AI generate (guardrailed) |
+| D | v1.0 (2027) | Full trust platform | tamper/integrity (verify-time), explainability traces, AI generate (guardrailed) |
 
 Topic guides: [dependency-graphs.md](./dependency-graphs.md) · [deployment-gates.md](./deployment-gates.md) · [tamper-detection.md](./tamper-detection.md) · [security-assurance.md](./security-assurance.md)
 

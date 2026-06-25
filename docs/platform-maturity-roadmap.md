@@ -31,7 +31,7 @@ Each area is classified by lifecycle phase, maturity tier, and primary outcome.
 | 13 | Mission differencing | Build, Verify | Planned | Change-impact analysis | `spanda-diff` |
 | 14 | Deployment gates | Deploy | Experimental | Unsafe deploy prevention | extends `spanda-readiness` |
 | 15 | Autonomous systems scorecard | Operate | Planned | Executive visibility | `spanda-score` |
-| 16 | Hack / tamper detection | Verify, Operate, Recover | Future | Runtime trust & integrity | `spanda-tamper` |
+| 16 | Hack / tamper detection | Verify, Operate, Recover | Experimental (verify-time) | Runtime trust & integrity | `spanda-tamper` |
 
 ### Tier definitions
 
@@ -202,7 +202,7 @@ Ordered by **adoption impact × trust impact ÷ implementation risk**.
 
 | Priority | Area | Rationale |
 |----------|------|-----------|
-| P3.1 | **Tamper / integrity framework** | Largest scope; needs secure boot package adapters |
+| P3.1 | **Tamper / integrity framework** | Verify-time `spanda tamper-check` shipped; runtime integrity and `spanda integrity` planned |
 | P3.2 | **Explainability reports** (trace decisions) | Requires rich decision traces in replay v3 |
 | P3.3 | **AI generate / suggest** | Guardrailed codegen; mock-first; human review required |
 | P3.4 | **Runtime policy enforcement** | Depends on policy engine maturity |
@@ -309,7 +309,7 @@ When each area ships: update `CHANGELOG.md`, `feature-status.md`, `getting-start
 
 | Deliverable | CLI |
 |-------------|-----|
-| Tamper framework | `spanda tamper-check`, `spanda integrity`, `spanda trust` |
+| Tamper framework | `spanda tamper-check` (verify-time); `spanda integrity`, runtime tamper (planned) |
 | Explainability | `spanda explain decision.trace` |
 | AI assist | `spanda generate`, `spanda suggest` (guardrailed) |
 | Showcase demos | `examples/showcase/gps_spoofing/`, `package_tampering/`, … |
