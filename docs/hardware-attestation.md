@@ -39,7 +39,7 @@ Deploy agents expose attestation fields on `GET /v1/status` when set via environ
 | `SPANDA_ATTESTATION_VERIFIED=1` | `attestation_verified` |
 | `SPANDA_BOOT_STATE` | `boot_state` |
 
-`spanda integrity <file.sd> --agent <Robot@Hardware>` compares attestation when present.
+`spanda integrity <file.sd> --agent <Robot@Hardware>` compares attestation when present. `spanda drift <file.sd> --agent <Robot@Hardware>` flags missing or failed attestation when the program imports secure-boot contracts.
 
 ## Packages
 

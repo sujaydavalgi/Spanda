@@ -37,6 +37,7 @@ spanda readiness rover.sd --config spanda.toml --baseline configs/approved/
 | Firmware | Device `firmware_version` in config | Agent `/v1/status` `firmware_version` |
 | Program hash | SHA-256 of `.sd` file | Agent `/v1/status` `program_hash` |
 | Packages | `ResolvedSystemConfig.packages` | Agent `/v1/status` `packages` |
+| Attestation | `trust.jetson` / `trust.pi` imports in program | Agent `/v1/status` `attestation_verified`, `attestation_contract`, `boot_state` |
 
 ## Agent status fields
 
@@ -47,6 +48,11 @@ Deploy agents (`spanda deploy agent`) and fleet agents (`spanda fleet agent`) ex
 - `firmware_version` — optional rollout metadata
 - `packages` — optional rollout metadata
 - `healthy` — agent health flag
+- `attestation_contract` — secure-boot contract from `SPANDA_ATTESTATION_CONTRACT`
+- `attestation_verified` — `true` when `SPANDA_ATTESTATION_VERIFIED=1`
+- `boot_state` — optional boot posture from `SPANDA_BOOT_STATE`
+
+See [hardware-attestation.md](./hardware-attestation.md).
 
 ## Output
 
