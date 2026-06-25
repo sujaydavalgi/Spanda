@@ -1,6 +1,6 @@
 # Tamper Detection
 
-**Status:** Experimental (verify-time) · **Phase:** Verify, Operate, Recover · **Priority:** P3.1
+**Status:** Experimental (verify-time + trace runtime) · **Phase:** Verify, Operate, Recover · **Priority:** P3.1
 
 Detect unauthorized modification, compromise, spoofing, tampering, or suspicious behavior in autonomous systems.
 
@@ -30,7 +30,13 @@ spanda tamper-check rover.sd --json
 spanda diagnose tamper.trace   # planned
 ```
 
-Verify-time `spanda tamper-check` composes threat modeling, safety audit, security analysis, and structural integrity signals (`spanda-tamper`). Runtime `--runtime` mode is planned.
+Verify-time `spanda tamper-check` composes threat modeling, safety audit, security analysis, and structural integrity signals (`spanda-tamper`). Runtime analysis accepts `.trace` files or `--runtime` and scans mission traces for capability denials and tamper events.
+
+```bash
+spanda tamper-check rover.sd
+spanda tamper-check mission.trace
+spanda tamper-check mission.trace --json
+```
 
 ## Integration
 

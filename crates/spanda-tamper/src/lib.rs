@@ -2,6 +2,7 @@
 //!
 pub mod detect;
 pub mod integrity;
+pub mod runtime;
 
 pub use detect::{
     format_tamper_report, generate_tamper_check, TamperFinding, TamperFormat, TamperReport,
@@ -12,3 +13,4 @@ pub use integrity::{
     generate_integrity_report, AgentIntegrityActual, AgentIntegrityExpected,
     ArtifactIntegrityStatus, IntegrityArtifact, IntegrityFormat, IntegrityReport,
 };
+pub use runtime::{generate_runtime_tamper_check, MissionTrace, TraceFrame};
