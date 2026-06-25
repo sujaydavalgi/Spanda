@@ -1357,6 +1357,7 @@ version = "0.4.0"
 dependencies = [
  "serde",
  "serde_json",
+ "spanda-adr",
  "spanda-assurance",
  "spanda-ast",
  "spanda-capability",
@@ -1397,6 +1398,17 @@ dependencies = [
  "spanda-threat",
  "spanda-typecheck",
  "tempfile",
+]
+
+[[package]]
+name = "spanda-adr"
+version = "0.4.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "spanda-ast",
+ "spanda-lexer",
+ "spanda-parser",
 ]
 
 [[package]]
