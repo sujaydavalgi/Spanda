@@ -745,13 +745,17 @@ pub fn spawn_test_agent_with_options(
     //     let result = spanda_ota::agent::spawn_test_agent_with_options(arge, oken, require_certify);
     let listener = TcpListener::bind("127.0.0.1:0").map_err(|e| e.to_string())?;
     let port = listener.local_addr().map_err(|e| e.to_string())?.port();
-    let state = AgentState {
-        target: target.to_string(),
-        current_version: "0.0.0".into(),
-        previous_version: None,
-        token,
-        require_certify,
-        ..AgentState::default()
+    let state = {
+        let mut state = AgentState {
+            target: target.to_string(),
+            current_version: "0.0.0".into(),
+            previous_version: None,
+            token,
+            require_certify,
+            ..AgentState::default()
+        };
+        apply_attestation_env(&mut state);
+        state
     };
     let shared = Arc::new(Mutex::new(state));
     let state_path = agent_state_path_for(target);

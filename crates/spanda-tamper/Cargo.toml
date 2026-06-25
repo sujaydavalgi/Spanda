@@ -24,3 +24,4 @@ spanda-deploy-http = { path = "../spanda-deploy-http" }
 [dev-dependencies]
 spanda-lexer = { path = "../spanda-lexer" }
 spanda-parser = { path = "../spanda-parser" }
+spanda-deploy-http = { path = "../spanda-deploy-http" }

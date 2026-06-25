@@ -147,4 +147,8 @@ echo "== showcase smoke: secure boot contracts =="
 chmod +x scripts/secure_boot_smoke.sh
 ./scripts/secure_boot_smoke.sh
 
+echo "== showcase smoke: attestation drift and live endpoint =="
+chmod +x scripts/attestation_smoke.sh
+./scripts/attestation_smoke.sh
+
 echo "Showcase smoke tests passed."
