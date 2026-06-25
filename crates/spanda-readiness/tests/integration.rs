@@ -370,3 +370,36 @@ fn readiness_surfaces_missing_agent_attestation() {
         issue.factor == "Attestation" && issue.message.contains("missing attestation")
     }));
 }
+
+#[test]
+fn readiness_passes_verified_agent_attestation() {
+    let expected = spanda_config::ExpectedAgentState {
+        target_key: "Rover@JetsonRover".into(),
+        robot_name: "Rover".into(),
+        hardware_profile: Some("JetsonRover".into()),
+        program_hash: None,
+        firmware_by_device: std::collections::HashMap::new(),
+        packages: Vec::new(),
+        attestation_contracts: vec!["trust.jetson".into()],
+    };
+    let actual = spanda_config::AgentDriftSnapshot {
+        agent_id: "Rover@JetsonRover".into(),
+        healthy: true,
+        attestation_contract: Some("trust.jetson".into()),
+        attestation_verified: Some(true),
+        boot_state: Some("verified".into()),
+        ..spanda_config::AgentDriftSnapshot::default()
+    };
+    let program = parse_source(include_str!(
+        "../../../examples/showcase/secure_boot/rover.sd"
+    ));
+    let options = ReadinessOptions {
+        agent_drift: vec![(expected, actual)],
+        ..ReadinessOptions::default()
+    };
+    let report = evaluate_readiness(&program, &options);
+    assert!(!report
+        .issues
+        .iter()
+        .any(|issue| issue.factor == "Attestation"));
+}

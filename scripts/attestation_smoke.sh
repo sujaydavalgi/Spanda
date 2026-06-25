@@ -5,8 +5,20 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 echo "== attestation integration tests =="
-cargo test -p spanda-tamper --test attestation_integration live_attestation_endpoint_merges_secure_boot_coverage -q
+cargo test -p spanda-tamper --test attestation_integration -q
+cargo test -p spanda-tamper tpm -q
 cargo test -p spanda-config agent_drift_detects_missing_secure_boot_attestation -q
 cargo test -p spanda-ota --test agent_attestation agent_status_includes_attestation_from_environment -q
+cargo test -p spanda-readiness readiness_passes_verified_agent_attestation -q
+cargo test -p spanda-readiness readiness_surfaces_missing_agent_attestation -q
+
+echo "== tpm file backend smoke =="
+QUOTE="${ROOT}/examples/showcase/secure_boot/fixtures/jetson-tpm-quote.json"
+export SPANDA_TPM_BACKEND=file
+export SPANDA_TPM_QUOTE_PATH="${QUOTE}"
+export SPANDA_REGISTRY_URL="file://${ROOT}/registry"
+TAMPER="$(cargo run -p spanda -q -- tamper-check "${ROOT}/examples/showcase/secure_boot/rover.sd" 2>&1 || true)"
+echo "$TAMPER" | grep -q "boot_state=verified"
+unset SPANDA_TPM_BACKEND SPANDA_TPM_QUOTE_PATH
 
 echo "attestation smoke ok"
