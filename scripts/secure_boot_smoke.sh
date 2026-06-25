@@ -21,6 +21,6 @@ echo "$INTEGRITY" | grep -q "Secure boot:"
 
 echo "== secure boot package trust =="
 TRUST="$("$BIN" trust spanda-trust-jetson 2>&1 || true)"
-echo "$TRUST" | grep -q "trust score 7"
+echo "$TRUST" | grep -q "trust score 9"
 
 echo "secure boot smoke ok"

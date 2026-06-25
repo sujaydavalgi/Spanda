@@ -149,9 +149,8 @@ pub fn evaluate_package_trust(
         .as_ref()
         .and_then(|entry| entry.version_signature(&version));
     let signed = signature.as_ref().zip(checksum.as_deref()).is_some_and(|(sig, digest)| {
-        registry_trust_key()
-            .as_deref()
-            .is_some_and(|key| verify_registry_signature(name, &version, digest, sig, key))
+        let trust_key = registry_trust_key().unwrap_or_else(|| sig.public_key.clone());
+        verify_registry_signature(name, &version, digest, sig, &trust_key)
     });
     factors.push(factor(
         "signed",
@@ -224,4 +223,27 @@ fn vendored_safety_level(name: &str, project_root: Option<&Path>) -> Option<Safe
     let text = std::fs::read_to_string(&manifest).ok()?;
     let parsed = crate::manifest::PackageManifest::parse_str(&text).ok()?;
     Some(parsed.safety.level)
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::registry_sign::{registry_trust_key, sign_registry_tarball, verify_registry_signature};
+
+    #[test]
+    fn signed_factor_verifies_with_embedded_public_key() {
+        let _guard = crate::testing::env_lock();
+        unsafe {
+            std::env::remove_var("SPANDA_REGISTRY_TRUST_KEY");
+        }
+        let digest = "abc123digest";
+        let signed = sign_registry_tarball("demo-pkg", "0.1.0", digest, "registry-test-signing-key");
+        let trust_key = registry_trust_key().unwrap_or_else(|| signed.public_key.clone());
+        assert!(verify_registry_signature(
+            "demo-pkg",
+            "0.1.0",
+            digest,
+            &signed,
+            &trust_key
+        ));
+    }
 }
