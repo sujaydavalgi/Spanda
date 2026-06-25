@@ -346,6 +346,80 @@ pub fn explain_safety(program: &Program, source_label: &str) -> ExplainReport {
     }
 }
 
+/// Explain autonomous decisions from a mission trace with full decision context.
+pub fn explain_decision_trace(trace_path: &str) -> Result<ExplainReport, String> {
+    // Build a multi-section explainability report from decision audit records.
+    //
+    // Parameters:
+    // - `trace_path` — path to mission trace JSON
+    //
+    // Returns:
+    // Explainability report or load error.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // let report = explain_decision_trace("mission.trace")?;
+
+    let audit = audit_decisions_from_trace(trace_path)?;
+    let mut sections = Vec::new();
+    sections.push(ExplainSection {
+        topic: "summary".into(),
+        summary: format!("{} autonomous decision(s) in trace", audit.decision_count),
+        details: audit
+            .chains
+            .iter()
+            .filter_map(|chain| chain.mission.as_ref().map(|mission| format!("mission: {mission}")))
+            .collect(),
+    });
+    for record in &audit.timeline.decisions {
+        let mut details = vec![
+            format!("reason: {}", record.reason),
+            format!("source event: {}", record.source_event),
+        ];
+        if let Some(mission) = &record.mission {
+            details.push(format!("mission: {mission}"));
+        }
+        if !record.evidence.fields.is_empty() {
+            details.push(format!(
+                "evidence: {}",
+                serde_json::to_string(&record.evidence.fields).unwrap_or_default()
+            ));
+        }
+        if !record.alternatives_considered.is_empty() {
+            details.push(format!(
+                "rejected alternatives: {}",
+                serde_json::to_string(&record.alternatives_considered).unwrap_or_default()
+            ));
+        }
+        if !record.safety_checks.is_empty() {
+            details.push(format!(
+                "safety checks: {}",
+                serde_json::to_string(&record.safety_checks).unwrap_or_default()
+            ));
+        }
+        if let Some(action) = &record.action {
+            details.push(format!(
+                "chosen action: {}",
+                serde_json::to_string(action).unwrap_or_default()
+            ));
+        }
+        sections.push(ExplainSection {
+            topic: format!("decision/{}", record.decision_id),
+            summary: format!(
+                "At T+{:.0}ms the system chose '{}' because {}",
+                record.timestamp_ms, record.decision, record.reason
+            ),
+            details,
+        });
+    }
+    Ok(ExplainReport {
+        program: trace_path.into(),
+        sections,
+    })
+}
+
 /// Explain decisions recorded in a mission trace.
 pub fn explain_trace(trace_path: &str) -> Result<ExplainReport, String> {
     // Description:

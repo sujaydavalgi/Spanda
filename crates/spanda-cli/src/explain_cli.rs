@@ -3,8 +3,8 @@
 use crate::config_load::{ensure_config_valid, load_system_config};
 use spanda_config::ConfigResolver;
 use spanda_explain::{
-    explain_program_with_options, explain_readiness, explain_safety, explain_trace, explain_verify,
-    format_explain_report, ExplainProgramOptions,
+    explain_decision_trace, explain_program_with_options, explain_readiness, explain_safety,
+    explain_trace, explain_verify, format_explain_report, ExplainProgramOptions,
 };
 use spanda_lexer::tokenize;
 use spanda_parser::parse;
@@ -138,6 +138,25 @@ pub fn cmd_explain_safety(args: &[String]) {
     println!("{}", format_explain_report(&report, json_flag(args)));
 }
 
+/// `spanda explain decision <mission.trace> [--json]`
+pub fn cmd_explain_decision(args: &[String]) {
+    let file = args
+        .iter()
+        .find(|arg| !arg.starts_with('-'))
+        .cloned()
+        .unwrap_or_else(|| {
+            eprintln!("Usage: spanda explain decision <mission.trace> [--json]");
+            process::exit(1);
+        });
+    match explain_decision_trace(&file) {
+        Ok(report) => println!("{}", format_explain_report(&report, json_flag(args))),
+        Err(error) => {
+            eprintln!("{error}");
+            process::exit(1);
+        }
+    }
+}
+
 /// `spanda explain <trace> [--json]` when path ends with `.trace`
 pub fn cmd_explain_trace(args: &[String]) {
     let file = file_arg(args);
@@ -157,9 +176,10 @@ pub fn explain_dispatch(args: &[String]) {
         "readiness" => cmd_explain_readiness(&args[1..]),
         "verify" => cmd_explain_verify(&args[1..]),
         "safety" => cmd_explain_safety(&args[1..]),
+        "decision" => cmd_explain_decision(&args[1..]),
         "" => {
             eprintln!(
-                "Usage:\n  spanda explain <file.sd> [--json] [--config <spanda.toml>] [--baseline <dir|spanda.toml>]\n  spanda explain readiness|verify|safety --file <file.sd> [--json]\n  spanda explain <mission.trace> [--json]"
+                "Usage:\n  spanda explain <file.sd> [--json] [--config <spanda.toml>] [--baseline <dir|spanda.toml>]\n  spanda explain readiness|verify|safety --file <file.sd> [--json]\n  spanda explain decision <mission.trace> [--json]\n  spanda explain <mission.trace> [--json]"
             );
             process::exit(1);
         }
@@ -169,7 +189,7 @@ pub fn explain_dispatch(args: &[String]) {
         other if other.ends_with(".sd") => cmd_explain_program(args),
         _ => {
             eprintln!(
-                "Usage:\n  spanda explain <file.sd> [--json] [--config <spanda.toml>] [--baseline <dir|spanda.toml>]\n  spanda explain readiness|verify|safety --file <file.sd> [--json]\n  spanda explain <mission.trace> [--json]"
+                "Usage:\n  spanda explain <file.sd> [--json] [--config <spanda.toml>] [--baseline <dir|spanda.toml>]\n  spanda explain readiness|verify|safety --file <file.sd> [--json]\n  spanda explain decision <mission.trace> [--json]\n  spanda explain <mission.trace> [--json]"
             );
             process::exit(1);
         }
