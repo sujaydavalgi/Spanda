@@ -3,8 +3,8 @@
 use spanda_driver::{check_with_registry, compile_with_registry, run_tests_with_registry};
 use spanda_modules::load_project_modules;
 use spanda_package::{
-    adapter_verify_ok, add_dependency, collect_source_files, find_project_root, init_package,
-    load_official_packages_for_source, publish_package, registry_info, remove_dependency,
+    adapter_verify_ok, add_dependency, collect_source_files, evaluate_package_trust, find_project_root,
+    init_package, load_official_packages_for_source, publish_package, registry_info, remove_dependency,
     resolve_dependencies, search_registry, search_registry_merged, validate_package,
     verify_adapter_package, ApplicationPermissions, DependencySpec, Lockfile, PackageManifest,
     ResolveOptions, LOCKFILE_FILENAME, MANIFEST_FILENAME,
@@ -40,7 +40,9 @@ pub fn usage_package() {
            spanda update [--project <dir>]\n\
            spanda publish [--project <dir>]\n\
            spanda verify-adapter [--project <dir>] [--import <path>] [--package <name>]\n\
-           spanda registry search <query>\n"
+           spanda registry search <query>\n\
+           spanda registry info <package>\n\
+           spanda trust <package> [--version <ver>] [--project <dir>] [--json]\n"
     );
 }
 
@@ -889,6 +891,93 @@ pub fn cmd_registry_info(args: &[String]) {
         None => {
             eprintln!("Package '{name}' not found in local or remote registry");
             process::exit(1);
+        }
+    }
+}
+
+/// `spanda trust <package> [--version <ver>] [--project <dir>] [--json]`
+pub fn cmd_trust(args: &[String]) {
+    // Evaluate registry package trust score and print factor breakdown.
+    //
+    // Parameters:
+    // - `args` — CLI arguments after `trust`
+    //
+    // Returns:
+    // None (prints report or exits on error).
+    //
+    // Options:
+    // `--version`, `--project`, `--json`.
+    //
+    // Example:
+    // cmd_trust(&["spanda-mqtt".into(), "--json".into()]);
+
+    let mut package: Option<String> = None;
+    let mut version: Option<String> = None;
+    let mut project: Option<PathBuf> = None;
+    let mut json = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--version" => {
+                i += 1;
+                if i >= args.len() {
+                    eprintln!("--version requires a version string");
+                    process::exit(1);
+                }
+                version = Some(args[i].clone());
+            }
+            "--project" => {
+                i += 1;
+                if i >= args.len() {
+                    eprintln!("--project requires a directory path");
+                    process::exit(1);
+                }
+                project = Some(PathBuf::from(&args[i]));
+            }
+            "--json" => json = true,
+            other if !other.starts_with('-') && package.is_none() => package = Some(other.to_string()),
+            other => {
+                eprintln!("Unknown argument: {other}");
+                process::exit(1);
+            }
+        }
+        i += 1;
+    }
+    let name = package.unwrap_or_else(|| {
+        eprintln!("Usage: spanda trust <package> [--version <ver>] [--project <dir>] [--json]");
+        process::exit(1);
+    });
+    let root = project.unwrap_or_else(|| {
+        env::current_dir().unwrap_or_else(|e| {
+            eprintln!("Error: {e}");
+            process::exit(1);
+        })
+    });
+    let report = evaluate_package_trust(&name, version.as_deref(), Some(&root));
+    if json {
+        println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    } else {
+        println!(
+            "{} v{} — trust score {}/{} ({}) {}",
+            report.package,
+            report.version,
+            report.score,
+            report.max_score,
+            report.tier,
+            if report.passed { "PASS" } else { "FAIL" }
+        );
+        for factor in &report.factors {
+            let mark = if factor.passed { "✓" } else { "✗" };
+            println!(
+                "  {mark} {} ({}/{}) — {}",
+                factor.name, factor.score, factor.max_score, factor.detail
+            );
+        }
+        if !report.recommendations.is_empty() {
+            println!("Recommendations:");
+            for rec in &report.recommendations {
+                println!("  - {rec}");
+            }
         }
     }
 }

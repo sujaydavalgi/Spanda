@@ -113,6 +113,24 @@ pub fn evaluate_deployment_gates(
             },
         });
     }
+    if let Some(cfg) = options.system_config.as_deref() {
+        let mut low_trust = Vec::new();
+        for package in &cfg.packages {
+            let trust = spanda_package::evaluate_package_trust(package, None, Some(&cfg.project_root));
+            if !trust.passed {
+                low_trust.push(format!("{package} ({}/100)", trust.score));
+            }
+        }
+        gates.push(DeploymentGate {
+            name: "package_trust".into(),
+            passed: low_trust.is_empty(),
+            message: if low_trust.is_empty() {
+                "all configured packages meet trust threshold".into()
+            } else {
+                format!("low trust packages: {}", low_trust.join(", "))
+            },
+        });
+    }
     let health_issues = readiness
         .issues
         .iter()

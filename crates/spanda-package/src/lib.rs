@@ -23,6 +23,7 @@ pub mod registry_sign;
 pub mod resolver;
 pub mod safety;
 pub mod tar_extract;
+pub mod trust;
 pub mod validation;
 pub mod vendor;
 
@@ -78,6 +79,7 @@ pub use registry_sign::{
 };
 pub use resolver::{resolve_dependencies, ResolveOptions, ResolveResult};
 pub use safety::{SafetyLevel, SafetyMetadata};
+pub use trust::{evaluate_package_trust, TrustFactor, TrustScoreReport};
 pub use tar_extract::extract_tarball_safe;
 pub use validation::{
     validate_package, ApplicationPermissions, ValidationIssue, ValidationReport, ValidationSeverity,

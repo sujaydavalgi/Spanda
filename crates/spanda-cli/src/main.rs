@@ -242,7 +242,8 @@ fn usage() {
            spanda security check [--json] <file.sd>\n\
            spanda security audit [--json] <file.sd>\n\n\
          Analysis commands:\n\
-           spanda graph <file.sd> [--format json|mermaid|dot|text] [--json] [--config <spanda.toml>]\n",
+           spanda graph <file.sd> [--format json|mermaid|dot|text] [--json] [--config <spanda.toml>]\n\
+           spanda trust <package> [--version <ver>] [--project <dir>] [--json]\n",
         deploy_ota::deploy_usage_lines()
     );
 }
@@ -1506,6 +1507,12 @@ fn main() {
 
     if command == "graph" {
         graph_cli::graph_dispatch(&args[2..]);
+        let _ = io::stdout().flush();
+        return;
+    }
+
+    if command == "trust" {
+        package::cmd_trust(&args[2..]);
         let _ = io::stdout().flush();
         return;
     }
