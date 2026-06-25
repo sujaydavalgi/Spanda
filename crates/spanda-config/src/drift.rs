@@ -5,7 +5,8 @@ use crate::mapping::{ActuatorMapping, LogicalPhysicalMap, SensorMapping};
 use crate::resolver::diff_configs;
 use crate::resolved::ResolvedSystemConfig;
 use serde::{Deserialize, Serialize};
-use spanda_ast::nodes::Program;
+use spanda_ast::foundations::DeployDecl;
+use spanda_ast::nodes::{Program, RobotDecl};
 use std::collections::{BTreeSet, HashMap};
 
 /// Severity tier for a drift finding.
@@ -30,6 +31,8 @@ pub enum DriftDimension {
     Package,
     Mapping,
     Program,
+    Hardware,
+    Firmware,
 }
 
 /// Single drift delta between baseline and current configuration.
@@ -463,4 +466,285 @@ fn diff_actuator_fields(
     }
     diff_optional_field(report, key, "ip", &baseline.ip_address, &current.ip_address);
     diff_optional_field(report, key, "endpoint", &baseline.endpoint_url, &current.endpoint_url);
+}
+
+/// Live agent status used for expected-vs-actual drift checks.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct AgentDriftSnapshot {
+    pub agent_id: String,
+    #[serde(default)]
+    pub target: Option<String>,
+    #[serde(default)]
+    pub robot_name: Option<String>,
+    #[serde(default)]
+    pub hardware_profile: Option<String>,
+    #[serde(default)]
+    pub firmware_version: Option<String>,
+    #[serde(default)]
+    pub program_hash: Option<String>,
+    #[serde(default)]
+    pub current_version: Option<String>,
+    #[serde(default)]
+    pub packages: Vec<String>,
+    #[serde(default)]
+    pub healthy: bool,
+}
+
+/// Expected deploy state derived from a program and resolved configuration.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ExpectedAgentState {
+    pub target_key: String,
+    pub robot_name: String,
+    pub hardware_profile: Option<String>,
+    pub program_hash: Option<String>,
+    pub firmware_by_device: HashMap<String, String>,
+    pub packages: Vec<String>,
+}
+
+/// Build expected agent states from deploy declarations and configuration.
+pub fn expected_agent_states(
+    program: &Program,
+    config: Option<&ResolvedSystemConfig>,
+    program_hash: Option<&str>,
+) -> Vec<ExpectedAgentState> {
+    // Derive per-target expected deploy posture from program and config.
+    //
+    // Parameters:
+    // - `program` — parsed `.sd` source
+    // - `config` — optional resolved system configuration
+    // - `program_hash` — optional SHA-256 hex digest of the program file
+    //
+    // Returns:
+    // Expected states keyed by deploy target (`Robot@Hardware`).
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // let expected = expected_agent_states(&program, Some(&cfg), Some("abc…"));
+
+    let Program::Program {
+        deployments,
+        robots,
+        ..
+    } = program;
+    let robot_names: Vec<String> = robots
+        .iter()
+        .map(|robot| {
+            let RobotDecl::RobotDecl { name, .. } = robot;
+            name.clone()
+        })
+        .collect();
+    let packages = config.map(|cfg| cfg.packages.clone()).unwrap_or_default();
+    let hash = program_hash.map(str::to_string);
+    let mut states = Vec::new();
+    if deployments.is_empty() {
+        if let Some(robot) = robot_names.first() {
+            states.push(ExpectedAgentState {
+                target_key: robot.clone(),
+                robot_name: robot.clone(),
+                hardware_profile: config
+                    .and_then(|cfg| cfg.logical_map.robots.get(robot))
+                    .and_then(|m| m.hardware_profile.clone()),
+                program_hash: hash.clone(),
+                firmware_by_device: firmware_for_robot(config, robot),
+                packages: packages.clone(),
+            });
+        }
+        return states;
+    }
+    for deploy in deployments {
+        let DeployDecl::DeployDecl {
+            robot_name,
+            targets,
+            ..
+        } = deploy;
+        for hardware in targets {
+            states.push(ExpectedAgentState {
+                target_key: deploy_target_key(robot_name, hardware),
+                robot_name: robot_name.clone(),
+                hardware_profile: Some(hardware.clone()),
+                program_hash: hash.clone(),
+                firmware_by_device: firmware_for_robot(config, robot_name),
+                packages: packages.clone(),
+            });
+        }
+    }
+    states
+}
+
+/// Compare expected deploy posture against a live agent status snapshot.
+pub fn detect_agent_drift(
+    expected: &ExpectedAgentState,
+    actual: &AgentDriftSnapshot,
+) -> Vec<DriftFinding> {
+    // Emit drift findings for one agent target.
+    //
+    // Parameters:
+    // - `expected` — declared deploy posture
+    // - `actual` — live agent `/v1/status` snapshot
+    //
+    // Returns:
+    // Severity-tagged drift findings.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // let findings = detect_agent_drift(&expected, &snapshot);
+
+    let mut findings = Vec::new();
+    let agent = actual.agent_id.as_str();
+    if !actual.healthy {
+        findings.push(DriftFinding {
+            dimension: DriftDimension::Hardware,
+            severity: DriftSeverity::High,
+            message: format!("agent '{agent}' reported unhealthy status"),
+            path: Some(format!("agents.{agent}.healthy")),
+        });
+    }
+    if let Some(ref expected_hw) = expected.hardware_profile {
+        match &actual.hardware_profile {
+            Some(live) if live == expected_hw => {}
+            Some(live) => findings.push(DriftFinding {
+                dimension: DriftDimension::Hardware,
+                severity: DriftSeverity::High,
+                message: format!(
+                    "agent '{agent}' hardware profile: expected {expected_hw}, actual {live}"
+                ),
+                path: Some(format!("agents.{agent}.hardware_profile")),
+            }),
+            None => findings.push(DriftFinding {
+                dimension: DriftDimension::Hardware,
+                severity: DriftSeverity::Medium,
+                message: format!(
+                    "agent '{agent}' missing hardware profile (expected {expected_hw})"
+                ),
+                path: Some(format!("agents.{agent}.hardware_profile")),
+            }),
+        }
+    }
+    match (&expected.program_hash, &actual.program_hash) {
+        (Some(expected_hash), Some(live)) if expected_hash != live => {
+            findings.push(DriftFinding {
+                dimension: DriftDimension::Program,
+                severity: DriftSeverity::Critical,
+                message: format!(
+                    "agent '{agent}' program hash mismatch: expected {expected_hash}, actual {live}"
+                ),
+                path: Some(format!("agents.{agent}.program_hash")),
+            });
+        }
+        (Some(expected_hash), None) => findings.push(DriftFinding {
+            dimension: DriftDimension::Program,
+            severity: DriftSeverity::High,
+            message: format!(
+                "agent '{agent}' missing program hash (expected {expected_hash})"
+            ),
+            path: Some(format!("agents.{agent}.program_hash")),
+        }),
+        _ => {}
+    }
+    if !expected.firmware_by_device.is_empty() {
+        let expected_versions: BTreeSet<&str> = expected
+            .firmware_by_device
+            .values()
+            .map(String::as_str)
+            .collect();
+        match &actual.firmware_version {
+            Some(live) if expected_versions.contains(live.as_str()) => {}
+            Some(live) => findings.push(DriftFinding {
+                dimension: DriftDimension::Firmware,
+                severity: DriftSeverity::High,
+                message: format!(
+                    "agent '{agent}' firmware '{live}' not in expected set {:?}",
+                    expected_versions
+                ),
+                path: Some(format!("agents.{agent}.firmware_version")),
+            }),
+            None => findings.push(DriftFinding {
+                dimension: DriftDimension::Firmware,
+                severity: DriftSeverity::Medium,
+                message: format!(
+                    "agent '{agent}' missing firmware report (expected {:?})",
+                    expected_versions
+                ),
+                path: Some(format!("agents.{agent}.firmware_version")),
+            }),
+        }
+    }
+    diff_string_findings(
+        &mut findings,
+        DriftDimension::Package,
+        "package",
+        agent,
+        &expected.packages,
+        &actual.packages,
+    );
+    findings
+}
+
+/// Append agent drift findings onto an existing configuration drift report.
+pub fn append_agent_drift(report: &mut ConfigDriftReport, findings: Vec<DriftFinding>) {
+    for finding in findings {
+        report.push(finding);
+    }
+}
+
+fn deploy_target_key(robot: &str, hardware: &str) -> String {
+    format!("{robot}@{hardware}")
+}
+
+fn firmware_for_robot(
+    config: Option<&ResolvedSystemConfig>,
+    robot: &str,
+) -> HashMap<String, String> {
+    let mut map = HashMap::new();
+    let Some(cfg) = config else {
+        return map;
+    };
+    for device in &cfg.device_registry.devices {
+        let owns = device
+            .robot_id
+            .as_deref()
+            .is_none_or(|id| id == robot);
+        if !owns {
+            continue;
+        }
+        if let Some(fw) = &device.firmware_version {
+            map.insert(device.id.clone(), fw.clone());
+        }
+    }
+    map
+}
+
+fn diff_string_findings(
+    findings: &mut Vec<DriftFinding>,
+    dimension: DriftDimension,
+    label: &str,
+    agent: &str,
+    baseline: &[String],
+    current: &[String],
+) {
+    if baseline.is_empty() {
+        return;
+    }
+    let base: BTreeSet<&str> = baseline.iter().map(String::as_str).collect();
+    let live: BTreeSet<&str> = current.iter().map(String::as_str).collect();
+    for item in base.difference(&live) {
+        findings.push(DriftFinding {
+            dimension,
+            severity: DriftSeverity::High,
+            message: format!("agent '{agent}' missing {label} '{item}'"),
+            path: Some(format!("agents.{agent}.{label}.{item}")),
+        });
+    }
+    for item in live.difference(&base) {
+        findings.push(DriftFinding {
+            dimension,
+            severity: DriftSeverity::Medium,
+            message: format!("agent '{agent}' unexpected {label} '{item}'"),
+            path: Some(format!("agents.{agent}.{label}.{item}")),
+        });
+    }
 }

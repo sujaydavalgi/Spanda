@@ -41,8 +41,9 @@ pub use manifest::{
 pub use mapping::{ActuatorMapping, LogicalPhysicalMap, RobotMapping, SensorMapping};
 pub use network_validation::validate_device_registry;
 pub use drift::{
-    append_program_drift, detect_config_drift, format_drift_lines, ConfigDriftReport,
-    DriftDimension, DriftFinding, DriftSeverity,
+    append_agent_drift, append_program_drift, detect_agent_drift, detect_config_drift,
+    expected_agent_states, format_drift_lines, AgentDriftSnapshot, ConfigDriftReport,
+    DriftDimension, DriftFinding, DriftSeverity, ExpectedAgentState,
 };
 pub use reports::{
     config_drift_report, format_report_text, format_report_text_with_options,

@@ -1,8 +1,8 @@
 //! Integration tests for cascading TOML configuration.
 
 use spanda_config::{
-    diff_configs, generate_report_bundle, load_config_value, merge_values, ConfigResolver,
-    SpandaManifest, ValidationSeverity,
+    diff_configs, detect_agent_drift, generate_report_bundle, load_config_value, merge_values,
+    AgentDriftSnapshot, ConfigResolver, ExpectedAgentState, SpandaManifest, ValidationSeverity,
 };
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -463,4 +463,26 @@ fn config_drift_detects_device_ip_change() {
     let report = spanda_config::detect_config_drift(&baseline, &current);
     assert!(!report.passed);
     assert!(report.findings.iter().any(|f| f.message.contains("ip")));
+}
+
+#[test]
+fn agent_drift_detects_program_hash_mismatch() {
+    let expected = ExpectedAgentState {
+        target_key: "Rover@JetsonOrin".into(),
+        robot_name: "Rover".into(),
+        hardware_profile: Some("JetsonOrin".into()),
+        program_hash: Some("abc123".into()),
+        firmware_by_device: HashMap::new(),
+        packages: vec!["spanda-gps".into()],
+    };
+    let actual = AgentDriftSnapshot {
+        agent_id: "Rover@JetsonOrin".into(),
+        target: Some("Rover@JetsonOrin".into()),
+        program_hash: Some("deadbeef".into()),
+        healthy: true,
+        packages: vec!["spanda-gps".into()],
+        ..AgentDriftSnapshot::default()
+    };
+    let findings = detect_agent_drift(&expected, &actual);
+    assert!(findings.iter().any(|f| f.message.contains("program hash")));
 }
