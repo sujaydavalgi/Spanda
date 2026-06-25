@@ -51,6 +51,7 @@ Platform overview: [platform-overview.md](./platform-overview.md)
 | **Digital twins** | `twin`, mirror fields, replay buffer, `twin sync` telemetry |
 | **Real-time contracts** | `deadline`, `jitter <=`, `priority`, `critical isolated` on tasks; latency `pipeline` budgets |
 | **Reliability runtime** | Watchdogs, operating `mode` blocks, `recover from`, retry/fallback; topic QoS deadline detection |
+| **Runtime fault detection** | `heartbeat`, `memory_watch`, `resource_watch`, `restart_policy`, `on runtime crash`; CLI `spanda fault scan|report`, `spanda runtime health|diagnose`, `spanda replay --show-faults`; mission trace fault frames |
 | **Mission trace replay** | `spanda sim --record`, `spanda replay`, `--deterministic`, `--playback`, `--wall-clock` |
 | **Persistent telemetry** | `--persist-telemetry`, `SPANDA_TELEMETRY_STORE=1`, `spanda telemetry` — JSONL or SQLite; OTLP `push`/`serve`, `fleet-push` mesh aggregation, sessions + replay |
 | **First-class regex** | Literals, `Regex` type, string methods, trigger/subscribe filters, `validate` rules |

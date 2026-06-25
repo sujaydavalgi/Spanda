@@ -148,12 +148,14 @@ cargo build --release
 ./target/release/spanda demo verify
 ```
 
-Optional — readiness, assurance, and diagnosis on showcase examples:
+Optional — readiness, assurance, diagnosis, and runtime fault detection on showcase examples:
 
 ```bash
 ./target/release/spanda readiness examples/showcase/readiness/rover.sd
 ./target/release/spanda assure examples/showcase/assurance/rover.sd
 ./target/release/spanda diagnose examples/showcase/root_cause_analysis/mission.trace
+./target/release/spanda fault scan examples/showcase/runtime_faults/crash_detection.sd
+./target/release/spanda runtime health examples/showcase/runtime_faults/reboot_detection.sd
 ```
 
 Install on `PATH` instead: `./scripts/install.sh` or `cargo install --path crates/spanda-cli --locked` — then use `spanda` without the `./target/release/` prefix. See [docs/installation.md](docs/installation.md).
@@ -325,6 +327,7 @@ One-line pointers — details in [docs/platform-overview.md](docs/platform-overv
 | **Spanda Replay** | Mission trace capture and deterministic playback | [docs/replay.md](docs/replay.md) |
 | **Persistent telemetry** | Device/sensor/heartbeat/health store (`--persist-telemetry`); JSONL or SQLite; OTLP export, `push --watch`, session auto-push (`SPANDA_OTLP_AUTO_PUSH`), fleet mesh aggregation (`telemetry fleet-push`); sessions + replay | [docs/telemetry-store.md](docs/telemetry-store.md) |
 | **Spanda Health** | Runtime health checks and fleet readiness requirements | [docs/health-checks.md](docs/health-checks.md) |
+| **Runtime fault detection** | Crashes, reboots, memory leaks, resource pressure, restart loops | [docs/runtime-fault-detection.md](docs/runtime-fault-detection.md) |
 | **Spanda Assurance** | Knowledge models, anomaly detection, prognostics, assurance cases | [docs/mission-assurance.md](docs/mission-assurance.md) |
 | **Mission continuity** | Takeover, delegation, succession, checkpoint resume | [docs/mission-continuity.md](docs/mission-continuity.md) |
 | **Spanda Diagnosis** | Root-cause analysis from mission traces and programs | [docs/diagnostics.md](docs/diagnostics.md) |
