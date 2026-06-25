@@ -60,6 +60,7 @@ members = [
     "crates/spanda-threat",
     "crates/spanda-diff",
     "crates/spanda-score",
+    "crates/spanda-policy",
     "crates/spanda-telemetry-store",
     "crates/spanda-transport",
 ]

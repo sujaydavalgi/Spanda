@@ -1381,6 +1381,7 @@ dependencies = [
  "spanda-ota",
  "spanda-package",
  "spanda-parser",
+ "spanda-policy",
  "spanda-readiness",
  "spanda-runtime",
  "spanda-runtime-faults",
@@ -1953,6 +1954,18 @@ dependencies = [
  "spanda-lexer",
  "spanda-regex-lang",
  "spanda-typecheck",
+]
+
+[[package]]
+name = "spanda-policy"
+version = "0.4.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "spanda-ast",
+ "spanda-lexer",
+ "spanda-parser",
+ "spanda-readiness",
 ]
 
 [[package]]
