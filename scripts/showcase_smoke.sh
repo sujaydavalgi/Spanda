@@ -63,4 +63,8 @@ echo "== showcase smoke: scorecard =="
 chmod +x scripts/scorecard_smoke.sh
 ./scripts/scorecard_smoke.sh
 
+echo "== showcase smoke: policy =="
+chmod +x scripts/policy_smoke.sh
+./scripts/policy_smoke.sh
+
 echo "Showcase smoke tests passed."

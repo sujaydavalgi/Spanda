@@ -43,7 +43,7 @@ Full analysis: [platform-maturity-roadmap.md](./platform-maturity-roadmap.md)
 | 2 | Dependency graph visualization | Build, Operate | P0.1 | **Experimental** |
 | 3 | Threat modeling | Verify, Deploy | P1.2 | **Experimental** |
 | 4 | Configuration drift detection | Deploy, Operate | P1.1 | **Experimental** |
-| 5 | Policy engine | Verify, Operate | P1.5 | **Planned** |
+| 5 | Policy engine | Verify, Operate | P1.5 | **Experimental** |
 | 6 | Compliance profiles | Verify, Deploy | P2.4 | **Future** |
 | 7 | Explainability reports | Operate, Recover | P0.3 / P3.2 | **Experimental** |
 | 8 | Chaos engineering | Simulate, Recover | P2.1 | **Planned** |

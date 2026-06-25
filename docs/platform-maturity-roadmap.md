@@ -20,7 +20,7 @@ Each area is classified by lifecycle phase, maturity tier, and primary outcome.
 | 2 | Dependency graph visualization | Build, Operate | Experimental | System understandability | `spanda-graph` |
 | 3 | Threat modeling | Verify, Deploy | Planned | Pre-deploy security awareness | `spanda-threat` |
 | 4 | Configuration drift detection | Deploy, Operate | Experimental | Expected vs actual parity | `spanda-config::drift` |
-| 5 | Policy engine | Verify, Operate | Planned | Declarative operational rules | `spanda-policy` |
+| 5 | Policy engine | Verify, Operate | Planned | Declarative operational rules | `spanda-policy` — **Experimental** (verify-time) |
 | 6 | Compliance profiles | Verify, Deploy | Future | Industry-specific gates | `spanda-compliance` |
 | 7 | Explainability reports | Operate, Recover | Future | Decision transparency | `spanda-explain` |
 | 8 | Chaos engineering | Simulate, Recover | Planned | Resilience validation | `spanda-chaos` |
