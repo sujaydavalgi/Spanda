@@ -1,6 +1,6 @@
 # Integrity Verification
 
-**Status:** Planned (Future) · **Phase:** Verify, Deploy · **Priority:** P3.1
+**Status:** Experimental (verify-time) · **Phase:** Verify, Deploy · **Priority:** P3.1
 
 Verify that declared system artifacts match approved baselines.
 
@@ -8,8 +8,11 @@ Verify that declared system artifacts match approved baselines.
 
 ```bash
 spanda integrity rover.sd
-spanda integrity rover.sd --agent Rover@JetsonOrin --json
+spanda integrity rover.sd --baseline approved/rover.sd --json
+spanda integrity rover.sd --agent Rover@JetsonOrin --json   # agent compare planned
 ```
+
+Verify-time `spanda integrity` hashes hardware, missions, safety rules, policies, health policies, capabilities, deploy targets, and package imports. With `--baseline`, each artifact is **Trusted**, **Modified**, or **Unknown** (no baseline).
 
 ## Verified artifacts
 
