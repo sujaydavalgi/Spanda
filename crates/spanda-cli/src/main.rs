@@ -194,7 +194,8 @@ fn usage() {
            spanda certify prove [--json] [--strict] [--out <file.json>] <file.sd>\n\
            spanda compatibility [--json] [--target <HardwareProfile>] [--all-targets] [--simulate] [--strict-certify] <file.sd>\n\
            spanda run [--json] [--verbose] [--twin-export <replay.json>] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] [--trace-providers] [--trace-realtime] [--metrics-json] [--record] [--persist-telemetry] [--enforce-certify] <file.sd>\n\
-           spanda sim [--json] [--replay] [--twin-export <replay.json>] [--trace-realtime] [--metrics-json] [--record] [--persist-telemetry] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] [--trace-providers] [--enforce-certify] <file.sd>\n\
+           spanda sim [--json] [--replay] [--twin-export <replay.json>] [--trace-realtime] [--metrics-json] [--record] [--persist-telemetry] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] [--trace-providers] [--enforce-certify] [--enforce-policy <name>] <file.sd>\n\
+           spanda run [--enforce-policy <name>] <file.sd>\n\
            spanda replay <mission.trace> [--from T+mm:ss] [--deterministic] [--playback] [--config <spanda.toml>]\n\
            spanda twin export <file.sd> --out <replay.json>\n\
            spanda fleet run [--json] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] [--persist-telemetry] <file.sd>\n\
@@ -1908,6 +1909,7 @@ fn main() {
     let mut secure_mode = false;
     let mut inject_security_faults = false;
     let mut enforce_certify = false;
+    let mut enforce_policy: Option<String> = None;
     let mut traceability = false;
     let mut traceability_json = false;
     let mut verify_capabilities = false;
@@ -1955,6 +1957,14 @@ fn main() {
             "--secure" => secure_mode = true,
             "--inject-security-faults" => inject_security_faults = true,
             "--enforce-certify" => enforce_certify = true,
+            "--enforce-policy" => {
+                i += 1;
+                if i >= args.len() {
+                    eprintln!("--enforce-policy requires a policy name");
+                    process::exit(1);
+                }
+                enforce_policy = Some(args[i].clone());
+            }
             "--traceability" => traceability = true,
             "--traceability-json" => {
                 traceability = true;
@@ -2335,6 +2345,7 @@ fn main() {
                     secure_mode,
                     inject_security_faults,
                     enforce_certify,
+                    enforce_policy: enforce_policy.clone(),
                     trigger_kill_switch,
                     inject_health_faults,
                     persist_telemetry,
