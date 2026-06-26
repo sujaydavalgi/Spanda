@@ -51,7 +51,7 @@ pub fn push_otlp_traces(endpoint: &str, body: &str, token: Option<&str>) -> Resu
     ))
 }
 
-/// Resolve traces endpoint from env (`SPANDA_OTLP_TRACES_ENDPOINT`, `SPANDA_JAEGER_OTLP_ENDPOINT`, or metrics URL rewrite).
+/// Resolve traces endpoint from env (`SPANDA_OTLP_TRACES_ENDPOINT`, `SPANDA_JAEGER_OTLP_ENDPOINT`, `SPANDA_OTEL_COLLECTOR_URL`, or metrics URL rewrite).
 pub fn env_traces_endpoint() -> Option<String> {
     if let Ok(value) = std::env::var("SPANDA_OTLP_TRACES_ENDPOINT") {
         if !value.trim().is_empty() {
@@ -63,9 +63,35 @@ pub fn env_traces_endpoint() -> Option<String> {
             return Some(value);
         }
     }
+    if let Ok(value) = std::env::var("SPANDA_OTEL_COLLECTOR_URL") {
+        if !value.trim().is_empty() {
+            return Some(normalize_traces_endpoint(&value));
+        }
+    }
     std::env::var("SPANDA_OTLP_ENDPOINT")
         .ok()
         .map(|endpoint| endpoint.replace("/v1/metrics", "/v1/traces"))
+}
+
+fn normalize_traces_endpoint(base: &str) -> String {
+    let trimmed = base.trim_end_matches('/');
+    if trimmed.ends_with("/v1/traces") {
+        trimmed.to_string()
+    } else {
+        format!("{trimmed}/v1/traces")
+    }
+}
+
+/// Summary of configured distributed trace/metrics backends.
+pub fn observability_backend_summary() -> serde_json::Value {
+    use crate::otlp_metrics::env_metrics_endpoint;
+    serde_json::json!({
+        "package": "spanda-otel-collector",
+        "traces_endpoint": env_traces_endpoint(),
+        "metrics_endpoint": env_metrics_endpoint(),
+        "auto_push": env_trace_auto_push_enabled(),
+        "collector_url_env": "SPANDA_OTEL_COLLECTOR_URL",
+    })
 }
 
 /// True when `SPANDA_OTLP_TRACE_AUTO_PUSH=1`.
@@ -166,5 +192,16 @@ mod tests {
         assert!(body.contains("resourceSpans"));
         assert!(body.contains("spanda-control-center"));
         assert!(body.contains("GET /v1/health"));
+    }
+
+    #[test]
+    fn otel_collector_url_normalizes_traces_path() {
+        std::env::set_var("SPANDA_OTEL_COLLECTOR_URL", "http://collector:4318");
+        std::env::remove_var("SPANDA_OTLP_TRACES_ENDPOINT");
+        std::env::remove_var("SPANDA_JAEGER_OTLP_ENDPOINT");
+        assert_eq!(
+            env_traces_endpoint().as_deref(),
+            Some("http://collector:4318/v1/traces")
+        );
     }
 }

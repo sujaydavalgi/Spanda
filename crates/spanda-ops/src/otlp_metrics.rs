@@ -76,16 +76,30 @@ pub fn push_otlp_metrics(endpoint: &str, body: &str, token: Option<&str>) -> Res
     ))
 }
 
-/// Resolve metrics endpoint from env (`SPANDA_OTLP_METRICS_ENDPOINT` or `SPANDA_OTLP_ENDPOINT`).
+/// Resolve metrics endpoint from env (`SPANDA_OTLP_METRICS_ENDPOINT`, `SPANDA_OTEL_COLLECTOR_URL`, or `SPANDA_OTLP_ENDPOINT`).
 pub fn env_metrics_endpoint() -> Option<String> {
     if let Ok(value) = std::env::var("SPANDA_OTLP_METRICS_ENDPOINT") {
         if !value.trim().is_empty() {
             return Some(value);
         }
     }
+    if let Ok(value) = std::env::var("SPANDA_OTEL_COLLECTOR_URL") {
+        if !value.trim().is_empty() {
+            return Some(normalize_metrics_endpoint(&value));
+        }
+    }
     std::env::var("SPANDA_OTLP_ENDPOINT")
         .ok()
         .filter(|value| !value.trim().is_empty())
+}
+
+fn normalize_metrics_endpoint(base: &str) -> String {
+    let trimmed = base.trim_end_matches('/');
+    if trimmed.ends_with("/v1/metrics") {
+        trimmed.to_string()
+    } else {
+        format!("{trimmed}/v1/metrics")
+    }
 }
 
 fn gauge_metric(name: &str, value: f64, time_nano: u64) -> Value {

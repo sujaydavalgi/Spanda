@@ -1,0 +1,18 @@
+[package]
+name = "spanda-otel-collector"
+version = "0.1.0"
+description = "OpenTelemetry collector integration for Spanda Control Center distributed traces"
+license = "Apache-2.0"
+
+[safety]
+level = "sensors"
+
+[capabilities]
+required = [
+  "network.http",
+  "observability.export",
+]
+
+[adapter]
+provides = ["observability.otel"]
+requires = ["network.http"]

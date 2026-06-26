@@ -5,8 +5,9 @@ use crate::handlers::{bad_request, json_ok, parse_query, unauthorized};
 use crate::state::ControlCenterState;
 use spanda_deploy_http::HttpResponse;
 use spanda_ops::{
-    env_metrics_endpoint, env_otlp_token, env_traces_endpoint, push_otlp_metrics, push_otlp_traces,
-    render_otlp_metrics_json, render_otlp_traces_json, ControlCenterMetrics, HttpTraceSpan,
+    env_metrics_endpoint, env_otlp_token, env_traces_endpoint, observability_backend_summary,
+    push_otlp_metrics, push_otlp_traces, render_otlp_metrics_json, render_otlp_traces_json,
+    ControlCenterMetrics, HttpTraceSpan,
 };
 use spanda_security::{ApiKeyStore, RbacAction, RbacContext};
 
@@ -148,4 +149,9 @@ pub fn maybe_auto_push_latest_span(record: &TraceRecord) {
     if let Err(error) = push_otlp_traces(&endpoint, &body, token.as_deref()) {
         eprintln!("OTLP trace auto-push failed: {error}");
     }
+}
+
+/// Distributed trace/metrics backend configuration summary.
+pub fn backend_info() -> HttpResponse {
+    json_ok(&observability_backend_summary())
 }

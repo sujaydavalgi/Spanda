@@ -11,8 +11,8 @@ pub use otlp_metrics::{
     env_metrics_endpoint, push_otlp_metrics, render_otlp_metrics_json, ControlCenterMetrics,
 };
 pub use otlp_traces::{
-    env_otlp_token, env_trace_auto_push_enabled, env_traces_endpoint, push_otlp_traces,
-    render_otlp_traces_json, HttpTraceSpan,
+    env_otlp_token, env_trace_auto_push_enabled, env_traces_endpoint, observability_backend_summary,
+    push_otlp_traces, render_otlp_traces_json, HttpTraceSpan,
 };
 pub use pdf_report::render_text_pdf;
 pub use slack::slack_webhook_payload;
