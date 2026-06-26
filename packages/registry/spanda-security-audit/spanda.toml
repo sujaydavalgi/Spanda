@@ -1,0 +1,15 @@
+[package]
+name = "spanda-security-audit"
+version = "0.1.0"
+description = "Third-party security audit checklist for Spanda Control Center"
+license = "Apache-2.0"
+
+[safety]
+level = "sensors"
+
+[capabilities]
+required = []
+
+[adapter]
+provides = ["security.audit"]
+requires = []
