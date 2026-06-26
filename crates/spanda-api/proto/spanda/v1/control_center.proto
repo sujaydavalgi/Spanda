@@ -1,4 +1,5 @@
 syntax = "proto3";
+// Spanda Control Center gRPC API — proto semver 1.0.0 (package spanda.v1).
 package spanda.v1;
 
 message Empty {}

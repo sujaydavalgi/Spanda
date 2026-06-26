@@ -7,6 +7,7 @@ pub mod drift_scheduler;
 pub mod e3;
 pub mod e4;
 pub mod grpc;
+pub mod grpc_policy;
 pub mod handlers;
 pub mod observability;
 pub mod openapi_routes;

@@ -324,11 +324,12 @@ fn api_version_info() -> HttpResponse {
         "version": API_VERSION,
         "api_version": crate::versioning::SUPPORTED_API_VERSION,
         "supported_versions": [crate::versioning::SUPPORTED_API_VERSION],
+        "grpc": crate::grpc_policy::policy_json(),
         "rate_limit_per_minute": std::env::var("SPANDA_API_RATE_LIMIT_PER_MINUTE")
             .ok()
             .and_then(|value| value.parse::<u32>().ok())
             .unwrap_or(0),
-        "policy": "Breaking changes require a new /v2/ path prefix. Send X-Spanda-Api-Version: v1 or omit the header.",
+        "policy": "Breaking REST changes require a new /v2/ path prefix. gRPC uses proto semver in grpc.proto_semver; send X-Spanda-Api-Version: v1 or omit the header.",
     }))
 }
 

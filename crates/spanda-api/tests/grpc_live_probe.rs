@@ -27,7 +27,7 @@ async fn grpc_live_control_center_endpoints() {
         .await
         .expect("health")
         .into_inner();
-    assert_eq!(health.status, "ok");
+    assert!(health.status.starts_with("ok"));
 
     let tenant = client
         .get_tenant(Empty {})

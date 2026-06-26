@@ -55,7 +55,7 @@ async fn grpc_health_and_dashboard() {
         .await
         .expect("health rpc")
         .into_inner();
-    assert_eq!(health.status, "ok");
+    assert!(health.status.starts_with("ok"));
     let dashboard = client
         .get_dashboard(Empty {})
         .await

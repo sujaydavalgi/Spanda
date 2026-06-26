@@ -117,7 +117,11 @@ impl GrpcControlCenter {
 impl ControlCenter for GrpcControlCenter {
     async fn health(&self, _request: Request<Empty>) -> Result<Response<HealthResponse>, Status> {
         Ok(Response::new(HealthResponse {
-            status: "ok".into(),
+            status: format!(
+                "ok;{};rpcs={}",
+                crate::grpc_policy::PROTO_SEMVER,
+                crate::grpc_policy::control_center_rpc_count()
+            ),
         }))
     }
 
