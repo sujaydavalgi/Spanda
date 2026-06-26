@@ -73,6 +73,9 @@ export function ControlCenterPanel({ apiBase }: Props) {
   const [mapping, setMapping] = useState<Record<string, unknown> | null>(null);
   const [readiness, setReadiness] = useState<ReadinessImpact | null>(null);
   const [deviceDetail, setDeviceDetail] = useState<Record<string, unknown> | null>(null);
+  const [selectedDevice, setSelectedDevice] = useState<string | null>(null);
+  const [selectedRobot, setSelectedRobot] = useState<string>("");
+  const [discoveryLog, setDiscoveryLog] = useState<string | null>(null);
   const [provisionLog, setProvisionLog] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -112,7 +115,11 @@ export function ControlCenterPanel({ apiBase }: Props) {
       }
       if (robotRes.ok) {
         const robotBody = await robotRes.json();
-        setRobots(robotBody.robots ?? []);
+        const nextRobots = robotBody.robots ?? [];
+        setRobots(nextRobots);
+        if (!selectedRobot && nextRobots.length > 0) {
+          setSelectedRobot(nextRobots[0].id);
+        }
       }
       if (fleetListRes.ok) {
         const fleetBody = await fleetListRes.json();
@@ -127,11 +134,13 @@ export function ControlCenterPanel({ apiBase }: Props) {
     } finally {
       setBusy(false);
     }
-  }, [base]);
+  }, [base, selectedRobot]);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  const robotId = selectedRobot || robots[0]?.id || "rover-001";
 
   const runReadiness = async () => {
     setBusy(true);
@@ -148,14 +157,19 @@ export function ControlCenterPanel({ apiBase }: Props) {
 
   const runDiscovery = async () => {
     setBusy(true);
+    setDiscoveryLog(null);
     try {
       const res = await fetch(`${base}/v1/devices/discover`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ transports: ["mdns", "subnet"] }),
+        headers: authHeaders(),
+        body: JSON.stringify({
+          transports: ["mdns", "subnet", "ble", "usb", "can", "mqtt", "ros2"],
+          timeout_ms: 2000,
+        }),
       });
       if (!res.ok) throw new Error(`discover ${res.status}`);
-      await res.json();
+      const body = await res.json();
+      setDiscoveryLog(JSON.stringify(body, null, 2));
       await load();
     } catch (e) {
       setError(String(e));
@@ -184,7 +198,7 @@ export function ControlCenterPanel({ apiBase }: Props) {
     setBusy(true);
     setProvisionLog(null);
     try {
-      const robot = robots[0]?.id ?? "rover-001";
+      const robot = robotId;
       const res = await fetch(
         `${base}/v1/devices/${encodeURIComponent(selectedDevice)}/provision`,
         {
@@ -226,7 +240,7 @@ export function ControlCenterPanel({ apiBase }: Props) {
     if (!selectedDevice) return;
     setBusy(true);
     try {
-      const robot = robots[0]?.id ?? "rover-001";
+      const robot = robotId;
       const res = await fetch(
         `${base}/v1/devices/${encodeURIComponent(selectedDevice)}/assign`,
         {
@@ -236,6 +250,24 @@ export function ControlCenterPanel({ apiBase }: Props) {
         },
       );
       if (!res.ok) throw new Error(`assign ${res.status}`);
+      await load();
+      await inspectDevice(selectedDevice);
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const trustDevice = async () => {
+    if (!selectedDevice) return;
+    setBusy(true);
+    try {
+      const res = await fetch(
+        `${base}/v1/devices/${encodeURIComponent(selectedDevice)}/trust`,
+        { method: "POST", headers: authHeaders() },
+      );
+      if (!res.ok) throw new Error(`trust ${res.status}`);
       await load();
       await inspectDevice(selectedDevice);
     } catch (e) {
@@ -327,6 +359,7 @@ export function ControlCenterPanel({ apiBase }: Props) {
               <th>ID</th>
               <th>Type</th>
               <th>Lifecycle</th>
+              <th>Trust</th>
               <th>Robot</th>
               <th>Logical</th>
             </tr>
@@ -341,6 +374,7 @@ export function ControlCenterPanel({ apiBase }: Props) {
                 </td>
                 <td>{d.device_type}</td>
                 <td>{d.lifecycle_state}</td>
+                <td>{d.trust_level ?? "unknown"}</td>
                 <td>{d.assigned_robot ?? "—"}</td>
                 <td>{d.logical_name ?? "—"}</td>
               </tr>
@@ -386,6 +420,7 @@ export function ControlCenterPanel({ apiBase }: Props) {
           <button type="button" onClick={() => void runDiscovery()} disabled={busy}>
             Discover devices
           </button>
+          {discoveryLog && <pre>{discoveryLog}</pre>}
         </div>
       )}
 
@@ -397,7 +432,7 @@ export function ControlCenterPanel({ apiBase }: Props) {
           </p>
           {!apiKey && (
             <p className="demo-hint">
-              Set <code>VITE_SPANDA_API_KEY</code> for provision/assign/quarantine mutations.
+              Set <code>VITE_SPANDA_API_KEY</code> for provision/assign/trust/quarantine mutations.
             </p>
           )}
           {selectedDevice ? (
@@ -405,7 +440,24 @@ export function ControlCenterPanel({ apiBase }: Props) {
               <p>
                 Selected: <code>{selectedDevice}</code>
               </p>
+              <label>
+                Target robot{" "}
+                <select
+                  value={robotId}
+                  onChange={(event) => setSelectedRobot(event.target.value)}
+                >
+                  {robots.map((robot) => (
+                    <option key={robot.id} value={robot.id}>
+                      {robot.id}
+                    </option>
+                  ))}
+                  {robots.length === 0 && <option value="rover-001">rover-001</option>}
+                </select>
+              </label>
               <div className="toolbar">
+                <button type="button" onClick={() => void trustDevice()} disabled={busy || !apiKey}>
+                  Trust / Approve
+                </button>
                 <button type="button" onClick={() => void provisionDevice()} disabled={busy || !apiKey}>
                   Provision
                 </button>
