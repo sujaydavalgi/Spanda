@@ -157,13 +157,7 @@ struct AttestationResponse {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::sync::{Mutex, MutexGuard};
-
-    static ENV_LOCK: Mutex<()> = Mutex::new(());
-
-    fn env_lock() -> MutexGuard<'static, ()> {
-        ENV_LOCK.lock().unwrap_or_else(|error| error.into_inner())
-    }
+    use crate::test_env::attestation_env_lock;
 
     const SAMPLE_PEM: &str = "-----BEGIN CERTIFICATE-----\nQUJDRA==\n-----END CERTIFICATE-----";
 
@@ -187,10 +181,14 @@ mod tests {
 
     #[test]
     fn ak_chain_policy_marks_failed_without_trust_store() {
-        let _guard = env_lock();
+        let _guard = attestation_env_lock();
         std::env::remove_var("SPANDA_ATTESTATION_AK_CHAIN_OPTIONAL");
-        std::env::remove_var("SPANDA_ATTESTATION_AK_EXPECT_FINGERPRINT");
         std::env::remove_var("SPANDA_ATTESTATION_TRUST_STORE");
+        std::env::set_var("SPANDA_ATTESTATION_OPENSSL_VERIFY", "0");
+        std::env::set_var(
+            "SPANDA_ATTESTATION_AK_EXPECT_FINGERPRINT",
+            "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+        );
         let base = LiveAttestationResult {
             attested: true,
             boot_state: "verified".into(),
@@ -202,5 +200,7 @@ mod tests {
         let result = apply_ak_chain_policy(base, vec![SAMPLE_PEM.into()]);
         assert!(!result.attested);
         assert_eq!(result.ak_chain_verified, Some(false));
+        std::env::remove_var("SPANDA_ATTESTATION_AK_EXPECT_FINGERPRINT");
+        std::env::remove_var("SPANDA_ATTESTATION_OPENSSL_VERIFY");
     }
 }

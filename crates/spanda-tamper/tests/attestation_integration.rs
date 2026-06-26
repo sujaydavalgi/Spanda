@@ -92,6 +92,8 @@ robot Rover {
 fn vendor_tpm_with_ak_chain_validates_against_trust_store() {
     std::env::remove_var("SPANDA_ATTESTATION_ENDPOINT");
     std::env::remove_var("SPANDA_ATTESTATION_AK_CHAIN_OPTIONAL");
+    std::env::remove_var("SPANDA_ATTESTATION_AK_EXPECT_FINGERPRINT");
+    std::env::remove_var("SPANDA_ATTESTATION_OPENSSL_VERIFY");
     let trust_store = repo_path(&[
         "examples",
         "showcase",

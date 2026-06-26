@@ -301,19 +301,13 @@ fn verify_with_openssl(pem_chain: &[String], trust_store_dir: Option<&Path>) -> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::sync::{Mutex, MutexGuard};
-
-    static ENV_LOCK: Mutex<()> = Mutex::new(());
-
-    fn env_lock() -> MutexGuard<'static, ()> {
-        ENV_LOCK.lock().unwrap_or_else(|error| error.into_inner())
-    }
+    use crate::test_env::attestation_env_lock;
 
     const SAMPLE_PEM: &str = "-----BEGIN CERTIFICATE-----\nQUJDRA==\n-----END CERTIFICATE-----";
 
     #[test]
     fn validates_chain_against_trust_store_fingerprint() {
-        let _guard = env_lock();
+        let _guard = attestation_env_lock();
         std::env::remove_var("SPANDA_ATTESTATION_AK_EXPECT_FINGERPRINT");
         std::env::remove_var("SPANDA_ATTESTATION_OPENSSL_VERIFY");
         let store = std::env::temp_dir().join(format!("spanda_trust_store_{}", std::process::id()));
@@ -328,7 +322,7 @@ mod tests {
 
     #[test]
     fn rejects_chain_without_trust_anchor() {
-        let _guard = env_lock();
+        let _guard = attestation_env_lock();
         std::env::remove_var("SPANDA_ATTESTATION_AK_EXPECT_FINGERPRINT");
         let chain = vec![SAMPLE_PEM.into()];
         let result = validate_ak_cert_chain(&chain, None);
@@ -337,7 +331,7 @@ mod tests {
 
     #[test]
     fn leaf_fingerprint_policy_verifies_chain() {
-        let _guard = env_lock();
+        let _guard = attestation_env_lock();
         std::env::remove_var("SPANDA_ATTESTATION_OPENSSL_VERIFY");
         let der = decode_base64("QUJDRA==").expect("decode");
         let fingerprint = cert_fingerprint(&der);

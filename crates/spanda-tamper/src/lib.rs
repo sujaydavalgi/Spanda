@@ -12,6 +12,9 @@ pub mod runtime;
 pub mod secure_boot;
 pub mod tpm;
 
+#[cfg(test)]
+pub mod test_env;
+
 pub use assurance::{
     format_security_assurance_report, generate_security_assurance, SecurityAssuranceFormat,
     SecurityAssuranceReport, SecurityAssuranceSection,

@@ -12,6 +12,16 @@ pub struct TamperPolicySpec {
     pub triggers: Vec<(String, Vec<String>)>,
 }
 
+fn normalize_tamper_action(action: &str) -> String {
+    action
+        .replace("( )", "()")
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+        .replace(" (", "(")
+        .replace(") ", ")")
+}
+
 /// Extract tamper policies declared in a parsed program.
 pub fn extract_tamper_policies(program: &Program) -> Vec<TamperPolicySpec> {
     // Collect tamper_policy branches into trigger/action pairs for matching.
@@ -42,7 +52,15 @@ pub fn extract_tamper_policies(program: &Program) -> Vec<TamperPolicySpec> {
                     .map(
                         |TamperPolicyBranch {
                              condition, actions, ..
-                         }| { (condition.clone(), actions.clone()) },
+                         }| {
+                            (
+                                condition.clone(),
+                                actions
+                                    .iter()
+                                    .map(|action| normalize_tamper_action(action))
+                                    .collect(),
+                            )
+                        },
                     )
                     .collect(),
             }
