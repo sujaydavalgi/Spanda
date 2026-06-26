@@ -302,6 +302,58 @@
         "responses": { "200": { "description": "Mission decision recorded" } }
       }
     },
+    "/v1/config/approvals": {
+      "get": {
+        "summary": "List config publish approval requests",
+        "responses": { "200": { "description": "Approval queue" } }
+      },
+      "post": {
+        "summary": "Submit a snapshot for operator approval",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "snapshot_id": { "type": "string" },
+                  "note": { "type": "string" }
+                },
+                "required": ["snapshot_id"]
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Approval request created" } }
+      }
+    },
+    "/v1/config/approvals/{id}/approve": {
+      "post": {
+        "summary": "Approve and publish snapshot to runtime",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Snapshot published; includes publish metadata" } }
+      }
+    },
+    "/v1/config/approvals/{id}/reject": {
+      "post": {
+        "summary": "Reject a pending config publish request",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Approval rejected" } }
+      }
+    },
+    "/v1/compliance/evidence": {
+      "get": {
+        "summary": "List append-only compliance evidence records",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Evidence log entries" } }
+      }
+    },
     "/v1/rpc": {
       "post": {
         "summary": "gRPC-compatible JSON gateway",

@@ -56,6 +56,11 @@ Open `http://127.0.0.1:8080/` for the Control Center UI, or use the **Control Ce
 | `OperatorQuarantine` | Operator quarantine workflow |
 | `OperatorMissionApprove` | Mission approval workflow |
 | `ExportCompliance` | Compliance export (`query` = `profile=defense`, …) |
+| `ListComplianceEvidence` | Append-only evidence log (`GET /v1/compliance/evidence`) |
+| `ListConfigApprovals` | Config publish approval queue (`GET /v1/config/approvals`) |
+| `SubmitConfigApproval` | Submit snapshot for approval (`POST /v1/config/approvals`) |
+| `ApproveConfigApproval` | Approve and publish snapshot (`POST /v1/config/approvals/{id}/approve`) |
+| `RejectConfigApproval` | Reject pending approval (`POST /v1/config/approvals/{id}/reject`) |
 | `DetectDrift` | Operational drift report (`baseline_id` in request) |
 
 Proto: `crates/spanda-api/proto/spanda/v1/control_center.proto`
@@ -121,7 +126,7 @@ grpcurl -plaintext -d '{}' 127.0.0.1:50051 spanda.v1.ControlCenter/Health
 | `/v1/operator/quarantine` | POST | Bearer | Quarantine a device |
 | `/v1/operator/mission/approve` | POST | Bearer | Approve or reject a mission |
 | `/v1/rpc` | POST | — | gRPC-compatible JSON gateway |
-| **gRPC (tonic)** | — | — | Native `ControlCenter` service on `--grpc-bind` (55 RPCs; full REST parity except JSON-RPC gateway) |
+| **gRPC (tonic)** | — | — | Native `ControlCenter` service on `--grpc-bind` (60 RPCs; full REST parity except JSON-RPC gateway) |
 | `/v1/compliance/export` | GET/POST | Bearer | Accreditation bundle (`?profile=defense`); appends immutable evidence log |
 | `/v1/compliance/evidence` | GET | Bearer | List append-only compliance evidence records |
 | `/v1/digital-thread/query` | GET | — | Trace chain (`?capability=`, `?device_id=`) |

@@ -162,12 +162,20 @@ echo "$SNAPSHOT_JSON" | grep -q smoke-baseline
 BASELINE_ID=$(echo "$SNAPSHOT_JSON" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d["snapshots"][0]["id"])')
 
 echo "== E2 config approval queue =="
-curl -sf -X POST \
+APPROVAL_JSON=$(curl -sf -X POST \
   -H "Authorization: Bearer ${SPANDA_API_KEY}" \
   -H "Content-Type: application/json" \
   -d "{\"snapshot_id\":\"${BASELINE_ID}\"}" \
-  "http://${BIND}/v1/config/approvals" | grep -q '"approval"'
+  "http://${BIND}/v1/config/approvals")
+echo "$APPROVAL_JSON" | grep -q '"approval"'
+APPROVAL_ID=$(echo "$APPROVAL_JSON" | python3 -c 'import json,sys; print(json.load(sys.stdin)["approval"]["id"])')
 fetch /v1/config/approvals | grep -q approvals
+echo "== E2 config approval publish-on-approve =="
+curl -sf -X POST \
+  -H "Authorization: Bearer ${SPANDA_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{}' \
+  "http://${BIND}/v1/config/approvals/${APPROVAL_ID}/approve" | grep -q '"publish"'
 
 echo "== E3 GET /v1/openapi.json =="
 fetch /v1/openapi.json | grep -q Spanda
