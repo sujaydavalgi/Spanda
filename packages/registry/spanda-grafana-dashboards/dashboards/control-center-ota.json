@@ -1,0 +1,47 @@
+{
+  "title": "Spanda Control Center — OTA",
+  "uid": "spanda-cc-ota",
+  "tags": ["spanda", "control-center", "ota"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "1m",
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Active rollouts",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "spanda_ota_rollouts_active",
+          "legendFormat": "active"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Readiness failures (24h)",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "targets": [
+        {
+          "expr": "increase(spanda_ota_readiness_failures_total[24h])",
+          "legendFormat": "failures"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "OTA stage progress",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 4 },
+      "targets": [
+        {
+          "expr": "spanda_ota_stage_percent",
+          "legendFormat": "{{stage}}"
+        }
+      ]
+    }
+  ]
+}

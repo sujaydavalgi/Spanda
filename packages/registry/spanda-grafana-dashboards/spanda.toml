@@ -1,0 +1,17 @@
+[package]
+name = "spanda-grafana-dashboards"
+version = "0.1.0"
+description = "Grafana dashboard templates for Spanda Control Center SRE and OTA metrics"
+license = "Apache-2.0"
+
+[safety]
+level = "sensors"
+
+[capabilities]
+required = [
+  "network.http",
+]
+
+[adapter]
+provides = ["observability.grafana"]
+requires = ["network.http"]

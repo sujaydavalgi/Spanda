@@ -1,0 +1,59 @@
+{
+  "title": "Spanda Control Center — SRE",
+  "uid": "spanda-cc-sre",
+  "tags": ["spanda", "control-center", "sre"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Availability %",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "spanda_control_center_availability_percent",
+          "legendFormat": "availability"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "SLO burn rate",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "targets": [
+        {
+          "expr": "spanda_slo_burn_rate",
+          "legendFormat": "burn"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Critical alerts (1h)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "targets": [
+        {
+          "expr": "increase(spanda_alerts_critical_total[1h])",
+          "legendFormat": "critical"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "table",
+      "title": "Open incidents",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "targets": [
+        {
+          "expr": "spanda_incidents_open",
+          "legendFormat": "open"
+        }
+      ]
+    }
+  ]
+}
