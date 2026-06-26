@@ -214,6 +214,27 @@ pub fn plan_rollout(plan: &DeployPlan, options: &RolloutOptions) -> RolloutResul
                 });
             }
         }
+        RolloutStrategy::BlueGreen => {
+            let deploy_count = (total / 2).max(1);
+            for (idx, assignment) in plan.assignments.iter().enumerate() {
+                let deploy = idx < deploy_count;
+                steps.push(RolloutStep {
+                    robot_name: assignment.robot_name.clone(),
+                    hardware: assignment.hardware.clone(),
+                    status: if deploy {
+                        if options.dry_run {
+                            RolloutStepStatus::Pending
+                        } else {
+                            RolloutStepStatus::Deployed
+                        }
+                    } else {
+                        RolloutStepStatus::Skipped
+                    },
+                    version: options.version.clone(),
+                    phase_percent: Some(if deploy { 50 } else { 0 }),
+                });
+            }
+        }
     }
 
     RolloutResult {

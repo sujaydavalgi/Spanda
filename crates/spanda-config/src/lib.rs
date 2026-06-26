@@ -17,6 +17,7 @@ pub mod layer;
 pub mod manifest;
 pub mod mapping;
 pub mod network_validation;
+pub mod operational_drift;
 pub mod provisioning;
 pub mod reports;
 pub mod resolved;
@@ -59,6 +60,9 @@ pub use drift::{
     append_agent_drift, append_program_drift, detect_agent_drift, detect_config_drift,
     expected_agent_states, format_drift_lines, AgentDriftSnapshot, ConfigDriftReport,
     DriftDimension, DriftFinding, DriftSeverity, ExpectedAgentState,
+};
+pub use operational_drift::{
+    detect_operational_drift, OperationalDriftDimension, OperationalDriftReport,
 };
 pub use provisioning::{
     run_provision_workflow, ProvisionReport, ProvisionStep, ProvisionStepResult,

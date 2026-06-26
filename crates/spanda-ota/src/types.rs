@@ -10,6 +10,7 @@ pub enum RolloutStrategy {
     All,
     Canary,
     Staged,
+    BlueGreen,
 }
 
 /// A single robot-to-hardware deployment assignment from the program AST.
