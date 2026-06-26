@@ -2,7 +2,7 @@
 
 Web-based operational visibility for fleets, devices, readiness, and alerts. Phase E1 ships a REST API v1 and embedded UI served by the native CLI.
 
-**Related:** [enterprise-operations-roadmap.md](./enterprise-operations-roadmap.md) · [telemetry-store.md](./telemetry-store.md) · [configuration.md](./configuration.md)
+**Related:** [enterprise-operations-roadmap.md](./enterprise-operations-roadmap.md) · [device-pool.md](./device-pool.md) · [device-provisioning.md](./device-provisioning.md) · [telemetry-store.md](./telemetry-store.md) · [configuration.md](./configuration.md)
 
 ---
 
@@ -28,7 +28,17 @@ Open `http://127.0.0.1:8080/` for the Control Center UI, or use the **Control Ce
 | `/v1/health` | GET | — | Liveness |
 | `/v1/dashboard` | GET | — | Device pool summary, fleet agent count, alerts |
 | `/v1/devices` | GET | — | Device pool entries |
+| `/v1/devices/{id}` | GET | — | Single device record |
 | `/v1/devices/{id}` | PATCH | Bearer | Update `lifecycle_state` |
+| `/v1/devices/discover` | POST | — | Multi-transport discovery |
+| `/v1/devices/{id}/provision` | POST | Bearer | Per-device provision workflow |
+| `/v1/devices/{id}/assign` | POST | Bearer | Assign device to robot |
+| `/v1/devices/{id}/quarantine` | POST | Bearer | Quarantine device |
+| `/v1/robots` | GET | — | Robot inventory from device tree |
+| `/v1/fleets` | GET | — | Fleet inventory |
+| `/v1/device-tree` | GET | — | Hierarchy + logical/physical mapping JSON |
+| `/v1/readiness/run` | POST | — | Device readiness impact check |
+| `/v1/device-reports` | GET | — | Inventory, trust, calibration reports |
 | `/v1/fleet/agents` | GET | — | Registered fleet agents (`.spanda/fleet-agents.json`) |
 | `/v1/alerts` | GET | — | Alert history |
 | `/v1/alerts/test` | POST | Bearer | Dispatch test alert |
@@ -68,6 +78,24 @@ Govern-and-trace endpoints require a loaded program:
 ```bash
 spanda control-center serve --config spanda.toml --program rover.sd
 ```
+
+---
+
+## Control Center UI sections
+
+The `@spanda/web` Control Center panel includes:
+
+| Section | Purpose |
+|---------|---------|
+| Dashboard | Pool summary, alerts, fleet agents |
+| Devices | Device pool with lifecycle and assignment |
+| Fleet | Fleets, robots, agents |
+| Discovery | Multi-transport device discovery |
+| Provisioning | Device inspect and provision workflows |
+| Mapping | Logical ↔ physical mapping export |
+| Health | Pool health rollup |
+| Readiness | Readiness impact check |
+| Traceability | Trust and identity trace view |
 
 ---
 
@@ -115,7 +143,8 @@ Devices in `[[devices]]` or the device tree carry optional lifecycle fields:
 | `quarantined` | Blocked pending review |
 | `verified` | Identity and trust checks passed |
 | `assigned` | Bound to a robot |
-| `healthy` / `degraded` / `offline` / `failed` | Runtime posture |
+| `active` | Operational (`healthy` is an alias) |
+| `degraded` / `offline` / `failed` | Runtime posture |
 | `retired` | Removed from active pool |
 
 Set in TOML:
@@ -124,9 +153,12 @@ Set in TOML:
 [[devices]]
 id = "lidar-front"
 type = "lidar"
-lifecycle_state = "healthy"
+lifecycle_state = "active"
 assigned_robot = "rover-1"
+logical_name = "front_lidar"
 ```
+
+See [device-pool.md](./device-pool.md) and [device-provisioning.md](./device-provisioning.md).
 
 ---
 
@@ -167,4 +199,4 @@ The desktop shell reuses `ControlCenterPanel` from `@spanda/web`; it does not em
 
 ## Status
 
-**Experimental** (Phase E1–E4). Includes WebSocket telemetry streaming, OTLP trace export to Jaeger, compliance export, digital thread query, executive scorecard, report composer (including PDF), and Tauri desktop scaffold.
+**Experimental** (Phase E1–E4). Includes device pool provisioning, multi-transport discovery, WebSocket telemetry streaming, OTLP trace export to Jaeger, compliance export, digital thread query, executive scorecard, report composer (including PDF), and Tauri desktop scaffold.

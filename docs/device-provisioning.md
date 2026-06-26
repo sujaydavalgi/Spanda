@@ -1,0 +1,63 @@
+# Device Provisioning
+
+Provisioning moves a device from **discovered** to **ready for operations** through a gated workflow.
+
+## Workflow
+
+1. **Discover** — device appears in pool (subnet, mDNS, BLE, USB, CAN, MQTT, ROS2)
+2. **Inspect identity** — serial, MAC, IP, certificate fingerprint
+3. **Verify trust** — trust level must be `verified` or `trusted`
+4. **Validate capabilities** — remote actuators declare `move`, `stop`, `emergency_stop`
+5. **Run health check** — lifecycle not quarantined/failed; calibration valid
+6. **Assign** — bind to robot/fleet/swarm and logical entity
+7. **Update device tree** — refresh `spanda.devices.toml` mapping
+8. **Readiness verification** — readiness engine confirms mission impact
+
+## CLI
+
+```bash
+spanda device provision <device-id> --robot rover-001 [--json]
+```
+
+Exit code `1` when any gate fails.
+
+## API
+
+```bash
+curl -X POST http://127.0.0.1:8080/v1/provision \
+  -H "Authorization: Bearer $SPANDA_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"device_id":"gps-001","robot_id":"rover-001"}'
+
+# Per-device route
+curl -X POST http://127.0.0.1:8080/v1/devices/gps-001/provision \
+  -H "Authorization: Bearer $SPANDA_API_KEY" \
+  -d '{"robot_id":"rover-001"}'
+```
+
+Failed provisioning quarantines the device automatically.
+
+## Logical mapping example
+
+```toml
+# logical sensor gps → physical device gps-ublox-001
+[[devices]]
+id = "gps-ublox-001"
+logical_name = "gps"
+assigned_robot = "rover-001"
+
+# logical actuator wheels → physical sabertooth-drive-001
+[[devices]]
+id = "sabertooth-drive-001"
+logical_name = "wheels"
+type = "DifferentialDrive"
+capabilities = ["move", "stop", "emergency_stop"]
+```
+
+Export mapping JSON via `GET /v1/device-tree`.
+
+## Related
+
+- [device-pool.md](./device-pool.md)
+- [calibration.md](./calibration.md)
+- [device-quarantine.md](./device-quarantine.md)
