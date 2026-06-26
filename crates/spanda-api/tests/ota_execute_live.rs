@@ -31,6 +31,7 @@ fn ota_execute_live_rollout_updates_agent() {
     let ctx = RbacContext {
         key_id: "ota-live-test".into(),
         role: Role::Administrator,
+        tenant_id: spanda_security::default_tenant_id(),
     };
     let body = serde_json::json!({
         "strategy": "all",

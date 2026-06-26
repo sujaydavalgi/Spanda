@@ -75,14 +75,21 @@ impl GrpcControlCenter {
                 )));
             }
         }
-        let rate_key = self
-            .rbac_from_request(request)
-            .map(|context| context.key_id)
-            .unwrap_or_else(|| "anonymous".to_string());
+        let token = Self::bearer_token(request);
         let guard = self
             .state
             .lock()
             .map_err(|e| Status::internal(e.to_string()))?;
+        let rbac_ctx = guard.api_keys.authenticate(token.as_deref());
+        if let Some(context) = &rbac_ctx {
+            if !spanda_security::tenant_matches(&guard.tenant_id, &context.tenant_id) {
+                return Err(Status::permission_denied("tenant mismatch"));
+            }
+        }
+        let rate_key = rbac_ctx
+            .as_ref()
+            .map(|context| context.key_id.clone())
+            .unwrap_or_else(|| "anonymous".to_string());
         guard.rate_limiter.check(&rate_key).map_err(|retry| {
             Status::resource_exhausted(format!("rate limit exceeded; retry after {retry}s"))
         })
@@ -111,6 +118,15 @@ impl ControlCenter for GrpcControlCenter {
         Ok(Response::new(HealthResponse {
             status: "ok".into(),
         }))
+    }
+
+    async fn get_tenant(
+        &self,
+        request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        self.with_state(|state| crate::handlers::tenant_info_json(state))
+            .map(Response::new)
     }
 
     async fn get_dashboard(
@@ -359,6 +375,16 @@ impl ControlCenter for GrpcControlCenter {
         self.guard_request(&request)?;
         self.with_state(|state| crate::handlers::otlp_metrics_json(state))
             .map(Response::new)
+    }
+
+    async fn get_observability_backend(
+        &self,
+        request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        Ok(Response::new(JsonResponse {
+            json: crate::handlers::observability_backend_json(),
+        }))
     }
 
     async fn discover_devices(

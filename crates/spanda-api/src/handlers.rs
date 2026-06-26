@@ -108,6 +108,19 @@ pub fn handle_request(
     let ctx = state
         .api_keys
         .authenticate(request.authorization.as_deref());
+    if ctx.is_some() && !ApiKeyStore::check_tenant(ctx.as_ref(), &state.tenant_id) {
+        let response = tenant_forbidden();
+        e3::record_trace(
+            state,
+            &correlation_id,
+            &request.method,
+            path,
+            response.status,
+            started_ms,
+            ctx.as_ref(),
+        );
+        return (response, correlation_id);
+    }
     if let Some(response) = crate::versioning::enforce_api_version(
         crate::versioning::api_version_from_headers(raw_headers).as_deref(),
     ) {
@@ -176,6 +189,7 @@ pub fn handle_request(
         return (response, correlation_id);
     }
     let response = match (path, request.method.as_str()) {
+        ("/v1/tenant", "GET") => tenant_info(state),
         ("/v1/audit/mutations", "GET") => mutation_audit_list(state, ctx.as_ref()),
         ("/v1/dashboard", "GET") => dashboard(state),
         ("/v1/version", "GET") => api_version_info(),
@@ -209,6 +223,7 @@ pub fn handle_request(
         ("/v1/observability/traces", "GET") => e3::observability_traces(state),
         ("/v1/observability/otlp/traces", "GET") => observability::otlp_traces_preview(state),
         ("/v1/observability/otlp/metrics", "GET") => observability::otlp_metrics_preview(state),
+        ("/v1/observability/backend", "GET") => observability::backend_info(),
         ("/v1/observability/otlp/export", "POST") => {
             observability::otlp_traces_export(state, query, ctx.as_ref())
         }
@@ -242,6 +257,25 @@ pub fn handle_request(
         ctx.as_ref(),
     );
     (response, correlation_id)
+}
+
+pub(crate) fn tenant_forbidden() -> HttpResponse {
+    HttpResponse {
+        status: 403,
+        body: serde_json::json!({
+            "ok": false,
+            "error": "tenant mismatch",
+        })
+        .to_string(),
+    }
+}
+
+fn tenant_info(state: &ControlCenterState) -> HttpResponse {
+    json_ok(&serde_json::json!({
+        "version": API_VERSION,
+        "tenant_id": state.tenant_id,
+        "isolation": "api_keys must match SPANDA_TENANT_ID on this Control Center instance",
+    }))
 }
 
 fn api_version_info() -> HttpResponse {
@@ -350,6 +384,7 @@ fn alerts_test(state: &mut ControlCenterState, ctx: Option<&RbacContext>) -> Htt
     };
     state.alert_dispatcher.dispatch(&mut alert);
     state.alert_store.push(alert.clone());
+    let _ = crate::persistence::persist_runtime_state(state);
     json_ok(&serde_json::json!({
         "ok": true,
         "alert": alert,
@@ -421,6 +456,7 @@ fn provision_run(
         };
         state.alert_dispatcher.dispatch(&mut alert);
         state.alert_store.push(alert);
+        let _ = crate::persistence::persist_runtime_state(state);
         if let Some(resolved) = state.resolved.as_mut() {
             if let Some(device) = resolved
                 .device_registry
@@ -950,6 +986,11 @@ pub fn encode_response(
     )
 }
 
+/// JSON body for gRPC `GetTenant` (parity with `GET /v1/tenant`).
+pub fn tenant_info_json(state: &ControlCenterState) -> String {
+    tenant_info(state).body
+}
+
 /// JSON body for gRPC `ListAuditMutations` (parity with `GET /v1/audit/mutations`).
 pub fn mutation_audit_list_json(state: &ControlCenterState, ctx: Option<&RbacContext>) -> String {
     mutation_audit_list(state, ctx).body
@@ -1066,6 +1107,11 @@ pub fn digital_thread_query_json(state: &ControlCenterState, query: &str) -> Str
 /// JSON body for gRPC `GetOtaStatus` (parity with `GET /v1/ota/status`).
 pub fn ota_status_json() -> String {
     e3::ota_status().body
+}
+
+/// JSON body for gRPC `GetObservabilityBackend` (parity with `GET /v1/observability/backend`).
+pub fn observability_backend_json() -> String {
+    observability::backend_info().body
 }
 
 /// JSON body for gRPC `GetOtlpMetrics` (parity with `GET /v1/observability/otlp/metrics`).

@@ -42,6 +42,7 @@ message DeviceBodyRequest {
 
 service ControlCenter {
   rpc Health(Empty) returns (HealthResponse);
+  rpc GetTenant(Empty) returns (JsonResponse);
   rpc GetDashboard(Empty) returns (JsonResponse);
   rpc ListAuditMutations(Empty) returns (JsonResponse);
   rpc ListDevices(Empty) returns (JsonResponse);
@@ -63,6 +64,7 @@ service ControlCenter {
   rpc QueryDigitalThread(QueryRequest) returns (JsonResponse);
   rpc GetOtaStatus(Empty) returns (JsonResponse);
   rpc GetOtlpMetrics(Empty) returns (JsonResponse);
+  rpc GetObservabilityBackend(Empty) returns (JsonResponse);
   rpc DiscoverDevices(QueryRequest) returns (JsonResponse);
   rpc RunDiscovery(JsonBodyRequest) returns (JsonResponse);
   rpc ProvisionDevice(JsonBodyRequest) returns (JsonResponse);
