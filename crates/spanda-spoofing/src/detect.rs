@@ -35,6 +35,8 @@ pub struct SpoofingReport {
     pub coverage_checks: Vec<SpoofingCoverageCheck>,
     pub alerts: Vec<SpoofingAlert>,
     pub passed: bool,
+    #[serde(default)]
+    pub ml_alerts_merged: u32,
 }
 
 /// Run spoof-check on a parsed program (static coverage analysis).
@@ -97,6 +99,7 @@ pub fn generate_program_spoof_check(program: &Program, source_label: &str) -> Sp
         coverage_checks,
         alerts,
         passed,
+        ml_alerts_merged: 0,
     }
 }
 
@@ -118,7 +121,9 @@ pub fn generate_trace_spoof_check(trace: &MissionTrace, source_label: &str) -> S
     // let report = generate_trace_spoof_check(&trace, "mission.trace");
 
     let mut alerts = analyze_trace_spoofing(trace, DEFAULT_MAX_GROUND_SPEED_M_S);
+    let ml_before = alerts.len();
     crate::ml::merge_ml_spoofing_alerts(trace, &mut alerts);
+    let ml_alerts_merged = alerts.len().saturating_sub(ml_before) as u32;
     let passed = !alerts.iter().any(|alert| {
         matches!(
             alert.severity,
@@ -133,6 +138,7 @@ pub fn generate_trace_spoof_check(trace: &MissionTrace, source_label: &str) -> S
         coverage_checks: Vec::new(),
         alerts,
         passed,
+        ml_alerts_merged,
     }
 }
 
@@ -213,6 +219,10 @@ fn format_spoofing_text(report: &SpoofingReport) -> String {
                 lines.push(format!("       {detail}"));
             }
         }
+    }
+
+    if report.ml_alerts_merged > 0 {
+        lines.push(format!("ML alerts merged: {}", report.ml_alerts_merged));
     }
 
     if !report.alerts.is_empty() {

@@ -422,9 +422,9 @@ Branches match runtime signals (`tamper severity Critical`, `tamper signal capab
 | Gap | Notes |
 |-----|-------|
 | Hardware secure boot | Contract stubs + verify-time/live attestation + TPM stub backends + drift/readiness gates; deploy agent status fields; vendor SDK integration optional |
-| Real-time spoofing ML | Optional `SPANDA_SPOOFING_ML_ENDPOINT` HTTP backend; package contracts in `spanda-gps` / `spanda-fusion` |
+| Real-time spoofing ML | Optional HTTP + mock/file/script ML backends with confidence filtering; package contracts in `spanda-gps` / `spanda-fusion` |
 | Fleet-wide tamper correlation | Shipped — offline `--fleet <manifest.json>` and live `--mesh-url` ingest |
-| Legal/compliance certification | Template profiles with explicit accreditation notice — not accredited standards |
+| Legal/compliance certification | Template profiles with explicit accreditation notice and secure-boot requirements — not accredited standards |
 | Zero false-positive guarantee | Confidence scores + operator approval gate for Critical tamper_policy destructive actions |
 
 ---
