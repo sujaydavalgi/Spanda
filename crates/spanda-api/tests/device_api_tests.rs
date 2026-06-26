@@ -116,3 +116,41 @@ fn device_tree_endpoint() {
     assert_eq!(response.status, 200);
     assert!(response.body.contains("mapping"));
 }
+
+#[test]
+fn device_trust_gps_endpoint() {
+    std::env::set_var("SPANDA_API_KEY", "enterprise-ops-smoke-key");
+    let mut state = warehouse_state();
+    let (response, _) = handle_request(
+        &mut state,
+        &HttpRequest {
+            method: "POST".into(),
+            path: "/v1/devices/gps-001/trust".into(),
+            body: String::new(),
+            authorization: Some("enterprise-ops-smoke-key".into()),
+        },
+        "",
+    );
+    assert_eq!(response.status, 200, "body={}", response.body);
+    assert!(response.body.contains("device trusted by operator"));
+}
+
+#[test]
+fn device_discover_registers_matches() {
+    std::env::set_var("SPANDA_API_KEY", "enterprise-ops-smoke-key");
+    std::env::set_var("SPANDA_DISCOVERY_MDNS_MATCHES", "smoke@127.0.0.1");
+    let mut state = warehouse_state();
+    let (response, _) = handle_request(
+        &mut state,
+        &HttpRequest {
+            method: "POST".into(),
+            path: "/v1/devices/discover".into(),
+            body: r#"{"transports":["mdns"]}"#.into(),
+            authorization: Some("enterprise-ops-smoke-key".into()),
+        },
+        "",
+    );
+    std::env::remove_var("SPANDA_DISCOVERY_MDNS_MATCHES");
+    assert_eq!(response.status, 200);
+    assert!(response.body.contains("registered"));
+}

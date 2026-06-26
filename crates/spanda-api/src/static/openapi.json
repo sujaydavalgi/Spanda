@@ -102,6 +102,16 @@
         "responses": { "200": { "description": "Quarantine result" } }
       }
     },
+    "/v1/devices/{id}/trust": {
+      "post": {
+        "summary": "Trust / approve a device after operator review",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Trust result" } }
+      }
+    },
     "/v1/robots": {
       "get": {
         "summary": "List robots with assigned devices",

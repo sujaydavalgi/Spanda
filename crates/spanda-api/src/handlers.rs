@@ -8,9 +8,9 @@ use crate::state::ControlCenterState;
 use serde::Serialize;
 use spanda_config::{
     default_snapshots_dir, export_device_mapping_json, failover_chains, generate_device_reports,
-    list_config_snapshots, readiness_impact, run_discovery_transports, run_provision_workflow,
-    save_config_snapshot, AssignDeviceOptions, DeviceDiscoveryTransport, DeviceLifecycleState,
-    DiscoveryOptions, SubnetDiscoveryTransport,
+    ingest_discovery_matches, list_config_snapshots, readiness_impact, run_discovery_transports,
+    run_provision_workflow, save_config_snapshot, AssignDeviceOptions, DeviceDiscoveryTransport,
+    DeviceLifecycleState, DiscoveryOptions, SubnetDiscoveryTransport,
 };
 use spanda_deploy_http::{HttpRequest, HttpResponse};
 use spanda_fleet::remote::{default_fleet_agents_path, load_fleet_agent_registry};
@@ -431,7 +431,7 @@ fn route_device_subresource(
 ) -> Option<HttpResponse> {
     let rest = path.strip_prefix("/v1/devices/")?;
     if rest == "discover" && method == "POST" {
-        return Some(discovery_post(body));
+        return Some(discovery_post(state, body, ctx));
     }
     let (device_id, action) = rest.split_once('/').unwrap_or((rest, ""));
     match (action, method) {
@@ -439,6 +439,7 @@ fn route_device_subresource(
         ("provision", "POST") => Some(device_provision(state, device_id, body, ctx)),
         ("assign", "POST") => Some(device_assign(state, device_id, body, ctx)),
         ("quarantine", "POST") => Some(device_quarantine(state, device_id, ctx)),
+        ("trust", "POST") => Some(device_trust(state, device_id, ctx)),
         _ => None,
     }
 }
@@ -457,15 +458,31 @@ fn device_get(state: &ControlCenterState, device_id: &str) -> HttpResponse {
     }))
 }
 
-fn discovery_post(body: &str) -> HttpResponse {
-    let options: DiscoveryOptions = serde_json::from_str(body).unwrap_or_default();
+fn discovery_post(
+    state: &mut ControlCenterState,
+    body: &str,
+    ctx: Option<&RbacContext>,
+) -> HttpResponse {
+    if !ApiKeyStore::check(ctx, RbacAction::Provision) {
+        return unauthorized();
+    }
+    let mut options: DiscoveryOptions = serde_json::from_str(body).unwrap_or_default();
+    if options.subnet.is_none() {
+        options.subnet = spanda_config::default_discovery_subnet();
+    }
     let results: Vec<_> = run_discovery_transports(&options)
         .into_iter()
         .filter_map(Result::ok)
         .collect();
+    let registered = if let Some(resolved) = state.resolved.as_mut() {
+        ingest_discovery_matches(&mut resolved.device_registry, &results)
+    } else {
+        Vec::new()
+    };
     json_ok(&serde_json::json!({
         "version": API_VERSION,
         "results": results,
+        "registered": registered,
     }))
 }
 
@@ -560,6 +577,33 @@ fn device_quarantine(
             return bad_request("no resolved configuration loaded");
         };
         resolved.device_registry.quarantine_device(device_id)
+    };
+    match result {
+        Ok(result) => {
+            let persist = state.persist_device(device_id).ok();
+            json_ok(&serde_json::json!({
+                "version": API_VERSION,
+                "result": result,
+                "persisted": persist,
+            }))
+        }
+        Err(e) => bad_request(&e),
+    }
+}
+
+fn device_trust(
+    state: &mut ControlCenterState,
+    device_id: &str,
+    ctx: Option<&RbacContext>,
+) -> HttpResponse {
+    if !ApiKeyStore::check(ctx, RbacAction::Approve) {
+        return unauthorized();
+    }
+    let result = {
+        let Some(resolved) = state.resolved.as_mut() else {
+            return bad_request("no resolved configuration loaded");
+        };
+        resolved.device_registry.trust_device(device_id)
     };
     match result {
         Ok(result) => {
