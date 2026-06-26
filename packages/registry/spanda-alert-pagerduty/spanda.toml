@@ -1,0 +1,17 @@
+[package]
+name = "spanda-alert-pagerduty"
+version = "0.1.0"
+description = "PagerDuty Events API v2 alert channel for Spanda Control Center"
+license = "Apache-2.0"
+
+[safety]
+level = "sensors"
+
+[capabilities]
+required = [
+  "network.http",
+]
+
+[adapter]
+provides = ["alerting.pagerduty"]
+requires = ["network.http"]

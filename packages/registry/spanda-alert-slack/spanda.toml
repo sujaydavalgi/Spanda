@@ -1,0 +1,17 @@
+[package]
+name = "spanda-alert-slack"
+version = "0.1.0"
+description = "Slack incoming-webhook alert channel for Spanda Control Center"
+license = "Apache-2.0"
+
+[safety]
+level = "sensors"
+
+[capabilities]
+required = [
+  "network.http",
+]
+
+[adapter]
+provides = ["alerting.slack"]
+requires = ["network.http"]
