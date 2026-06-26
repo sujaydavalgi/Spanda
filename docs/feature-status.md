@@ -204,24 +204,24 @@ See [tier-3-experimental.md](./tier-3-experimental.md) and [tier-3-golden-paths.
 
 | Pillar | Status | Key surfaces |
 |--------|--------|--------------|
-| **Control Center** | **Experimental** | `spanda control-center serve`, `ControlCenterPanel`, Tauri desktop scaffold + updater plugin (inactive until signing) |
+| **Control Center** | **Experimental** | `spanda control-center serve`, embedded HTML + `@spanda/web` panel (drift, trust, compliance, SRE, executive) |
 | **Device Pool** | **Experimental** | Lifecycle states, assign/trust/quarantine/retire, failover chains; multi-tenant API key scoping |
-| **Device Discovery** | **Experimental** | Subnet, mDNS, BLE, USB, CAN, MQTT, ROS2 host probes; pool ingest |
+| **Device Discovery** | **Experimental** | Subnet, mDNS, BLE, USB, CAN, MQTT, ROS2 host probes; `SPANDA_DISCOVERY_NO_STUB`; cellular `mmcli`; pool ingest |
 | **Provisioning** | **Experimental** | `POST /v1/provision`, discover → ready workflow |
-| **Configuration Management** | **Experimental** | Snapshots, diff, resolve; approval **Planned** |
+| **Configuration Management** | **Experimental** | Snapshots, diff, resolve; approval queue (`/v1/config/approvals`) |
 | **RBAC** | **Experimental** | 7 roles, `SPANDA_API_KEY`, `/v1/rbac/matrix` |
 | **Secret Management** | **Experimental** | `ManagedSecretVault`, rotation metadata |
 | **Telemetry** | **Experimental** | Health/readiness/mission signals; trend analysis; forecasting **Planned** |
-| **Alerting** | **Experimental** | Webhook + email core; Slack/Teams/PagerDuty packages **Planned** |
+| **Alerting** | **Experimental** | Webhook, email, PagerDuty, Teams; registry alert packages |
 | **Configuration Drift** | **Experimental** | Full operational drift API (`detect_operational_drift_full`); seven dimensions via Control Center `GET /v1/drift` |
 | **OTA & Rollback** | **Experimental** | Canary, blue/green, phased dry-run; production fleet automation **Planned** |
 | **Package Trust** | **Experimental** | `spanda trust`, `/v1/trust/package`, trust score |
 | **SDKs** | **Experimental** | Python SDK, REST v1, WebSocket; tonic gRPC (9 RPCs); CLI reference **Stable** |
 | **Operator Workflows** | **Experimental** | Mission approve, takeover, quarantine, recovery approval |
-| **SRE** | **Experimental** | `/v1/sre/summary` with `slo` (`SPANDA_SRE_SLO_PERCENT`); incident workflow API + embedded/React UI; MTTR hint; HA incident persistence |
+| **SRE** | **Experimental** | `/v1/sre/summary` with `slo`, `mtbf_hint_ms`, `health_trends`, `readiness_trends`; incident workflow + auto-open from critical alerts |
 | **Reporting** | **Experimental** | HTML, Markdown, JSON, PDF, CSV exports |
 | **Compliance** | **Experimental** | Evidence packs, `GET /v1/compliance/export` |
-| **APIs** | **Experimental** | REST v1 + OpenAPI; JSON-RPC gateway; native gRPC (tonic) **Experimental** — 47 RPCs; rate limits (`SPANDA_API_RATE_LIMIT_PER_MINUTE`); versioning policy (`GET /v1/version`, `X-Spanda-Api-Version`) |
+| **APIs** | **Experimental** | REST v1 + OpenAPI; JSON-RPC gateway; native gRPC (tonic) **Experimental** — 55 RPCs; rate limits (`SPANDA_API_RATE_LIMIT_PER_MINUTE`); versioning policy (`GET /v1/version`, `X-Spanda-Api-Version`) |
 | **Observability** | **Experimental** | OTLP trace/metrics export, correlation IDs, WebSocket telemetry; `spanda-otel-collector` + `SPANDA_OTEL_COLLECTOR_URL`; HA trace log persistence |
 | **Digital Thread** | **Experimental** | `GET /v1/digital-thread/query`; full graph UI **Planned** |
 

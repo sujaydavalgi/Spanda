@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Config approval queue:** `GET/POST /v1/config/approvals`, approve/reject subpaths; RBAC-gated publish workflow.
+- **Immutable compliance evidence:** append-only `.spanda/evidence-append.jsonl` on export; `GET /v1/compliance/evidence`.
+- **Alert channels:** PagerDuty and Teams webhook dispatch (`SPANDA_ALERT_PAGERDUTY_*`, `SPANDA_ALERT_TEAMS_URL`); registry packages `spanda-alert-slack`, `spanda-alert-pagerduty`, `spanda-alert-teams`.
+- **SRE MTBF and health trends:** `mtbf_hint_ms`, `health_trends`, and `readiness_trends` on `GET /v1/sre/summary`; critical alerts auto-open incidents.
+- **Control Center React parity:** drift, alerts, security/trust, OTA, compliance, audit, executive, and digital-thread tabs in `ControlCenterPanel`.
+- **Discovery hardening:** cellular `mmcli` probe; `SPANDA_DISCOVERY_NO_STUB` to skip transport stubs.
 - **SRE SLO rollup:** `SPANDA_SRE_SLO_PERCENT` and `slo` object on `GET /v1/sre/summary`.
 - **Incident workflow UI:** SRE tab in embedded Control Center and `@spanda/web` `ControlCenterPanel`.
 - **Python SDK incidents:** `list_incidents`, `create_incident`, `ack_incident`, `resolve_incident`.

@@ -244,6 +244,8 @@ curl -sf -X POST \
   -H "Authorization: Bearer ${SPANDA_API_KEY}" \
   "http://${BIND}/v1/sre/incidents/${INCIDENT_ID}/resolve" | grep -q '"ok":true'
 fetch /v1/sre/summary | grep -q mttr_hint_ms
+fetch /v1/sre/summary | grep -q mtbf_hint_ms
+fetch /v1/sre/summary | grep -q health_trends
 
 echo "== E3 GET /v1/drift?baseline_id (seven dimensions) =="
 fetch "/v1/drift?baseline_id=${BASELINE_ID}" | grep -q policy

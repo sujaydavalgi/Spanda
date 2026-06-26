@@ -466,7 +466,7 @@ Extends cascading TOML ([cascading-config.md](./cascading-config.md)):
 | Snapshots | **Experimental** | `.spanda/config-snapshots/`, `GET|POST /v1/config/snapshots` |
 | History | Planned | Audit-linked change log |
 | Diff | **Experimental** | `spanda config diff` |
-| Approval | Planned | RBAC-gated publish |
+| Approval | **Experimental** | `GET/POST /v1/config/approvals`, approve/reject subpaths |
 
 ### 6.6 RBAC
 
@@ -595,10 +595,10 @@ Official SDK surfaces for external systems to interact with Readiness, Assurance
 | SLO / SLA | readiness history + telemetry | **Experimental** (`slo` on `GET /v1/sre/summary`, `SPANDA_SRE_SLO_PERCENT`) |
 | Availability / Uptime | health_check + agent heartbeat | **Experimental** (`GET /v1/sre/summary`) |
 | MTTR | resolved incidents | **Experimental** (`mttr_hint_ms` on summary) |
-| MTBF | fault timeline | Planned |
+| MTBF | fault-class alert timeline | **Experimental** (`mtbf_hint_ms` on summary) |
 | Crash / Recovery statistics | `spanda-runtime-faults` | Planned |
-| Incident workflow | `GET/POST /v1/sre/incidents`, ack/resolve | **Experimental** |
-| Health trends | `spanda readiness trends` | Planned |
+| Incident workflow | `GET/POST /v1/sre/incidents`, ack/resolve, auto-open from critical alerts | **Experimental** |
+| Health trends | device pool + readiness history | **Experimental** (`health_trends`, `readiness_trends` on summary) |
 
 ### 6.16 Reporting
 
@@ -623,7 +623,7 @@ Evidence packs for regulatory and internal audit workflows:
 | Approval history | **Experimental** | audit + operator workflow records |
 | Audit trails | **Stable** | `spanda-audit`, decision audit trail |
 | Digital signatures | **Experimental** | signed message + export bundles |
-| Immutable evidence | **Planned** | append-only evidence store package |
+| Immutable evidence | **Experimental** | append-only `.spanda/evidence-append.jsonl`; `GET /v1/compliance/evidence` |
 | Policy compliance | **Experimental** | `spanda verify --policy` |
 | Safety compliance | **Experimental** | safety coverage + certify metadata |
 | Mission compliance | **Experimental** | mission contracts + assurance cases |

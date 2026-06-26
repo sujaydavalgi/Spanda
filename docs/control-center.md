@@ -95,6 +95,10 @@ grpcurl -plaintext -d '{}' 127.0.0.1:50051 spanda.v1.ControlCenter/Health
 | `/v1/provision` | POST | Bearer | Run discover → ready workflow |
 | `/v1/discovery` | GET | — | Package-backed discovery (`?transport=mdns` or `subnet`) |
 | `/v1/config/snapshots` | GET/POST | POST: Bearer | List or save configuration snapshots |
+| `/v1/config/approvals` | GET | — | List config publish approval requests |
+| `/v1/config/approvals` | POST | Bearer (Deploy) | Submit approval request for a snapshot |
+| `/v1/config/approvals/{id}/approve` | POST | Bearer (Approve) | Approve a pending config publish |
+| `/v1/config/approvals/{id}/reject` | POST | Bearer (Approve) | Reject a pending config publish |
 | `/v1/health/summary` | GET | — | Device pool health rollup |
 | `/v1/assurance/summary` | GET | — | Assurance policy from resolved config |
 | `/v1/diagnosis/summary` | GET | — | Diagnosis policy from resolved config |
@@ -103,7 +107,7 @@ grpcurl -plaintext -d '{}' 127.0.0.1:50051 spanda.v1.ControlCenter/Health
 | `/v1/ota/plan` | POST | Bearer | Plan canary / staged / blue_green rollout |
 | `/v1/ota/status` | GET | — | OTA deploy state (`.spanda/deploy-state.json`) |
 | `/v1/trust/package` | GET | — | Package trust evaluation (`?name=&version=`) |
-| `/v1/sre/summary` | GET | — | Availability, incidents, MTTR rollup, and `slo` (`SPANDA_SRE_SLO_PERCENT`, default 99.0) |
+| `/v1/sre/summary` | GET | — | Availability, incidents, MTTR/MTBF hints, `health_trends`, `readiness_trends`, and `slo` |
 | `/v1/sre/incidents` | GET | — | Incident list |
 | `/v1/sre/incidents` | POST | Bearer | Open incident |
 | `/v1/sre/incidents/{id}/ack` | POST | Bearer | Acknowledge incident |
@@ -118,7 +122,8 @@ grpcurl -plaintext -d '{}' 127.0.0.1:50051 spanda.v1.ControlCenter/Health
 | `/v1/operator/mission/approve` | POST | Bearer | Approve or reject a mission |
 | `/v1/rpc` | POST | — | gRPC-compatible JSON gateway |
 | **gRPC (tonic)** | — | — | Native `ControlCenter` service on `--grpc-bind` (55 RPCs; full REST parity except JSON-RPC gateway) |
-| `/v1/compliance/export` | GET/POST | Bearer | Accreditation bundle (`?profile=defense`) |
+| `/v1/compliance/export` | GET/POST | Bearer | Accreditation bundle (`?profile=defense`); appends immutable evidence log |
+| `/v1/compliance/evidence` | GET | Bearer | List append-only compliance evidence records |
 | `/v1/digital-thread/query` | GET | — | Trace chain (`?capability=`, `?device_id=`) |
 | `/v1/executive/scorecard` | GET | — | Mission scorecard rollup |
 | `/v1/analytics/readiness` | GET | — | Readiness trends and forecast |
