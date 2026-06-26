@@ -2578,7 +2578,10 @@ impl Parser {
                 });
             } else if self.check(TokenType::Ident) && self.peek().lexeme == "requires_kill_switch" {
                 let rule_start = self.advance();
-                self.expect(TokenType::Semicolon, "Expected ';' after requires_kill_switch")?;
+                self.expect(
+                    TokenType::Semicolon,
+                    "Expected ';' after requires_kill_switch",
+                )?;
                 rules.push(OperationalPolicyRule::RequiresKillSwitch {
                     span: self.span_from(&rule_start, self.previous()),
                 });
@@ -2588,7 +2591,10 @@ impl Parser {
                     self.parse_hardware_type_list("capabilities")?
                 } else {
                     let cap = self.parse_label("Expected capability name")?;
-                    self.expect(TokenType::Semicolon, "Expected ';' after requires_capability")?;
+                    self.expect(
+                        TokenType::Semicolon,
+                        "Expected ';' after requires_capability",
+                    )?;
                     vec![cap]
                 };
                 rules.push(OperationalPolicyRule::RequiresCapability {
@@ -2599,7 +2605,10 @@ impl Parser {
                 let rule_start = self.advance();
                 self.expect(TokenType::Assign, "Expected '=' after min_readiness_score")?;
                 let score = self.parse_u32_literal("min_readiness_score")?;
-                self.expect(TokenType::Semicolon, "Expected ';' after min_readiness_score")?;
+                self.expect(
+                    TokenType::Semicolon,
+                    "Expected ';' after min_readiness_score",
+                )?;
                 rules.push(OperationalPolicyRule::MinReadinessScore {
                     score,
                     span: self.span_from(&rule_start, self.previous()),

@@ -101,9 +101,7 @@ fn cmd_program_trust(args: &[String]) {
             .filter(|parent| parent.as_os_str() != std::ffi::OsStr::new(""))
             .map(Path::to_path_buf)
     });
-    let options = CompositeTrustOptions {
-        project_root: root,
-    };
+    let options = CompositeTrustOptions { project_root: root };
     let report = evaluate_composite_trust(&program, &source, label, &options);
     println!("{}", format_composite_trust(&report, format));
     if !report.passed {

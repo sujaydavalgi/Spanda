@@ -70,7 +70,9 @@ fn parse_quote_response(payload: TpmQuoteResponse) -> LiveAttestationResult {
         } else {
             payload.boot_state
         },
-        score: payload.score.unwrap_or(if payload.attested { 95 } else { 0 }),
+        score: payload
+            .score
+            .unwrap_or(if payload.attested { 95 } else { 0 }),
         detail: payload.detail.unwrap_or_else(|| {
             if payload.attested {
                 "tpm quote verified".into()
@@ -95,7 +97,12 @@ fn mock_tpm_quote(contract: &str, package: &str, backend: &str) -> LiveAttestati
     }
 }
 
-fn live_result(attested: bool, boot_state: &str, score: u32, detail: impl Into<String>) -> LiveAttestationResult {
+fn live_result(
+    attested: bool,
+    boot_state: &str,
+    score: u32,
+    detail: impl Into<String>,
+) -> LiveAttestationResult {
     LiveAttestationResult {
         attested,
         boot_state: boot_state.into(),
@@ -337,7 +344,11 @@ fn attempt_tpm2_pcr_quote(contract: &str, package: &str) -> Result<String, Strin
     let dir = &work.0;
 
     run_tpm2_step(dir, "tpm2_createek", &["-c", "ek.ctx", "-G", "rsa"])?;
-    run_tpm2_step(dir, "tpm2_createak", &["-C", "ek.ctx", "-c", "ak.ctx", "-G", "rsa"])?;
+    run_tpm2_step(
+        dir,
+        "tpm2_createak",
+        &["-C", "ek.ctx", "-c", "ak.ctx", "-G", "rsa"],
+    )?;
     run_tpm2_step(
         dir,
         "tpm2_quote",
@@ -558,7 +569,8 @@ mod tests {
         .expect("write quote");
         std::env::set_var("SPANDA_TPM_BACKEND", "file");
         std::env::set_var("SPANDA_TPM_QUOTE_PATH", path.to_string_lossy().to_string());
-        let result = query_tpm_attestation("trust.pi", "spanda-trust-pi", None).expect("file quote");
+        let result =
+            query_tpm_attestation("trust.pi", "spanda-trust-pi", None).expect("file quote");
         assert!(result.attested);
         assert_eq!(result.score, 98);
         std::env::remove_var("SPANDA_TPM_BACKEND");
@@ -630,9 +642,6 @@ mod tests {
     #[test]
     fn extract_pcr_hex_parses_tpm2_pcrread_output() {
         let sample = "  sha256:\n    0 : 0x3D458CFE556432B7\n    1 : 0x00000000\n";
-        assert_eq!(
-            extract_pcr_hex(sample, 0),
-            Some("3d458cfe556432b7".into())
-        );
+        assert_eq!(extract_pcr_hex(sample, 0), Some("3d458cfe556432b7".into()));
     }
 }

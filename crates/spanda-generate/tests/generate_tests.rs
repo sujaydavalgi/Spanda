@@ -9,7 +9,8 @@ use spanda_parser::parse;
 
 fn parse_file(relative: &str) -> spanda_ast::nodes::Program {
     let path = format!("{}/{}", env!("CARGO_MANIFEST_DIR"), relative);
-    let source = std::fs::read_to_string(&path).unwrap_or_else(|error| panic!("read {path}: {error}"));
+    let source =
+        std::fs::read_to_string(&path).unwrap_or_else(|error| panic!("read {path}: {error}"));
     let tokens = tokenize(&source).expect("tokenize");
     parse(tokens).expect("parse")
 }

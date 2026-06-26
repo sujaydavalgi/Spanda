@@ -95,7 +95,13 @@ pub fn evaluate_policy(
                 check_requires_capabilities(program, policy_name, capabilities, &mut violations);
             }
             OperationalPolicyRule::MinReadinessScore { score, .. } => {
-                check_min_readiness_score(program, policy_name, source_label, *score, &mut violations);
+                check_min_readiness_score(
+                    program,
+                    policy_name,
+                    source_label,
+                    *score,
+                    &mut violations,
+                );
             }
             OperationalPolicyRule::OperationHours { range, .. } => {
                 check_operation_hours(policy_name, range, &mut violations);
@@ -267,11 +273,7 @@ fn check_min_readiness_score(
     }
 }
 
-fn check_operation_hours(
-    policy_name: &str,
-    range: &str,
-    violations: &mut Vec<PolicyViolation>,
-) {
+fn check_operation_hours(policy_name: &str, range: &str, violations: &mut Vec<PolicyViolation>) {
     let valid = range.contains(':') && range.contains('-');
     if !valid {
         violations.push(violation(

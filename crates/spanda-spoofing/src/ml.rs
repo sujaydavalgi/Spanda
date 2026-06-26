@@ -67,9 +67,10 @@ fn query_stub_ml_alerts(trace: &MissionTrace) -> Option<Vec<SpoofingAlert>> {
 }
 
 fn mock_ml_alerts(trace: &MissionTrace) -> Vec<SpoofingAlert> {
-    let spoof_frame = trace.frames.iter().find(|frame| {
-        frame.event.to_ascii_lowercase().contains("spoof")
-    });
+    let spoof_frame = trace
+        .frames
+        .iter()
+        .find(|frame| frame.event.to_ascii_lowercase().contains("spoof"));
     if spoof_frame.is_none() {
         return Vec::new();
     }

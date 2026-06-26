@@ -66,8 +66,8 @@ pub fn correlate_mesh_tamper_shards(
     }
     let mut traces = Vec::new();
     for (robot_id, trace_json) in &state.tamper_shards {
-        let trace: MissionTrace =
-            serde_json::from_str(trace_json).map_err(|error| format!("parse {robot_id}: {error}"))?;
+        let trace: MissionTrace = serde_json::from_str(trace_json)
+            .map_err(|error| format!("parse {robot_id}: {error}"))?;
         let label = format!("{robot_id}.trace");
         traces.push((robot_id.clone(), trace, label));
     }
@@ -85,12 +85,9 @@ pub fn fetch_live_fleet_tamper_report(
     if json {
         return Ok(body);
     }
-    let report: FleetTamperReport =
-        serde_json::from_str(&body).map_err(|error| format!("invalid fleet tamper JSON: {error}"))?;
-    Ok(format_fleet_tamper_report(
-        &report,
-        TamperFormat::Text,
-    ))
+    let report: FleetTamperReport = serde_json::from_str(&body)
+        .map_err(|error| format!("invalid fleet tamper JSON: {error}"))?;
+    Ok(format_fleet_tamper_report(&report, TamperFormat::Text))
 }
 
 fn parse_fleet_query(path: &str) -> Option<String> {

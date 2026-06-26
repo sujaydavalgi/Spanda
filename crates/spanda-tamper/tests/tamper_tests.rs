@@ -20,7 +20,10 @@ fn warehouse_tamper_check_is_suspicious_not_compromised() {
         "expected suspicious/tampered, got {:?}",
         report.status
     );
-    assert!(report.findings.iter().any(|f| f.severity >= TamperSeverity::Medium));
+    assert!(report
+        .findings
+        .iter()
+        .any(|f| f.severity >= TamperSeverity::Medium));
     assert!(report.passed);
 }
 
@@ -49,13 +52,9 @@ deploy Rover to JetsonRover;
         report.findings
     );
     assert!(
-        !report
-            .findings
-            .iter()
-            .any(|finding| {
-                finding.category == "package"
-                    && finding.message.contains("trust.jetson")
-            }),
+        !report.findings.iter().any(|finding| {
+            finding.category == "package" && finding.message.contains("trust.jetson")
+        }),
         "secure-boot import should not emit generic third-party package warning"
     );
 }
@@ -66,7 +65,10 @@ fn readiness_rover_missing_kill_switch_fails() {
     let report = generate_tamper_check(&program, "rover.sd");
     assert!(!report.passed);
     assert!(
-        report.findings.iter().any(|f| f.severity == TamperSeverity::Critical),
+        report
+            .findings
+            .iter()
+            .any(|f| f.severity == TamperSeverity::Critical),
         "expected critical finding for missing kill switch"
     );
 }

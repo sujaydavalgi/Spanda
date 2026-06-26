@@ -92,7 +92,10 @@ pub fn resolve_package_import(path: &str) -> bool {
     if builtin_import_paths().contains(&path) {
         return true;
     }
-    if framework_import_paths().iter().any(|candidate| *candidate == path) {
+    if framework_import_paths()
+        .iter()
+        .any(|candidate| *candidate == path)
+    {
         return true;
     }
     all_import_paths().contains(&path)

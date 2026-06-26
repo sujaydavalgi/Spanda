@@ -161,8 +161,7 @@ pub fn evaluate_readiness_with_runtime(
                     severity,
                     message,
                     suggested_action: Some(
-                        "Reconcile live config with approved baseline or update baseline"
-                            .into(),
+                        "Reconcile live config with approved baseline or update baseline".into(),
                     ),
                 });
             }

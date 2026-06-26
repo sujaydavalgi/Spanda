@@ -23,7 +23,9 @@ impl<B: RobotBackend> Interpreter<B> {
         // Example:
         // self.cache_tamper_policies(&program);
 
-        let Program::Program { tamper_policies, .. } = program;
+        let Program::Program {
+            tamper_policies, ..
+        } = program;
         self.tamper_policies = if tamper_policies.is_empty() {
             Vec::new()
         } else {
@@ -32,11 +34,7 @@ impl<B: RobotBackend> Interpreter<B> {
         self.applied_tamper_branches.clear();
     }
 
-    pub(super) fn invoke_tamper_policies(
-        &mut self,
-        signal: &str,
-        severity: TamperSeverity,
-    ) {
+    pub(super) fn invoke_tamper_policies(&mut self, signal: &str, severity: TamperSeverity) {
         // Match tamper policies and dispatch declared response actions once per branch.
         //
         // Parameters:

@@ -7,8 +7,8 @@ use spanda_decision::audit_decisions_from_trace;
 use spanda_hardware::{verify_program_compatibility, VerifyOptions};
 use spanda_package::evaluate_package_trust;
 use spanda_readiness::{
-    evaluate_deployment_gates, evaluate_readiness, evaluate_safety_coverage, generate_safety_report,
-    verify_mission, DeploymentGate, DeploymentGatePolicy, ReadinessOptions,
+    evaluate_deployment_gates, evaluate_readiness, evaluate_safety_coverage,
+    generate_safety_report, verify_mission, DeploymentGate, DeploymentGatePolicy, ReadinessOptions,
 };
 use spanda_tamper::evaluate_secure_boot_coverage;
 use spanda_trust::{evaluate_composite_trust, CompositeTrustOptions};
@@ -84,10 +84,7 @@ fn secure_boot_gate_line(coverage: &spanda_tamper::SecureBootCoverage) -> String
     )
 }
 
-fn secure_boot_section(
-    program: &Program,
-    source_label: &str,
-) -> Option<ExplainSection> {
+fn secure_boot_section(program: &Program, source_label: &str) -> Option<ExplainSection> {
     let coverage = evaluate_secure_boot_coverage(program, Some(source_label));
     if coverage.contracts.is_empty() {
         return None;
@@ -147,9 +144,7 @@ pub fn explain_program_with_options(
     sections.push(explain_verify(program, source_label).sections[0].clone());
     sections.push(explain_safety(program, source_label).sections[0].clone());
     if let Some(source) = options.source {
-        let project_root = options
-            .system_config
-            .map(|cfg| cfg.project_root.clone());
+        let project_root = options.system_config.map(|cfg| cfg.project_root.clone());
         let trust = evaluate_composite_trust(
             program,
             source,
@@ -171,7 +166,12 @@ pub fn explain_program_with_options(
                         category.name, category.score, category.weight, category.detail
                     )
                 })
-                .chain(trust.recommendations.into_iter().map(|item| format!("recommendation: {item}")))
+                .chain(
+                    trust
+                        .recommendations
+                        .into_iter()
+                        .map(|item| format!("recommendation: {item}")),
+                )
                 .collect(),
         });
         if let Some(section) = secure_boot_section(program, source_label) {
@@ -488,7 +488,12 @@ pub fn explain_decision_trace(trace_path: &str) -> Result<ExplainReport, String>
         details: audit
             .chains
             .iter()
-            .filter_map(|chain| chain.mission.as_ref().map(|mission| format!("mission: {mission}")))
+            .filter_map(|chain| {
+                chain
+                    .mission
+                    .as_ref()
+                    .map(|mission| format!("mission: {mission}"))
+            })
             .collect(),
     });
     for record in &audit.timeline.decisions {

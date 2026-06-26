@@ -107,17 +107,12 @@ pub fn evaluate_scorecard(
     let security_detail = if secure_boot.contracts.is_empty() {
         format!(
             "threat risk {}/100 composite trust {}/100 tier={}",
-            threat.risk_score,
-            trust.score,
-            trust.tier
+            threat.risk_score, trust.score, trust.tier
         )
     } else {
         format!(
             "threat risk {}/100 composite trust {}/100 secure boot {}/100 tier={}",
-            threat.risk_score,
-            trust.score,
-            secure_boot.score,
-            trust.tier
+            threat.risk_score, trust.score, secure_boot.score, trust.tier
         )
     };
     let verification_score = verification_score(&hardware, &missions);
@@ -130,36 +125,63 @@ pub fn evaluate_scorecard(
     let health_score = health_score_from_report(&health);
 
     let categories = vec![
-        category("readiness", readiness_score, 20, &format!(
-            "mission_ready={} score {}/{}",
-            readiness.mission_ready, readiness.score.total, readiness.score.maximum
-        )),
-        category("safety", safety_score, 20, &format!(
-            "coverage {}% audit critical={} high={}",
-            safety_coverage.overall_coverage_pct,
-            safety_audit.critical_count,
-            safety_audit.high_count
-        )),
-        category("health", health_score, 15, &format!(
-            "checks={} overall={:?}",
-            health.checks.len(),
-            health.overall
-        )),
+        category(
+            "readiness",
+            readiness_score,
+            20,
+            &format!(
+                "mission_ready={} score {}/{}",
+                readiness.mission_ready, readiness.score.total, readiness.score.maximum
+            ),
+        ),
+        category(
+            "safety",
+            safety_score,
+            20,
+            &format!(
+                "coverage {}% audit critical={} high={}",
+                safety_coverage.overall_coverage_pct,
+                safety_audit.critical_count,
+                safety_audit.high_count
+            ),
+        ),
+        category(
+            "health",
+            health_score,
+            15,
+            &format!(
+                "checks={} overall={:?}",
+                health.checks.len(),
+                health.overall
+            ),
+        ),
         category("security", security_score, 15, &security_detail),
-        category("verification", verification_score, 10, &format!(
-            "hardware_compatible={} missions={}",
-            hardware.compatible,
-            missions.len()
-        )),
-        category("assurance", assurance_score, 10, &format!(
-            "passed={} issues={}",
-            assurance.passed,
-            assurance.issues.len()
-        )),
-        category("resilience", resilience_score, 10, &format!(
-            "recovery coverage {}%",
-            recovery.coverage_pct
-        )),
+        category(
+            "verification",
+            verification_score,
+            10,
+            &format!(
+                "hardware_compatible={} missions={}",
+                hardware.compatible,
+                missions.len()
+            ),
+        ),
+        category(
+            "assurance",
+            assurance_score,
+            10,
+            &format!(
+                "passed={} issues={}",
+                assurance.passed,
+                assurance.issues.len()
+            ),
+        ),
+        category(
+            "resilience",
+            resilience_score,
+            10,
+            &format!("recovery coverage {}%", recovery.coverage_pct),
+        ),
     ];
 
     let overall_score = categories.iter().map(|entry| entry.weighted).sum();
@@ -175,9 +197,8 @@ pub fn evaluate_scorecard(
         recommendations.push("Review `spanda threat-model` mitigations".into());
     }
     if !secure_boot.contracts.is_empty() && !secure_boot.passed {
-        recommendations.push(
-            "Resolve secure-boot contract trust or live attestation before deploy".into(),
-        );
+        recommendations
+            .push("Resolve secure-boot contract trust or live attestation before deploy".into());
     }
     if !hardware.compatible {
         recommendations.push("Run `spanda verify` for hardware compatibility".into());
@@ -317,10 +338,7 @@ pub fn format_scorecard(report: &ScorecardReport, format: ScorecardFormat) -> St
         ScorecardFormat::Text => {
             let mut lines = vec![
                 format!("Scorecard: {}", report.program),
-                format!(
-                    "Overall: {}/100 ({})",
-                    report.overall_score, report.tier
-                ),
+                format!("Overall: {}/100 ({})", report.overall_score, report.tier),
                 "Categories:".into(),
             ];
             for category in &report.categories {

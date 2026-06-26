@@ -177,7 +177,10 @@ pub struct ReadinessOptions {
 
     /// Live agent snapshots compared against program deploy expectations.
     #[serde(skip)]
-    pub agent_drift: Vec<(spanda_config::ExpectedAgentState, spanda_config::AgentDriftSnapshot)>,
+    pub agent_drift: Vec<(
+        spanda_config::ExpectedAgentState,
+        spanda_config::AgentDriftSnapshot,
+    )>,
 }
 
 /// Twin readiness comparison status.

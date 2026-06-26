@@ -67,18 +67,14 @@ pub fn score_dispatch(args: &[String]) {
         .file_name()
         .and_then(|name| name.to_str())
         .unwrap_or("program.sd");
-    let system_config = load_system_config(
-        path,
-        spanda_config::config_flag_from_args(args).as_deref(),
-    );
+    let system_config =
+        load_system_config(path, spanda_config::config_flag_from_args(args).as_deref());
     ensure_config_valid(system_config.as_ref().map(|arc| arc.as_ref()));
     let report = evaluate_scorecard(
         &program,
         &source,
         label,
-        &ScorecardOptions {
-            system_config,
-        },
+        &ScorecardOptions { system_config },
     );
     let format = parse_format(args);
     println!("{}", format_scorecard(&report, format));

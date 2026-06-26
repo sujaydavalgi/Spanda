@@ -28,7 +28,9 @@ pub fn extract_tamper_policies(program: &Program) -> Vec<TamperPolicySpec> {
     // Example:
     // let policies = extract_tamper_policies(&program);
 
-    let Program::Program { tamper_policies, .. } = program;
+    let Program::Program {
+        tamper_policies, ..
+    } = program;
     tamper_policies
         .iter()
         .map(|decl| {
@@ -37,9 +39,11 @@ pub fn extract_tamper_policies(program: &Program) -> Vec<TamperPolicySpec> {
                 name: name.clone(),
                 triggers: branches
                     .iter()
-                    .map(|TamperPolicyBranch { condition, actions, .. }| {
-                        (condition.clone(), actions.clone())
-                    })
+                    .map(
+                        |TamperPolicyBranch {
+                             condition, actions, ..
+                         }| { (condition.clone(), actions.clone()) },
+                    )
                     .collect(),
             }
         })
@@ -89,11 +93,7 @@ pub fn tamper_policy_coverage(program: &Program) -> (bool, usize) {
     (!policies.is_empty(), branch_count)
 }
 
-fn tamper_condition_matches(
-    condition: &str,
-    signal: &str,
-    severity: TamperSeverity,
-) -> bool {
+fn tamper_condition_matches(condition: &str, signal: &str, severity: TamperSeverity) -> bool {
     let normalized = condition.to_lowercase();
     let signal_lower = signal.to_lowercase();
     let severity_label = format!("{:?}", severity).to_lowercase();
@@ -112,7 +112,10 @@ fn tamper_condition_matches(
         return signal_lower.contains("gps.spoofed") || signal_lower.contains("spoof");
     }
 
-    signal_lower.contains(&normalized) || normalized.split('.').all(|part| signal_lower.contains(part))
+    signal_lower.contains(&normalized)
+        || normalized
+            .split('.')
+            .all(|part| signal_lower.contains(part))
 }
 
 #[cfg(test)]

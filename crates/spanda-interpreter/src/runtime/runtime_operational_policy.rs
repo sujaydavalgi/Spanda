@@ -31,10 +31,7 @@ impl<B: RobotBackend> Interpreter<B> {
         Ok(())
     }
 
-    pub(super) fn check_runtime_policy_before_motion(
-        &self,
-        linear_mps: f64,
-    ) -> Option<String> {
+    pub(super) fn check_runtime_policy_before_motion(&self, linear_mps: f64) -> Option<String> {
         // Return a block reason when runtime policy forbids the requested motion.
         //
         // Parameters:

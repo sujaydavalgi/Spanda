@@ -107,7 +107,9 @@ pub fn generate_adrs(program: &Program, source_label: &str) -> AdrReport {
                     &mut records,
                     &mut counter,
                     format!("Safety speed cap for {name}"),
-                    format!("Actuator commands for '{name}' must remain within safe velocity bounds."),
+                    format!(
+                        "Actuator commands for '{name}' must remain within safe velocity bounds."
+                    ),
                     format!("Cap linear speed at {limit:.2} m/s in robot safety block."),
                     "Verification and runtime safety checks enforce the declared cap.".to_string(),
                 );
@@ -138,7 +140,8 @@ pub fn generate_adrs(program: &Program, source_label: &str) -> AdrReport {
                 title,
                 format!("Robot '{name}' executes an operational mission with bounded runtime."),
                 format!("Mission defined with {duration}; {capabilities}."),
-                "Readiness and resource estimation use mission timing for go/no-go and budgeting.".to_string(),
+                "Readiness and resource estimation use mission timing for go/no-go and budgeting."
+                    .to_string(),
             );
         }
     }
@@ -163,7 +166,8 @@ pub fn generate_adrs(program: &Program, source_label: &str) -> AdrReport {
             format!("Health policy {name}"),
             "Component degradation must trigger predictable operating modes.".to_string(),
             format!("Use health_policy '{name}' to map health states to robot actions."),
-            "Readiness scoring and fleet health dashboards consume health_check results.".to_string(),
+            "Readiness scoring and fleet health dashboards consume health_check results."
+                .to_string(),
         );
     }
 
@@ -175,7 +179,8 @@ pub fn generate_adrs(program: &Program, source_label: &str) -> AdrReport {
             format!("Recovery policy {name}"),
             "Transient faults should be handled without unsafe actuator output.".to_string(),
             format!("Declare recovery_policy '{name}' with validated recovery actions."),
-            "Chaos experiments and assurance recovery planners exercise these branches.".to_string(),
+            "Chaos experiments and assurance recovery planners exercise these branches."
+                .to_string(),
         );
     }
 
@@ -205,7 +210,8 @@ pub fn generate_adrs(program: &Program, source_label: &str) -> AdrReport {
                 "Maintain {} assurance_case declaration(s) with linked evidence.",
                 assurance_cases.len()
             ),
-            "Medical and defense compliance profiles require non-empty assurance cases.".to_string(),
+            "Medical and defense compliance profiles require non-empty assurance cases."
+                .to_string(),
         );
     }
 
@@ -288,10 +294,7 @@ fn safety_max_speed(safety: &SafetyBlock) -> Option<f64> {
     limit
 }
 
-fn expr_to_mps(
-    value: &spanda_ast::nodes::Expr,
-    unit: spanda_ast::nodes::UnitKind,
-) -> Option<f64> {
+fn expr_to_mps(value: &spanda_ast::nodes::Expr, unit: spanda_ast::nodes::UnitKind) -> Option<f64> {
     use spanda_ast::nodes::{Expr, LiteralValue, UnitKind};
     let number = match value {
         Expr::UnitLiteralExpr { value, unit, .. } => {

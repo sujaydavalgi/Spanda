@@ -224,9 +224,7 @@ pub fn analyze_readiness_trends(
     }
 
     if entries.len() < 2 {
-        warnings.push(
-            "need at least two recorded readiness evaluations to compute trends".into(),
-        );
+        warnings.push("need at least two recorded readiness evaluations to compute trends".into());
     }
 
     let overall_trend = trend_for_series(
@@ -274,9 +272,7 @@ pub fn analyze_readiness_trends(
                 .clamp(0.0, 100.0) as u32;
             let risk_warning = predicted < minimum_score;
             let message = if risk_warning {
-                format!(
-                    "forecast {days}d score {predicted} below policy minimum {minimum_score}"
-                )
+                format!("forecast {days}d score {predicted} below policy minimum {minimum_score}")
             } else {
                 format!("forecast {days}d score {predicted} remains above minimum {minimum_score}")
             };

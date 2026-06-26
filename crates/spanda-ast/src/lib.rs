@@ -5,8 +5,8 @@ pub mod comm_decl;
 pub mod fault_decl;
 pub mod foundations;
 pub mod nodes;
-pub mod regex;
 pub mod policy_decl;
+pub mod regex;
 pub mod robotics_decl;
 
 pub use regex::{CaptureResult, RegexCompileError, RegexPattern};

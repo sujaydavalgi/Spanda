@@ -93,38 +93,22 @@ fn collect_artifacts(program: &Program) -> Vec<(String, String, String)> {
 
     for hardware in hardware_profiles {
         let HardwareDecl::HardwareDecl { name, .. } = hardware;
-        artifacts.push((
-            "hardware".into(),
-            name.clone(),
-            hash_artifact(hardware),
-        ));
+        artifacts.push(("hardware".into(), name.clone(), hash_artifact(hardware)));
     }
 
     for policy in operational_policies {
         let OperationalPolicyDecl::OperationalPolicyDecl { name, .. } = policy;
-        artifacts.push((
-            "policy".into(),
-            name.clone(),
-            hash_artifact(policy),
-        ));
+        artifacts.push(("policy".into(), name.clone(), hash_artifact(policy)));
     }
 
     for ks in kill_switches {
         let KillSwitchDecl::KillSwitchDecl { name, .. } = ks;
-        artifacts.push((
-            "kill_switch".into(),
-            name.clone(),
-            hash_artifact(ks),
-        ));
+        artifacts.push(("kill_switch".into(), name.clone(), hash_artifact(ks)));
     }
 
     for health in health_policies {
         let HealthPolicyDecl::HealthPolicyDecl { name, .. } = health;
-        artifacts.push((
-            "health_policy".into(),
-            name.clone(),
-            hash_artifact(health),
-        ));
+        artifacts.push(("health_policy".into(), name.clone(), hash_artifact(health)));
     }
 
     for deployment in deployments {
@@ -158,7 +142,9 @@ fn collect_robot_artifacts(robot: &RobotDecl, artifacts: &mut Vec<(String, Strin
     } = robot;
 
     if let Some(mission_decl) = mission {
-        let MissionDecl::MissionDecl { name: mission_name, .. } = mission_decl;
+        let MissionDecl::MissionDecl {
+            name: mission_name, ..
+        } = mission_decl;
         let mission_label = mission_name.as_deref().unwrap_or("default");
         artifacts.push((
             "mission".into(),
@@ -168,11 +154,7 @@ fn collect_robot_artifacts(robot: &RobotDecl, artifacts: &mut Vec<(String, Strin
     }
 
     if let Some(safety_block) = safety {
-        artifacts.push((
-            "safety".into(),
-            name.clone(),
-            hash_artifact(safety_block),
-        ));
+        artifacts.push(("safety".into(), name.clone(), hash_artifact(safety_block)));
     }
 
     if !exposes_capabilities.is_empty() {
@@ -226,10 +208,7 @@ pub fn generate_integrity_report(
                     Some(base_hash) if base_hash == &hash => {
                         (ArtifactIntegrityStatus::Trusted, Some(base_hash.clone()))
                     }
-                    Some(base_hash) => (
-                        ArtifactIntegrityStatus::Modified,
-                        Some(base_hash.clone()),
-                    ),
+                    Some(base_hash) => (ArtifactIntegrityStatus::Modified, Some(base_hash.clone())),
                 },
             };
             IntegrityArtifact {

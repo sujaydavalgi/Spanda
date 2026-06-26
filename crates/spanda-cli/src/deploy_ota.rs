@@ -870,15 +870,9 @@ fn cmd_gate(args: &[String]) {
         .parent()
         .filter(|parent| parent.as_os_str() != std::ffi::OsStr::new(""))
         .map(std::path::Path::to_path_buf);
-    let trust_options = spanda_trust::CompositeTrustOptions {
-        project_root,
-    };
-    let trust_report = spanda_trust::evaluate_composite_trust(
-        &program,
-        &source,
-        &file,
-        &trust_options,
-    );
+    let trust_options = spanda_trust::CompositeTrustOptions { project_root };
+    let trust_report =
+        spanda_trust::evaluate_composite_trust(&program, &source, &file, &trust_options);
     let mut report = report;
     report.gates.push(spanda_readiness::DeploymentGate {
         name: "composite_trust".into(),

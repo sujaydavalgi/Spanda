@@ -1,7 +1,7 @@
 //! Integration tests for cascading TOML configuration.
 
 use spanda_config::{
-    diff_configs, detect_agent_drift, generate_report_bundle, load_config_value, merge_values,
+    detect_agent_drift, diff_configs, generate_report_bundle, load_config_value, merge_values,
     AgentDriftSnapshot, ConfigResolver, ExpectedAgentState, SpandaManifest, ValidationSeverity,
 };
 use std::collections::HashMap;
@@ -505,7 +505,9 @@ fn agent_drift_detects_missing_secure_boot_attestation() {
         ..AgentDriftSnapshot::default()
     };
     let findings = detect_agent_drift(&expected, &actual);
-    assert!(findings.iter().any(|f| f.message.contains("missing attestation")));
+    assert!(findings
+        .iter()
+        .any(|f| f.message.contains("missing attestation")));
 }
 
 #[test]
@@ -528,6 +530,8 @@ fn agent_drift_detects_failed_secure_boot_attestation() {
         ..AgentDriftSnapshot::default()
     };
     let findings = detect_agent_drift(&expected, &actual);
-    assert!(findings.iter().any(|f| f.message.contains("verification failed")));
+    assert!(findings
+        .iter()
+        .any(|f| f.message.contains("verification failed")));
     assert!(findings.iter().any(|f| f.message.contains("boot_state")));
 }

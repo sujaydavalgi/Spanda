@@ -56,11 +56,10 @@ pub fn save_config_snapshot(
         resolved: resolved.clone(),
     };
     let path = dir.join(format!("{id}.json"));
-    let text = serde_json::to_string_pretty(&snapshot)
-        .map_err(|e| ConfigError::JsonParse {
-            path: path.clone(),
-            source: e,
-        })?;
+    let text = serde_json::to_string_pretty(&snapshot).map_err(|e| ConfigError::JsonParse {
+        path: path.clone(),
+        source: e,
+    })?;
     fs::write(&path, text).map_err(|e| io_error(&path, e))?;
     Ok(meta)
 }
@@ -90,10 +89,7 @@ pub fn list_config_snapshots(dir: &Path) -> ConfigResult<Vec<ConfigSnapshotMeta>
 pub fn load_config_snapshot(dir: &Path, id: &str) -> ConfigResult<ConfigSnapshot> {
     let path = dir.join(format!("{id}.json"));
     let text = fs::read_to_string(&path).map_err(|e| io_error(&path, e))?;
-    serde_json::from_str(&text).map_err(|e| ConfigError::JsonParse {
-        path,
-        source: e,
-    })
+    serde_json::from_str(&text).map_err(|e| ConfigError::JsonParse { path, source: e })
 }
 
 fn now_ms() -> f64 {

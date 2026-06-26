@@ -109,14 +109,18 @@ pub fn evaluate_deployment_gates(
             message: if passed {
                 "capability traceability passed".into()
             } else {
-                format!("{failed} capability rows failed, {} trace errors", trace.errors.len())
+                format!(
+                    "{failed} capability rows failed, {} trace errors",
+                    trace.errors.len()
+                )
             },
         });
     }
     if let Some(cfg) = options.system_config.as_deref() {
         let mut low_trust = Vec::new();
         for package in &cfg.packages {
-            let trust = spanda_package::evaluate_package_trust(package, None, Some(&cfg.project_root));
+            let trust =
+                spanda_package::evaluate_package_trust(package, None, Some(&cfg.project_root));
             if !trust.passed {
                 low_trust.push(format!("{package} ({}/100)", trust.score));
             }

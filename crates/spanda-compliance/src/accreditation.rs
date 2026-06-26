@@ -1,6 +1,8 @@
 //! Compliance accreditation bundle generation for audit exports.
 
-use crate::evaluate::{evaluate_compliance_profile, ComplianceEvaluationReport, ComplianceViolation};
+use crate::evaluate::{
+    evaluate_compliance_profile, ComplianceEvaluationReport, ComplianceViolation,
+};
 use crate::profiles::{builtin_profile, ComplianceProfile};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};

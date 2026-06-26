@@ -3,11 +3,12 @@
 use spanda_driver::{check_with_registry, compile_with_registry, run_tests_with_registry};
 use spanda_modules::load_project_modules;
 use spanda_package::{
-    adapter_verify_ok, add_dependency, collect_source_files, evaluate_package_trust, find_project_root,
-    init_package, load_official_packages_for_source, publish_package, registry_info, remove_dependency,
-    resolve_dependencies, search_registry, search_registry_merged, validate_package,
-    verify_adapter_package, ApplicationPermissions, DependencySpec, Lockfile, PackageManifest,
-    ResolveOptions, LOCKFILE_FILENAME, MANIFEST_FILENAME,
+    adapter_verify_ok, add_dependency, collect_source_files, evaluate_package_trust,
+    find_project_root, init_package, load_official_packages_for_source, publish_package,
+    registry_info, remove_dependency, resolve_dependencies, search_registry,
+    search_registry_merged, validate_package, verify_adapter_package, ApplicationPermissions,
+    DependencySpec, Lockfile, PackageManifest, ResolveOptions, LOCKFILE_FILENAME,
+    MANIFEST_FILENAME,
 };
 use std::env;
 use std::fs;
@@ -935,7 +936,9 @@ pub fn cmd_trust(args: &[String]) {
                 project = Some(PathBuf::from(&args[i]));
             }
             "--json" => json = true,
-            other if !other.starts_with('-') && package.is_none() => package = Some(other.to_string()),
+            other if !other.starts_with('-') && package.is_none() => {
+                package = Some(other.to_string())
+            }
             other => {
                 eprintln!("Unknown argument: {other}");
                 process::exit(1);

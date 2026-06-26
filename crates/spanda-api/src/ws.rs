@@ -69,9 +69,7 @@ pub fn serve_telemetry_websocket(
         }
 
         if let Ok(store) = global_store().lock() {
-            let events = store
-                .read_all()
-                .map_err(|error| error.to_string())?;
+            let events = store.read_all().map_err(|error| error.to_string())?;
             if telemetry_offset < events.len() {
                 for event in events.iter().skip(telemetry_offset) {
                     send_json(
@@ -90,14 +88,19 @@ pub fn serve_telemetry_websocket(
     Ok(())
 }
 
-fn send_json(websocket: &mut WebSocket<PrefixedReader<TcpStream>>, value: &serde_json::Value) -> Result<(), String> {
+fn send_json(
+    websocket: &mut WebSocket<PrefixedReader<TcpStream>>,
+    value: &serde_json::Value,
+) -> Result<(), String> {
     let text = serde_json::to_string(value).map_err(|error| error.to_string())?;
     websocket
         .send(Message::Text(text))
         .map_err(|error| error.to_string())
 }
 
-fn drain_client_messages(websocket: &mut WebSocket<PrefixedReader<TcpStream>>) -> Result<(), String> {
+fn drain_client_messages(
+    websocket: &mut WebSocket<PrefixedReader<TcpStream>>,
+) -> Result<(), String> {
     loop {
         match websocket.read() {
             Ok(Message::Close(_)) => return Err("client closed websocket".into()),

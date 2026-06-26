@@ -52,9 +52,9 @@ pub fn analyze_spoofing_coverage(program: &Program) -> (u32, Vec<SpoofingCoverag
     });
     let has_gps_health = health_checks.iter().any(health_check_targets_gps)
         || robots.iter().any(|robot| match robot {
-            RobotDecl::RobotDecl {
-                health_checks, ..
-            } => health_checks.iter().any(health_check_targets_gps),
+            RobotDecl::RobotDecl { health_checks, .. } => {
+                health_checks.iter().any(health_check_targets_gps)
+            }
         });
     let has_geofence = !geofences.is_empty();
     let has_package_gps = program_imports_module(imports, "positioning.gps");
@@ -175,9 +175,7 @@ fn robot_has_gps_sensor(robot: &RobotDecl) -> bool {
 fn sensor_decl_is_gps(sensor: &SensorDecl) -> bool {
     match sensor {
         SensorDecl::SensorDecl {
-            name,
-            sensor_type,
-            ..
+            name, sensor_type, ..
         } => sensor_is_gps(sensor_type) || name.to_ascii_lowercase().contains("gps"),
     }
 }
@@ -190,7 +188,9 @@ fn sensor_is_gps(name: &str) -> bool {
 fn estimator_cross_checks_gps(estimator: &StateEstimatorDecl) -> bool {
     match estimator {
         StateEstimatorDecl::StateEstimatorDecl { inputs, .. } => {
-            let has_gps_input = inputs.iter().any(|input| input.to_ascii_lowercase().contains("gps"));
+            let has_gps_input = inputs
+                .iter()
+                .any(|input| input.to_ascii_lowercase().contains("gps"));
             let has_inertial = inputs.iter().any(|input| {
                 let lower = input.to_ascii_lowercase();
                 lower.contains("imu")
@@ -279,7 +279,13 @@ deploy Rover to RoverV1;
         let program = parse_fixture(source);
         let (score, checks) = analyze_spoofing_coverage(&program);
         assert!(score >= 90, "score={score} checks={checks:?}");
-        assert!(checks.iter().find(|c| c.id == "spoof_handler").unwrap().passed);
+        assert!(
+            checks
+                .iter()
+                .find(|c| c.id == "spoof_handler")
+                .unwrap()
+                .passed
+        );
     }
 
     #[test]
@@ -292,12 +298,20 @@ deploy Rover to RoverV1;
         let program = parse_fixture(source);
         let (score, checks) = analyze_spoofing_coverage(&program);
         assert!(score < 60, "score={score}");
-        assert!(!checks
-            .iter()
-            .find(|c| c.id == "cross_sensor_fusion")
-            .unwrap()
-            .passed);
-        assert!(!checks.iter().find(|c| c.id == "spoof_handler").unwrap().passed);
+        assert!(
+            !checks
+                .iter()
+                .find(|c| c.id == "cross_sensor_fusion")
+                .unwrap()
+                .passed
+        );
+        assert!(
+            !checks
+                .iter()
+                .find(|c| c.id == "spoof_handler")
+                .unwrap()
+                .passed
+        );
     }
 
     #[test]
@@ -313,7 +327,19 @@ deploy Rover to RoverV1;
 "#;
         let program = parse_fixture(source);
         let (_, checks) = analyze_spoofing_coverage(&program);
-        assert!(checks.iter().find(|c| c.id == "package_gps_backend").unwrap().passed);
-        assert!(checks.iter().find(|c| c.id == "package_fusion_backend").unwrap().passed);
+        assert!(
+            checks
+                .iter()
+                .find(|c| c.id == "package_gps_backend")
+                .unwrap()
+                .passed
+        );
+        assert!(
+            checks
+                .iter()
+                .find(|c| c.id == "package_fusion_backend")
+                .unwrap()
+                .passed
+        );
     }
 }

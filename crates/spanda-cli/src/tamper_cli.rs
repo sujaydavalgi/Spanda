@@ -114,8 +114,8 @@ fn run_mesh_tamper_check(mesh_url: &str, args: &[String]) {
         process::exit(1);
     }
     if json_flag(args) {
-        let report: spanda_tamper::FleetTamperReport =
-            serde_json::from_str(&output).unwrap_or_else(|error| {
+        let report: spanda_tamper::FleetTamperReport = serde_json::from_str(&output)
+            .unwrap_or_else(|error| {
                 eprintln!("invalid fleet tamper JSON: {error}");
                 process::exit(1);
             });

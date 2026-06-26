@@ -32,12 +32,7 @@ fn defense_showcase_scorecard_blends_secure_boot() {
         "SPANDA_REGISTRY_URL",
         format!("file://{}", registry.display()),
     );
-    let path = repo_path(&[
-        "examples",
-        "showcase",
-        "compliance",
-        "defense_rover.sd",
-    ]);
+    let path = repo_path(&["examples", "showcase", "compliance", "defense_rover.sd"]);
     let source = std::fs::read_to_string(&path).unwrap();
     let program = parse(tokenize(&source).unwrap()).unwrap();
     let report = evaluate_scorecard(

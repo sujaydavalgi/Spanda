@@ -1,8 +1,6 @@
 //! CLI for verify-time integrity verification.
 //!
-use spanda_config::{
-    expected_agent_states, AgentDriftSnapshot, ConfigResolver, SpandaManifest,
-};
+use spanda_config::{expected_agent_states, AgentDriftSnapshot, ConfigResolver, SpandaManifest};
 use spanda_fleet::{
     default_fleet_agents_path, fleet_agent_status, load_fleet_agent_registry, lookup_fleet_agent,
     FleetAgentStatusResponse,
@@ -62,10 +60,7 @@ fn flag_value(args: &[String], flag: &str) -> Option<String> {
 fn project_root_from_args(args: &[String]) -> PathBuf {
     if let Some(path) = flag_value(args, "--config") {
         let config_path = PathBuf::from(path);
-        return config_path
-            .parent()
-            .unwrap_or(&config_path)
-            .to_path_buf();
+        return config_path.parent().unwrap_or(&config_path).to_path_buf();
     }
     let cwd = env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
     SpandaManifest::find_project_root(&cwd).unwrap_or(cwd)
@@ -144,20 +139,13 @@ pub fn integrity_dispatch(args: &[String]) {
     );
     if let Some(agent_filter) = flag_value(args, "--agent") {
         let root = project_root_from_args(args);
-        let config = ConfigResolver::new()
-            .resolve_from_dir(&root)
-            .ok();
+        let config = ConfigResolver::new().resolve_from_dir(&root).ok();
         let program_hash = hash_program_artifact(&file);
-        let expected_states = expected_agent_states(
-            &program,
-            config.as_ref(),
-            program_hash.as_deref(),
-        );
+        let expected_states =
+            expected_agent_states(&program, config.as_ref(), program_hash.as_deref());
         let expected = expected_states
             .into_iter()
-            .find(|state| {
-                agent_filter == state.target_key || agent_filter == state.robot_name
-            })
+            .find(|state| agent_filter == state.target_key || agent_filter == state.robot_name)
             .unwrap_or_else(|| {
                 eprintln!("--agent '{agent_filter}' does not match any deploy target in program");
                 process::exit(1);

@@ -1,8 +1,9 @@
 //! CLI for guardrailed Spanda source generation and suggestions.
 //!
 use spanda_generate::{
-    format_generation_report, format_suggest_report, generate_health_policy, generate_mission_program,
-    generate_robot_program, suggest_program, GenerateBackend, GenerateOptions,
+    format_generation_report, format_suggest_report, generate_health_policy,
+    generate_mission_program, generate_robot_program, suggest_program, GenerateBackend,
+    GenerateOptions,
 };
 use spanda_lexer::tokenize;
 use spanda_parser::parse;

@@ -43,10 +43,7 @@ robot Rover {
     )
     .expect("run");
     assert!(
-        result
-            .logs
-            .iter()
-            .any(|line| line.contains("max_speed")),
+        result.logs.iter().any(|line| line.contains("max_speed")),
         "expected runtime policy max_speed block log, got: {:?}",
         result.logs
     );

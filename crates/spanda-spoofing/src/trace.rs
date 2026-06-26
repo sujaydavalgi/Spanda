@@ -48,10 +48,7 @@ pub struct MissionTrace {
 }
 
 /// Analyze a mission trace for GPS spoofing and plausibility violations.
-pub fn analyze_trace_spoofing(
-    trace: &MissionTrace,
-    max_speed_m_s: f64,
-) -> Vec<SpoofingAlert> {
+pub fn analyze_trace_spoofing(trace: &MissionTrace, max_speed_m_s: f64) -> Vec<SpoofingAlert> {
     // Scan trace frames for impossible GPS motion, spoof events, and degraded fix quality.
     //
     // Parameters:
@@ -91,8 +88,7 @@ pub fn analyze_trace_spoofing(
                 let speed_m_s = distance_m / delta_s;
 
                 if speed_m_s > max_speed_m_s {
-                    let confidence =
-                        (speed_m_s / max_speed_m_s).min(1.0).max(0.5);
+                    let confidence = (speed_m_s / max_speed_m_s).min(1.0).max(0.5);
                     alerts.push(SpoofingAlert {
                         sensor: "gps".into(),
                         severity: if speed_m_s > max_speed_m_s * 3.0 {
@@ -224,7 +220,10 @@ fn detect_imu_gps_conflict(
         severity: SpoofingSeverity::Medium,
         confidence: 0.7,
         message: "IMU reports near-zero motion while GPS position jumped recently".into(),
-        evidence: format!("imu speed={speed_m_s:.2} m/s near gps sample", speed_m_s = speed),
+        evidence: format!(
+            "imu speed={speed_m_s:.2} m/s near gps sample",
+            speed_m_s = speed
+        ),
         sim_time_ms: Some(frame.sim_time_ms),
     })
 }

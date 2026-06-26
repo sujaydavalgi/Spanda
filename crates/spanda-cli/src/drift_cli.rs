@@ -94,7 +94,8 @@ pub fn drift_dispatch(args: &[String]) {
         process::exit(1);
     }
 
-    let current_root = root_from_flag(args, "--config").unwrap_or_else(|| project_root_from_args(args));
+    let current_root =
+        root_from_flag(args, "--config").unwrap_or_else(|| project_root_from_args(args));
     let current = load_resolved(&current_root);
     let mut report = if let Some(base_root) = baseline_root.as_ref() {
         let baseline = load_resolved(base_root);
@@ -111,7 +112,9 @@ pub fn drift_dispatch(args: &[String]) {
     let program_path = program_path.or_else(|| {
         baseline_root.as_ref().and_then(|_| {
             args.iter()
-                .find(|a| !a.starts_with('-') && Path::new(a).extension().is_some_and(|e| e == "sd"))
+                .find(|a| {
+                    !a.starts_with('-') && Path::new(a).extension().is_some_and(|e| e == "sd")
+                })
                 .map(PathBuf::from)
         })
     });
@@ -123,14 +126,16 @@ pub fn drift_dispatch(args: &[String]) {
         let expected_states = expected_agent_states(&program, Some(&current), hash.as_deref());
         let agent_filter = flag_value(args, "--agent");
         if let Some(ref filter) = agent_filter {
-            let matched = expected_states.iter().any(|state| {
-                filter == &state.target_key || filter == &state.robot_name
-            });
+            let matched = expected_states
+                .iter()
+                .any(|state| filter == &state.target_key || filter == &state.robot_name);
             if !matched {
                 report.push(spanda_config::DriftFinding {
                     dimension: spanda_config::DriftDimension::Program,
                     severity: spanda_config::DriftSeverity::High,
-                    message: format!("--agent '{filter}' does not match any deploy target in program"),
+                    message: format!(
+                        "--agent '{filter}' does not match any deploy target in program"
+                    ),
                     path: None,
                 });
             }

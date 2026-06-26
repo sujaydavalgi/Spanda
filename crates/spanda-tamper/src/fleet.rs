@@ -1,7 +1,7 @@
 //! Fleet-wide tamper correlation across multiple member mission traces.
 
-use crate::diagnosis::{diagnose_tamper_trace, TamperDiagnosisReport};
 use crate::detect::{TamperFormat, TamperSeverity, TamperStatus};
+use crate::diagnosis::{diagnose_tamper_trace, TamperDiagnosisReport};
 use crate::runtime::MissionTrace;
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
@@ -97,8 +97,8 @@ pub fn correlate_fleet_tamper(manifest_path: &Path) -> Result<FleetTamperReport,
         let trace_path = resolve_trace_path(base_dir, &member.trace);
         let raw = fs::read_to_string(&trace_path)
             .map_err(|error| format!("read {}: {error}", trace_path.display()))?;
-        let trace: MissionTrace =
-            serde_json::from_str(&raw).map_err(|error| format!("parse {}: {error}", member.trace))?;
+        let trace: MissionTrace = serde_json::from_str(&raw)
+            .map_err(|error| format!("parse {}: {error}", member.trace))?;
         let label = trace_path.display().to_string();
         let diagnosis = diagnose_tamper_trace(&trace, &label);
         members.push(MemberTamperDiagnosis {
@@ -299,7 +299,11 @@ fn detect_simultaneous_tamper(members: &[MemberTamperDiagnosis]) -> Vec<FleetTam
     for member in members {
         for timeline in &member.diagnosis.timeline {
             if timeline.severity >= TamperSeverity::Medium {
-                events.push((member.robot.clone(), timeline.sim_time_ms, timeline.severity));
+                events.push((
+                    member.robot.clone(),
+                    timeline.sim_time_ms,
+                    timeline.severity,
+                ));
             }
         }
     }
@@ -422,7 +426,8 @@ fn compute_fleet_trust_score(
     if members.is_empty() {
         return 100;
     }
-    let average = members.iter().map(|member| member.trust_score).sum::<u32>() / members.len() as u32;
+    let average =
+        members.iter().map(|member| member.trust_score).sum::<u32>() / members.len() as u32;
     let penalty = correlations
         .iter()
         .map(|event| {

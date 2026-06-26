@@ -88,7 +88,8 @@ robot Rover {
     .expect("run");
     assert!(
         result.logs.iter().any(|line| {
-            line.contains("pending operator approval") || line.contains("operator approval required")
+            line.contains("pending operator approval")
+                || line.contains("operator approval required")
         }),
         "expected deferred critical tamper action, got: {:?}",
         result.logs

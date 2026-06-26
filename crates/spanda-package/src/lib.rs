@@ -79,8 +79,8 @@ pub use registry_sign::{
 };
 pub use resolver::{resolve_dependencies, ResolveOptions, ResolveResult};
 pub use safety::{SafetyLevel, SafetyMetadata};
-pub use trust::{evaluate_package_trust, TrustFactor, TrustScoreReport};
 pub use tar_extract::extract_tarball_safe;
+pub use trust::{evaluate_package_trust, TrustFactor, TrustScoreReport};
 pub use validation::{
     validate_package, ApplicationPermissions, ValidationIssue, ValidationReport, ValidationSeverity,
 };

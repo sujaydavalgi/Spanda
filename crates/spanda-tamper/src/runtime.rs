@@ -70,7 +70,10 @@ fn collect_frame_findings(frame: &TraceFrame, findings: &mut Vec<TamperFinding>)
         findings.push(runtime_finding(
             "runtime_event",
             severity_for_event(&event_lower),
-            format!("Runtime tamper signal in trace event `{event}`", event = frame.event),
+            format!(
+                "Runtime tamper signal in trace event `{event}`",
+                event = frame.event
+            ),
             Some(frame.payload.to_string()),
             frame.sim_time_ms,
         ));
@@ -169,7 +172,9 @@ fn payload_indicates_tamper(obj: &serde_json::Map<String, serde_json::Value>) ->
 fn severity_for_event(event: &str) -> TamperSeverity {
     if event.contains("critical") || event.contains("compromise") || event.contains("injection") {
         TamperSeverity::Critical
-    } else if event.contains("denied") || event.contains("unauthorized") || event.contains("intrusion")
+    } else if event.contains("denied")
+        || event.contains("unauthorized")
+        || event.contains("intrusion")
     {
         TamperSeverity::High
     } else {

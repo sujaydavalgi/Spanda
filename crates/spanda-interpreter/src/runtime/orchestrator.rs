@@ -2030,14 +2030,14 @@ mod runtime_safety;
 mod runtime_scheduler;
 #[path = "runtime_security.rs"]
 mod runtime_security;
-#[path = "runtime_tamper.rs"]
-mod runtime_tamper;
 #[path = "runtime_sensors.rs"]
 mod runtime_sensors;
 #[path = "runtime_setup.rs"]
 mod runtime_setup;
 #[path = "runtime_spawn.rs"]
 mod runtime_spawn;
+#[path = "runtime_tamper.rs"]
+mod runtime_tamper;
 #[path = "runtime_triggers.rs"]
 mod runtime_triggers;
 #[path = "runtime_twin.rs"]

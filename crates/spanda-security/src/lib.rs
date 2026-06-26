@@ -30,10 +30,10 @@ pub use encrypted::{
 pub use error::{SecurityError, SecurityResult};
 pub use identity::RobotIdentity;
 pub use permissions::PackagePermissions;
-pub use rbac::{permission_matrix, ApiKeyRecord, ApiKeyStore, RbacAction, RbacContext, Role};
 pub use policy::{
     AuthenticationMode, BusSecurityConfig, EncryptionMode, IntegrityMode, SecureCommPolicy,
 };
+pub use rbac::{permission_matrix, ApiKeyRecord, ApiKeyStore, RbacAction, RbacContext, Role};
 pub use runtime::{SecurityContext, SecuritySnapshot};
 pub use secret_vault::{ManagedSecretVault, SecretMetadata, SecretVaultBackend};
 pub use secrets::{SecretHandle, SecretSource, SecretStore};

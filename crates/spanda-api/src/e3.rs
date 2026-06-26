@@ -6,8 +6,7 @@ use crate::observability::maybe_auto_push_latest_span;
 use crate::state::ControlCenterState;
 use serde::Deserialize;
 use spanda_config::{
-    default_snapshots_dir, detect_operational_drift, load_config_snapshot,
-    DeviceLifecycleState,
+    default_snapshots_dir, detect_operational_drift, load_config_snapshot, DeviceLifecycleState,
 };
 use spanda_deploy_http::HttpResponse;
 use spanda_ota::{
@@ -138,7 +137,11 @@ pub fn sre_summary(state: &ControlCenterState) -> HttpResponse {
     let alerts = state.alert_store.list_owned();
     let critical = alerts
         .iter()
-        .filter(|a| format!("{:?}", a.severity).to_ascii_lowercase().contains("critical"))
+        .filter(|a| {
+            format!("{:?}", a.severity)
+                .to_ascii_lowercase()
+                .contains("critical")
+        })
         .count();
     let traces = state.trace_log.list_owned();
     json_ok(&serde_json::json!({

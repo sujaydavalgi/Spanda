@@ -3,6 +3,6 @@
 pub mod model;
 
 pub use model::{
-    analyze_threat_model, format_threat_report, AttackSurfaceItem, ThreatAssessment, ThreatCategory,
-    ThreatReport, ThreatRisk,
+    analyze_threat_model, format_threat_report, AttackSurfaceItem, ThreatAssessment,
+    ThreatCategory, ThreatReport, ThreatRisk,
 };

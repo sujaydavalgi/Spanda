@@ -75,10 +75,7 @@ fn warehouse_profile() -> ComplianceProfile {
         description: "Warehouse AMRs with speed caps and shift-hour discipline".into(),
         requires_kill_switch: true,
         min_readiness_score: 70,
-        required_capabilities: vec![
-            "gps_navigation".into(),
-            "obstacle_avoidance".into(),
-        ],
+        required_capabilities: vec!["gps_navigation".into(), "obstacle_avoidance".into()],
         min_health_checks: 1,
         requires_assurance_case: false,
         max_speed_mps: Some(2.0),

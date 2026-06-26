@@ -186,9 +186,7 @@ fn check_readiness(
             severity_for(profile, ComplianceSeverity::Error),
             format!(
                 "readiness score {}/{} below profile minimum {}",
-                readiness.score.total,
-                readiness.score.maximum,
-                profile.min_readiness_score
+                readiness.score.total, readiness.score.maximum, profile.min_readiness_score
             ),
             violations,
         );
@@ -257,7 +255,9 @@ fn check_assurance_case(
     program: &Program,
     violations: &mut Vec<ComplianceViolation>,
 ) {
-    let Program::Program { assurance_cases, .. } = program;
+    let Program::Program {
+        assurance_cases, ..
+    } = program;
     if assurance_cases.is_empty() {
         push_violation(
             profile,

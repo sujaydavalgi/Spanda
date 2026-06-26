@@ -210,8 +210,9 @@ fn evaluate_injection(
     let health = evaluate_runtime_health(&runtime_faults(kind), &[], program);
 
     let recovery_passed = recovery.passed;
-    let readiness_passed =
-        readiness.mission_ready || recovery.readiness.recovery_ready || !readiness_has_errors(&readiness);
+    let readiness_passed = readiness.mission_ready
+        || recovery.readiness.recovery_ready
+        || !readiness_has_errors(&readiness);
     let health_passed = !matches!(
         health.overall,
         HealthStatus::Critical | HealthStatus::Unsafe | HealthStatus::Failed
@@ -251,7 +252,11 @@ fn evaluate_injection(
             .iter()
             .filter(|result| result.status == RecoveryStatus::Unsafe)
             .count(),
-        recovery.safe_actions.iter().filter(|action| action.approved).count(),
+        recovery
+            .safe_actions
+            .iter()
+            .filter(|action| action.approved)
+            .count(),
         recovery.safe_actions.len()
     ));
 
@@ -269,14 +274,7 @@ fn evaluate_injection(
 fn format_chaos_text(report: &ChaosReport) -> String {
     let mut lines = vec![
         format!("Chaos experiment: {}", report.program),
-        format!(
-            "Result: {}",
-            if report.passed {
-                "PASS"
-            } else {
-                "FAIL"
-            }
-        ),
+        format!("Result: {}", if report.passed { "PASS" } else { "FAIL" }),
         String::new(),
     ];
 
@@ -303,12 +301,14 @@ fn format_chaos_text(report: &ChaosReport) -> String {
 }
 
 fn pass_label(passed: bool) -> &'static str {
-    if passed { "pass" } else { "fail" }
+    if passed {
+        "pass"
+    } else {
+        "fail"
+    }
 }
 
-fn readiness_has_errors(
-    readiness: &spanda_readiness::ReadinessReport,
-) -> bool {
+fn readiness_has_errors(readiness: &spanda_readiness::ReadinessReport) -> bool {
     readiness.issues.iter().any(|issue| {
         matches!(
             issue.severity,

@@ -22,7 +22,12 @@ fn parse_file(path: PathBuf) -> spanda_ast::nodes::Program {
 
 #[test]
 fn readiness_rover_has_connectivity_surface() {
-    let program = parse_file(repo_path(&["examples", "showcase", "readiness", "rover.sd"]));
+    let program = parse_file(repo_path(&[
+        "examples",
+        "showcase",
+        "readiness",
+        "rover.sd",
+    ]));
     let report = analyze_threat_model(&program, "rover.sd");
     assert!(!report.attack_surface.is_empty());
     assert!(report
@@ -39,7 +44,8 @@ fn remote_signed_kill_switch_flags_high_risk() {
         "remote_signed_kill_switch.sd",
     ]));
     let report = analyze_threat_model(&program, "remote_signed_kill_switch.sd");
-    assert!(report.assessments.iter().any(|a| {
-        a.category == ThreatCategory::RemoteCommand && a.risk == ThreatRisk::High
-    }));
+    assert!(report
+        .assessments
+        .iter()
+        .any(|a| { a.category == ThreatCategory::RemoteCommand && a.risk == ThreatRisk::High }));
 }

@@ -42,10 +42,7 @@ pub fn otlp_traces_export(
         return unauthorized();
     }
     let params = parse_query(query);
-    let endpoint = params
-        .get("endpoint")
-        .cloned()
-        .or_else(env_traces_endpoint);
+    let endpoint = params.get("endpoint").cloned().or_else(env_traces_endpoint);
     let Some(endpoint) = endpoint else {
         return bad_request(
             "missing traces endpoint; set SPANDA_OTLP_TRACES_ENDPOINT or pass ?endpoint=",

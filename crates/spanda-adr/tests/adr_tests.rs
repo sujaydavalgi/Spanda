@@ -1,6 +1,6 @@
 //! Integration tests for ADR generation.
 
-use spanda_adr::{generate_adrs, AdrFormat, format_adr_report};
+use spanda_adr::{format_adr_report, generate_adrs, AdrFormat};
 use spanda_lexer::tokenize;
 use spanda_parser::parse;
 use std::path::PathBuf;
@@ -30,7 +30,10 @@ fn warehouse_program_generates_deploy_and_policy_adrs() {
     ]));
     let report = generate_adrs(&program, "warehouse.sd");
     assert!(report.records.len() >= 3);
-    assert!(report.records.iter().any(|record| record.title.contains("Deploy")));
+    assert!(report
+        .records
+        .iter()
+        .any(|record| record.title.contains("Deploy")));
     assert!(report
         .records
         .iter()

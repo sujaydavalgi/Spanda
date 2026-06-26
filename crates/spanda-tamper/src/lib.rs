@@ -27,9 +27,8 @@ pub use diagnosis::{
 };
 pub use fleet::{
     build_fleet_tamper_report, correlate_fleet_tamper, correlate_fleet_tamper_traces,
-    format_fleet_tamper_report, load_fleet_tamper_manifest,
-    FleetTamperCorrelation, FleetTamperManifest, FleetTamperMember, FleetTamperReport,
-    MemberTamperDiagnosis,
+    format_fleet_tamper_report, load_fleet_tamper_manifest, FleetTamperCorrelation,
+    FleetTamperManifest, FleetTamperMember, FleetTamperReport, MemberTamperDiagnosis,
 };
 pub use integrity::{
     apply_agent_integrity, compare_agent_integrity, format_integrity_report,
@@ -39,10 +38,10 @@ pub use integrity::{
 pub use policy::{
     actions_for_tamper_event, extract_tamper_policies, tamper_policy_coverage, TamperPolicySpec,
 };
-pub use runtime::{generate_runtime_tamper_check, MissionTrace, TraceFrame};
 pub use remote_attestation::{
     attestation_trust_store_dir, validate_ak_cert_chain, AkCertChainValidation,
 };
+pub use runtime::{generate_runtime_tamper_check, MissionTrace, TraceFrame};
 pub use secure_boot::{
     contract_to_package, evaluate_secure_boot_coverage, is_secure_boot_contract,
     live_ak_chain_verified, secure_boot_status_line, SecureBootCoverage, SecureBootEntry,

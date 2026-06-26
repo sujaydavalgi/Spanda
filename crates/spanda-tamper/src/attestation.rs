@@ -41,7 +41,8 @@ pub fn apply_ak_chain_policy(
         return result;
     }
 
-    let validation = validate_ak_cert_chain(&ak_cert_chain, attestation_trust_store_dir().as_deref());
+    let validation =
+        validate_ak_cert_chain(&ak_cert_chain, attestation_trust_store_dir().as_deref());
     result.ak_chain_verified = Some(validation.verified);
     result.ak_chain_detail = Some(validation.detail.clone());
 
@@ -103,13 +104,8 @@ fn query_http_attestation(
         "package": package,
         "program": program_label,
     });
-    let response = spanda_deploy_http::http_request(
-        "POST",
-        &endpoint,
-        Some(&body.to_string()),
-        None,
-    )
-    .ok()?;
+    let response =
+        spanda_deploy_http::http_request("POST", &endpoint, Some(&body.to_string()), None).ok()?;
     if !(200..300).contains(&response.status) {
         return None;
     }
@@ -129,7 +125,9 @@ fn parse_attestation_response(payload: AttestationResponse) -> LiveAttestationRe
         } else {
             payload.boot_state
         },
-        score: payload.score.unwrap_or(if payload.attested { 100 } else { 0 }),
+        score: payload
+            .score
+            .unwrap_or(if payload.attested { 100 } else { 0 }),
         detail: payload.detail.unwrap_or_else(|| {
             if payload.attested {
                 "live attestation verified".into()
@@ -182,7 +180,8 @@ mod tests {
     fn query_is_noop_without_backend() {
         std::env::remove_var("SPANDA_ATTESTATION_ENDPOINT");
         std::env::remove_var("SPANDA_TPM_BACKEND");
-        let result = query_live_attestation("trust.jetson", "spanda-trust-jetson", Some("rover.sd"));
+        let result =
+            query_live_attestation("trust.jetson", "spanda-trust-jetson", Some("rover.sd"));
         assert!(result.is_none());
     }
 

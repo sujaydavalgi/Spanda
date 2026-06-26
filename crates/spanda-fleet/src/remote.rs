@@ -460,7 +460,10 @@ pub fn fleet_agent_status(entry: &FleetAgentEntry) -> Result<FleetAgentStatusRes
 
 fn decode_fleet_status(response: HttpResponse) -> Result<FleetAgentStatusResponse, String> {
     if response.status >= 400 {
-        return Err(format!("fleet agent HTTP {}: {}", response.status, response.body));
+        return Err(format!(
+            "fleet agent HTTP {}: {}",
+            response.status, response.body
+        ));
     }
     serde_json::from_str(&response.body).map_err(|e| e.to_string())
 }

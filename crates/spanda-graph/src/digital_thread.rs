@@ -193,7 +193,11 @@ fn summarize_chain(
         "Digital thread query: {}",
         serde_json::to_string(query).unwrap_or_else(|_| "{}".into())
     )];
-    lines.push(format!("Matched {} nodes, {} edges", nodes.len(), edges.len()));
+    lines.push(format!(
+        "Matched {} nodes, {} edges",
+        nodes.len(),
+        edges.len()
+    ));
     for edge in edges.iter().take(12) {
         lines.push(format!("{} --{}--> {}", edge.from, edge.relation, edge.to));
     }

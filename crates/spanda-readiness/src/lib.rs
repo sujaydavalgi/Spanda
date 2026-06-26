@@ -65,6 +65,7 @@ pub use trends::{
 };
 pub use twin::evaluate_twin_readiness;
 pub use types::{
-    FleetReadinessReport, ReadinessFactorScore, ReadinessIssue, ReadinessOptions, ReadinessPolicy, ReadinessReport,
-    ReadinessScore, ReadinessSeverity, ReadinessStatus, ReportFormat, TwinReadinessStatus,
+    FleetReadinessReport, ReadinessFactorScore, ReadinessIssue, ReadinessOptions, ReadinessPolicy,
+    ReadinessReport, ReadinessScore, ReadinessSeverity, ReadinessStatus, ReportFormat,
+    TwinReadinessStatus,
 };

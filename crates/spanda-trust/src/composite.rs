@@ -6,7 +6,9 @@ use spanda_package::evaluate_package_trust;
 use spanda_readiness::{audit_program, evaluate_safety_coverage};
 use spanda_security::validate::security_audit;
 use spanda_tamper::detect::{generate_tamper_check, TamperStatus};
-use spanda_tamper::integrity::{generate_integrity_report, ArtifactIntegrityStatus, IntegrityReport};
+use spanda_tamper::integrity::{
+    generate_integrity_report, ArtifactIntegrityStatus, IntegrityReport,
+};
 use spanda_tamper::secure_boot::evaluate_secure_boot_coverage;
 use std::path::Path;
 
@@ -92,21 +94,26 @@ pub fn evaluate_composite_trust(
     let safety_score = safety_integrity_score(program, source_label);
 
     let categories = vec![
-        category(
-            "package_trust",
-            package_score.0,
-            20,
-            &package_score.1,
-        ),
+        category("package_trust", package_score.0, 20, &package_score.1),
         category("device_integrity", device_score.0, 20, &device_score.1),
-        category("firmware_integrity", firmware_score.0, 15, &firmware_score.1),
+        category(
+            "firmware_integrity",
+            firmware_score.0,
+            15,
+            &firmware_score.1,
+        ),
         category(
             "configuration_integrity",
             configuration_score.0,
             20,
             &configuration_score.1,
         ),
-        category("identity_validation", identity_score.0, 15, &identity_score.1),
+        category(
+            "identity_validation",
+            identity_score.0,
+            15,
+            &identity_score.1,
+        ),
         category("safety_integrity", safety_score.0, 10, &safety_score.1),
     ];
 
@@ -132,7 +139,10 @@ pub fn evaluate_composite_trust(
 }
 
 /// Render a composite trust report for CLI output.
-pub fn format_composite_trust(report: &CompositeTrustReport, format: CompositeTrustFormat) -> String {
+pub fn format_composite_trust(
+    report: &CompositeTrustReport,
+    format: CompositeTrustFormat,
+) -> String {
     // Format composite trust output as text, JSON, or Markdown.
     //
     // Parameters:
@@ -256,7 +266,10 @@ fn device_integrity_score(program: &Program, source_label: &str) -> (u32, String
         );
     }
     if !hardware_profiles.is_empty() {
-        return (65, "hardware profile declared without deploy binding".into());
+        return (
+            65,
+            "hardware profile declared without deploy binding".into(),
+        );
     }
     (50, "no device attestation or hardware profile".into())
 }
@@ -377,7 +390,10 @@ fn tamper_status_label(status: TamperStatus) -> String {
     }
 }
 
-fn synthesize_recommendations(categories: &[TrustCategory], tamper_status: &TamperStatus) -> Vec<String> {
+fn synthesize_recommendations(
+    categories: &[TrustCategory],
+    tamper_status: &TamperStatus,
+) -> Vec<String> {
     let mut recommendations = Vec::new();
     for category in categories {
         if category.score < 60 {
@@ -389,10 +405,12 @@ fn synthesize_recommendations(categories: &[TrustCategory], tamper_status: &Tamp
     }
     match tamper_status {
         TamperStatus::Tampered | TamperStatus::Compromised | TamperStatus::Suspicious => {
-            recommendations.push("Run spanda tamper-check and spanda diagnose tamper on traces".into());
+            recommendations
+                .push("Run spanda tamper-check and spanda diagnose tamper on traces".into());
         }
         TamperStatus::Unknown => {
-            recommendations.push("Establish integrity baseline with spanda integrity --baseline".into());
+            recommendations
+                .push("Establish integrity baseline with spanda integrity --baseline".into());
         }
         TamperStatus::Trusted => {}
     }
@@ -412,11 +430,7 @@ fn format_text(report: &CompositeTrustReport) -> String {
     for category in &report.categories {
         lines.push(format!(
             "  - {}: {}/100 (weight {}%, weighted {}) — {}",
-            category.name,
-            category.score,
-            category.weight,
-            category.weighted,
-            category.detail
+            category.name, category.score, category.weight, category.weighted, category.detail
         ));
     }
     if !report.recommendations.is_empty() {

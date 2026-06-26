@@ -216,7 +216,11 @@ fn section_from_tamper(tamper: &TamperReport) -> SecurityAssuranceSection {
         name: "tamper".into(),
         passed: tamper.passed,
         score: Some(tamper.trust_score),
-        summary: format!("status {:?}, {} findings", tamper.status, tamper.findings.len()),
+        summary: format!(
+            "status {:?}, {} findings",
+            tamper.status,
+            tamper.findings.len()
+        ),
         detail_count: tamper.findings.len() as u32,
     }
 }
@@ -312,7 +316,8 @@ mod tests {
 
     fn parse_fixture(relative: &str) -> (Program, String) {
         let path = format!("{}/{}", env!("CARGO_MANIFEST_DIR"), relative);
-        let source = std::fs::read_to_string(&path).unwrap_or_else(|error| panic!("read {path}: {error}"));
+        let source =
+            std::fs::read_to_string(&path).unwrap_or_else(|error| panic!("read {path}: {error}"));
         let tokens = tokenize(&source).expect("tokenize");
         let program = parse(tokens).expect("parse");
         (program, source)
@@ -323,8 +328,14 @@ mod tests {
         let (program, source) = parse_fixture("../../examples/showcase/readiness/rover.sd");
         let report = generate_security_assurance(&program, &source, "rover.sd");
         assert_eq!(report.sections.len(), 4);
-        assert!(report.sections.iter().any(|section| section.name == "attack_surface"));
-        assert!(report.sections.iter().any(|section| section.name == "tamper"));
+        assert!(report
+            .sections
+            .iter()
+            .any(|section| section.name == "attack_surface"));
+        assert!(report
+            .sections
+            .iter()
+            .any(|section| section.name == "tamper"));
         assert!(!report.passed);
         assert!(!report.recommendations.is_empty());
     }

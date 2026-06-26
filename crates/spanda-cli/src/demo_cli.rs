@@ -708,7 +708,9 @@ fn demo_maturity(root: &Path) {
     run_spanda_args(&["trust", sd]);
     run_spanda_args_allow_fail(&["deploy", "gate", sd]);
 
-    println!("\nDemo complete. See docs/platform-maturity-roadmap.md and docs/dependency-graphs.md");
+    println!(
+        "\nDemo complete. See docs/platform-maturity-roadmap.md and docs/dependency-graphs.md"
+    );
 }
 
 fn demo_trust(root: &Path) {
@@ -830,10 +832,7 @@ fn demo_gaps(root: &Path) {
         &gaps_root,
         &["secure_boot", "fixtures", "vendor-ak-chain.sh"],
     );
-    let trust_store = showcase(
-        &gaps_root,
-        &["secure_boot", "fixtures", "trust-store"],
-    );
+    let trust_store = showcase(&gaps_root, &["secure_boot", "fixtures", "trust-store"]);
 
     println!("== Platform maturity gap closure demo ==\n");
 
@@ -852,7 +851,10 @@ fn demo_gaps(root: &Path) {
     println!("\n--- Remote AK cert chain validation ---");
     env::set_var("SPANDA_TPM_BACKEND", "vendor");
     if vendor_ak.is_file() {
-        env::set_var("SPANDA_TPM_VENDOR_SDK", vendor_ak.to_string_lossy().to_string());
+        env::set_var(
+            "SPANDA_TPM_VENDOR_SDK",
+            vendor_ak.to_string_lossy().to_string(),
+        );
     }
     if trust_store.is_dir() {
         env::set_var(

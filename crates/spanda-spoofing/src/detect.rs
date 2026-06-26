@@ -130,7 +130,8 @@ pub fn generate_trace_spoof_check(trace: &MissionTrace, source_label: &str) -> S
     let ml_before = alerts.len();
     crate::ml::merge_ml_spoofing_alerts(trace, &mut alerts);
     let ml_alerts_merged = alerts.len().saturating_sub(ml_before) as u32;
-    let suppressed_low_confidence = crate::confidence::apply_spoofing_confidence_filter(&mut alerts);
+    let suppressed_low_confidence =
+        crate::confidence::apply_spoofing_confidence_filter(&mut alerts);
     let requires_operator_confirmation = crate::confidence::requires_operator_confirmation(&alerts);
     let passed = !alerts.iter().any(|alert| {
         matches!(

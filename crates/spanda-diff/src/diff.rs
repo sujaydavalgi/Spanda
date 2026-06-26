@@ -1,13 +1,11 @@
 //! Program snapshot extraction and mission diff reporting.
 
 use serde::{Deserialize, Serialize};
+use spanda_ast::assurance_decl::{ContinuityPolicyDecl, MissionPlanDecl, RecoveryPolicyDecl};
 use spanda_ast::foundations::{
     DeployDecl, HardwareDecl, HealthCheckDecl, HealthPolicyDecl, KillSwitchDecl,
 };
 use spanda_ast::nodes::{Program, RobotDecl, SafetyBlock, SafetyRule};
-use spanda_ast::assurance_decl::{
-    ContinuityPolicyDecl, MissionPlanDecl, RecoveryPolicyDecl,
-};
 use spanda_ast::robotics_decl::FleetDecl;
 use spanda_capability::infer_robot_capabilities;
 use std::collections::{BTreeMap, BTreeSet};
@@ -654,10 +652,7 @@ pub fn format_mission_diff(report: &MissionDiffReport, json: bool) -> String {
         return serde_json::to_string_pretty(report).unwrap_or_else(|e| e.to_string());
     }
     let mut lines = vec![
-        format!(
-            "Mission diff: {} -> {}",
-            report.baseline, report.candidate
-        ),
+        format!("Mission diff: {} -> {}", report.baseline, report.candidate),
         format!(
             "Changes: {} added, {} removed, {} modified",
             report.added, report.removed, report.modified

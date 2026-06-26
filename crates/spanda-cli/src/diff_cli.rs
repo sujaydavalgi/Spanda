@@ -41,12 +41,8 @@ pub fn diff_dispatch(args: &[String]) {
     let baseline = parse_program(Path::new(&baseline_file));
     let candidate = parse_program(Path::new(&candidate_file));
     let json = args.iter().any(|a| a == "--json");
-    let report = diff_programs_with_capabilities(
-        &baseline,
-        &candidate,
-        &baseline_file,
-        &candidate_file,
-    );
+    let report =
+        diff_programs_with_capabilities(&baseline, &candidate, &baseline_file, &candidate_file);
     println!("{}", format_mission_diff(&report, json));
     if report.has_deploy_impact || report.has_safety_impact {
         process::exit(2);

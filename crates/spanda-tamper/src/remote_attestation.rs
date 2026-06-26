@@ -75,7 +75,11 @@ pub fn validate_ak_cert_chain(
         .filter(|value| !value.trim().is_empty())
     {
         let expected = normalize_fingerprint(&expected_leaf);
-        if fingerprints.first().map(|fp| fp == &expected).unwrap_or(false) {
+        if fingerprints
+            .first()
+            .map(|fp| fp == &expected)
+            .unwrap_or(false)
+        {
             anchor_matched = true;
         } else {
             return AkCertChainValidation {
@@ -120,8 +124,9 @@ pub fn validate_ak_cert_chain(
             verified: false,
             chain_length: parsed.len(),
             anchor_matched: false,
-            detail: "ak cert chain present but no trust store or leaf fingerprint policy configured"
-                .into(),
+            detail:
+                "ak cert chain present but no trust store or leaf fingerprint policy configured"
+                    .into(),
         };
     }
 
@@ -258,10 +263,7 @@ fn openssl_verify_enabled() -> bool {
         .unwrap_or(false)
 }
 
-fn verify_with_openssl(
-    pem_chain: &[String],
-    trust_store_dir: Option<&Path>,
-) -> Result<(), String> {
+fn verify_with_openssl(pem_chain: &[String], trust_store_dir: Option<&Path>) -> Result<(), String> {
     let temp_dir = std::env::temp_dir().join(format!("spanda_ak_chain_{}", std::process::id()));
     std::fs::create_dir_all(&temp_dir).map_err(|error| error.to_string())?;
     let chain_path = temp_dir.join("ak-chain.pem");
@@ -270,7 +272,10 @@ fn verify_with_openssl(
     let mut command = std::process::Command::new("openssl");
     command.arg("verify");
     if let Some(store_dir) = trust_store_dir {
-        for entry in std::fs::read_dir(store_dir).map_err(|error| error.to_string())?.flatten() {
+        for entry in std::fs::read_dir(store_dir)
+            .map_err(|error| error.to_string())?
+            .flatten()
+        {
             let path = entry.path();
             if path.extension().and_then(|ext| ext.to_str()) == Some("pem") {
                 command.arg("-CAfile").arg(path);
@@ -279,7 +284,9 @@ fn verify_with_openssl(
         }
     }
     command.arg(&chain_path);
-    let output = command.output().map_err(|error| format!("openssl unavailable: {error}"))?;
+    let output = command
+        .output()
+        .map_err(|error| format!("openssl unavailable: {error}"))?;
     let _ = std::fs::remove_dir_all(&temp_dir);
     if output.status.success() {
         Ok(())
@@ -309,10 +316,7 @@ mod tests {
         let _guard = env_lock();
         std::env::remove_var("SPANDA_ATTESTATION_AK_EXPECT_FINGERPRINT");
         std::env::remove_var("SPANDA_ATTESTATION_OPENSSL_VERIFY");
-        let store = std::env::temp_dir().join(format!(
-            "spanda_trust_store_{}",
-            std::process::id()
-        ));
+        let store = std::env::temp_dir().join(format!("spanda_trust_store_{}", std::process::id()));
         let _ = std::fs::create_dir_all(&store);
         std::fs::write(store.join("anchor.pem"), SAMPLE_PEM).expect("write anchor");
         let chain = vec![SAMPLE_PEM.into()];

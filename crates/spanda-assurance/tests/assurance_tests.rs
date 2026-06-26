@@ -408,5 +408,9 @@ fn assurance_report_includes_device_traceability_from_config() {
         .expect("resolve");
     let program = parse_source(ROVER);
     let report = build_assurance_report_with_config(&program, "rover.sd", Some(&cfg));
-    assert!(report.traceability.rows.iter().any(|row| row.contains("device:camera-front-001")));
+    assert!(report
+        .traceability
+        .rows
+        .iter()
+        .any(|row| row.contains("device:camera-front-001")));
 }

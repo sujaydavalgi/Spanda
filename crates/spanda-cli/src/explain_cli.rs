@@ -46,9 +46,7 @@ fn json_flag(args: &[String]) -> bool {
 }
 
 fn flag_value(args: &[String], flag: &str) -> Option<String> {
-    args.windows(2)
-        .find(|w| w[0] == flag)
-        .map(|w| w[1].clone())
+    args.windows(2).find(|w| w[0] == flag).map(|w| w[1].clone())
 }
 
 fn resolve_baseline(path: &str) -> Arc<spanda_config::ResolvedSystemConfig> {

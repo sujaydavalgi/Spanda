@@ -59,7 +59,12 @@ fn self_healing_passes_gps_chaos_injection() {
 
 #[test]
 fn readiness_rover_fails_default_chaos_without_recovery_policy() {
-    let program = parse_file(repo_path(&["examples", "showcase", "readiness", "rover.sd"]));
+    let program = parse_file(repo_path(&[
+        "examples",
+        "showcase",
+        "readiness",
+        "rover.sd",
+    ]));
     let report = run_chaos_experiment(
         &program,
         "rover.sd",

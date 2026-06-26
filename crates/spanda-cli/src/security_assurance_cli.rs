@@ -37,9 +37,7 @@ fn file_arg(args: &[String]) -> String {
             _ => index += 1,
         }
     }
-    eprintln!(
-        "Usage: spanda security assurance <file.sd> [--json] [--format markdown]"
-    );
+    eprintln!("Usage: spanda security assurance <file.sd> [--json] [--format markdown]");
     process::exit(1);
 }
 

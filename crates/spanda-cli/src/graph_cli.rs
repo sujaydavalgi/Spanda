@@ -54,11 +54,7 @@ pub fn graph_dispatch(args: &[String]) {
     let program = parse_program(path);
     let config_flag = spanda_config::config_flag_from_args(args);
     let system_config = load_system_config(path, config_flag.as_deref().map(Path::new));
-    let graph = build_dependency_graph(
-        &program,
-        &file,
-        system_config.as_deref(),
-    );
+    let graph = build_dependency_graph(&program, &file, system_config.as_deref());
     let format = parse_format(args);
     println!("{}", format_dependency_graph(&graph, format));
 }

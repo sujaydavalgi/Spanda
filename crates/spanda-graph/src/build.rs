@@ -85,7 +85,11 @@ impl GraphBuilder {
             to: to.to_string(),
             relation: relation.to_string(),
         };
-        if !self.edges.iter().any(|e| e.from == edge.from && e.to == edge.to && e.relation == edge.relation) {
+        if !self
+            .edges
+            .iter()
+            .any(|e| e.from == edge.from && e.to == edge.to && e.relation == edge.relation)
+        {
             self.edges.push(edge);
         }
     }
@@ -213,7 +217,8 @@ pub fn build_dependency_graph(
                 actuator_type,
                 ..
             } = actuator;
-            let actuator_id = builder.add_node(GraphNodeKind::Actuator, actuator_name, actuator_name);
+            let actuator_id =
+                builder.add_node(GraphNodeKind::Actuator, actuator_name, actuator_name);
             builder.add_edge(&robot_id, &actuator_id, "has_actuator");
             let hw_id = builder.add_node(GraphNodeKind::Hardware, actuator_type, actuator_type);
             builder.add_edge(&actuator_id, &hw_id, "device_type");
@@ -254,7 +259,8 @@ pub fn build_dependency_graph(
 
     for report in infer_robot_capabilities(program) {
         for row in report.rows {
-            let cap_id = builder.add_node(GraphNodeKind::Capability, &row.capability, &row.capability);
+            let cap_id =
+                builder.add_node(GraphNodeKind::Capability, &row.capability, &row.capability);
             for component in &row.required_components {
                 let hw_id = builder.add_node(GraphNodeKind::Hardware, component, component);
                 builder.add_edge(&cap_id, &hw_id, "requires_component");

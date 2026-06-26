@@ -37,14 +37,18 @@ fn warehouse_profile_passes_showcase_program() {
         "policy",
         "warehouse.sd",
     ]));
-    let report =
-        evaluate_compliance_profile(&program, "warehouse", "warehouse.sd").unwrap();
+    let report = evaluate_compliance_profile(&program, "warehouse", "warehouse.sd").unwrap();
     assert!(report.passed, "{:?}", report.violations);
 }
 
 #[test]
 fn medical_profile_fails_readiness_rover_without_assurance_case() {
-    let program = parse_file(repo_path(&["examples", "showcase", "readiness", "rover.sd"]));
+    let program = parse_file(repo_path(&[
+        "examples",
+        "showcase",
+        "readiness",
+        "rover.sd",
+    ]));
     let report = evaluate_compliance_profile(&program, "medical", "rover.sd").unwrap();
     assert!(!report.passed);
     assert!(report
@@ -55,7 +59,12 @@ fn medical_profile_fails_readiness_rover_without_assurance_case() {
 
 #[test]
 fn research_profile_passes_with_warnings_only() {
-    let program = parse_file(repo_path(&["examples", "showcase", "readiness", "rover.sd"]));
+    let program = parse_file(repo_path(&[
+        "examples",
+        "showcase",
+        "readiness",
+        "rover.sd",
+    ]));
     let report = evaluate_compliance_profile(&program, "research", "rover.sd").unwrap();
     assert!(report.passed);
 }
@@ -70,9 +79,10 @@ fn defense_profile_requires_secure_boot_contract() {
     ]));
     let report = evaluate_compliance_profile(&program, "defense", "warehouse.sd").unwrap();
     assert!(!report.passed);
-    assert!(report.violations.iter().any(|violation| {
-        violation.requirement == "requires_secure_boot"
-    }));
+    assert!(report
+        .violations
+        .iter()
+        .any(|violation| { violation.requirement == "requires_secure_boot" }));
 }
 
 #[test]
@@ -126,8 +136,7 @@ fn secure_boot_showcase_satisfies_secure_boot_requirement() {
         "secure_boot",
         "rover.sd",
     ]));
-    let report =
-        evaluate_compliance_profile(&program, "defense", "secure_boot/rover.sd").unwrap();
+    let report = evaluate_compliance_profile(&program, "defense", "secure_boot/rover.sd").unwrap();
     assert!(!report
         .violations
         .iter()
@@ -148,10 +157,12 @@ fn defense_accreditation_export_includes_template_notice() {
         "compliance",
         "defense_rover.sd",
     ]));
-    let report =
-        generate_accreditation_report(&program, "defense", "defense_rover.sd").unwrap();
+    let report = generate_accreditation_report(&program, "defense", "defense_rover.sd").unwrap();
     assert_eq!(report.accreditation_status, "template_only");
-    assert!(report.evidence_checklist.iter().any(|item| item.id == "secure_boot"));
+    assert!(report
+        .evidence_checklist
+        .iter()
+        .any(|item| item.id == "secure_boot"));
     assert!(!report.audit_export_id.is_empty());
     std::env::remove_var("SPANDA_REGISTRY_URL");
 }

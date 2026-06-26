@@ -45,7 +45,12 @@ impl SecretMetadata {
 pub trait SecretVaultBackend: Send + Sync {
     fn store(&mut self, name: &str, value: &str) -> SecurityResult<()>;
     fn metadata(&self, name: &str) -> SecurityResult<SecretMetadata>;
-    fn rotate(&mut self, name: &str, new_value: &str, now_ms: f64) -> SecurityResult<SecretMetadata>;
+    fn rotate(
+        &mut self,
+        name: &str,
+        new_value: &str,
+        now_ms: f64,
+    ) -> SecurityResult<SecretMetadata>;
 }
 
 /// In-core managed vault wrapping [`SecretStore`] with audit-safe metadata.
@@ -85,7 +90,11 @@ impl ManagedSecretVault {
         items
     }
 
-    pub fn rotate_literal(&mut self, name: &str, new_value: &str) -> SecurityResult<SecretMetadata> {
+    pub fn rotate_literal(
+        &mut self,
+        name: &str,
+        new_value: &str,
+    ) -> SecurityResult<SecretMetadata> {
         let handle = self.store.get(name)?;
         let now = now_ms();
         let mut meta = self

@@ -19,10 +19,14 @@ fn warehouse_integrity_without_baseline_lists_hashes() {
     let program = parse_file("../../examples/showcase/policy/warehouse.sd");
     let report = generate_integrity_report(&program, "warehouse.sd", None, None);
     assert!(report.passed);
-    assert!(report.artifacts.iter().all(|artifact| {
-        artifact.status == ArtifactIntegrityStatus::Unknown
-    }));
-    assert!(report.artifacts.iter().any(|artifact| artifact.artifact_type == "mission"));
+    assert!(report
+        .artifacts
+        .iter()
+        .all(|artifact| { artifact.status == ArtifactIntegrityStatus::Unknown }));
+    assert!(report
+        .artifacts
+        .iter()
+        .any(|artifact| artifact.artifact_type == "mission"));
 }
 
 #[test]
@@ -35,25 +39,23 @@ fn warehouse_matches_itself_as_baseline() {
         Some("warehouse.sd"),
     );
     assert!(report.passed);
-    assert!(report.artifacts.iter().all(|artifact| {
-        artifact.status == ArtifactIntegrityStatus::Trusted
-    }));
+    assert!(report
+        .artifacts
+        .iter()
+        .all(|artifact| { artifact.status == ArtifactIntegrityStatus::Trusted }));
 }
 
 #[test]
 fn readiness_rover_differs_from_warehouse_baseline() {
     let warehouse = parse_file("../../examples/showcase/policy/warehouse.sd");
     let rover = parse_file("../../examples/showcase/readiness/rover.sd");
-    let report = generate_integrity_report(
-        &rover,
-        "rover.sd",
-        Some(&warehouse),
-        Some("warehouse.sd"),
-    );
+    let report =
+        generate_integrity_report(&rover, "rover.sd", Some(&warehouse), Some("warehouse.sd"));
     assert!(!report.passed);
-    assert!(report.artifacts.iter().any(|artifact| {
-        artifact.status == ArtifactIntegrityStatus::Modified
-    }));
+    assert!(report
+        .artifacts
+        .iter()
+        .any(|artifact| { artifact.status == ArtifactIntegrityStatus::Modified }));
 }
 
 #[test]
@@ -116,7 +118,7 @@ fn agent_integrity_trusted_when_agent_matches_expected() {
             boot_state: None,
         },
     );
-    assert!(checks.iter().all(|artifact| {
-        artifact.status == ArtifactIntegrityStatus::Trusted
-    }));
+    assert!(checks
+        .iter()
+        .all(|artifact| { artifact.status == ArtifactIntegrityStatus::Trusted }));
 }

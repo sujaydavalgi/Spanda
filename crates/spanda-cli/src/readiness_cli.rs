@@ -13,14 +13,14 @@ use spanda_ota::{
 };
 use spanda_parser::parse;
 use spanda_readiness::{
-    analyze_failure, audit_program, build_runtime_context_with_config, evaluate_fleet_readiness,
-    analyze_readiness_trends, default_readiness_history_path, evaluate_readiness_with_runtime,
+    analyze_failure, analyze_readiness_trends, audit_program, build_runtime_context_with_config,
+    default_readiness_history_path, evaluate_fleet_readiness, evaluate_readiness_with_runtime,
     evaluate_safety_coverage, evaluate_twin_readiness, format_audit, format_failure_analysis,
     format_fleet_readiness, format_mission_verification, format_readiness, format_readiness_trends,
-    format_safety_coverage, format_safety_report, generate_safety_report,
-    load_readiness_history, parse_forecast_horizon, readiness_options_from_flags,
-    record_readiness_snapshot, verify_approvals, verify_fleet, verify_mission, ReadinessOptions,
-    ReadinessPolicy, ReportFormat,
+    format_safety_coverage, format_safety_report, generate_safety_report, load_readiness_history,
+    parse_forecast_horizon, readiness_options_from_flags, record_readiness_snapshot,
+    verify_approvals, verify_fleet, verify_mission, ReadinessOptions, ReadinessPolicy,
+    ReportFormat,
 };
 use std::fs;
 use std::path::Path;
@@ -285,8 +285,7 @@ fn populate_agent_drift(
     options: &mut ReadinessOptions,
 ) {
     let program_hash = hash_program_artifact(program_path);
-    let expected_states =
-        expected_agent_states(program, system_config, program_hash.as_deref());
+    let expected_states = expected_agent_states(program, system_config, program_hash.as_deref());
     let expected = expected_states
         .into_iter()
         .find(|state| agent_filter == state.target_key || agent_filter == state.robot_name)
@@ -458,7 +457,10 @@ pub fn cmd_readiness(args: &[String]) {
             Ok(compliance) => {
                 println!(
                     "{}",
-                    spanda_compliance::format_compliance_report(&compliance, matches!(parsed.format, ReportFormat::Json))
+                    spanda_compliance::format_compliance_report(
+                        &compliance,
+                        matches!(parsed.format, ReportFormat::Json)
+                    )
                 );
                 if !compliance.passed {
                     process::exit(1);
@@ -856,7 +858,9 @@ pub fn cmd_readiness_trends(args: &[String]) {
         index += 1;
     }
     let file = file.unwrap_or_else(|| {
-        eprintln!("Usage: spanda readiness trends <file.sd> [--forecast 7d] [--history <path>] [--json]");
+        eprintln!(
+            "Usage: spanda readiness trends <file.sd> [--forecast 7d] [--history <path>] [--json]"
+        );
         process::exit(1);
     });
     let default_history = default_readiness_history_path();

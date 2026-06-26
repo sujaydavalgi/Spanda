@@ -120,7 +120,12 @@ pub fn generate_health_policy(options: &GenerateOptions) -> GenerationReport {
     // let report = generate_health_policy(&GenerateOptions::default());
 
     let source = render_health_policy_program(options);
-    finalize_report(GenerateKind::HealthPolicy, options.backend, "health-policy", source)
+    finalize_report(
+        GenerateKind::HealthPolicy,
+        options.backend,
+        "health-policy",
+        source,
+    )
 }
 
 /// Format a generation report for CLI output.
@@ -144,7 +149,10 @@ pub fn format_generation_report(report: &GenerationReport, json: bool) -> String
         return serde_json::to_string_pretty(report).unwrap_or_else(|error| error.to_string());
     }
     let mut lines = vec![
-        format!("Generated {:?} scaffold ({:?} backend)", report.kind, report.backend),
+        format!(
+            "Generated {:?} scaffold ({:?} backend)",
+            report.kind, report.backend
+        ),
         format!(
             "Validation: {}",
             if report.validated {
@@ -203,10 +211,7 @@ fn apply_generation_backend(
 
     match refine_with_llm(kind_label, &template) {
         Ok(source) => (source, Some("refined via SPANDA_LLM_ENDPOINT".into())),
-        Err(error) => (
-            template,
-            Some(format!("template fallback: {error}")),
-        ),
+        Err(error) => (template, Some(format!("template fallback: {error}"))),
     }
 }
 

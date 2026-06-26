@@ -49,7 +49,13 @@ robot Rover {
     assert!(coverage.live_attested);
     assert_eq!(coverage.contracts.len(), 1);
     assert!(coverage.contracts[0].live_attestation.is_some());
-    assert!(coverage.contracts[0].live_attestation.as_ref().unwrap().attested);
+    assert!(
+        coverage.contracts[0]
+            .live_attestation
+            .as_ref()
+            .unwrap()
+            .attested
+    );
 
     std::env::remove_var("SPANDA_ATTESTATION_ENDPOINT");
     server.join().expect("server thread");

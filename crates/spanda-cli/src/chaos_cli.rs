@@ -1,6 +1,8 @@
 //! CLI for chaos engineering experiments.
 //!
-use spanda_chaos::{format_chaos_report, run_chaos_experiment, ChaosExperimentOptions, ChaosFormat};
+use spanda_chaos::{
+    format_chaos_report, run_chaos_experiment, ChaosExperimentOptions, ChaosFormat,
+};
 use spanda_lexer::tokenize;
 use spanda_parser::parse;
 use std::fs;

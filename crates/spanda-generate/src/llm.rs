@@ -38,7 +38,9 @@ pub fn refine_with_llm(kind: &str, template: &str) -> Result<String, String> {
         .arg("-H")
         .arg("Content-Type: application/json");
     if let Ok(token) = std::env::var("SPANDA_LLM_API_KEY") {
-        command.arg("-H").arg(format!("Authorization: Bearer {token}"));
+        command
+            .arg("-H")
+            .arg(format!("Authorization: Bearer {token}"));
     }
     command
         .arg("-d")

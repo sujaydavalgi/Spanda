@@ -169,7 +169,9 @@ pub fn estimate_mission(
         assumptions.push("hardware profile unknown — power and memory estimates omitted".into());
     }
 
-    let within_budget = resources.iter().all(|resource| resource_within_budget(resource, profile.as_ref()));
+    let within_budget = resources
+        .iter()
+        .all(|resource| resource_within_budget(resource, profile.as_ref()));
     MissionEstimateReport {
         program: source_label.into(),
         robot: robot_name,
@@ -198,7 +200,9 @@ pub fn format_mission_estimate(report: &MissionEstimateReport, format: EstimateF
     // println!("{}", format_mission_estimate(&report, EstimateFormat::Text));
 
     match format {
-        EstimateFormat::Json => serde_json::to_string_pretty(report).unwrap_or_else(|e| e.to_string()),
+        EstimateFormat::Json => {
+            serde_json::to_string_pretty(report).unwrap_or_else(|e| e.to_string())
+        }
         EstimateFormat::Text => format_estimate_text(report),
     }
 }
@@ -220,10 +224,7 @@ fn format_estimate_text(report: &MissionEstimateReport) -> String {
         format!("Mission estimate: {}", report.program),
         format!(
             "Target: {}",
-            report
-                .target
-                .as_deref()
-                .unwrap_or("(unknown)")
+            report.target.as_deref().unwrap_or("(unknown)")
         ),
         format!(
             "Budget: {}",
@@ -265,12 +266,17 @@ fn resolve_robot_and_target(
     } = program;
 
     if let Some(target) = options.target.clone() {
-        let robot = deployments.iter().find_map(|deploy| match deploy {
-            DeployDecl::DeployDecl { robot_name, targets, .. } if targets.iter().any(|t| t == &target) => {
-                Some(robot_name.clone())
-            }
-            _ => None,
-        }).or_else(|| robots.first().map(robot_name));
+        let robot = deployments
+            .iter()
+            .find_map(|deploy| match deploy {
+                DeployDecl::DeployDecl {
+                    robot_name,
+                    targets,
+                    ..
+                } if targets.iter().any(|t| t == &target) => Some(robot_name.clone()),
+                _ => None,
+            })
+            .or_else(|| robots.first().map(robot_name));
         return (robot, Some(target));
     }
 
@@ -283,10 +289,7 @@ fn resolve_robot_and_target(
         return (Some(robot_name.clone()), targets.first().cloned());
     }
 
-    (
-        robots.first().map(robot_name),
-        None,
-    )
+    (robots.first().map(robot_name), None)
 }
 
 fn find_robot<'a>(program: &'a Program, name: &str) -> Option<&'a RobotDecl> {
@@ -309,9 +312,7 @@ fn mission_duration_hours(robot: &RobotDecl) -> Option<f64> {
 
 fn estimate_cpu_pct(robot: &RobotDecl) -> f64 {
     let RobotDecl::RobotDecl {
-        tasks,
-        behaviors,
-        ..
+        tasks, behaviors, ..
     } = robot;
     let mut total = 0.0;
     for task in tasks {
@@ -339,13 +340,9 @@ fn estimate_battery_wh(profile: &HardwareProfile, duration_hours: f64) -> Batter
     let required_wh = profile.power_draw_w * duration_hours;
     if let Some(capacity) = profile.battery_wh {
         let detail = if required_wh > capacity {
-            format!(
-                "Mission requires {required_wh:.1} Wh but battery supports {capacity:.1} Wh"
-            )
+            format!("Mission requires {required_wh:.1} Wh but battery supports {capacity:.1} Wh")
         } else {
-            format!(
-                "Mission energy {required_wh:.1} Wh within battery capacity {capacity:.1} Wh"
-            )
+            format!("Mission energy {required_wh:.1} Wh within battery capacity {capacity:.1} Wh")
         };
         BatteryEstimate {
             required_wh,
@@ -367,9 +364,7 @@ fn estimate_memory_mb(profile: &HardwareProfile, robot: Option<&RobotDecl>) -> M
     let base = profile.memory_mb.unwrap_or(1024.0) * 0.25;
     let mut extra = 0.0;
     if let Some(RobotDecl::RobotDecl {
-        sensors,
-        agents,
-        ..
+        sensors, agents, ..
     }) = robot
     {
         extra += sensors.len() as f64 * 48.0;

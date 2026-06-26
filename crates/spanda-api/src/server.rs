@@ -49,10 +49,7 @@ pub fn run_control_center_server(options: &ControlCenterOptions) -> Result<(), S
 
     let listener = TcpListener::bind(&options.bind)
         .map_err(|e| format!("bind {} failed: {e}", options.bind))?;
-    eprintln!(
-        "Spanda Control Center listening on http://{}",
-        options.bind
-    );
+    eprintln!("Spanda Control Center listening on http://{}", options.bind);
     eprintln!("  GET  /                  Control Center UI");
     eprintln!("  GET  /v1/health         liveness");
     eprintln!("  GET  /v1/dashboard      operations summary");
@@ -141,7 +138,9 @@ mod tests {
             }
         });
         let mut client = TcpStream::connect(format!("127.0.0.1:{port}")).unwrap();
-        client.set_read_timeout(Some(Duration::from_secs(5))).unwrap();
+        client
+            .set_read_timeout(Some(Duration::from_secs(5)))
+            .unwrap();
         client
             .write_all(b"GET /v1/health HTTP/1.1\r\nHost: localhost\r\n\r\n")
             .unwrap();

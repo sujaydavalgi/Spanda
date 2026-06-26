@@ -57,11 +57,21 @@ pub fn evaluate_package_trust(
     let lookup = lookup_registry_entry(name);
     let version = version
         .map(str::to_string)
-        .or_else(|| lookup.as_ref().and_then(|entry| entry.versions().last().cloned()))
+        .or_else(|| {
+            lookup
+                .as_ref()
+                .and_then(|entry| entry.versions().last().cloned())
+        })
         .unwrap_or_else(|| "unknown".into());
 
     if lookup.is_some() {
-        factors.push(factor("registry_listed", 20, 20, true, "listed in Spanda registry"));
+        factors.push(factor(
+            "registry_listed",
+            20,
+            20,
+            true,
+            "listed in Spanda registry",
+        ));
     } else {
         factors.push(factor(
             "registry_listed",
@@ -120,7 +130,10 @@ pub fn evaluate_package_trust(
         10,
         maintained,
         if maintained {
-            format!("{} published version(s)", lookup.as_ref().map(|e| e.versions().len()).unwrap_or(0))
+            format!(
+                "{} published version(s)",
+                lookup.as_ref().map(|e| e.versions().len()).unwrap_or(0)
+            )
         } else {
             "no published versions".into()
         },
@@ -148,10 +161,13 @@ pub fn evaluate_package_trust(
     let signature = lookup
         .as_ref()
         .and_then(|entry| entry.version_signature(&version));
-    let signed = signature.as_ref().zip(checksum.as_deref()).is_some_and(|(sig, digest)| {
-        let trust_key = registry_trust_key().unwrap_or_else(|| sig.public_key.clone());
-        verify_registry_signature(name, &version, digest, sig, &trust_key)
-    });
+    let signed = signature
+        .as_ref()
+        .zip(checksum.as_deref())
+        .is_some_and(|(sig, digest)| {
+            let trust_key = registry_trust_key().unwrap_or_else(|| sig.public_key.clone());
+            verify_registry_signature(name, &version, digest, sig, &trust_key)
+        });
     factors.push(factor(
         "signed",
         if signed { 20 } else { 0 },
@@ -204,7 +220,13 @@ pub fn evaluate_package_trust(
     }
 }
 
-fn factor(name: &str, score: u32, max_score: u32, passed: bool, detail: impl Into<String>) -> TrustFactor {
+fn factor(
+    name: &str,
+    score: u32,
+    max_score: u32,
+    passed: bool,
+    detail: impl Into<String>,
+) -> TrustFactor {
     TrustFactor {
         name: name.to_string(),
         score,
@@ -227,7 +249,9 @@ fn vendored_safety_level(name: &str, project_root: Option<&Path>) -> Option<Safe
 
 #[cfg(test)]
 mod tests {
-    use crate::registry_sign::{registry_trust_key, sign_registry_tarball, verify_registry_signature};
+    use crate::registry_sign::{
+        registry_trust_key, sign_registry_tarball, verify_registry_signature,
+    };
 
     #[test]
     fn signed_factor_verifies_with_embedded_public_key() {
@@ -236,14 +260,11 @@ mod tests {
             std::env::remove_var("SPANDA_REGISTRY_TRUST_KEY");
         }
         let digest = "abc123digest";
-        let signed = sign_registry_tarball("demo-pkg", "0.1.0", digest, "registry-test-signing-key");
+        let signed =
+            sign_registry_tarball("demo-pkg", "0.1.0", digest, "registry-test-signing-key");
         let trust_key = registry_trust_key().unwrap_or_else(|| signed.public_key.clone());
         assert!(verify_registry_signature(
-            "demo-pkg",
-            "0.1.0",
-            digest,
-            &signed,
-            &trust_key
+            "demo-pkg", "0.1.0", digest, &signed, &trust_key
         ));
     }
 }

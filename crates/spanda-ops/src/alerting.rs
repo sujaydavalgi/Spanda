@@ -148,7 +148,10 @@ pub fn send_webhook(url: &str, alert: &Alert) -> Result<(), String> {
 
 pub fn send_email(to: &str, alert: &Alert) -> Result<(), String> {
     if std::env::var("SPANDA_ALERT_EMAIL_DRY_RUN").ok().as_deref() == Some("1") {
-        eprintln!("[spanda-alert-email] dry-run to={to} message={}", alert.message);
+        eprintln!(
+            "[spanda-alert-email] dry-run to={to} message={}",
+            alert.message
+        );
         return Ok(());
     }
     if std::env::var("SPANDA_SMTP_HOST").is_err() {
@@ -191,7 +194,9 @@ mod spanda_deploy_http_stub {
             .write_all(request.as_bytes())
             .map_err(|e| format!("write: {e}"))?;
         let mut raw = String::new();
-        stream.read_to_string(&mut raw).map_err(|e| format!("read: {e}"))?;
+        stream
+            .read_to_string(&mut raw)
+            .map_err(|e| format!("read: {e}"))?;
         let status = raw
             .lines()
             .next()
@@ -207,7 +212,9 @@ mod spanda_deploy_http_stub {
         } else if let Some(tail) = url.strip_prefix("http://") {
             ("http", tail)
         } else {
-            return Err(format!("URL must start with http:// or https:// (got {url})"));
+            return Err(format!(
+                "URL must start with http:// or https:// (got {url})"
+            ));
         };
         let (authority, path) = match rest.split_once('/') {
             Some((auth, tail)) => (auth, format!("/{tail}")),

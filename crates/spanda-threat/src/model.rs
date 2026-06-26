@@ -1,10 +1,10 @@
 //! Threat model builders from program structure and security analysis.
 
+use serde::{Deserialize, Serialize};
 use spanda_ast::comm_decl::TransportKind;
 use spanda_ast::foundations::{DeployDecl, KillSwitchDecl, PermissionsDecl, SecureCommPolicyDecl};
 use spanda_ast::nodes::{Program, RobotDecl};
 use spanda_security::{security_analyze_program, SecurityFinding, SecuritySeverity};
-use serde::{Deserialize, Serialize};
 
 /// Threat category aligned with platform maturity taxonomy.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -180,15 +180,18 @@ pub fn analyze_threat_model(program: &Program, source_label: &str) -> ThreatRepo
     if security.has_errors() {
         mitigations.push("Resolve security check errors before production deploy".into());
     }
-    if !assessments.iter().any(|a| a.category == ThreatCategory::Transport) {
+    if !assessments
+        .iter()
+        .any(|a| a.category == ThreatCategory::Transport)
+    {
         mitigations.push("Declare secure_comm and trust_boundary for networked robots".into());
     }
 
     let risk_score = score_assessments(&assessments);
     let passed = !security.has_errors()
-        && !assessments
-            .iter()
-            .any(|a| matches!(a.risk, ThreatRisk::Critical | ThreatRisk::High) && a.id.starts_with("SEC-ERR"));
+        && !assessments.iter().any(|a| {
+            matches!(a.risk, ThreatRisk::Critical | ThreatRisk::High) && a.id.starts_with("SEC-ERR")
+        });
     ThreatReport {
         program: source_label.into(),
         attack_surface,
@@ -271,7 +274,10 @@ fn collect_robot_surface(
             format!("robot {name} permissions [{}]", capabilities.join(", ")),
             None,
         ));
-        if capabilities.iter().any(|c| c.contains("actuator") || c.contains("deploy")) {
+        if capabilities
+            .iter()
+            .any(|c| c.contains("actuator") || c.contains("deploy"))
+        {
             assessments.push(assessment(
                 "AGT-001",
                 ThreatCategory::AgentPermissions,
@@ -349,7 +355,11 @@ fn score_assessments(assessments: &[ThreatAssessment]) -> u32 {
     score.min(100)
 }
 
-fn surface(category: ThreatCategory, detail: impl Into<String>, line: Option<u32>) -> AttackSurfaceItem {
+fn surface(
+    category: ThreatCategory,
+    detail: impl Into<String>,
+    line: Option<u32>,
+) -> AttackSurfaceItem {
     AttackSurfaceItem {
         category,
         detail: detail.into(),

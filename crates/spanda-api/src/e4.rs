@@ -6,11 +6,11 @@ use serde::Deserialize;
 use spanda_compliance::{format_accreditation_report, generate_accreditation_report};
 use spanda_deploy_http::HttpResponse;
 use spanda_graph::{query_digital_thread, DigitalThreadQuery};
+use spanda_ops::render_text_pdf;
 use spanda_readiness::{
     analyze_readiness_trends, default_readiness_history_path, load_readiness_history,
 };
 use spanda_score::{evaluate_scorecard, ScorecardOptions};
-use spanda_ops::render_text_pdf;
 use spanda_security::{ApiKeyStore, RbacAction, RbacContext};
 use std::sync::Arc;
 
@@ -60,12 +60,7 @@ pub fn digital_thread_query(state: &ControlCenterState, query: &str) -> HttpResp
         Ok(value) => value,
         Err(message) => return bad_request(&message),
     };
-    let report = query_digital_thread(
-        &program,
-        &label,
-        state.resolved.as_ref(),
-        &thread_query,
-    );
+    let report = query_digital_thread(&program, &label, state.resolved.as_ref(), &thread_query);
     json_ok(&serde_json::json!({
         "version": "v1",
         "digital_thread": report,
@@ -150,10 +145,7 @@ pub fn reports_export(
         digital_thread.matched_edge_count,
     );
     if format == "pdf" {
-        let pdf = render_text_pdf(
-            &format!("Spanda executive report — {label}"),
-            &markdown,
-        );
+        let pdf = render_text_pdf(&format!("Spanda executive report — {label}"), &markdown);
         use base64::{engine::general_purpose::STANDARD, Engine as _};
         return json_ok(&serde_json::json!({
             "version": "v1",

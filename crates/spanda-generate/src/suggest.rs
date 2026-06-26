@@ -79,9 +79,12 @@ pub fn suggest_program(program: &Program, source_label: &str) -> SuggestReport {
         });
     }
     suggestions.sort_by(|left, right| right.severity.cmp(&left.severity));
-    let passed = !suggestions
-        .iter()
-        .any(|item| matches!(item.severity, SuggestSeverity::Critical | SuggestSeverity::High));
+    let passed = !suggestions.iter().any(|item| {
+        matches!(
+            item.severity,
+            SuggestSeverity::Critical | SuggestSeverity::High
+        )
+    });
     SuggestReport {
         program: source_label.into(),
         suggestions,

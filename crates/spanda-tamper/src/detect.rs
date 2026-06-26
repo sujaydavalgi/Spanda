@@ -1,10 +1,10 @@
 //! Verify-time tamper detection composing threat, audit, and security engines.
 
+use crate::policy::tamper_policy_coverage;
+use crate::secure_boot::{evaluate_secure_boot_coverage, is_secure_boot_contract};
 use serde::{Deserialize, Serialize};
 use spanda_ast::foundations::DeployDecl;
 use spanda_ast::nodes::{ImportDecl, Program, RobotDecl};
-use crate::policy::tamper_policy_coverage;
-use crate::secure_boot::{evaluate_secure_boot_coverage, is_secure_boot_contract};
 use spanda_readiness::{audit_program, ReadinessSeverity};
 use spanda_security::{security_analyze_program, SecuritySeverity};
 use spanda_threat::{analyze_threat_model, ThreatRisk};
@@ -145,10 +145,7 @@ pub fn generate_tamper_check(program: &Program, source_label: &str) -> TamperRep
 
     let trust_score = compute_trust_score(&findings);
     let status = derive_status(&findings, trust_score);
-    let passed = matches!(
-        status,
-        TamperStatus::Trusted | TamperStatus::Suspicious
-    );
+    let passed = matches!(status, TamperStatus::Trusted | TamperStatus::Suspicious);
 
     TamperReport {
         program: source_label.into(),

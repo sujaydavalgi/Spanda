@@ -21,23 +21,14 @@ fn defense_showcase_includes_secure_boot_section() {
         "SPANDA_REGISTRY_URL",
         format!("file://{}", registry.display()),
     );
-    let path = repo_path(&[
-        "examples",
-        "showcase",
-        "compliance",
-        "defense_rover.sd",
-    ]);
+    let path = repo_path(&["examples", "showcase", "compliance", "defense_rover.sd"]);
     let source = std::fs::read_to_string(&path).unwrap();
     let program = parse(tokenize(&source).unwrap()).unwrap();
     let options = ExplainProgramOptions {
         source: Some(&source),
         ..ExplainProgramOptions::default()
     };
-    let report = explain_program_with_options(
-        &program,
-        "compliance/defense_rover.sd",
-        &options,
-    );
+    let report = explain_program_with_options(&program, "compliance/defense_rover.sd", &options);
     assert!(
         report
             .sections

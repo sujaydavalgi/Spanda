@@ -1,44 +1,44 @@
 //! main support for Spanda.
 //!
+mod adr_cli;
 mod assurance_cli;
+mod bundled_registry;
 mod certify_cli;
+mod chaos_cli;
+mod compliance_cli;
 mod config_cli;
 mod config_load;
 mod continuity_cli;
-mod control_center_cli;
 mod contract_cli;
+mod control_center_cli;
 mod decision_cli;
 mod demo_cli;
 mod deploy_ota;
 mod device_cli;
 mod device_tree_cli;
-mod drift_cli;
-mod explain_cli;
-mod graph_cli;
-mod threat_model_cli;
 mod diff_cli;
-mod score_cli;
-mod security_assurance_cli;
-mod chaos_cli;
-mod compliance_cli;
+mod drift_cli;
 mod estimate_cli;
-mod generate_cli;
-mod adr_cli;
-mod bundled_registry;
-mod integrity_cli;
-mod tamper_cli;
-mod trust_cli;
-mod spoof_cli;
+mod explain_cli;
 mod fault_cli;
+mod generate_cli;
+mod graph_cli;
+mod integrity_cli;
 mod network_cli;
 mod package;
 mod readiness_cli;
 mod recovery_cli;
 mod replay_cli;
 mod ros2_cli;
+mod score_cli;
+mod security_assurance_cli;
+mod spoof_cli;
 mod swarm_cli;
+mod tamper_cli;
 mod telemetry_cli;
+mod threat_model_cli;
 mod trace_cli;
+mod trust_cli;
 
 use serde::Serialize;
 use spanda_ast::comm_decl::PeerRobotDecl;
@@ -735,7 +735,10 @@ fn run_compliance_verify(
         Ok(program) => {
             match spanda_compliance::evaluate_compliance_profile(&program, profile_name, file) {
                 Ok(report) => {
-                    println!("{}", spanda_compliance::format_compliance_report(&report, json));
+                    println!(
+                        "{}",
+                        spanda_compliance::format_compliance_report(&report, json)
+                    );
                     !report.passed
                 }
                 Err(error) => {
@@ -2341,25 +2344,15 @@ fn main() {
                 );
             }
             if let Some(policy_name) = verify_policy {
-                let policy_failed = run_policy_verify(
-                    &source,
-                    &file,
-                    &policy_name,
-                    json,
-                    registry.as_ref(),
-                );
+                let policy_failed =
+                    run_policy_verify(&source, &file, &policy_name, json, registry.as_ref());
                 if policy_failed {
                     process::exit(1);
                 }
             }
             if let Some(profile_name) = verify_profile {
-                let profile_failed = run_compliance_verify(
-                    &source,
-                    &file,
-                    &profile_name,
-                    json,
-                    registry.as_ref(),
-                );
+                let profile_failed =
+                    run_compliance_verify(&source, &file, &profile_name, json, registry.as_ref());
                 if profile_failed {
                     process::exit(1);
                 }

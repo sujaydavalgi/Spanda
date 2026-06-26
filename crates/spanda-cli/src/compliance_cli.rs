@@ -77,7 +77,10 @@ pub fn compliance_dispatch(args: &[String]) {
     let program = parse_program(Path::new(&file));
     match generate_accreditation_report(&program, &profile, &file) {
         Ok(report) => {
-            println!("{}", format_accreditation_report(&report, json && !markdown));
+            println!(
+                "{}",
+                format_accreditation_report(&report, json && !markdown)
+            );
             if !report.passed {
                 process::exit(1);
             }

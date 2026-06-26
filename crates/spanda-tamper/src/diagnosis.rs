@@ -73,18 +73,20 @@ pub fn diagnose_tamper_trace(trace: &MissionTrace, source_label: &str) -> Tamper
     };
     let spoofing_alerts = analyze_trace_spoofing(&spoof_trace, DEFAULT_MAX_GROUND_SPEED_M_S);
     let timeline = build_tamper_timeline(trace, &tamper.findings, &spoofing_alerts);
-    let affected_components = collect_affected_components(trace, &tamper.findings, &spoofing_alerts);
+    let affected_components =
+        collect_affected_components(trace, &tamper.findings, &spoofing_alerts);
     let tamper_source = derive_tamper_source(&tamper, &spoofing_alerts);
     let impact = derive_impact(&tamper.status, &spoofing_alerts);
     let recovery_recommendations =
         build_recovery_recommendations(&tamper, &spoofing_alerts, &affected_components);
-    let passed = tamper.passed && spoofing_alerts.iter().all(|alert| {
-        !matches!(
-            alert.severity,
-            spanda_spoofing::trace::SpoofingSeverity::High
-                | spanda_spoofing::trace::SpoofingSeverity::Critical
-        )
-    });
+    let passed = tamper.passed
+        && spoofing_alerts.iter().all(|alert| {
+            !matches!(
+                alert.severity,
+                spanda_spoofing::trace::SpoofingSeverity::High
+                    | spanda_spoofing::trace::SpoofingSeverity::Critical
+            )
+        });
 
     TamperDiagnosisReport {
         source: source_label.into(),
@@ -102,7 +104,10 @@ pub fn diagnose_tamper_trace(trace: &MissionTrace, source_label: &str) -> Tamper
 }
 
 /// Format a tamper diagnosis report for CLI output.
-pub fn format_tamper_diagnosis(report: &TamperDiagnosisReport, format: TamperDiagnosisFormat) -> String {
+pub fn format_tamper_diagnosis(
+    report: &TamperDiagnosisReport,
+    format: TamperDiagnosisFormat,
+) -> String {
     // Render tamper diagnosis as JSON or human-readable text.
     //
     // Parameters:
@@ -129,7 +134,10 @@ pub fn format_tamper_diagnosis(report: &TamperDiagnosisReport, format: TamperDia
 fn format_tamper_diagnosis_text(report: &TamperDiagnosisReport) -> String {
     let mut lines = vec![
         format!("Tamper diagnosis: {}", report.source),
-        format!("Status: {:?} (trust {}/100)", report.tamper_status, report.trust_score),
+        format!(
+            "Status: {:?} (trust {}/100)",
+            report.tamper_status, report.trust_score
+        ),
         format!("Tamper source: {}", report.tamper_source),
         format!("Impact: {}", report.impact),
     ];
@@ -318,7 +326,8 @@ fn derive_impact(status: &TamperStatus, spoofing_alerts: &[SpoofingAlert]) -> St
     }
 
     if matches!(status, TamperStatus::Suspicious) {
-        return "Medium — suspicious signals recorded; continue in degraded mode with monitoring".into();
+        return "Medium — suspicious signals recorded; continue in degraded mode with monitoring"
+            .into();
     }
 
     "Low — no material tamper impact detected".into()
@@ -336,17 +345,24 @@ fn build_recovery_recommendations(
         .iter()
         .any(|finding| finding.category == "capability_monitor")
     {
-        actions.push("Review agent capability grants and enable capability_enforced where missing".into());
-        actions.push("Audit denied actions and rotate agent credentials if intrusion is suspected".into());
+        actions.push(
+            "Review agent capability grants and enable capability_enforced where missing".into(),
+        );
+        actions.push(
+            "Audit denied actions and rotate agent credentials if intrusion is suspected".into(),
+        );
     }
 
     if !spoofing_alerts.is_empty() {
-        actions.push("Cross-check GPS fixes against IMU odometry and declared geofence bounds".into());
+        actions
+            .push("Cross-check GPS fixes against IMU odometry and declared geofence bounds".into());
         actions.push("Run spanda spoof-check on the mission trace and source program".into());
     }
 
     if tamper.trust_score < 70 {
-        actions.push("Compare deployed program hash against approved baseline with spanda integrity".into());
+        actions.push(
+            "Compare deployed program hash against approved baseline with spanda integrity".into(),
+        );
     }
 
     if affected_components.iter().any(|c| c.starts_with("agent:")) {
@@ -464,8 +480,10 @@ mod tests {
         let trace: MissionTrace = serde_json::from_str(&raw).expect("parse trace");
         let report = diagnose_tamper_trace(&trace, "intrusion.trace");
         assert!(!report.passed);
-        assert!(report.tamper_source.contains("intrusion")
-            || report.tamper_source.contains("capability"));
+        assert!(
+            report.tamper_source.contains("intrusion")
+                || report.tamper_source.contains("capability")
+        );
         assert!(report
             .affected_components
             .iter()

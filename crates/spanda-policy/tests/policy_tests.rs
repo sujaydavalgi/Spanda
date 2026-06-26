@@ -45,11 +45,14 @@ fn warehouse_policy_passes_showcase_program() {
 
 #[test]
 fn readiness_rover_fails_requires_kill_switch_policy() {
-    let program = parse_file(repo_path(&["examples", "showcase", "readiness", "rover.sd"]));
-    let tokens = tokenize(
-        "policy StrictOps { requires_kill_switch; min_readiness_score = 50; }",
-    )
-    .unwrap();
+    let program = parse_file(repo_path(&[
+        "examples",
+        "showcase",
+        "readiness",
+        "rover.sd",
+    ]));
+    let tokens =
+        tokenize("policy StrictOps { requires_kill_switch; min_readiness_score = 50; }").unwrap();
     let policy_program = parse(tokens).unwrap();
     let Program::Program {
         operational_policies,

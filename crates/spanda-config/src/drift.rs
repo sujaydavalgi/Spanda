@@ -2,8 +2,8 @@
 //!
 use crate::device_identity::DeviceIdentityRecord;
 use crate::mapping::{ActuatorMapping, LogicalPhysicalMap, SensorMapping};
-use crate::resolver::diff_configs;
 use crate::resolved::ResolvedSystemConfig;
+use crate::resolver::diff_configs;
 use serde::{Deserialize, Serialize};
 use spanda_ast::foundations::DeployDecl;
 use spanda_ast::nodes::{ImportDecl, Program, RobotDecl};
@@ -118,8 +118,16 @@ pub fn detect_config_drift(
         &mut report,
         DriftDimension::Fleet,
         "robot",
-        &baseline.robot_ids().into_iter().map(str::to_string).collect::<Vec<_>>(),
-        &current.robot_ids().into_iter().map(str::to_string).collect::<Vec<_>>(),
+        &baseline
+            .robot_ids()
+            .into_iter()
+            .map(str::to_string)
+            .collect::<Vec<_>>(),
+        &current
+            .robot_ids()
+            .into_iter()
+            .map(str::to_string)
+            .collect::<Vec<_>>(),
     );
 
     // Compare provider and package manifests.
@@ -270,7 +278,13 @@ fn diff_device_registry(
         let Some(live_device) = live.get(id) else {
             continue;
         };
-        diff_optional_field(report, id, "ip", &base_device.ip_address, &live_device.ip_address);
+        diff_optional_field(
+            report,
+            id,
+            "ip",
+            &base_device.ip_address,
+            &live_device.ip_address,
+        );
         diff_optional_field(
             report,
             id,
@@ -378,7 +392,12 @@ fn diff_sensor_map(
         });
     }
     for key in base_keys.intersection(&live_keys) {
-        diff_sensor_fields(report, key, baseline.sensors.get(*key).unwrap(), current.sensors.get(*key).unwrap());
+        diff_sensor_fields(
+            report,
+            key,
+            baseline.sensors.get(*key).unwrap(),
+            current.sensors.get(*key).unwrap(),
+        );
     }
 }
 
@@ -433,7 +452,13 @@ fn diff_sensor_fields(
         });
     }
     diff_optional_field(report, key, "ip", &baseline.ip_address, &current.ip_address);
-    diff_optional_field(report, key, "endpoint", &baseline.endpoint_url, &current.endpoint_url);
+    diff_optional_field(
+        report,
+        key,
+        "endpoint",
+        &baseline.endpoint_url,
+        &current.endpoint_url,
+    );
 }
 
 fn diff_actuator_fields(
@@ -465,7 +490,13 @@ fn diff_actuator_fields(
         });
     }
     diff_optional_field(report, key, "ip", &baseline.ip_address, &current.ip_address);
-    diff_optional_field(report, key, "endpoint", &baseline.endpoint_url, &current.endpoint_url);
+    diff_optional_field(
+        report,
+        key,
+        "endpoint",
+        &baseline.endpoint_url,
+        &current.endpoint_url,
+    );
 }
 
 /// Live agent status used for expected-vs-actual drift checks.
@@ -650,9 +681,7 @@ pub fn detect_agent_drift(
         (Some(expected_hash), None) => findings.push(DriftFinding {
             dimension: DriftDimension::Program,
             severity: DriftSeverity::High,
-            message: format!(
-                "agent '{agent}' missing program hash (expected {expected_hash})"
-            ),
+            message: format!("agent '{agent}' missing program hash (expected {expected_hash})"),
             path: Some(format!("agents.{agent}.program_hash")),
         }),
         _ => {}
@@ -713,7 +742,11 @@ pub fn detect_agent_drift(
             }),
         }
         if let Some(contract) = &actual.attestation_contract {
-            if !expected.attestation_contracts.iter().any(|expected| expected == contract) {
+            if !expected
+                .attestation_contracts
+                .iter()
+                .any(|expected| expected == contract)
+            {
                 findings.push(DriftFinding {
                     dimension: DriftDimension::Hardware,
                     severity: DriftSeverity::Medium,
@@ -729,9 +762,7 @@ pub fn detect_agent_drift(
                 findings.push(DriftFinding {
                     dimension: DriftDimension::Hardware,
                     severity: DriftSeverity::Critical,
-                    message: format!(
-                        "agent '{agent}' boot_state reports '{boot_state}'"
-                    ),
+                    message: format!("agent '{agent}' boot_state reports '{boot_state}'"),
                     path: Some(format!("agents.{agent}.boot_state")),
                 });
             }
@@ -773,10 +804,7 @@ fn firmware_for_robot(
         return map;
     };
     for device in &cfg.device_registry.devices {
-        let owns = device
-            .robot_id
-            .as_deref()
-            .is_none_or(|id| id == robot);
+        let owns = device.robot_id.as_deref().is_none_or(|id| id == robot);
         if !owns {
             continue;
         }

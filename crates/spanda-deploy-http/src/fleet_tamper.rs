@@ -92,12 +92,7 @@ pub fn fetch_fleet_tamper_report(
     // let json = fetch_fleet_tamper_report("http://127.0.0.1:8765", "PatrolFleet", None)?;
 
     let query = format!("fleet={fleet_name}");
-    let response = http_request(
-        "GET",
-        &mesh_tamper_url(mesh_url, "", &query),
-        None,
-        token,
-    )?;
+    let response = http_request("GET", &mesh_tamper_url(mesh_url, "", &query), None, token)?;
     if (200..300).contains(&response.status) {
         return Ok(response.body);
     }
