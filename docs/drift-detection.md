@@ -61,6 +61,21 @@ See [hardware-attestation.md](./hardware-attestation.md).
 
 `GET /v1/drift?baseline_id=<snapshot>` uses `detect_operational_drift_full` — config manifest drift, program alignment (when Control Center is started with `--program`), policy enforcement drift, and live fleet/deploy agent findings. Reports roll up into seven enterprise dimensions: configuration, firmware, package, provider, capability, policy, safety.
 
+### Scheduled scans
+
+Set `SPANDA_DRIFT_SCAN_INTERVAL_SECS` (for example `3600`) when starting Control Center to run background scans against the latest config snapshot (or `SPANDA_DRIFT_SCAN_BASELINE_ID`). Failed scans emit `ConfigDrift` alerts; high-severity findings open SRE incidents automatically.
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /v1/drift/scans` | History of scheduled and manual scans |
+| `POST /v1/drift/scan` | Trigger a scan (Bearer token); optional `baseline_id` in JSON body |
+
+```bash
+# Manual scan via CLI
+spanda control-center drift scan --baseline-id cfg-123
+spanda control-center drift scans
+```
+
 ## Output
 
 `ConfigDriftReport` — structured findings with `dimension`, `severity`, `message`, and optional `path`. Medium-or-higher severity fails the check (exit code 1).

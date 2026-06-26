@@ -49,7 +49,7 @@ Phases **E1–E4** are shipped at **Experimental** tier with CI smoke (`scripts/
 | Cascading TOML | resolve, diff, validate, graph | — (already Stable-adjacent) |
 | Snapshots | save/list under `.spanda/` | Encrypted snapshot storage option |
 | Approvals | queue + publish-on-approve | Multi-approver policy (2-of-N) |
-| Drift | 7-dimension operational drift API | Scheduled drift scans + alert routing |
+| Drift | 7-dimension operational drift API | **Shipped:** scheduled scans (`SPANDA_DRIFT_SCAN_INTERVAL_SECS`), `GET /v1/drift/scans`, `POST /v1/drift/scan`, `ConfigDrift` alerts |
 
 ### OTA & Rollback
 
