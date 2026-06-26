@@ -1,5 +1,6 @@
 //! Package-backed device discovery transport contract.
 //!
+use crate::discovery_registry::wrap_with_registry_package;
 use crate::device_identity::{DiscoveryMatch, DeviceIdentityRecord, NetworkHostProbe};
 use crate::discovery_live::{
     default_discovery_subnet, probe_ble, probe_can, probe_mdns, probe_mqtt, probe_ros2, probe_usb,
@@ -172,7 +173,10 @@ live_transport!(MockRos2DiscoveryTransport, "ros2", probe_ros2_options, "ros2-st
 pub fn discovery_transport_by_name(name: &str) -> Option<Box<dyn DeviceDiscoveryTransport>> {
     match name.to_ascii_lowercase().as_str() {
         "subnet" => Some(Box::new(SubnetDiscoveryTransport)),
-        "mdns" => Some(Box::new(MockMdnsDiscoveryTransport)),
+        "mdns" => Some(wrap_with_registry_package(
+            "mdns",
+            Box::new(MockMdnsDiscoveryTransport),
+        )),
         "ble" | "bluetooth" => Some(Box::new(MockBleDiscoveryTransport)),
         "usb" => Some(Box::new(MockUsbDiscoveryTransport)),
         "can" => Some(Box::new(MockCanDiscoveryTransport)),

@@ -15,6 +15,7 @@ pub mod device_quarantine;
 pub mod device_reports;
 pub mod device_tree;
 pub mod discovery_live;
+pub mod discovery_registry;
 pub mod discovery_transport;
 pub mod drift;
 pub mod error;
@@ -64,6 +65,10 @@ pub use device_reports::{
     DeviceInventoryReport, DeviceReportBundle, DeviceTrustReport,
 };
 pub use device_tree::{ComputeNode, DeviceNode, DeviceTree, FleetNode, RobotNode};
+pub use discovery_registry::{
+    discovery_package_for_transport, is_registry_discovery_package_installed,
+    list_installed_discovery_packages,
+};
 pub use discovery_transport::{
     discovery_match_to_record, discovery_transport_by_name, ingest_discovery_matches,
     run_discovery_transports, DeviceDiscoveryTransport, DiscoveryOptions, DiscoveryTransportResult,
