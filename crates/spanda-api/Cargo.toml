@@ -3,10 +3,14 @@ name = "spanda-api"
 version.workspace = true
 edition = "2021"
 description = "REST API v1 for Spanda Control Center — CLI parity gateway"
+build = "build.rs"
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+tonic = "0.12"
+prost = "0.13"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "net"] }
 spanda-audit = { path = "../spanda-audit" }
 spanda-compliance = { path = "../spanda-compliance" }
 spanda-config = { path = "../spanda-config" }
@@ -26,5 +30,9 @@ spanda-telemetry-store = { path = "../spanda-telemetry-store" }
 base64 = "0.22"
 tungstenite = { version = "0.24", default-features = false, features = ["handshake"] }
 
+[build-dependencies]
+tonic-build = "0.12"
+
 [dev-dependencies]
 tempfile = "3"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

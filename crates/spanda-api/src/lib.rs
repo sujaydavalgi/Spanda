@@ -1,8 +1,10 @@
 //! REST API v1 for Spanda Control Center.
 //!
 pub mod correlation;
+pub mod drift_collect;
 pub mod e3;
 pub mod e4;
+pub mod grpc;
 pub mod handlers;
 pub mod observability;
 pub mod program;

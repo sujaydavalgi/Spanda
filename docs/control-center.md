@@ -15,9 +15,31 @@ spanda control-center serve
 
 # With project configuration (device pool from spanda.toml)
 spanda control-center serve --config spanda.toml --bind 0.0.0.0:8080
+
+# Native gRPC (tonic) on a separate port
+spanda control-center serve --grpc-bind 127.0.0.1:50051
 ```
 
 Open `http://127.0.0.1:8080/` for the Control Center UI, or use the **Control Center** view in `@spanda/web` (set API URL to the serve address).
+
+---
+
+## Native gRPC (tonic)
+
+`spanda control-center serve --grpc-bind 127.0.0.1:50051` starts a tonic gRPC server alongside REST.
+
+| RPC | Description |
+|-----|-------------|
+| `Health` | Liveness probe |
+| `GetDashboard` | Dashboard JSON (device pool, fleet agents, alerts) |
+| `DetectDrift` | Operational drift report (`baseline_id` in request) |
+
+Proto: `crates/spanda-api/proto/spanda/v1/control_center.proto`
+
+```bash
+# Example with grpcurl (reflection not enabled — use proto file)
+grpcurl -plaintext -d '{}' 127.0.0.1:50051 spanda.v1.ControlCenter/Health
+```
 
 ---
 
@@ -64,6 +86,7 @@ Open `http://127.0.0.1:8080/` for the Control Center UI, or use the **Control Ce
 | `/v1/operator/quarantine` | POST | Bearer | Quarantine a device |
 | `/v1/operator/mission/approve` | POST | Bearer | Approve or reject a mission |
 | `/v1/rpc` | POST | — | gRPC-compatible JSON gateway |
+| **gRPC (tonic)** | — | — | Native `ControlCenter` service on `--grpc-bind` (Health, GetDashboard, DetectDrift) |
 | `/v1/compliance/export` | GET/POST | Bearer | Accreditation bundle (`?profile=defense`) |
 | `/v1/digital-thread/query` | GET | — | Trace chain (`?capability=`, `?device_id=`) |
 | `/v1/executive/scorecard` | GET | — | Mission scorecard rollup |

@@ -1,0 +1,22 @@
+syntax = "proto3";
+package spanda.v1;
+
+message Empty {}
+
+message HealthResponse {
+  string status = 1;
+}
+
+message JsonResponse {
+  string json = 1;
+}
+
+message DriftRequest {
+  string baseline_id = 1;
+}
+
+service ControlCenter {
+  rpc Health(Empty) returns (HealthResponse);
+  rpc GetDashboard(Empty) returns (JsonResponse);
+  rpc DetectDrift(DriftRequest) returns (JsonResponse);
+}

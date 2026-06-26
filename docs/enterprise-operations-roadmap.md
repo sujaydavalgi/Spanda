@@ -79,7 +79,7 @@ Enterprise operations pillars compose existing engines — they do **not** repla
 | 15 | **SRE** | Operate, Observe | Experimental | SLO/SLA, MTTR/MTBF, incident reporting |
 | 16 | **Reporting** | Govern, Audit | Experimental | Fleet, mission, compliance, executive exports (incl. PDF) |
 | 17 | **Compliance** | Verify, Govern, Audit | Experimental | Evidence packs, immutable audit trails |
-| 18 | **APIs** | All | Experimental | REST v1 + OpenAPI; JSON-RPC gateway; native gRPC **Planned** |
+| 18 | **APIs** | All | Experimental | REST v1 + OpenAPI; JSON-RPC gateway; native gRPC (tonic) **Experimental** — `--grpc-bind`, Health/GetDashboard/DetectDrift |
 | 19 | **Observability** | Operate, Observe | Experimental | Metrics, logs, traces, events; OTLP export; correlation IDs |
 | 20 | **Digital Thread** | Build → Retire | Experimental | End-to-end traceability chain (v1 query) |
 
@@ -571,7 +571,7 @@ Official SDK surfaces for external systems to interact with Readiness, Assurance
 |-----|--------|-------|
 | **CLI** | **Stable** | Reference implementation; all capabilities |
 | **REST** | **Experimental** | `/v1/*` + OpenAPI 3.1 (`GET /v1/openapi.json`) |
-| **gRPC** | **Planned** | Native tonic service; JSON-RPC gateway (`POST /v1/rpc`) ships today |
+| **gRPC** | **Experimental** | Native tonic `ControlCenter` service (`--grpc-bind`); JSON-RPC gateway (`POST /v1/rpc`) also ships |
 | **WebSocket** | **Experimental** | `WS /v1/stream/telemetry` live telemetry |
 | **Python** | **Experimental** | `packages/sdk-python` (`pip install spanda-sdk`) |
 
@@ -711,8 +711,8 @@ Builds on `spanda-capability` traceability matrices + `spanda-audit` + mission c
 | Deliverable | Component |
 |-------------|-----------|
 | Python SDK + REST OpenAPI | `spanda-sdk-python`, OpenAPI spec |
-| gRPC service | `spanda-api::grpc` |
-| Full drift detection (6 dimensions) | config + readiness + trust |
+| gRPC service | `spanda-api::grpc` — **shipped** (Health, GetDashboard, DetectDrift) |
+| Full drift detection (7 dimensions) | `detect_operational_drift_full` — **shipped** (config + program + agents + policy) |
 | OTA canary + phased rollout | `spanda-ota` |
 | Package Trust UI | Control Center Security module |
 | Observability (OpenTelemetry export) | OTLP + correlation IDs |
@@ -735,7 +735,7 @@ Builds on `spanda-capability` traceability matrices + `spanda-audit` + mission c
 | Tauri desktop packaging | `@spanda/control-center-desktop` |
 | WebSocket SDK | real-time telemetry stream |
 
-**Exit criteria:** Compliance report export; digital thread query demo — **shipped** (`scripts/enterprise_ops_smoke.sh`). PDF executive export — **shipped** (`format=pdf`). Tauri desktop scaffold — **shipped** (`scripts/control_center_desktop_smoke.sh`; dev via `npm run control-center:desktop:dev`).
+**Exit criteria:** Compliance report export; digital thread query demo — **shipped** (`scripts/enterprise_ops_smoke.sh`). PDF executive export — **shipped** (`format=pdf`). Tauri desktop scaffold — **shipped** (`scripts/control_center_desktop_smoke.sh`, `scripts/build_control_center_desktop.sh`; set `TAURI_BUILD=1` for signed installers).
 
 ---
 

@@ -57,6 +57,10 @@ Deploy agents (`spanda deploy agent`) and fleet agents (`spanda fleet agent`) ex
 
 See [hardware-attestation.md](./hardware-attestation.md).
 
+## Operational drift API (Control Center)
+
+`GET /v1/drift?baseline_id=<snapshot>` uses `detect_operational_drift_full` — config manifest drift, program alignment (when Control Center is started with `--program`), policy enforcement drift, and live fleet/deploy agent findings. Reports roll up into seven enterprise dimensions: configuration, firmware, package, provider, capability, policy, safety.
+
 ## Output
 
 `ConfigDriftReport` — structured findings with `dimension`, `severity`, `message`, and optional `path`. Medium-or-higher severity fails the check (exit code 1).

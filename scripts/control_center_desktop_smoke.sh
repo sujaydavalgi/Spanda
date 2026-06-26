@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
-# Smoke check for Control Center Tauri desktop (compile-only, no GUI).
+# Smoke check for Control Center Tauri desktop (compile + optional bundle).
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$ROOT"
-echo "[control-center-desktop] cargo check (src-tauri)"
-cargo check --manifest-path packages/control-center-desktop/src-tauri/Cargo.toml
-echo "[control-center-desktop] OK"
+chmod +x "${ROOT}/scripts/build_control_center_desktop.sh"
+"${ROOT}/scripts/build_control_center_desktop.sh"

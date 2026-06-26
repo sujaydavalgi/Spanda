@@ -22,7 +22,7 @@ pub fn control_center_dispatch(args: &[String]) {
 fn print_usage() {
     eprintln!(
         "Usage:\n  \
-         spanda control-center serve [--bind <addr>] [--config <spanda.toml>] [--program <file.sd>] [--once]\n\n\
+         spanda control-center serve [--bind <addr>] [--grpc-bind <addr>] [--config <spanda.toml>] [--program <file.sd>] [--once]\n\n\
          Serves the Control Center UI and REST API v1.\n\
          Set SPANDA_API_KEY for authenticated mutations (PATCH devices, POST alerts/test).\n\
          Set SPANDA_ALERT_WEBHOOK_URL or SPANDA_ALERT_EMAIL_TO for alert delivery."
@@ -58,6 +58,14 @@ fn cmd_serve(args: &[String]) {
                 options.program_path = Some(PathBuf::from(path));
             }
             "--once" => options.once = true,
+            "--grpc-bind" => {
+                index += 1;
+                let addr = args
+                    .get(index)
+                    .cloned()
+                    .unwrap_or_else(|| missing("--grpc-bind"));
+                options.grpc_bind = Some(addr);
+            }
             other => {
                 eprintln!("Unknown flag: {other}");
                 print_usage();

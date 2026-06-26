@@ -92,7 +92,8 @@ pub use manifest::{
 pub use mapping::{ActuatorMapping, LogicalPhysicalMap, RobotMapping, SensorMapping};
 pub use network_validation::validate_device_registry;
 pub use operational_drift::{
-    detect_operational_drift, OperationalDriftDimension, OperationalDriftReport,
+    detect_operational_drift, detect_operational_drift_full, OperationalDriftDimension,
+    OperationalDriftReport,
 };
 pub use provisioning::{
     run_provision_workflow, ProvisionReport, ProvisionStep, ProvisionStepResult,

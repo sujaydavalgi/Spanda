@@ -6,7 +6,8 @@ use crate::observability::maybe_auto_push_latest_span;
 use crate::state::ControlCenterState;
 use serde::Deserialize;
 use spanda_config::{
-    default_snapshots_dir, detect_operational_drift, load_config_snapshot, DeviceLifecycleState,
+    default_snapshots_dir, detect_operational_drift_full, load_config_snapshot,
+    DeviceLifecycleState,
 };
 use spanda_deploy_http::HttpResponse;
 use spanda_ota::{
@@ -64,10 +65,28 @@ pub fn drift_report(state: &ControlCenterState, query: &str) -> HttpResponse {
     };
     match baseline {
         Ok(base) => {
-            let report = detect_operational_drift(&base, current);
+            let program = state
+                .program_path
+                .as_ref()
+                .and_then(|path| crate::program::parse_program_file(path).ok())
+                .map(|(program, _, _)| program);
+            let agent_findings = program.as_ref().map(|program| {
+                crate::drift_collect::collect_agent_drift_findings(
+                    program,
+                    current,
+                    state.program_path.as_deref(),
+                )
+            }).unwrap_or_default();
+            let report = detect_operational_drift_full(
+                &base,
+                current,
+                program.as_ref(),
+                &agent_findings,
+            );
             json_ok(&serde_json::json!({
                 "version": "v1",
                 "report": report,
+                "agent_findings": agent_findings.len(),
             }))
         }
         Err(e) => bad_request(&e),

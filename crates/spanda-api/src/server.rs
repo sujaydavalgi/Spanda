@@ -15,6 +15,7 @@ use std::time::Duration;
 #[derive(Debug, Clone)]
 pub struct ControlCenterOptions {
     pub bind: String,
+    pub grpc_bind: Option<String>,
     pub config_path: Option<PathBuf>,
     pub program_path: Option<PathBuf>,
     pub once: bool,
@@ -25,6 +26,7 @@ impl Default for ControlCenterOptions {
     fn default() -> Self {
         Self {
             bind: "127.0.0.1:8080".into(),
+            grpc_bind: None,
             config_path: None,
             program_path: None,
             once: false,
@@ -65,6 +67,10 @@ pub fn run_control_center_server(options: &ControlCenterOptions) -> Result<(), S
     eprintln!("  GET  /v1/compliance/export     accreditation bundle");
     eprintln!("  WS   /v1/stream/telemetry        live telemetry + traces");
     eprintln!("  POST /v1/observability/otlp/export  push traces to Jaeger");
+    if let Some(grpc_bind) = &options.grpc_bind {
+        crate::grpc::spawn_grpc_server(grpc_bind.clone(), Arc::clone(&state));
+        eprintln!("  gRPC tonic server on {grpc_bind} (Health, GetDashboard, DetectDrift)");
+    }
 
     if options.once {
         let (stream, _) = listener

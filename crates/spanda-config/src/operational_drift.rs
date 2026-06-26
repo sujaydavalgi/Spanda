@@ -1,6 +1,8 @@
 //! Operational drift rollup across enterprise dimensions.
 //!
-use crate::drift::{detect_config_drift, ConfigDriftReport, DriftDimension, DriftFinding};
+use crate::drift::{
+    append_program_drift, detect_config_drift, ConfigDriftReport, DriftDimension, DriftFinding,
+};
 use crate::resolved::ResolvedSystemConfig;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -35,6 +37,81 @@ pub fn detect_operational_drift(
     let mut report = detect_config_drift(baseline, current);
     append_policy_safety_drift(baseline, current, &mut report);
     rollup_operational(report)
+}
+
+/// Detect operational drift including program and live agent posture findings.
+pub fn detect_operational_drift_full(
+    baseline: &ResolvedSystemConfig,
+    current: &ResolvedSystemConfig,
+    program: Option<&spanda_ast::nodes::Program>,
+    agent_findings: &[DriftFinding],
+) -> OperationalDriftReport {
+    // Roll up config, program, and agent drift into enterprise dimensions.
+    //
+    // Parameters:
+    // - `baseline` — approved baseline configuration
+    // - `current` — live resolved configuration
+    // - `program` — optional deployed program for capability alignment
+    // - `agent_findings` — live agent `/v1/status` drift findings
+    //
+    // Returns:
+    // Operational drift report across all seven dimensions.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // let report = detect_operational_drift_full(&base, &current, Some(&program), &agent_findings);
+
+    let mut report = detect_config_drift(baseline, current);
+    append_policy_safety_drift(baseline, current, &mut report);
+    if let Some(program) = program {
+        append_program_drift(&mut report, program, current);
+        append_policy_enforcement_drift(&mut report, program, baseline, current);
+    }
+    for finding in agent_findings {
+        report.push(finding.clone());
+    }
+    rollup_operational(report)
+}
+
+fn append_policy_enforcement_drift(
+    report: &mut ConfigDriftReport,
+    program: &spanda_ast::nodes::Program,
+    baseline: &ResolvedSystemConfig,
+    current: &ResolvedSystemConfig,
+) {
+    use spanda_ast::nodes::Program;
+    let Program::Program {
+        operational_policies,
+        ..
+    } = program;
+    if operational_policies.is_empty() {
+        return;
+    }
+    let base_assurance = crate::assurance_policy(baseline);
+    let cur_assurance = crate::assurance_policy(current);
+    if base_assurance.minimum_score != cur_assurance.minimum_score {
+        report.push(DriftFinding {
+            dimension: DriftDimension::Program,
+            severity: crate::drift::DriftSeverity::Medium,
+            message: format!(
+                "assurance.minimum_score drift {} -> {} conflicts with operational policies",
+                base_assurance.minimum_score, cur_assurance.minimum_score
+            ),
+            path: Some("policy.readiness_threshold".into()),
+        });
+    }
+    let base_mission = crate::mission_policy(baseline);
+    let cur_mission = crate::mission_policy(current);
+    if base_mission.required_capabilities != cur_mission.required_capabilities {
+        report.push(DriftFinding {
+            dimension: DriftDimension::Program,
+            severity: crate::drift::DriftSeverity::High,
+            message: "mission capability drift vs operational policy safety posture".into(),
+            path: Some("policy.safety_capabilities".into()),
+        });
+    }
 }
 
 fn append_policy_safety_drift(
