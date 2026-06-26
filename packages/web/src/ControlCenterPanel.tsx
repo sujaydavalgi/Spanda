@@ -1,4 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
+import {
+  DigitalThreadGraph,
+  type DigitalThreadDeviceLink,
+  type DigitalThreadGraphEdge,
+  type DigitalThreadGraphNode,
+} from "./DigitalThreadGraph";
 
 type DashboardData = {
   device_pool: {
@@ -123,6 +129,9 @@ export function ControlCenterPanel({ apiBase }: Props) {
   const [auditData, setAuditData] = useState<Record<string, unknown> | null>(null);
   const [scorecard, setScorecard] = useState<Record<string, unknown> | null>(null);
   const [digitalThread, setDigitalThread] = useState<Record<string, unknown> | null>(null);
+  const [threadCapabilityFilter, setThreadCapabilityFilter] = useState("");
+  const [threadDeviceFilter, setThreadDeviceFilter] = useState("");
+  const [selectedThreadNode, setSelectedThreadNode] = useState<string | null>(null);
   const [configApprovals, setConfigApprovals] = useState<Record<string, unknown>[]>([]);
   const [evidenceRecords, setEvidenceRecords] = useState<Record<string, unknown>[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -590,10 +599,21 @@ export function ControlCenterPanel({ apiBase }: Props) {
   const loadDigitalThread = async () => {
     setBusy(true);
     try {
-      const res = await fetch(`${base}/v1/digital-thread/query`);
+      const params = new URLSearchParams();
+      if (threadCapabilityFilter.trim()) {
+        params.set("capability", threadCapabilityFilter.trim());
+      }
+      if (threadDeviceFilter.trim()) {
+        params.set("device_id", threadDeviceFilter.trim());
+      }
+      const query = params.toString();
+      const res = await fetch(
+        `${base}/v1/digital-thread/query${query ? `?${query}` : ""}`,
+      );
       if (!res.ok) throw new Error(`digital-thread ${res.status}`);
       const body = await res.json();
       setDigitalThread(body.digital_thread ?? body);
+      setSelectedThreadNode(null);
     } catch (e) {
       setError(String(e));
     } finally {
@@ -625,15 +645,12 @@ export function ControlCenterPanel({ apiBase }: Props) {
 
   const pool = dashboard?.device_pool;
 
-  const digitalThreadMermaid = (thread: Record<string, unknown>) => {
-    const graph = thread.graph as { edges?: { from: string; to: string }[] } | undefined;
-    const edges = graph?.edges ?? [];
-    if (edges.length === 0) {
-      return "graph LR\n  empty[No graph edges]";
-    }
-    const lines = edges.slice(0, 40).map((edge) => `  ${edge.from} --> ${edge.to}`);
-    return `graph LR\n${lines.join("\n")}`;
-  };
+  const threadGraphNodes = (digitalThread?.graph as { nodes?: DigitalThreadGraphNode[] })
+    ?.nodes ?? [];
+  const threadGraphEdges = (digitalThread?.graph as { edges?: DigitalThreadGraphEdge[] })
+    ?.edges ?? [];
+  const threadDeviceLinks =
+    (digitalThread?.device_links as DigitalThreadDeviceLink[] | undefined) ?? [];
 
   const tabs: Tab[] = [
     "dashboard",
@@ -1084,16 +1101,58 @@ export function ControlCenterPanel({ apiBase }: Props) {
 
       {tab === "digital-thread" && digitalThread && (
         <div>
+          <div className="digital-thread-filters">
+            <label>
+              Capability
+              <input
+                value={threadCapabilityFilter}
+                onChange={(event) => setThreadCapabilityFilter(event.target.value)}
+                placeholder="e.g. navigate"
+              />
+            </label>
+            <label>
+              Device id
+              <input
+                value={threadDeviceFilter}
+                onChange={(event) => setThreadDeviceFilter(event.target.value)}
+                placeholder="e.g. gps-001"
+              />
+            </label>
+            <button type="button" onClick={() => void loadDigitalThread()} disabled={busy}>
+              Query
+            </button>
+          </div>
+          <p className="demo-hint">
+            {String(digitalThread.matched_node_count ?? 0)} nodes,{" "}
+            {String(digitalThread.matched_edge_count ?? 0)} edges — click a node to highlight
+            neighbors
+          </p>
+          <div className="digital-thread-legend">
+            <span className="legend-mission">Mission</span>
+            <span className="legend-robot">Robot</span>
+            <span className="legend-capability">Capability</span>
+            <span className="legend-hardware">Hardware</span>
+            <span className="legend-provider">Provider</span>
+            <span className="legend-package">Package</span>
+            <span className="legend-safety">Safety</span>
+          </div>
+          <DigitalThreadGraph
+            nodes={threadGraphNodes}
+            edges={threadGraphEdges}
+            deviceLinks={threadDeviceLinks}
+            selectedId={selectedThreadNode}
+            onSelectNode={setSelectedThreadNode}
+          />
           <h3>Chain summary</h3>
           <ul>
             {((digitalThread.chain_summary as string[]) ?? []).map((step) => (
               <li key={step}>{step}</li>
             ))}
           </ul>
-          <h3>Graph (mermaid)</h3>
-          <pre>{digitalThreadMermaid(digitalThread)}</pre>
-          <h3>Full report</h3>
-          <pre>{JSON.stringify(digitalThread, null, 2)}</pre>
+          <details>
+            <summary>Raw report JSON</summary>
+            <pre>{JSON.stringify(digitalThread, null, 2)}</pre>
+          </details>
         </div>
       )}
 

@@ -22,6 +22,13 @@
     .error { color: #f87171; }
     .ok { color: #4ade80; }
     pre { overflow: auto; font-size: 0.8rem; }
+    .dt-filters { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; align-items: flex-end; }
+    .dt-filters label { display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.75rem; color: #8b9bb4; }
+    .dt-filters input { background: #0f1419; border: 1px solid #2d3a4f; color: #e8e8e8; border-radius: 6px; padding: 0.35rem 0.5rem; }
+    .dt-graph-wrap { overflow: auto; max-height: 420px; border: 1px solid #2d3a4f; border-radius: 8px; background: #0f1419; margin-bottom: 0.75rem; }
+    .dt-graph-wrap svg { display: block; }
+    .dt-legend { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; font-size: 0.75rem; color: #8b9bb4; margin-bottom: 0.5rem; }
+    .dt-detail { font-size: 0.85rem; margin: 0.5rem 0; }
   </style>
 </head>
 <body>
@@ -389,13 +396,122 @@
     async function loadDigitalThread() {
       try {
         errEl.hidden = true;
-        const data = await api("/v1/digital-thread/query");
+        const cap = document.getElementById("dt-capability")?.value?.trim() || "";
+        const dev = document.getElementById("dt-device")?.value?.trim() || "";
+        const params = new URLSearchParams();
+        if (cap) params.set("capability", cap);
+        if (dev) params.set("device_id", dev);
+        const qs = params.toString();
+        const data = await api("/v1/digital-thread/query" + (qs ? "?" + qs : ""));
         const thread = data.digital_thread;
-        document.getElementById("tab-digital-thread").innerHTML = `
+        const panel = document.getElementById("tab-digital-thread");
+        panel.innerHTML = `
           <h2>Digital thread</h2>
-          <p>${thread.matched_node_count} nodes, ${thread.matched_edge_count} edges</p>
-          <pre>${JSON.stringify(thread.chain_summary, null, 2)}</pre>`;
+          <div class="dt-filters">
+            <label>Capability<input id="dt-capability" value="${cap}" placeholder="navigate" /></label>
+            <label>Device id<input id="dt-device" value="${dev}" placeholder="gps-001" /></label>
+            <button type="button" id="dt-query">Query</button>
+          </div>
+          <p>${thread.matched_node_count} nodes, ${thread.matched_edge_count} edges — click nodes to highlight neighbors</p>
+          <div class="dt-legend">Mission · Robot · Capability · Hardware · Provider · Package · Safety</div>
+          <div class="dt-graph-wrap" id="dt-graph"></div>
+          <div class="dt-detail" id="dt-detail"></div>
+          <details><summary>Chain summary</summary><pre>${JSON.stringify(thread.chain_summary, null, 2)}</pre></details>`;
+        document.getElementById("dt-query").onclick = loadDigitalThread;
+        renderDigitalThreadGraph(document.getElementById("dt-graph"), thread, document.getElementById("dt-detail"));
       } catch (e) { showError(String(e)); }
+    }
+
+    function renderDigitalThreadGraph(container, thread, detailEl) {
+      const nodes = (thread.graph && thread.graph.nodes) || [];
+      const edges = (thread.graph && thread.graph.edges) || [];
+      const kindCol = { mission: 0, robot: 1, capability: 2, hardware: 3, sensor: 3, actuator: 3, provider: 4, package: 5, safety: 6 };
+      const kindColor = { mission: "#6366f1", robot: "#3b82f6", capability: "#eab308", hardware: "#94a3b8", sensor: "#22d3ee", actuator: "#f97316", provider: "#22c55e", package: "#a3e635", safety: "#f87171" };
+      const NW = 128, NH = 36, COL = 168, ROW = 52, PAD = 28;
+      const colRows = {};
+      const positions = {};
+      nodes.slice().sort((a, b) => (kindCol[a.kind] ?? 3) - (kindCol[b.kind] ?? 3) || a.label.localeCompare(b.label)).forEach((n) => {
+        const c = kindCol[n.kind] ?? 3;
+        const r = colRows[c] || 0;
+        colRows[c] = r + 1;
+        positions[n.id] = { x: PAD + c * COL, y: PAD + r * ROW };
+      });
+      let maxRow = 1;
+      Object.values(colRows).forEach((r) => { if (r > maxRow) maxRow = r; });
+      const W = PAD * 2 + 6 * COL + NW;
+      const H = PAD * 2 + maxRow * ROW + NH;
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("width", W);
+      svg.setAttribute("height", H);
+      svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+      let selected = null;
+      const nodeMap = Object.fromEntries(nodes.map((n) => [n.id, n]));
+
+      function neighbors(id) {
+        const set = new Set([id]);
+        edges.forEach((e) => {
+          if (e.from === id) set.add(e.to);
+          if (e.to === id) set.add(e.from);
+        });
+        return set;
+      }
+
+      function draw() {
+        while (svg.firstChild) svg.removeChild(svg.firstChild);
+        const linked = selected ? neighbors(selected) : null;
+        edges.forEach((e) => {
+          const f = positions[e.from], t = positions[e.to];
+          if (!f || !t) return;
+          const active = !linked || (linked.has(e.from) && linked.has(e.to));
+          const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          const x1 = f.x + NW, y1 = f.y + NH / 2, x2 = t.x, y2 = t.y + NH / 2, mx = (x1 + x2) / 2;
+          path.setAttribute("d", `M ${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}`);
+          path.setAttribute("fill", "none");
+          path.setAttribute("stroke", active ? "#58a6ff" : "#2d3a4f");
+          path.setAttribute("stroke-width", active ? "2" : "1");
+          path.setAttribute("opacity", active ? "0.9" : "0.35");
+          svg.appendChild(path);
+        });
+        nodes.forEach((n) => {
+          const p = positions[n.id];
+          if (!p) return;
+          const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+          g.setAttribute("transform", `translate(${p.x},${p.y})`);
+          g.style.cursor = "pointer";
+          const dim = linked && !linked.has(n.id);
+          g.setAttribute("opacity", dim ? "0.35" : "1");
+          const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+          rect.setAttribute("width", NW);
+          rect.setAttribute("height", NH);
+          rect.setAttribute("rx", "6");
+          rect.setAttribute("fill", kindColor[n.kind] || "#64748b");
+          rect.setAttribute("stroke", n.id === selected ? "#f0f6fc" : "#0f1419");
+          rect.setAttribute("stroke-width", n.id === selected ? "2" : "1");
+          const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          text.setAttribute("x", NW / 2);
+          text.setAttribute("y", NH / 2 + 4);
+          text.setAttribute("text-anchor", "middle");
+          text.setAttribute("font-size", "11");
+          text.setAttribute("fill", "#0f1419");
+          const label = n.label.length > 16 ? n.label.slice(0, 14) + "…" : n.label;
+          text.textContent = label;
+          g.appendChild(rect);
+          g.appendChild(text);
+          g.addEventListener("click", () => {
+            selected = selected === n.id ? null : n.id;
+            const node = nodeMap[selected];
+            if (!selected || !node) {
+              detailEl.textContent = "";
+            } else {
+              detailEl.textContent = `${node.kind}: ${node.label} (${node.id})`;
+            }
+            draw();
+          });
+          svg.appendChild(g);
+        });
+      }
+      draw();
+      container.appendChild(svg);
     }
 
     async function loadExecutive() {
