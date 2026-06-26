@@ -30,7 +30,7 @@ pub fn query_live_attestation(
     //
     // Options:
     // `SPANDA_ATTESTATION_ENDPOINT` — HTTP URL accepting attestation JSON.
-    // `SPANDA_TPM_BACKEND` — optional TPM stub (`mock`, `jetson`, `pi`, `file`, `script`).
+    // `SPANDA_TPM_BACKEND` — optional TPM stub (`mock`, `jetson`, `pi`, `tpm2`, `file`, `script`).
     //
     // Example:
     // let live = query_live_attestation("trust.jetson", "spanda-trust-jetson", Some("rover.sd"));

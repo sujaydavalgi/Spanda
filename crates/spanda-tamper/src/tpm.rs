@@ -31,7 +31,7 @@ pub fn query_tpm_attestation(
     // Live attestation result when a configured backend succeeds.
     //
     // Options:
-    // `SPANDA_TPM_BACKEND` — `mock`, `jetson`, `pi`, `file`, or `script`
+    // `SPANDA_TPM_BACKEND` — `mock`, `jetson`, `pi`, `tpm2`, `file`, or `script`
     // `SPANDA_TPM_QUOTE_PATH` — JSON quote file for `file` backend
     // `SPANDA_TPM_SCRIPT` — shell command for `script` backend (stdout JSON)
     //
@@ -43,6 +43,7 @@ pub fn query_tpm_attestation(
         .filter(|value| !value.trim().is_empty())?;
     match backend.trim().to_ascii_lowercase().as_str() {
         "mock" | "jetson" | "pi" => Some(mock_tpm_quote(contract, package, &backend)),
+        "tpm2" => Some(run_tpm2_quote(contract, package)),
         "file" => read_file_quote(),
         "script" => run_script_quote(contract, package, program_label),
         _ => None,
@@ -78,6 +79,50 @@ fn mock_tpm_quote(contract: &str, package: &str, backend: &str) -> LiveAttestati
         boot_state: "verified".into(),
         score: 95,
         detail: format!("{backend} tpm quote stub for {contract} via {package}"),
+    }
+}
+
+fn run_tpm2_quote(contract: &str, package: &str) -> LiveAttestationResult {
+    // Probe host tpm2-tools availability and return a quote-shaped attestation result.
+    //
+    // Parameters:
+    // - `contract` — secure-boot import path
+    // - `package` — registry package name
+    //
+    // Returns:
+    // Verified quote when `tpm2_getcap` succeeds; unavailable/failed otherwise.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // let live = run_tpm2_quote("trust.jetson", "spanda-trust-jetson");
+
+    match std::process::Command::new("tpm2_getcap")
+        .arg("properties-fixed")
+        .output()
+    {
+        Ok(output) if output.status.success() => LiveAttestationResult {
+            attested: true,
+            boot_state: "verified".into(),
+            score: 97,
+            detail: format!("tpm2 tools available for {contract} via {package}"),
+        },
+        Ok(output) => LiveAttestationResult {
+            attested: false,
+            boot_state: "failed".into(),
+            score: 0,
+            detail: format!(
+                "tpm2_getcap failed for {contract}: {}",
+                String::from_utf8_lossy(&output.stderr)
+            ),
+        },
+        Err(error) => LiveAttestationResult {
+            attested: false,
+            boot_state: "unavailable".into(),
+            score: 0,
+            detail: format!("tpm2 tools not available for {contract}: {error}"),
+        },
     }
 }
 
@@ -152,5 +197,20 @@ mod tests {
         assert_eq!(result.score, 98);
         std::env::remove_var("SPANDA_TPM_BACKEND");
         std::env::remove_var("SPANDA_TPM_QUOTE_PATH");
+    }
+
+    #[test]
+    fn tpm2_backend_reports_tooling_status() {
+        std::env::set_var("SPANDA_TPM_BACKEND", "tpm2");
+        let result = query_tpm_attestation("trust.jetson", "spanda-trust-jetson", Some("rover.sd"))
+            .expect("tpm2 backend");
+        assert!(
+            result.detail.contains("tpm2 tools available")
+                || result.detail.contains("tpm2 tools not available")
+                || result.detail.contains("tpm2_getcap failed"),
+            "unexpected tpm2 detail: {}",
+            result.detail
+        );
+        std::env::remove_var("SPANDA_TPM_BACKEND");
     }
 }

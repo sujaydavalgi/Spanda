@@ -425,7 +425,7 @@ Bundled copies ship in the `spanda` crate for `cargo install` — refresh with `
 
 | Gap | Notes |
 |-----|-------|
-| Hardware secure boot | Contract stubs + verify-time/live attestation + TPM vendor script adapters + drift/readiness/deploy gates; vendor SDK integration optional |
+| Hardware secure boot | Contract stubs + verify-time/live attestation + TPM backends (`mock`, `jetson`, `pi`, `tpm2`, `file`, `script`) + bundled trust registry; vendor SDK quote integration optional |
 | Real-time spoofing ML | Shipped — HTTP + mock/file/script ML backends with confidence filtering |
 | Fleet-wide tamper correlation | Shipped — offline `--fleet <manifest.json>` and live `--mesh-url` ingest |
 | Legal/compliance certification | Template profiles + defense/medical showcases — not accredited standards |
