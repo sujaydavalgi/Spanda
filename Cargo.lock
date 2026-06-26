@@ -1973,11 +1973,13 @@ dependencies = [
 name = "spanda-config"
 version = "0.4.0"
 dependencies = [
+ "hex",
  "serde",
  "serde_json",
  "spanda-ast",
  "spanda-hardware",
  "spanda-package",
+ "spanda-security",
  "tempfile",
  "thiserror 2.0.18",
  "toml",
