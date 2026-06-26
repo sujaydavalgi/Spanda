@@ -124,6 +124,8 @@ Full analysis: [enterprise-operations-roadmap.md](./enterprise-operations-roadma
 
 **Exit criteria (E3):** SDK integration test, canary deploy demo, correlation trace in observability API — **shipped** (`scripts/enterprise_ops_smoke.sh`, `packages/sdk-python`)
 
+**Exit criteria (E4):** Compliance report export and digital thread query demo — **shipped** (`scripts/enterprise_ops_smoke.sh`)
+
 **UI stack:** React + TypeScript (`@spanda/control-center`, extends `packages/web`); Rust backend (`spanda-api`); future Tauri desktop packaging.
 
 **Lean-core:** Contracts in `spanda-api`, `spanda-config`, `spanda-security`, `spanda-ops`; vendor SDKs and alert channels in optional packages.

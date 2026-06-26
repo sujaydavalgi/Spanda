@@ -50,10 +50,21 @@ Open `http://127.0.0.1:8080/` for the Control Center UI, or use the **Control Ce
 | `/v1/operator/quarantine` | POST | Bearer | Quarantine a device |
 | `/v1/operator/mission/approve` | POST | Bearer | Approve or reject a mission |
 | `/v1/rpc` | POST | — | gRPC-compatible JSON gateway |
+| `/v1/compliance/export` | GET/POST | Bearer | Accreditation bundle (`?profile=defense`) |
+| `/v1/digital-thread/query` | GET | — | Trace chain (`?capability=`, `?device_id=`) |
+| `/v1/executive/scorecard` | GET | — | Mission scorecard rollup |
+| `/v1/analytics/readiness` | GET | — | Readiness trends and forecast |
+| `/v1/reports/export` | GET | Bearer | Combined compliance + scorecard report |
 
 Authenticate mutations with `Authorization: Bearer <SPANDA_API_KEY>`.
 
 Pass optional `X-Correlation-ID` on any request; the server echoes it on the response and records traces for `/v1/observability/traces`.
+
+Govern-and-trace endpoints require a loaded program:
+
+```bash
+spanda control-center serve --config spanda.toml --program rover.sd
+```
 
 ---
 
@@ -118,4 +129,4 @@ Default: log to stderr.
 
 ## Status
 
-**Experimental** (Phase E1–E3). Phase E3 adds operational drift, OTA rollout planning, package trust API, SRE/observability traces, operator workflows, JSON-RPC gateway, OpenAPI spec, and the Python SDK. Native gRPC (tonic) and full CLI parity remain Phase E4 scope.
+**Experimental** (Phase E1–E4). Phase E4 adds compliance export, digital thread query, executive scorecard, readiness analytics, and report composer. Tauri desktop and WebSocket SDK remain follow-ups.

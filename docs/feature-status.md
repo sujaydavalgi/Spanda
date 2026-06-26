@@ -105,7 +105,7 @@ Platform overview: [platform-overview.md](./platform-overview.md)
 | **Platform maturity (Phase C–D)** | Readiness trends, resource estimation, compliance profiles, ADR, tamper check |
 | **Enterprise operations (NOW)** | Control Center (`spanda control-center serve`), Device Pool lifecycle, RBAC v1 (`SPANDA_API_KEY`), `ManagedSecretVault`, alerting core (`spanda-ops`), provisioning/snapshots/discovery (E2), drift/OTA/trust/SRE/operator APIs + Python SDK (E3) — **Experimental**; see [enterprise-operations-roadmap.md](./enterprise-operations-roadmap.md) |
 | **Enterprise operations (NEXT)** | SDKs (Python, REST, gRPC), full configuration drift, OTA canary/phased rollout, Package Trust UI, Observability (OpenTelemetry) |
-| **Enterprise operations (LATER)** | Compliance evidence UI, Executive Dashboards, Digital Thread, Predictive Analytics |
+| **Enterprise operations (LATER)** | PDF reporting, Tauri desktop, WebSocket SDK — **Planned**; Compliance export UI, Digital Thread, Executive dashboards — **Experimental** (E4) |
 | **LLVM backend (production primary)** | Optimized native binaries replacing interpreter as default deploy path |
 | **Self-hosting compiler (full)** | Complete Spanda-authored compiler pipeline |
 | **ROS2 production adapter** | First-class, zero-config ROS2 deployment |

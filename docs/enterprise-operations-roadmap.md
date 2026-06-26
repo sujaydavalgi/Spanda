@@ -587,7 +587,7 @@ Builds on `spanda-capability` traceability matrices + `spanda-audit` + mission c
 | Tauri desktop packaging | `@spanda/control-center` |
 | WebSocket SDK | real-time telemetry stream |
 
-**Exit criteria:** Compliance report export; digital thread query demo.
+**Exit criteria:** Compliance report export; digital thread query demo — **shipped** (`scripts/enterprise_ops_smoke.sh`). PDF export and Tauri desktop remain follow-ups.
 
 ---
 

@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
-# Phase E1+E2+E3 smoke — Control Center API, provisioning, drift, OTA, SDK paths.
+# Phase E1–E4 smoke — Control Center API through govern-and-trace endpoints.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 CONFIG="${ROOT}/crates/spanda-config/tests/fixtures/warehouse/spanda.toml"
+PROGRAM="${ROOT}/examples/showcase/compliance/defense_rover.sd"
 
 if [[ -n "${SPANDA_BIN:-}" && -x "${SPANDA_BIN}" ]]; then
   run_spanda() { "$SPANDA_BIN" "$@"; }
@@ -19,8 +20,8 @@ fi
 BIND="127.0.0.1:${PORT}"
 export SPANDA_API_KEY="enterprise-ops-smoke-key"
 
-echo "== start control-center on ${BIND} (warehouse config) =="
-run_spanda control-center serve --bind "$BIND" --config "$CONFIG" &
+echo "== start control-center on ${BIND} (warehouse config + program) =="
+run_spanda control-center serve --bind "$BIND" --config "$CONFIG" --program "$PROGRAM" &
 SERVER_PID=$!
 sleep 2
 
@@ -133,5 +134,19 @@ echo "== E3 Python SDK health =="
 PYTHONPATH="${ROOT}/packages/sdk-python/src:${PYTHONPATH:-}" \
   SPANDA_CONTROL_CENTER_URL="http://${BIND}" SPANDA_API_KEY="${SPANDA_API_KEY}" \
   python3 -c "from spanda_sdk import ControlCenterClient; c=ControlCenterClient(); assert c.health()['service']=='spanda-control-center'"
+
+echo "== E4 GET /v1/compliance/export?profile=defense =="
+curl -sf -H "Authorization: Bearer ${SPANDA_API_KEY}" \
+  "http://${BIND}/v1/compliance/export?profile=defense" | grep -q audit_export_id
+
+echo "== E4 GET /v1/digital-thread/query =="
+fetch "/v1/digital-thread/query" | grep -q matched_node_count
+
+echo "== E4 GET /v1/executive/scorecard =="
+fetch /v1/executive/scorecard | grep -q overall_score
+
+echo "== E4 GET /v1/reports/export?format=markdown =="
+curl -sf -H "Authorization: Bearer ${SPANDA_API_KEY}" \
+  "http://${BIND}/v1/reports/export?profile=defense&format=markdown" | grep -q executive
 
 echo "Enterprise operations smoke OK"
