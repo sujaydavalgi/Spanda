@@ -47,7 +47,9 @@ fn print_usage() {
          spanda control-center serve [--bind <addr>] [--grpc-bind <addr>] [--config <spanda.toml>] [--program <file.sd>] [--once]\n  \
          spanda control-center api <get|post> <path> [--body <json>] [--url <base>] [--auth|--no-auth]\n  \
          spanda control-center dashboard [--url <base>]\n  \
-         spanda control-center drift --baseline-id <id> [--url <base>]\n  \
+         spanda control-center drift report --baseline-id <id> [--url <base>]\n  \
+         spanda control-center drift scan [--baseline-id <id>] [--url <base>]\n  \
+         spanda control-center drift scans [--url <base>]\n  \
          spanda control-center incidents list|create|ack|resolve ... [--url <base>]\n  \
          spanda control-center approvals list|submit|approve|reject ... [--url <base>]\n  \
          spanda control-center evidence list [--url <base>]\n  \
@@ -171,17 +173,64 @@ fn cmd_dashboard(args: &[String]) {
 }
 
 fn cmd_drift(args: &[String]) {
-    let baseline_id = flag_value(args, "--baseline-id").unwrap_or_else(|| {
-        eprintln!("Missing --baseline-id");
+    if args.is_empty() {
+        eprintln!(
+            "Usage: spanda control-center drift report|scan|scans ...\n  \
+             report --baseline-id <id>   GET /v1/drift\n  \
+             scan [--baseline-id <id>]   POST /v1/drift/scan\n  \
+             scans                       GET /v1/drift/scans"
+        );
         process::exit(1);
-    });
+    }
     let client = client_from_args(args);
-    let path = format!("/v1/drift?baseline_id={baseline_id}");
-    let response = client.get(&path, false).unwrap_or_else(|error| {
-        eprintln!("{error}");
-        process::exit(1);
-    });
-    print_response(response);
+    match args[0].as_str() {
+        "report" => {
+            let baseline_id = flag_value(args, "--baseline-id").unwrap_or_else(|| {
+                eprintln!("Missing --baseline-id");
+                process::exit(1);
+            });
+            let path = format!("/v1/drift?baseline_id={baseline_id}");
+            let response = client.get(&path, false).unwrap_or_else(|error| {
+                eprintln!("{error}");
+                process::exit(1);
+            });
+            print_response(response);
+        }
+        "scan" => {
+            let baseline_id = flag_value(args, "--baseline-id");
+            let body = if let Some(id) = baseline_id {
+                serde_json::json!({ "baseline_id": id }).to_string()
+            } else {
+                String::new()
+            };
+            let response = client
+                .post("/v1/drift/scan", &body, true)
+                .unwrap_or_else(|error| {
+                    eprintln!("{error}");
+                    process::exit(1);
+                });
+            print_response(response);
+        }
+        "scans" => {
+            let response = client.get("/v1/drift/scans", false).unwrap_or_else(|error| {
+                eprintln!("{error}");
+                process::exit(1);
+            });
+            print_response(response);
+        }
+        _ => {
+            let baseline_id = flag_value(args, "--baseline-id").unwrap_or_else(|| {
+                eprintln!("Unknown drift subcommand; use report, scan, or scans");
+                process::exit(1);
+            });
+            let path = format!("/v1/drift?baseline_id={baseline_id}");
+            let response = client.get(&path, false).unwrap_or_else(|error| {
+                eprintln!("{error}");
+                process::exit(1);
+            });
+            print_response(response);
+        }
+    }
 }
 
 fn cmd_incidents(args: &[String]) {
