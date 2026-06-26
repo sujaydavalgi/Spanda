@@ -29,7 +29,7 @@ Phases **E1–E4** are shipped at **Experimental** tier with CI smoke (`scripts/
 |------|---------------------|-----------------|
 | REST v1 | Full E1–E4 surface | — (OpenAPI parity test in CI) |
 | gRPC | 59 RPCs (tonic) | **Shipped:** published proto semver policy (`GET /v1/version` → `grpc`) |
-| Remote CLI | `spanda control-center *` shortcuts | Parity test matrix in CI |
+| Remote CLI | `spanda control-center *` shortcuts | **Shipped:** OpenAPI parity test (`control_center_openapi_parity.rs`) |
 | Rate limits | `SPANDA_API_RATE_LIMIT_PER_MINUTE` | Load-test defaults documented per tier |
 | Mutation audit | Hash-chained JSONL | External SIEM export adapter (package) |
 
@@ -56,7 +56,7 @@ Phases **E1–E4** are shipped at **Experimental** tier with CI smoke (`scripts/
 | Item | Experimental (today) | Stable requires |
 |------|---------------------|-----------------|
 | Plan | canary / staged / blue_green dry-run | — |
-| Execute | `POST /v1/ota/execute` via deploy agents | **Shipped:** `rollback_on_readiness_fail` + `SPANDA_OTA_ROLLBACK_ON_READINESS_FAIL`; production fleet soak |
+| Execute | `POST /v1/ota/execute` via deploy agents | **Shipped:** `rollback_on_readiness_fail`; **Shipped:** fleet soak (`scripts/ota_fleet_soak.sh`) |
 | Certification | `--require-certify` gate in planner | Mandatory in default production policy |
 
 ### Observability + SRE

@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **gRPC proto semver policy:** `grpc_policy.rs`, proto semver `1.0.0` on `control_center.proto`, `GET /v1/version` → `grpc` block; Health status includes proto semver and RPC count.
 - **OTA readiness rollback:** `rollback_on_readiness_fail` on `POST /v1/ota/execute` (env `SPANDA_OTA_ROLLBACK_ON_READINESS_FAIL`); auto-rollback deploy agents when post-deploy readiness fails.
 - **Multi-approver config approvals:** `required_approvals` on submit + `SPANDA_CONFIG_APPROVALS_REQUIRED`; distinct approver votes with `quorum` metadata; publish-on-approve when quorum met.
+- **OTA fleet soak:** `scripts/ota_fleet_soak.sh` — multi-agent version bumps and canary→full progression tests.
+- **Remote CLI OpenAPI parity:** `control_center_openapi_parity.rs` verifies CLI routes exist in `REST_V1_ROUTES`.
 - **Digital thread graph UI:** interactive SVG graph in `ControlCenterPanel` and embedded Control Center HTML — filter by capability/device, click-to-highlight neighbors.
 - **Stable hardening checklist:** [docs/stable-hardening-enterprise-ops.md](docs/stable-hardening-enterprise-ops.md) — Experimental → Stable promotion gates per pillar.
 - **Python SDK expansion:** executive scorecard, digital thread, reports export, OTA execute/status, config snapshots, audit mutations.
