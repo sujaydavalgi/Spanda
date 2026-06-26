@@ -4,7 +4,10 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
-CONFIG="${ROOT}/crates/spanda-config/tests/fixtures/warehouse/spanda.toml"
+WAREHOUSE_FIXTURE="${ROOT}/crates/spanda-config/tests/fixtures/warehouse"
+SMOKE_CONFIG_DIR="$(mktemp -d "${TMPDIR:-/tmp}/spanda-ops-smoke.XXXXXX")"
+cp -R "${WAREHOUSE_FIXTURE}/." "${SMOKE_CONFIG_DIR}/"
+CONFIG="${SMOKE_CONFIG_DIR}/spanda.toml"
 PROGRAM="${ROOT}/examples/showcase/compliance/defense_rover.sd"
 
 if [[ -n "${SPANDA_BIN:-}" && -x "${SPANDA_BIN}" ]]; then
@@ -28,6 +31,7 @@ sleep 2
 
 cleanup() {
   kill "$SERVER_PID" 2>/dev/null || true
+  rm -rf "$SMOKE_CONFIG_DIR"
 }
 trap cleanup EXIT
 
