@@ -33,6 +33,8 @@ pub enum DriftDimension {
     Program,
     Hardware,
     Firmware,
+    Policy,
+    Safety,
 }
 
 /// Single drift delta between baseline and current configuration.
@@ -284,6 +286,7 @@ fn diff_device_registry(
             "ip",
             &base_device.ip_address,
             &live_device.ip_address,
+            DriftDimension::Device,
         );
         diff_optional_field(
             report,
@@ -291,6 +294,7 @@ fn diff_device_registry(
             "endpoint",
             &base_device.endpoint_url,
             &live_device.endpoint_url,
+            DriftDimension::Device,
         );
         diff_optional_field(
             report,
@@ -298,6 +302,7 @@ fn diff_device_registry(
             "provider",
             &base_device.provider,
             &live_device.provider,
+            DriftDimension::Provider,
         );
         diff_optional_field(
             report,
@@ -305,6 +310,7 @@ fn diff_device_registry(
             "firmware",
             &base_device.firmware_version,
             &live_device.firmware_version,
+            DriftDimension::Firmware,
         );
         diff_optional_field(
             report,
@@ -312,6 +318,7 @@ fn diff_device_registry(
             "trust_level",
             &base_device.trust_level,
             &live_device.trust_level,
+            DriftDimension::Safety,
         );
         diff_optional_field(
             report,
@@ -319,6 +326,7 @@ fn diff_device_registry(
             "security_identity",
             &base_device.security_identity,
             &live_device.security_identity,
+            DriftDimension::Safety,
         );
         if base_device.capabilities != live_device.capabilities {
             report.push(DriftFinding {
@@ -340,16 +348,18 @@ fn diff_optional_field(
     field: &str,
     baseline: &Option<String>,
     current: &Option<String>,
+    dimension: DriftDimension,
 ) {
     if baseline == current {
         return;
     }
     report.push(DriftFinding {
-        dimension: DriftDimension::Device,
-        severity: if field == "security_identity" || field == "trust_level" {
-            DriftSeverity::High
-        } else {
-            DriftSeverity::Medium
+        dimension,
+        severity: match (dimension, field) {
+            (DriftDimension::Safety, _) => DriftSeverity::High,
+            (DriftDimension::Firmware, _) => DriftSeverity::High,
+            (_, "security_identity" | "trust_level") => DriftSeverity::High,
+            _ => DriftSeverity::Medium,
         },
         message: format!(
             "device '{device_id}' {field}: {:?} -> {:?}",
@@ -451,13 +461,21 @@ fn diff_sensor_fields(
             path: Some(format!("mapping.sensors.{key}.physical_device_id")),
         });
     }
-    diff_optional_field(report, key, "ip", &baseline.ip_address, &current.ip_address);
+    diff_optional_field(
+        report,
+        key,
+        "ip",
+        &baseline.ip_address,
+        &current.ip_address,
+        DriftDimension::Mapping,
+    );
     diff_optional_field(
         report,
         key,
         "endpoint",
         &baseline.endpoint_url,
         &current.endpoint_url,
+        DriftDimension::Mapping,
     );
 }
 
@@ -489,13 +507,21 @@ fn diff_actuator_fields(
             path: Some(format!("mapping.actuators.{key}.emergency_stop")),
         });
     }
-    diff_optional_field(report, key, "ip", &baseline.ip_address, &current.ip_address);
+    diff_optional_field(
+        report,
+        key,
+        "ip",
+        &baseline.ip_address,
+        &current.ip_address,
+        DriftDimension::Mapping,
+    );
     diff_optional_field(
         report,
         key,
         "endpoint",
         &baseline.endpoint_url,
         &current.endpoint_url,
+        DriftDimension::Mapping,
     );
 }
 
@@ -726,13 +752,13 @@ pub fn detect_agent_drift(
         match actual.attestation_verified {
             Some(true) => {}
             Some(false) => findings.push(DriftFinding {
-                dimension: DriftDimension::Hardware,
+                dimension: DriftDimension::Safety,
                 severity: DriftSeverity::Critical,
                 message: format!("agent '{agent}' secure-boot attestation verification failed"),
                 path: Some(format!("agents.{agent}.attestation_verified")),
             }),
             None => findings.push(DriftFinding {
-                dimension: DriftDimension::Hardware,
+                dimension: DriftDimension::Safety,
                 severity: DriftSeverity::High,
                 message: format!(
                     "agent '{agent}' missing attestation for contracts {:?}",
@@ -748,7 +774,7 @@ pub fn detect_agent_drift(
                 .any(|expected| expected == contract)
             {
                 findings.push(DriftFinding {
-                    dimension: DriftDimension::Hardware,
+                    dimension: DriftDimension::Safety,
                     severity: DriftSeverity::Medium,
                     message: format!(
                         "agent '{agent}' attestation contract '{contract}' not declared in program"
@@ -760,7 +786,7 @@ pub fn detect_agent_drift(
         if let Some(boot_state) = &actual.boot_state {
             if matches!(boot_state.as_str(), "compromised" | "tampered" | "failed") {
                 findings.push(DriftFinding {
-                    dimension: DriftDimension::Hardware,
+                    dimension: DriftDimension::Safety,
                     severity: DriftSeverity::Critical,
                     message: format!("agent '{agent}' boot_state reports '{boot_state}'"),
                     path: Some(format!("agents.{agent}.boot_state")),

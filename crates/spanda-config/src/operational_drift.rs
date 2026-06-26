@@ -93,7 +93,7 @@ fn append_policy_enforcement_drift(
     let cur_assurance = crate::assurance_policy(current);
     if base_assurance.minimum_score != cur_assurance.minimum_score {
         report.push(DriftFinding {
-            dimension: DriftDimension::Program,
+            dimension: DriftDimension::Policy,
             severity: crate::drift::DriftSeverity::Medium,
             message: format!(
                 "assurance.minimum_score drift {} -> {} conflicts with operational policies",
@@ -106,7 +106,7 @@ fn append_policy_enforcement_drift(
     let cur_mission = crate::mission_policy(current);
     if base_mission.required_capabilities != cur_mission.required_capabilities {
         report.push(DriftFinding {
-            dimension: DriftDimension::Program,
+            dimension: DriftDimension::Safety,
             severity: crate::drift::DriftSeverity::High,
             message: "mission capability drift vs operational policy safety posture".into(),
             path: Some("policy.safety_capabilities".into()),
@@ -123,7 +123,7 @@ fn append_policy_safety_drift(
     let cur_assurance = crate::assurance_policy(current);
     if base_assurance.minimum_score != cur_assurance.minimum_score {
         report.push(DriftFinding {
-            dimension: DriftDimension::Configuration,
+            dimension: DriftDimension::Policy,
             severity: crate::drift::DriftSeverity::High,
             message: format!(
                 "assurance.minimum_score changed: {} -> {}",
@@ -136,7 +136,7 @@ fn append_policy_safety_drift(
     let cur_mission = crate::mission_policy(current);
     if base_mission.required_capabilities != cur_mission.required_capabilities {
         report.push(DriftFinding {
-            dimension: DriftDimension::Program,
+            dimension: DriftDimension::Policy,
             severity: crate::drift::DriftSeverity::Medium,
             message: "mission required_capabilities changed".into(),
             path: Some("mission.required_capabilities".into()),
@@ -189,6 +189,8 @@ fn map_dimension(dim: DriftDimension) -> OperationalDriftDimension {
         DriftDimension::Firmware => OperationalDriftDimension::Firmware,
         DriftDimension::Package => OperationalDriftDimension::Package,
         DriftDimension::Provider => OperationalDriftDimension::Provider,
+        DriftDimension::Policy => OperationalDriftDimension::Policy,
+        DriftDimension::Safety => OperationalDriftDimension::Safety,
         DriftDimension::Program | DriftDimension::Hardware | DriftDimension::Mapping => {
             OperationalDriftDimension::Capability
         }
@@ -203,6 +205,29 @@ mod tests {
     use super::*;
     use crate::resolver::ConfigResolver;
     use std::path::PathBuf;
+
+    #[test]
+    fn policy_dimension_rollup_from_assurance_drift() {
+        let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/warehouse");
+        let resolved = ConfigResolver::new()
+            .resolve_from_dir(&root)
+            .expect("warehouse fixture");
+        let mut baseline = resolved.clone();
+        let mut current = resolved.clone();
+        baseline
+            .raw
+            .as_table_mut()
+            .expect("table")
+            .insert("assurance".into(), toml::toml! { minimum_score = 80 }.into());
+        current
+            .raw
+            .as_table_mut()
+            .expect("table")
+            .insert("assurance".into(), toml::toml! { minimum_score = 60 }.into());
+        let report = detect_operational_drift(&baseline, &current);
+        assert!(!report.passed);
+        assert!(report.by_dimension.get("policy").copied().unwrap_or(0) >= 1);
+    }
 
     #[test]
     fn identical_configs_pass() {
