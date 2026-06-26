@@ -3,7 +3,18 @@ use spanda_telemetry_store::{
     persist_enabled, record_sensor_reading, resolve_store_path, PersistentTelemetryStore,
     TelemetryEvent, TelemetryQuery,
 };
+use std::sync::{Mutex, MutexGuard};
 use tempfile::tempdir;
+
+static TEST_LOCK: Mutex<()> = Mutex::new(());
+
+fn isolate_telemetry_globals() -> MutexGuard<'static, ()> {
+    let guard = TEST_LOCK.lock().unwrap();
+    configure_session_persist(false);
+    std::env::remove_var("SPANDA_TELEMETRY_STORE");
+    std::env::remove_var("SPANDA_TELEMETRY_STORE_PATH");
+    guard
+}
 
 #[test]
 fn append_and_query_device_and_sensor_events() {
@@ -76,8 +87,7 @@ fn heartbeat_index_updates_and_history_is_throttled() {
 
 #[test]
 fn persist_enabled_respects_session_and_env() {
-    configure_session_persist(false);
-    std::env::remove_var("SPANDA_TELEMETRY_STORE");
+    let _guard = isolate_telemetry_globals();
     assert!(!persist_enabled());
 
     configure_session_persist(true);
@@ -309,6 +319,7 @@ fn max_events_env_trims_oldest_entries() {
 
 #[test]
 fn append_stamps_active_session_id_on_recorded_events() {
+    let _guard = isolate_telemetry_globals();
     let dir = tempdir().unwrap();
     std::env::set_var(
         "SPANDA_TELEMETRY_STORE_PATH",
