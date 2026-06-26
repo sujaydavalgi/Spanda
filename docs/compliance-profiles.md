@@ -42,6 +42,6 @@ Built on readiness, capability verification, and assurance evidence checks in `s
 
 **Disclaimer:** Profiles are **templates** for engineering discipline, not regulatory approval.
 
-Showcase: `examples/showcase/policy/warehouse.sd`, `examples/showcase/compliance/defense_rover.sd` · smoke: `scripts/compliance_smoke.sh`
+Showcase: `examples/showcase/policy/warehouse.sd`, `examples/showcase/compliance/defense_rover.sd`, `examples/showcase/compliance/medical_rover.sd` · smoke: `scripts/compliance_smoke.sh`
 
 See [policy-engine.md](./policy-engine.md) · [platform-maturity-roadmap.md](./platform-maturity-roadmap.md).
