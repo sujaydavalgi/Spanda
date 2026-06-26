@@ -19,8 +19,27 @@ Start here when evaluating Spanda as a **professional autonomous-systems platfor
 | `spanda demo assurance` | Mission assurance CLI suite (`assure`, `anomaly scan`, `state estimate`, …) |
 | `spanda demo self-healing` | Recovery policies, heal/recover/sim, fleet recovery |
 | `spanda demo continuity` | Mission continuity, takeover, delegation, succession |
+| `spanda demo maturity` | Phase A graph, explain, trust, deployment gates |
+| `spanda demo trust` | Tamper/trust showcases — package tampering, integrity, spoofing, runtime intrusion |
 
 Set `SPANDA_ROOT` to the repository root if examples are not found.
+
+---
+
+## Trust & tamper showcases
+
+| Directory | Demonstrates |
+|-----------|----------------|
+| [`gps_spoofing/`](./gps_spoofing/) | GPS spoofing detection and trace plausibility |
+| [`package_tampering/`](./package_tampering/) | Suspicious import lowers trust score |
+| [`mission_tampering/`](./mission_tampering/) | Mission hash drift vs approved baseline |
+| [`runtime_intrusion/`](./runtime_intrusion/) | Unexpected capability usage in traces |
+| [`tamper_policy/`](./tamper_policy/) | Declarative tamper response at runtime |
+| [`secure_boot/`](./secure_boot/) | `trust.jetson` / `trust.pi` contracts + attestation |
+| [`compliance/`](./compliance/) | Defense and medical compliance profile showcases |
+| [`fleet_tamper/`](./fleet_tamper/) | Fleet-wide tamper correlation manifest |
+
+One command: `spanda demo trust` · smoke: `./scripts/showcase_smoke.sh`
 
 ---
 
