@@ -6,13 +6,13 @@ Spanda discovers devices through **provider interfaces** — core ships built-in
 
 | Transport | CLI/API flag | Notes |
 |-----------|--------------|-------|
-| Subnet scan | `subnet` | TCP probe on common ports |
-| mDNS | `mdns` | Stub in core; live in `spanda-discovery-mdns` |
-| BLE | `ble` | Contract stub; package-backed |
-| USB | `usb` | Enumeration stub |
-| CAN | `can` | Bus scan stub |
-| MQTT | `mqtt` | Broker discovery stub |
-| ROS2/DDS | `ros2` | Topic discovery stub |
+| Subnet scan | `subnet` | TCP probe on common ports; auto-detects local `/24` when omitted |
+| mDNS | `mdns` | Host `dns-sd` / `avahi-browse` when installed; stub fallback |
+| BLE | `ble` | `bluetoothctl` / macOS Bluetooth profiler; env `SPANDA_DISCOVERY_BLE_MATCHES` |
+| USB | `usb` | `lsusb` / macOS USB profiler; env `SPANDA_DISCOVERY_USB_MATCHES` |
+| CAN | `can` | SocketCAN sysfs / `ip link type can`; env `SPANDA_DISCOVERY_CAN_MATCHES` |
+| MQTT | `mqtt` | TCP probe to `SPANDA_MQTT_BROKER` (default `127.0.0.1:1883`) |
+| ROS2/DDS | `ros2` | `ros2 topic list` when CLI installed; env `SPANDA_DISCOVERY_ROS2_DISABLE` |
 
 ## CLI
 
@@ -29,9 +29,18 @@ curl "http://127.0.0.1:8080/v1/discovery?transport=subnet&subnet=192.168.1.0/24"
 
 # POST (multi-transport)
 curl -X POST http://127.0.0.1:8080/v1/devices/discover \
+  -H "Authorization: Bearer $SPANDA_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"subnet":"192.168.1.0/24","transports":["subnet","mdns"]}'
+  -d '{"subnet":"192.168.1.0/24","transports":["subnet","mdns"],"timeout_ms":2000}'
 ```
+
+Discovered matches are registered into the device pool (`registered` array in the response).
+
+Environment overrides for CI and headless hosts:
+
+- `SPANDA_DISCOVERY_SUBNET` — default CIDR when `subnet` is omitted
+- `SPANDA_DISCOVERY_MDNS_MATCHES` — comma list `name@ip` for deterministic mDNS results
+- `SPANDA_MQTT_BROKER` — broker host:port for MQTT probe
 
 ## Provider contract
 

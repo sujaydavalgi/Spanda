@@ -30,10 +30,11 @@ Open `http://127.0.0.1:8080/` for the Control Center UI, or use the **Control Ce
 | `/v1/devices` | GET | — | Device pool entries |
 | `/v1/devices/{id}` | GET | — | Single device record |
 | `/v1/devices/{id}` | PATCH | Bearer | Update `lifecycle_state` |
-| `/v1/devices/discover` | POST | — | Multi-transport discovery |
+| `/v1/devices/discover` | POST | Bearer | Multi-transport discovery (registers matches) |
 | `/v1/devices/{id}/provision` | POST | Bearer | Per-device provision workflow |
 | `/v1/devices/{id}/assign` | POST | Bearer | Assign device to robot |
 | `/v1/devices/{id}/quarantine` | POST | Bearer | Quarantine device |
+| `/v1/devices/{id}/trust` | POST | Bearer (Approve) | Operator trust / approve device |
 | `/v1/robots` | GET | — | Robot inventory from device tree |
 | `/v1/fleets` | GET | — | Fleet inventory |
 | `/v1/device-tree` | GET | — | Hierarchy + logical/physical mapping JSON |

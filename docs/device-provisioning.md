@@ -17,7 +17,16 @@ Provisioning moves a device from **discovered** to **ready for operations** thro
 
 ```bash
 spanda device provision <device-id> --robot rover-001 [--json]
+spanda device trust <device-id> [--write] [--json]
 ```
+
+Operator approval after quarantine or for `trust_level = unknown`:
+
+```bash
+spanda device trust camera-front-001 --write --config spanda.toml
+```
+
+API equivalent: `POST /v1/devices/{id}/trust` (requires Bearer token with **Approve** role).
 
 Exit code `1` when any gate fails.
 
