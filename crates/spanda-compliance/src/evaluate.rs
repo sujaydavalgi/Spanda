@@ -94,6 +94,9 @@ pub fn evaluate_compliance_profile(
     if profile.requires_tamper_policy {
         check_tamper_policy(&profile, program, &mut violations);
     }
+    if profile.requires_secure_boot {
+        check_secure_boot(&profile, program, &mut violations);
+    }
 
     let passed = if profile.warn_only {
         true
@@ -373,6 +376,36 @@ fn check_tamper_policy(
             "requires_tamper_policy",
             ComplianceSeverity::Error,
             "profile requires at least one tamper_policy response branch",
+            violations,
+        );
+    }
+}
+
+fn check_secure_boot(
+    profile: &ComplianceProfile,
+    program: &Program,
+    violations: &mut Vec<ComplianceViolation>,
+) {
+    let coverage = spanda_tamper::evaluate_secure_boot_coverage(program, None);
+    if coverage.contracts.is_empty() {
+        push_violation(
+            profile,
+            "requires_secure_boot",
+            ComplianceSeverity::Error,
+            "profile requires secure-boot contract import (trust.jetson or trust.pi)",
+            violations,
+        );
+        return;
+    }
+    if !coverage.passed {
+        push_violation(
+            profile,
+            "requires_secure_boot",
+            ComplianceSeverity::Error,
+            format!(
+                "secure-boot contract trust score {}/100 below profile threshold",
+                coverage.score
+            ),
             violations,
         );
     }

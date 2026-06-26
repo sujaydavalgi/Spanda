@@ -57,3 +57,40 @@ fn research_profile_passes_with_warnings_only() {
     let report = evaluate_compliance_profile(&program, "research", "rover.sd").unwrap();
     assert!(report.passed);
 }
+
+#[test]
+fn defense_profile_requires_secure_boot_contract() {
+    let program = parse_file(repo_path(&[
+        "examples",
+        "showcase",
+        "policy",
+        "warehouse.sd",
+    ]));
+    let report = evaluate_compliance_profile(&program, "defense", "warehouse.sd").unwrap();
+    assert!(!report.passed);
+    assert!(report.violations.iter().any(|violation| {
+        violation.requirement == "requires_secure_boot"
+    }));
+}
+
+#[test]
+fn secure_boot_showcase_satisfies_secure_boot_requirement() {
+    let registry = repo_path(&["registry"]);
+    std::env::set_var(
+        "SPANDA_REGISTRY_URL",
+        format!("file://{}", registry.display()),
+    );
+    let program = parse_file(repo_path(&[
+        "examples",
+        "showcase",
+        "secure_boot",
+        "rover.sd",
+    ]));
+    let report =
+        evaluate_compliance_profile(&program, "defense", "secure_boot/rover.sd").unwrap();
+    assert!(!report
+        .violations
+        .iter()
+        .any(|violation| violation.requirement == "requires_secure_boot"));
+    std::env::remove_var("SPANDA_REGISTRY_URL");
+}

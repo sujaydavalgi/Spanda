@@ -19,6 +19,7 @@ pub struct ComplianceProfile {
     pub operation_hours: Option<String>,
     pub requires_secure_comm: bool,
     pub requires_tamper_policy: bool,
+    pub requires_secure_boot: bool,
     pub warn_only: bool,
     #[serde(skip)]
     pub template_notice: &'static str,
@@ -62,6 +63,7 @@ fn industrial_profile() -> ComplianceProfile {
         operation_hours: None,
         requires_secure_comm: false,
         requires_tamper_policy: false,
+        requires_secure_boot: false,
         warn_only: false,
         template_notice: ACCREDITATION_TEMPLATE_NOTICE,
     }
@@ -83,6 +85,7 @@ fn warehouse_profile() -> ComplianceProfile {
         operation_hours: Some("06:00-22:00".into()),
         requires_secure_comm: false,
         requires_tamper_policy: false,
+        requires_secure_boot: false,
         warn_only: false,
         template_notice: ACCREDITATION_TEMPLATE_NOTICE,
     }
@@ -101,6 +104,7 @@ fn medical_profile() -> ComplianceProfile {
         operation_hours: None,
         requires_secure_comm: false,
         requires_tamper_policy: true,
+        requires_secure_boot: true,
         warn_only: false,
         template_notice: ACCREDITATION_TEMPLATE_NOTICE,
     }
@@ -119,6 +123,7 @@ fn agriculture_profile() -> ComplianceProfile {
         operation_hours: None,
         requires_secure_comm: false,
         requires_tamper_policy: false,
+        requires_secure_boot: false,
         warn_only: false,
         template_notice: ACCREDITATION_TEMPLATE_NOTICE,
     }
@@ -137,6 +142,7 @@ fn defense_profile() -> ComplianceProfile {
         operation_hours: None,
         requires_secure_comm: true,
         requires_tamper_policy: true,
+        requires_secure_boot: true,
         warn_only: false,
         template_notice: ACCREDITATION_TEMPLATE_NOTICE,
     }
@@ -155,6 +161,7 @@ fn research_profile() -> ComplianceProfile {
         operation_hours: None,
         requires_secure_comm: false,
         requires_tamper_policy: false,
+        requires_secure_boot: false,
         warn_only: true,
         template_notice: ACCREDITATION_TEMPLATE_NOTICE,
     }
