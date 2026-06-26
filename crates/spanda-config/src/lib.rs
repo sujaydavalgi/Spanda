@@ -35,10 +35,11 @@ pub mod system_context;
 pub mod validation;
 
 pub use config_approval::{
-    append_evidence_record, approve_config_request, default_approvals_path,
+    append_evidence_record, approve_config_request, approval_policy_required_count,
+    approval_quorum_met, default_approvals_path,
     default_evidence_log_path, list_evidence_records, load_approval_queue, reject_config_request,
     save_approval_queue, submit_config_approval, ConfigApprovalQueue, ConfigApprovalRequest,
-    ConfigApprovalStatus,
+    ConfigApprovalStatus, ConfigApprovalVote,
 };
 pub use config_snapshots::{
     default_snapshots_dir, list_config_snapshots, load_config_snapshot, publish_config_snapshot,

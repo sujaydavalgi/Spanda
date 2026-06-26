@@ -16,6 +16,15 @@ pub enum ConfigApprovalStatus {
     Rejected,
 }
 
+/// One operator vote on a pending configuration approval request.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ConfigApprovalVote {
+    pub approver: String,
+    pub approved_at_ms: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub note: Option<String>,
+}
+
 /// One approval request tied to a saved configuration snapshot.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ConfigApprovalRequest {
@@ -24,12 +33,38 @@ pub struct ConfigApprovalRequest {
     pub requester: String,
     pub status: ConfigApprovalStatus,
     pub created_at_ms: f64,
+    #[serde(default = "default_required_approvals")]
+    pub required_approvals: u32,
+    #[serde(default)]
+    pub approvals: Vec<ConfigApprovalVote>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub resolved_at_ms: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub resolver: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
+}
+
+fn default_required_approvals() -> u32 {
+    1
+}
+
+/// Resolve how many distinct approvers are required for publish-on-approve.
+pub fn approval_policy_required_count(explicit: Option<u32>) -> u32 {
+    explicit
+        .filter(|count| *count > 0)
+        .or_else(|| {
+            std::env::var("SPANDA_CONFIG_APPROVALS_REQUIRED")
+                .ok()
+                .and_then(|value| value.parse::<u32>().ok())
+        })
+        .filter(|count| *count > 0)
+        .unwrap_or(1)
+}
+
+/// Whether a request has collected enough distinct approver votes.
+pub fn approval_quorum_met(request: &ConfigApprovalRequest) -> bool {
+    request.approvals.len() >= request.required_approvals as usize
 }
 
 /// Persisted approval queue for Control Center configuration management.
@@ -82,15 +117,19 @@ pub fn submit_config_approval(
     snapshot_id: &str,
     requester: &str,
     note: Option<String>,
+    required_approvals: Option<u32>,
 ) -> ConfigResult<ConfigApprovalRequest> {
     let snapshots_dir = default_snapshots_dir();
     let _snapshot = load_config_snapshot(&snapshots_dir, snapshot_id)?;
+    let required = approval_policy_required_count(required_approvals);
     let request = ConfigApprovalRequest {
         id: format!("approval-{}", now_ms().to_string().replace('.', "")),
         snapshot_id: snapshot_id.to_string(),
         requester: requester.to_string(),
         status: ConfigApprovalStatus::Pending,
         created_at_ms: now_ms(),
+        required_approvals: required,
+        approvals: Vec::new(),
         resolved_at_ms: None,
         resolver: None,
         note,
@@ -99,11 +138,12 @@ pub fn submit_config_approval(
     Ok(request)
 }
 
-/// Approve a pending configuration publish request.
+/// Record an approver vote; finalizes when quorum is met.
 pub fn approve_config_request(
     queue: &mut ConfigApprovalQueue,
     request_id: &str,
     resolver: &str,
+    note: Option<String>,
 ) -> ConfigResult<ConfigApprovalRequest> {
     let request = queue
         .requests
@@ -117,9 +157,26 @@ pub fn approve_config_request(
             detail: format!("approval request '{request_id}' is not pending"),
         });
     }
-    request.status = ConfigApprovalStatus::Approved;
-    request.resolved_at_ms = Some(now_ms());
-    request.resolver = Some(resolver.to_string());
+    if request.approvals.iter().any(|vote| vote.approver == resolver) {
+        return Err(ConfigError::Approval {
+            detail: format!("approver '{resolver}' already voted on '{request_id}'"),
+        });
+    }
+    if request.required_approvals > 1 && request.requester == resolver {
+        return Err(ConfigError::Approval {
+            detail: "requester cannot approve their own multi-approver request".into(),
+        });
+    }
+    request.approvals.push(ConfigApprovalVote {
+        approver: resolver.to_string(),
+        approved_at_ms: now_ms(),
+        note,
+    });
+    if approval_quorum_met(request) {
+        request.status = ConfigApprovalStatus::Approved;
+        request.resolved_at_ms = Some(now_ms());
+        request.resolver = Some(resolver.to_string());
+    }
     Ok(request.clone())
 }
 
@@ -220,12 +277,59 @@ mod tests {
             requester: "operator".into(),
             status: ConfigApprovalStatus::Pending,
             created_at_ms: 1.0,
+            required_approvals: 1,
+            approvals: Vec::new(),
             resolved_at_ms: None,
             resolver: None,
             note: None,
         });
-        let approved = approve_config_request(&mut queue, "approval-1", "officer").unwrap();
+        let approved =
+            approve_config_request(&mut queue, "approval-1", "officer", None).unwrap();
         assert_eq!(approved.status, ConfigApprovalStatus::Approved);
+        assert_eq!(approved.approvals.len(), 1);
+    }
+
+    #[test]
+    fn two_of_two_requires_distinct_approvers() {
+        let mut queue = ConfigApprovalQueue::default();
+        queue.requests.push(ConfigApprovalRequest {
+            id: "approval-2".into(),
+            snapshot_id: "cfg-1".into(),
+            requester: "operator".into(),
+            status: ConfigApprovalStatus::Pending,
+            created_at_ms: 1.0,
+            required_approvals: 2,
+            approvals: Vec::new(),
+            resolved_at_ms: None,
+            resolver: None,
+            note: None,
+        });
+        let first = approve_config_request(&mut queue, "approval-2", "officer-a", None).unwrap();
+        assert_eq!(first.status, ConfigApprovalStatus::Pending);
+        assert_eq!(first.approvals.len(), 1);
+        let second = approve_config_request(&mut queue, "approval-2", "officer-b", None).unwrap();
+        assert_eq!(second.status, ConfigApprovalStatus::Approved);
+        assert_eq!(second.approvals.len(), 2);
+    }
+
+    #[test]
+    fn requester_cannot_self_approve_multi_approver_request() {
+        let mut queue = ConfigApprovalQueue::default();
+        queue.requests.push(ConfigApprovalRequest {
+            id: "approval-3".into(),
+            snapshot_id: "cfg-1".into(),
+            requester: "operator".into(),
+            status: ConfigApprovalStatus::Pending,
+            created_at_ms: 1.0,
+            required_approvals: 2,
+            approvals: Vec::new(),
+            resolved_at_ms: None,
+            resolver: None,
+            note: None,
+        });
+        let error = approve_config_request(&mut queue, "approval-3", "operator", None)
+            .expect_err("self approve");
+        assert!(error.to_string().contains("requester cannot approve"));
     }
 
     #[test]
