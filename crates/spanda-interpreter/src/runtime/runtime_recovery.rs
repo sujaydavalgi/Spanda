@@ -9,8 +9,9 @@ use super::super::super::simulator::{create_default_simulator, SimulatorConfig};
 use super::{Interpreter, RobotBackend};
 use serde::{Deserialize, Serialize};
 use spanda_assurance::{
-    classify_failure, default_knowledge_store_path, load_recovery_knowledge_store,
-    merge_recovery_knowledge, record_recovery_outcome, save_recovery_knowledge_store,
+    classify_failure, default_knowledge_store_path, extract_recovery_policies,
+    issue_to_recovery_issue, load_recovery_knowledge_store, merge_recovery_knowledge,
+    program_has_recovery_for_issue, record_recovery_outcome, save_recovery_knowledge_store,
     validate_recovery_plan, RecoveryContext, RecoveryLevel, RecoveryPlanner, RecoveryResult,
     RecoveryStatus,
 };
@@ -450,6 +451,9 @@ impl<B: RobotBackend> Interpreter<B> {
                 self.request_operator_approval(&safe.action.description);
                 failed.push(format!("{} (approval required)", safe.action.description));
                 operator_approval = Some("Operator".into());
+                if !self.deferred_recovery_issues.iter().any(|pending| pending == issue) {
+                    self.deferred_recovery_issues.push(issue.to_string());
+                }
                 continue;
             }
             self.dispatch_recovery_action(&safe.action.description)?;
@@ -511,6 +515,70 @@ impl<B: RobotBackend> Interpreter<B> {
         let _ = self.try_invoke_continuity_for_event(issue);
 
         Ok(result)
+    }
+
+    /// Execute assurance-gated recovery when policies cover a runtime issue.
+    pub(super) fn execute_recovery_auto(
+        &mut self,
+        issue: &str,
+    ) -> Result<Option<RecoveryResult>, SpandaError> {
+        let Some(program) = self.health_program.clone() else {
+            return Ok(None);
+        };
+        if extract_recovery_policies(&program).is_empty() {
+            return Ok(None);
+        }
+        if !program_has_recovery_for_issue(&program, issue) {
+            return Ok(None);
+        }
+        let result = self.execute_recovery_runtime(issue)?;
+        self.log(format!(
+            "recovery: auto-triggered for '{issue}' -> {:?} ({} action(s))",
+            result.status,
+            result.executed_actions.len()
+        ));
+        Ok(Some(result))
+    }
+
+    /// Attempt recovery dispatch for a hardware or health event during run/sim.
+    pub(super) fn try_invoke_recovery_for_event(
+        &mut self,
+        event: &str,
+    ) -> Result<(), SpandaError> {
+        let issue = issue_to_recovery_issue(event).unwrap_or_else(|| event.to_string());
+        match self.execute_recovery_auto(&issue) {
+            Ok(Some(_)) => Ok(()),
+            Ok(None) => Ok(()),
+            Err(err) => {
+                self.log(format!(
+                    "recovery: auto-trigger skipped for '{event}': {err}"
+                ));
+                Ok(())
+            }
+        }
+    }
+
+    /// Re-run recovery plans deferred while waiting for operator approval.
+    pub(super) fn retry_deferred_recovery_issues(&mut self) -> Result<(), SpandaError> {
+        if self.deferred_recovery_issues.is_empty() {
+            return Ok(());
+        }
+        let pending: Vec<String> = self.deferred_recovery_issues.clone();
+        self.deferred_recovery_issues.clear();
+        for issue in pending {
+            if !self.pending_recovery_approvals.is_empty() {
+                self.deferred_recovery_issues.push(issue);
+                continue;
+            }
+            let _ = self.execute_recovery_auto(&issue)?;
+        }
+        Ok(())
+    }
+
+    /// Poll approval topics and retry deferred recovery when grants arrive.
+    pub(super) fn poll_and_retry_recovery(&mut self) {
+        self.poll_recovery_approvals();
+        let _ = self.retry_deferred_recovery_issues();
     }
 
     fn restart_active_connectivity(&mut self) -> Result<(), SpandaError> {
@@ -629,6 +697,14 @@ impl<B: RobotBackend> Interpreter<B> {
                     }
                     Err(err) => {
                         self.log(format!("fleet_mesh: recovery relay failed: {err}"));
+                        self.record_mission_event(
+                            "fleet_mesh_recovery_failed",
+                            serde_json::json!({
+                                "fleet": fleet_name,
+                                "action": action,
+                                "error": err.to_string(),
+                            }),
+                        );
                     }
                 }
             }

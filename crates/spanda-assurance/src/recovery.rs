@@ -465,6 +465,83 @@ pub fn extract_recovery_policies(program: &Program) -> Vec<RecoveryPolicySpec> {
     specs
 }
 
+/// Map a runtime fault or health event to a recovery policy issue key.
+pub fn issue_to_recovery_issue(event: &str) -> Option<String> {
+    // Normalize hardware and health events into recovery policy condition keys.
+    //
+    // Parameters:
+    // - `event` — runtime fault, health label, or hardware event name
+    //
+    // Returns:
+    // Issue key such as `gps.failed`, or None when unmappable.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // assert_eq!(issue_to_recovery_issue("GPSFailure").as_deref(), Some("gps.failed"));
+
+    let lower = event.to_ascii_lowercase();
+    if lower.contains("gps") {
+        return Some("gps.failed".into());
+    }
+    if lower.contains("lidar") {
+        return Some("lidar.failed".into());
+    }
+    if lower.contains("camera") {
+        return Some("camera.failed".into());
+    }
+    if lower.contains("connectivity") || lower.contains("comm") || lower.contains("network") {
+        return Some("connectivity.lost".into());
+    }
+    if lower.contains("battery") {
+        return Some("battery.critical".into());
+    }
+    if lower.contains("robothealthcritical") || lower.contains("robot.failed") {
+        return Some("robot.failed".into());
+    }
+    if lower.contains("degraded") {
+        return Some("robot.degraded".into());
+    }
+    if lower.ends_with("failure") {
+        let stem = lower.trim_end_matches("failure");
+        if !stem.is_empty() {
+            return Some(format!("{}.failed", stem));
+        }
+    }
+    if lower.contains("failed") || lower.contains("fault") {
+        return Some(lower.replace('_', "."));
+    }
+    None
+}
+
+/// Return true when the program declares `recovery_policy` for the issue.
+pub fn program_has_recovery_for_issue(program: &Program, issue: &str) -> bool {
+    // Check recovery policy branches against a normalized issue key.
+    //
+    // Parameters:
+    // - `program` — parsed `.sd` program
+    // - `issue` — recovery issue key (for example `gps.failed`)
+    //
+    // Returns:
+    // True when a policy branch matches the issue.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // let covered = program_has_recovery_for_issue(&program, "gps.failed");
+
+    let lower = issue.to_ascii_lowercase();
+    extract_recovery_policies(program)
+        .iter()
+        .any(|policy| {
+            policy.triggers.iter().any(|(condition, _)| {
+                condition_matches(&lower, &condition.to_ascii_lowercase())
+            })
+        })
+}
+
 /// Validate recovery actions through safety, hardware, capability, and readiness gates.
 pub fn validate_recovery_plan(program: &Program, plan: &RecoveryPlan) -> Vec<SafeRecoveryAction> {
     // Description:
@@ -1845,6 +1922,17 @@ robot Rover {
             classify_failure("gps.failed"),
             FailureClassification::SensorFailure
         );
+    }
+
+    fn issue_to_recovery_issue_maps_gps_failure() {
+        assert_eq!(
+            issue_to_recovery_issue("GPSFailure").as_deref(),
+            Some("gps.failed")
+        );
+        assert!(program_has_recovery_for_issue(
+            &parse_source(RECOVERY_ROVER),
+            "gps.failed"
+        ));
     }
 
     #[test]

@@ -68,6 +68,26 @@ Validated recovery actions dispatch at runtime:
 - `pause mission` — pauses mission controller
 - Fleet actions — `reassign mission`, `redistribute tasks`, `promote backup coordinator` (also relay **continuity takeover** via `POST /v1/fleet/continuity` when mesh URL is set)
 
+### Auto-trigger during run/sim
+
+When a program declares `recovery_policy`, the interpreter automatically evaluates recovery during:
+
+- Hardware fault events (`run_hardware_triggers`)
+- Critical/degraded health transitions (`poll_runtime_health_changes`)
+- Runtime fault polling (`poll_runtime_fault_changes`)
+
+Look for log lines `recovery: auto-triggered for '…'` during `spanda run` / `spanda sim --inject-health-faults`.
+
+### Operator approval
+
+High-risk actions require operator approval via:
+
+- `SPANDA_OPERATOR_APPROVAL=1` (simulation/testing)
+- `SPANDA_GRANT_RECOVERY_APPROVAL=<action substring>`
+- `Approval` topic messages received on subscribed comm topics (polled every trigger maintenance tick)
+- Mission `requires approval Operator for: <action>` gates `mission.start`, `mission.advance`, and `mission.resume` until approval is granted
+- Deferred recovery: approval-gated actions retry automatically when approval is granted on a later tick
+
 Runtime recovery actions publish fleet coordination commands on `/fleet/recovery`
 (Command) for in-process comm buses. When `SPANDA_FLEET_MESH_URL` is set, the runtime
 also posts the same action to the fleet mesh coordinator (`POST /v1/fleet/recovery`),

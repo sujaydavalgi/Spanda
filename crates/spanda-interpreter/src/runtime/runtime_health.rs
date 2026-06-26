@@ -77,9 +77,11 @@ impl<B: RobotBackend> Interpreter<B> {
         let events = self.hardware_monitor.runtime_events();
         for fault in &faults {
             let _ = self.try_invoke_continuity_for_event(fault);
+            let _ = self.try_invoke_recovery_for_event(fault);
         }
         for event in &events {
             let _ = self.try_invoke_continuity_for_event(event);
+            let _ = self.try_invoke_recovery_for_event(event);
         }
         let mut report = evaluate_runtime_health(&faults, &events, &program);
         spanda_capability::apply_fleet_health_checks(&mut report, &program, &self.fleets, &faults);
@@ -138,6 +140,7 @@ impl<B: RobotBackend> Interpreter<B> {
             HealthStatus::Critical | HealthStatus::Unsafe | HealthStatus::Failed
         ) {
             let _ = self.try_invoke_continuity_for_event("RobotHealthCritical");
+            let _ = self.try_invoke_recovery_for_event("RobotHealthCritical");
         }
         self.apply_swarm_health_coordination(&report);
     }
