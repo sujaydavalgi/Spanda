@@ -79,6 +79,7 @@ async fn grpc_live_control_center_endpoints() {
         .expect("list incidents")
         .into_inner();
     assert!(incidents.json.contains("incidents"));
+    assert!(sre.json.contains("slo"));
 
     let trust = client
         .get_trust_package(TrustPackageRequest {

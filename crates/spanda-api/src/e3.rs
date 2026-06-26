@@ -207,13 +207,14 @@ pub fn sre_summary(state: &ControlCenterState) -> HttpResponse {
         .count();
     let traces = state.trace_log.list_owned();
     let incidents = state.incident_store.list_owned();
+    let availability = if pool.total == 0 {
+        100.0
+    } else {
+        ((pool.healthy + pool.assigned) as f64 / pool.total as f64) * 100.0
+    };
     json_ok(&serde_json::json!({
         "version": "v1",
-        "availability_percent": if pool.total == 0 {
-            100.0
-        } else {
-            ((pool.healthy + pool.assigned) as f64 / pool.total as f64) * 100.0
-        },
+        "availability_percent": availability,
         "devices_total": pool.total,
         "devices_healthy": pool.healthy,
         "alerts_total": alerts.len(),
@@ -223,6 +224,7 @@ pub fn sre_summary(state: &ControlCenterState) -> HttpResponse {
         "incidents_open": state.incident_store.open_count(),
         "incidents_acknowledged": state.incident_store.acknowledged_count(),
         "mttr_hint_ms": state.incident_store.mttr_hint_ms(),
+        "slo": spanda_ops::slo_status(availability),
     }))
 }
 
