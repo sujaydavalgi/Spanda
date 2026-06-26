@@ -12,6 +12,7 @@ pub mod policy;
 pub mod rbac;
 pub mod rate_limit;
 pub mod runtime;
+pub mod tenant;
 pub mod secret_vault;
 pub mod secrets;
 pub mod secure_comm;
@@ -36,6 +37,7 @@ pub use policy::{
 };
 pub use rbac::{permission_matrix, ApiKeyRecord, ApiKeyStore, RbacAction, RbacContext, Role};
 pub use rate_limit::RateLimiter;
+pub use tenant::{default_tenant_id, tenant_matches};
 pub use runtime::{SecurityContext, SecuritySnapshot};
 pub use secret_vault::{ManagedSecretVault, SecretMetadata, SecretVaultBackend};
 pub use secrets::{SecretHandle, SecretSource, SecretStore};

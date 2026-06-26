@@ -50,6 +50,12 @@ pub enum RbacAction {
 pub struct RbacContext {
     pub key_id: String,
     pub role: Role,
+    #[serde(default = "default_tenant_field")]
+    pub tenant_id: String,
+}
+
+fn default_tenant_field() -> String {
+    crate::tenant::default_tenant_id()
 }
 
 /// API key record (token value is stored hashed or as opaque secret).
@@ -60,6 +66,8 @@ pub struct ApiKeyRecord {
     pub role: Role,
     #[serde(default)]
     pub label: Option<String>,
+    #[serde(default = "default_tenant_field")]
+    pub tenant_id: String,
 }
 
 /// In-memory API key store for Control Center v1.
@@ -74,6 +82,7 @@ impl ApiKeyStore {
     }
 
     pub fn from_env() -> Self {
+        let tenant_id = crate::tenant::default_tenant_id();
         let mut store = Self::new();
         if let Ok(token) = std::env::var("SPANDA_API_KEY") {
             store.keys.push(ApiKeyRecord {
@@ -81,7 +90,20 @@ impl ApiKeyStore {
                 token,
                 role: Role::Administrator,
                 label: Some("SPANDA_API_KEY".into()),
+                tenant_id: tenant_id.clone(),
             });
+        }
+        store
+    }
+
+    pub fn from_env_and_file() -> Self {
+        let mut store = Self::from_env();
+        if let Ok(path) = std::env::var("SPANDA_API_KEYS_FILE") {
+            if let Ok(content) = std::fs::read_to_string(path) {
+                if let Ok(keys) = serde_json::from_str::<Vec<ApiKeyRecord>>(&content) {
+                    store.keys.extend(keys);
+                }
+            }
         }
         store
     }
@@ -97,7 +119,25 @@ impl ApiKeyStore {
             .map(|k| RbacContext {
                 key_id: k.key_id.clone(),
                 role: k.role,
+                tenant_id: k.tenant_id.clone(),
             })
+    }
+
+    pub fn check_tenant(ctx: Option<&RbacContext>, server_tenant: &str) -> bool {
+        ctx.is_some_and(|context| crate::tenant::tenant_matches(server_tenant, &context.tenant_id))
+    }
+
+    pub fn check_scoped(
+        ctx: Option<&RbacContext>,
+        server_tenant: &str,
+        action: RbacAction,
+    ) -> bool {
+        match ctx {
+            Some(context) if crate::tenant::tenant_matches(server_tenant, &context.tenant_id) => {
+                Self::authorize(context.role, action)
+            }
+            _ => false,
+        }
     }
 
     pub fn authorize(role: Role, action: RbacAction) -> bool {
