@@ -65,6 +65,16 @@ pub fn evaluate_policy(
     policy_name: &str,
     source_label: &str,
 ) -> Result<PolicyEvaluationReport, String> {
+    evaluate_policy_with_options(program, policy_name, source_label, None)
+}
+
+/// Evaluate a named operational policy with optional readiness evaluation options.
+pub fn evaluate_policy_with_options(
+    program: &Program,
+    policy_name: &str,
+    source_label: &str,
+    readiness_options: Option<&ReadinessOptions>,
+) -> Result<PolicyEvaluationReport, String> {
     // Check declared policy rules against robots, safety, and readiness signals.
     //
     // Parameters:
@@ -99,6 +109,7 @@ pub fn evaluate_policy(
                     program,
                     policy_name,
                     source_label,
+                    readiness_options,
                     *score,
                     &mut violations,
                 );
@@ -255,11 +266,13 @@ fn check_min_readiness_score(
     program: &Program,
     policy_name: &str,
     source_label: &str,
+    readiness_options: Option<&ReadinessOptions>,
     minimum: u32,
     violations: &mut Vec<PolicyViolation>,
 ) {
     let _ = source_label;
-    let readiness = evaluate_readiness(program, &ReadinessOptions::default());
+    let options = readiness_options.cloned().unwrap_or_default();
+    let readiness = evaluate_readiness(program, &options);
     if readiness.score.total < minimum {
         violations.push(violation(
             policy_name,

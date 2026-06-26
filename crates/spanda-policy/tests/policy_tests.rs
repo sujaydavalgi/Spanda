@@ -2,7 +2,8 @@
 
 use spanda_lexer::tokenize;
 use spanda_parser::parse;
-use spanda_policy::{evaluate_policy, list_policies};
+use spanda_policy::{evaluate_policy, list_policies, evaluate_readiness_with_policy};
+use spanda_readiness::{evaluate_readiness, ReadinessOptions};
 use std::path::PathBuf;
 
 fn repo_path(parts: &[&str]) -> PathBuf {
@@ -70,6 +71,31 @@ fn readiness_rover_fails_requires_kill_switch_policy() {
         .violations
         .iter()
         .any(|v| v.rule == "requires_kill_switch"));
+}
+
+#[test]
+fn readiness_merges_operational_policy_factor() {
+    let program = parse_file(repo_path(&[
+        "examples",
+        "showcase",
+        "policy",
+        "warehouse.sd",
+    ]));
+    let base = evaluate_readiness(&program, &ReadinessOptions::default());
+    let (merged, policy_report) = evaluate_readiness_with_policy(
+        &program,
+        "warehouse.sd",
+        &ReadinessOptions::default(),
+        "WarehousePolicy",
+        base,
+    )
+    .unwrap();
+    assert!(policy_report.passed);
+    assert!(merged
+        .score
+        .factors
+        .iter()
+        .any(|factor| factor.factor == "OperationalPolicy"));
 }
 
 use spanda_ast::nodes::Program;

@@ -15,6 +15,7 @@ spanda readiness examples/showcase/readiness/rover.sd --runtime
 spanda readiness examples/showcase/readiness/rover.sd --runtime --inject-health-faults
 spanda readiness examples/showcase/readiness/rover.sd --json
 spanda readiness examples/showcase/readiness/rover.sd --agent-json
+spanda readiness examples/showcase/policy/warehouse.sd --policy WarehousePolicy
 spanda readiness examples/showcase/secure_boot/rover.sd --agent Rover@Jetson
 spanda check examples/showcase/readiness/rover.sd --readiness-json --json
 spanda demo readiness
@@ -56,6 +57,19 @@ Issues:
 | Storage / Compute | Resource budgets (when declared) |
 | Packages / Providers | Traceability matrix |
 | Mission Requirements | `mission { requires capabilities [...] }` |
+| Operational policy | `spanda readiness --policy <name>` — weighted **OperationalPolicy** factor and policy violations as readiness issues |
+
+## Operational policy integration
+
+When `--policy <name>` is set, readiness evaluation merges verify-time operational policy rules into the report:
+
+- Adds an **OperationalPolicy** factor to the weighted score (weight 8)
+- Maps policy violations to readiness issues (`High` for errors, `Medium` for warnings)
+- Sets `mission_ready = false` when the policy fails
+
+Use the same flag with deployment gates: `spanda deploy gate <file.sd> --operational-policy <name>`.
+
+See [policy-engine.md](./policy-engine.md).
 
 ## Types
 

@@ -33,6 +33,7 @@ struct ParsedReadinessCli {
     agent_json: bool,
     record: bool,
     compliance_profile: Option<String>,
+    operational_policy: Option<String>,
     history_path: Option<String>,
     system_config: Option<std::sync::Arc<spanda_config::ResolvedSystemConfig>>,
 }
@@ -141,6 +142,7 @@ fn parse_readiness_cli(args: &[String]) -> ParsedReadinessCli {
     let mut history_path: Option<String> = None;
     let mut record = false;
     let mut compliance_profile: Option<String> = None;
+    let mut operational_policy: Option<String> = None;
     let mut file: Option<String> = None;
     let mut i = 0usize;
     while i < args.len() {
@@ -173,6 +175,14 @@ fn parse_readiness_cli(args: &[String]) -> ParsedReadinessCli {
                     process::exit(1);
                 }
                 compliance_profile = Some(args[i].clone());
+            }
+            "--policy" => {
+                i += 1;
+                if i >= args.len() {
+                    eprintln!("--policy requires an operational policy name");
+                    process::exit(1);
+                }
+                operational_policy = Some(args[i].clone());
             }
             "--history" => {
                 i += 1;
@@ -272,6 +282,7 @@ fn parse_readiness_cli(args: &[String]) -> ParsedReadinessCli {
         agent_json,
         record,
         compliance_profile,
+        operational_policy,
         history_path,
         system_config,
     }
@@ -438,7 +449,28 @@ pub fn cmd_readiness(args: &[String]) {
     }
 
     let program = parse_program(&source);
-    let report = evaluate_with_options(&program, &parsed.options);
+    let mut report = evaluate_with_options(&program, &parsed.options);
+    let mut policy_passed = true;
+    let mut policy_report: Option<spanda_policy::PolicyEvaluationReport> = None;
+    if let Some(policy_name) = &parsed.operational_policy {
+        match spanda_policy::evaluate_readiness_with_policy(
+            &program,
+            &parsed.file,
+            &parsed.options,
+            policy_name,
+            report,
+        ) {
+            Ok((merged, evaluated)) => {
+                report = merged;
+                policy_passed = evaluated.passed;
+                policy_report = Some(evaluated);
+            }
+            Err(error) => {
+                eprintln!("{error}");
+                process::exit(1);
+            }
+        }
+    }
     if parsed.record {
         let default_history = default_readiness_history_path();
         let history_path = parsed
@@ -452,6 +484,15 @@ pub fn cmd_readiness(args: &[String]) {
         }
     }
     println!("{}", format_readiness(&report, parsed.format));
+    if let Some(policy_report) = &policy_report {
+        println!(
+            "{}",
+            spanda_policy::format_policy_report(
+                policy_report,
+                matches!(parsed.format, ReportFormat::Json)
+            )
+        );
+    }
     if let Some(profile_name) = &parsed.compliance_profile {
         match spanda_compliance::evaluate_compliance_profile(&program, profile_name, &parsed.file) {
             Ok(compliance) => {
@@ -472,7 +513,7 @@ pub fn cmd_readiness(args: &[String]) {
             }
         }
     }
-    if !report.mission_ready {
+    if !report.mission_ready || !policy_passed {
         process::exit(1);
     }
 }
@@ -900,7 +941,7 @@ pub fn readiness_dispatch(args: &[String]) {
 
     if args.is_empty() {
         eprintln!(
-            "Usage: spanda readiness <file.sd> [--baseline <dir|spanda.toml>] [--agent <Robot@Hardware>] [--record] [--profile <name>] [--target <profile>] [--runtime] [--inject-health-faults] [--json|--agent-json|--markdown|--html]\n\
+            "Usage: spanda readiness <file.sd> [--baseline <dir|spanda.toml>] [--agent <Robot@Hardware>] [--record] [--profile <name>] [--policy <name>] [--target <profile>] [--runtime] [--inject-health-faults] [--json|--agent-json|--markdown|--html]\n\
              spanda readiness trends <file.sd> [--forecast 7d] [--history <path>] [--json]"
         );
         process::exit(1);

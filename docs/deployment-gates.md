@@ -20,6 +20,7 @@ Prevent unsafe deployment when operational gates fail.
 | Package trust | Configured packages meet trust threshold (with `--config`) |
 | Composite trust | Program composite trust score ≥ 60 (`spanda-trust`) |
 | Secure boot | Secure-boot contract trust passes when `trust.jetson` / `trust.pi` imported |
+| Operational policy | Named `policy { }` passes verify-time rules (`--operational-policy <name>`) |
 | Health | No high-severity health readiness issues |
 
 ## CLI
@@ -27,6 +28,7 @@ Prevent unsafe deployment when operational gates fail.
 ```bash
 spanda deploy gate rover.sd
 spanda deploy gate rover.sd --policy production
+spanda deploy gate rover.sd --operational-policy WarehousePolicy
 spanda deploy gate rover.sd --json --config spanda.toml
 ```
 

@@ -33,6 +33,8 @@ policy WarehousePolicy {
 ```bash
 spanda verify examples/showcase/policy/warehouse.sd --policy WarehousePolicy
 spanda verify examples/showcase/policy/warehouse.sd --policy WarehousePolicy --json
+spanda readiness examples/showcase/policy/warehouse.sd --policy WarehousePolicy
+spanda deploy gate examples/showcase/policy/warehouse.sd --operational-policy WarehousePolicy
 spanda sim examples/showcase/policy/warehouse.sd --enforce-policy WarehousePolicy
 spanda run examples/showcase/policy/warehouse.sd --enforce-policy WarehousePolicy
 ```
@@ -51,8 +53,9 @@ Policy evaluation runs after hardware compatibility when `--policy` is set. Fail
 | Phase | When | Command | Status |
 |-------|------|---------|--------|
 | 1 | Verify-time | `spanda verify --policy WarehousePolicy` | **Experimental** |
-| 2 | Readiness | Policy factor in readiness score | Planned |
-| 3 | Runtime | Policy monitor in interpreter (`--enforce-policy`) | **Experimental** |
+| 2 | Readiness | Policy factor in readiness score (`spanda readiness --policy <name>`) | **Experimental** |
+| 3 | Deploy gates | `spanda deploy gate --operational-policy <name>` | **Experimental** |
+| 4 | Runtime | Policy monitor in interpreter (`--enforce-policy`) | **Experimental** |
 
 ## Integration
 

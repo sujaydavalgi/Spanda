@@ -808,6 +808,7 @@ fn cmd_status(args: &[String]) {
 fn cmd_gate(args: &[String]) {
     let json = args.iter().any(|a| a == "--json");
     let mut policy_name = "default".to_string();
+    let mut operational_policy: Option<String> = None;
     let mut config_path: Option<String> = None;
     let mut file: Option<String> = None;
     let mut i = 0usize;
@@ -821,6 +822,14 @@ fn cmd_gate(args: &[String]) {
                     process::exit(1);
                 }
                 policy_name = args[i].clone();
+            }
+            "--operational-policy" => {
+                i += 1;
+                if i >= args.len() {
+                    eprintln!("--operational-policy requires a policy name");
+                    process::exit(1);
+                }
+                operational_policy = Some(args[i].clone());
             }
             "--config" => {
                 i += 1;
@@ -839,7 +848,7 @@ fn cmd_gate(args: &[String]) {
         i += 1;
     }
     let file = file.unwrap_or_else(|| {
-        eprintln!("Usage: spanda deploy gate [--json] [--policy default|production] [--config <spanda.toml>] <file.sd>");
+        eprintln!("Usage: spanda deploy gate [--json] [--policy default|production] [--operational-policy <name>] [--config <spanda.toml>] <file.sd>");
         process::exit(1);
     });
     let source = read_source(&file);
@@ -889,6 +898,27 @@ fn cmd_gate(args: &[String]) {
             passed: secure_boot.passed,
             message: spanda_tamper::secure_boot_status_line(&secure_boot),
         });
+    }
+    if let Some(policy_name) = operational_policy.as_deref() {
+        match spanda_policy::evaluate_policy_with_options(
+            &program,
+            policy_name,
+            &file,
+            Some(&options),
+        ) {
+            Ok(policy_report) => {
+                report
+                    .gates
+                    .push(spanda_policy::operational_policy_gate(&policy_report));
+            }
+            Err(error) => {
+                report.gates.push(spanda_readiness::DeploymentGate {
+                    name: format!("operational_policy:{policy_name}"),
+                    passed: false,
+                    message: error,
+                });
+            }
+        }
     }
     report.passed = report.gates.iter().all(|gate| gate.passed);
     if json {
