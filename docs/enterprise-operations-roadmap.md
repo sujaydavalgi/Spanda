@@ -8,7 +8,7 @@ Strategic expansion plan for Spanda as a **complete Autonomous Systems Platform*
 
 **Related:** [roadmap.md](./roadmap.md) · [platform-maturity-roadmap.md](./platform-maturity-roadmap.md) · [differentiation-roadmap.md](./differentiation-roadmap.md) · [feature-status.md](./feature-status.md) · [platform-overview.md](./platform-overview.md)
 
-**Last updated:** 2026-06-25
+**Last updated:** 2026-06-26
 
 ---
 
@@ -20,7 +20,7 @@ Enterprise operations pillars compose existing engines — they do **not** repla
 |---|--------|-------------------|------|-----------------|
 | 1 | **Control Center** | Operate, Observe, Govern | Experimental | Web-based operational visibility |
 | 2 | **Device Pool** | Deploy, Operate | Experimental | Central device inventory and lifecycle |
-| 3 | **Device Discovery** | Deploy | Experimental | Package-backed discovery transports (mock mDNS in core) |
+| 3 | **Device Discovery** | Deploy | Experimental | Host-backed core probes (`discovery_live`) + optional registry packages |
 | 4 | **Provisioning** | Deploy, Verify | Experimental | Discover → verify → assign → ready workflow |
 | 5 | **Configuration Management** | Deploy, Operate | Experimental | Versioned cascading TOML with snapshots |
 | 6 | **RBAC** | Govern, Operate | Experimental | Role-based access for humans and services |
@@ -31,7 +31,7 @@ Enterprise operations pillars compose existing engines — they do **not** repla
 | 11 | **OTA & Rollback** | Deploy | Experimental | Canary, blue/green, phased rollout |
 | 12 | **Package Trust** | Verify, Build | Experimental | Signature, reputation, vulnerability scoring |
 | 13 | **SDKs** | Build, Operate | Experimental | Python SDK + REST v1; JSON-RPC gateway; WebSocket client |
-| 14 | **Operator Workflows** | Operate, Recover | Experimental | Mission approval, takeover, quarantine |
+| 14 | **Operator Workflows** | Operate, Recover | Experimental | Mission approval, takeover, quarantine, device trust |
 | 15 | **SRE** | Operate, Observe | Experimental | SLO/SLA, MTTR/MTBF, incident reporting |
 | 16 | **Reporting** | Govern, Audit | Experimental | Fleet, mission, compliance, executive exports (incl. PDF) |
 | 17 | **Compliance** | Verify, Govern, Audit | Experimental | Evidence packs, immutable audit trails |
@@ -54,7 +54,7 @@ Enterprise operations pillars compose existing engines — they do **not** repla
 | Device identity registry | `spanda-config::DeviceRegistry` | Device Pool v1 |
 | Cascading configuration | `spanda-config::ConfigResolver` | Configuration Management |
 | Config drift | `spanda-config::detect_config_drift` | Drift pillar (config dimension) |
-| Device discovery CLI | `spanda device discover`, `network scan` | Discovery v1 (IP subnet) |
+| Device discovery CLI | `spanda device discover` (subnet, mdns, ble, usb, can, mqtt, ros2), `network scan`, `POST /v1/devices/discover` | Discovery v1 + pool ingest |
 | Telemetry store | `spanda-telemetry-store` | Telemetry pillar |
 | OTA deploy | `spanda-ota`, `deploy rollout` | OTA & Rollback |
 | Package trust | `spanda-package::trust`, `spanda-trust` | Package Trust |
@@ -75,14 +75,14 @@ Enterprise operations pillars compose existing engines — they do **not** repla
 
 | Pillar | Core crate(s) | Responsibility |
 |--------|---------------|----------------|
-| Device Pool | extends `spanda-config` | Lifecycle state machine, inventory schema, assignment |
-| Device Discovery | `spanda-config` + trait in `spanda-providers` | Discovery contract; no vendor SDKs in core |
+| Device Pool | extends `spanda-config` | Lifecycle state machine, inventory schema, assignment, trust, failover chains |
+| Device Discovery | `spanda-config::discovery_live` + trait in `spanda-providers` | Host-backed probes; registry packages optional |
 | Provisioning | `spanda-readiness` + `spanda-config` | Workflow orchestration, gate composition |
 | Configuration Management | `spanda-config` | Versioning, snapshots, diff, rollback metadata |
 | RBAC | `spanda-security` | Roles, permissions, policy evaluation |
 | Secret Management | `spanda-security` | Secret store contract, encryption, rotation hooks |
 | Telemetry | `spanda-telemetry-store` | Storage, query, aggregation APIs |
-| Alerting | `spanda-ops` (proposed) | Alert rules, routing, deduplication |
+| Alerting | `spanda-ops` | Alert rules, routing, deduplication |
 | Configuration Drift | `spanda-config` + `spanda-readiness` | Multi-dimensional drift reports |
 | OTA & Rollback | `spanda-ota` | Rollout strategies, approval gates |
 | Package Trust | `spanda-package`, `spanda-trust` | Scoring engine (exists) |
@@ -90,9 +90,9 @@ Enterprise operations pillars compose existing engines — they do **not** repla
 | SRE | extends `spanda-readiness` | SLO computation, incident aggregation |
 | Reporting | `spanda-audit` + report composers | Report generation from engine outputs |
 | Compliance | `spanda-compliance` | Evidence pack assembly (exists) |
-| APIs | `spanda-api` (proposed) | REST + gRPC gateway over CLI engines |
-| Observability | `spanda-telemetry-store` + OTLP | Metrics/logs/traces export (partial) |
-| Digital Thread | `spanda-capability` + `spanda-audit` | Traceability graph (future) |
+| APIs | `spanda-api` | REST v1 + OpenAPI over CLI engines; JSON-RPC gateway |
+| Observability | `spanda-telemetry-store` + OTLP | Trace log, OTLP export, WebSocket telemetry |
+| Digital Thread | `spanda-capability` + `spanda-audit` | Traceability query v1 (`GET /v1/digital-thread/query`) |
 | Control Center backend | `spanda-api` | Serves all UI modules |
 
 ### Packages (optional, vendor-specific)
@@ -332,26 +332,28 @@ Central inventory extending `DeviceRegistry` with lifecycle states:
 
 **Device types:** Robots, Sensors, Actuators, Accessories, Compute Modules, Controllers, Gateways, Cameras, GPS, Lidar, Radar, BLE/WiFi/LTE/5G/USB/CAN/EtherCAT/PLC devices.
 
-**Lifecycle states:** Discovered → Quarantined → Verified → Assigned → Healthy → Degraded → Offline → Failed → Retired.
+**Lifecycle states:** Discovered → Quarantined → Verified → Assigned → **Active** → Healthy → Degraded → Offline → Failed → Retired.
 
-**Core schema:** extends `[[devices]]` in `spanda.toml` with `lifecycle_state`, `assigned_robot`, `last_seen`, `provisioning_id`.
+**Operations:** `assign` / `unassign`, `quarantine`, `retire`, **`trust`** (API `POST /v1/devices/{id}/trust`, CLI `spanda device trust`, Control Center Trust/Approve); failover chains wired into recovery (`enrich_recovery_plan_with_failover`).
+
+**Core schema:** extends `[[devices]]` in `spanda.toml` with `lifecycle_state`, `assigned_robot`, `last_seen`, `provisioning_id`, `trust_level`.
 
 ### 6.2 Device Discovery
 
-Package-backed discovery transports:
+Core host-backed probes (`discovery_live`) with optional registry packages; discovery POST ingests matches into the device pool (`ingest_discovery_matches`).
 
-| Transport | Package (proposed) | Status |
-|-----------|-------------------|--------|
+| Transport | Core / package | Status |
+|-----------|----------------|--------|
 | IP subnet | core (`network scan`) | **Experimental** |
 | Manual | core (`[[devices]]`) | **Experimental** |
-| mDNS / DNS-SD | `spanda-discovery-mdns` | Planned |
-| USB | `spanda-discovery-usb` | Planned |
-| Bluetooth / BLE | `spanda-discovery-ble` | Planned |
-| CAN / EtherCAT | `spanda-discovery-can`, `spanda-discovery-ethercat` | Planned |
-| ROS2 / DDS | `spanda-ros2` (extend) | Experimental |
-| MQTT | `spanda-mqtt` (extend) | Experimental |
-| OPC-UA / Modbus | `spanda-opcua`, `spanda-modbus` | Experimental |
-| Serial | `spanda-discovery-serial` | Planned |
+| mDNS / DNS-SD | core (`dns-sd` / `avahi-browse`) + `spanda-discovery-mdns` registry | **Experimental** (host probe) / **Planned** (runtime package load) |
+| USB | core (`lsusb` probe) + `spanda-discovery-usb` | **Experimental** (host probe) / **Planned** (package) |
+| Bluetooth / BLE | core (`bluetoothctl` probe) + `spanda-discovery-ble` | **Experimental** (host probe) / **Planned** (package) |
+| CAN / EtherCAT | core (socketcan probe) + `spanda-discovery-can`, `spanda-discovery-ethercat` | **Experimental** (host probe) / **Planned** (package) |
+| ROS2 / DDS | core (`ros2 topic list` probe) + `spanda-ros2` | **Experimental** |
+| MQTT | core (broker probe) + `spanda-mqtt` | **Experimental** |
+| OPC-UA / Modbus | `spanda-opcua`, `spanda-modbus` | **Experimental** (stubs) |
+| Serial | `spanda-discovery-serial` | **Planned** |
 
 ### 6.3 Provisioning workflow
 
@@ -380,9 +382,9 @@ Extends cascading TOML ([cascading-config.md](./cascading-config.md)):
 |---------|--------|-------|
 | Environment overrides | **Experimental** | `[extends]` layers |
 | Deployment / robot / fleet overrides | **Experimental** | `ConfigResolver` |
-| Versioning | Planned | Config snapshot IDs |
-| Rollback | Planned | Point-in-time restore |
-| Snapshots | Planned | `.spanda/config-snapshots/` |
+| Versioning | **Experimental** | Config snapshot IDs |
+| Rollback | **Experimental** | Point-in-time restore via snapshots API |
+| Snapshots | **Experimental** | `.spanda/config-snapshots/`, `GET|POST /v1/config/snapshots` |
 | History | Planned | Audit-linked change log |
 | Diff | **Experimental** | `spanda config diff` |
 | Approval | Planned | RBAC-gated publish |
@@ -463,9 +465,9 @@ Extends existing `spanda deploy plan|rollout|rollback|status`:
 | Version pinning | **Experimental** |
 | Rollback | **Experimental** |
 | Approval gates (`--require-certify`) | **Experimental** |
-| Canary | Planned |
-| Blue/Green | Planned |
-| Phased rollout | Planned |
+| Canary | **Experimental** | `POST /v1/ota/plan` dry-run |
+| Blue/Green | **Experimental** | `RolloutStrategy::BlueGreen` dry-run |
+| Phased rollout | **Experimental** | staged strategy in OTA plan API |
 
 ### 6.11 Operator Workflows
 
@@ -477,6 +479,7 @@ Extends existing `spanda deploy plan|rollout|rollback|status`:
 | Emergency Stop | kill switch + safety engine |
 | Recovery Approval | `SPANDA_OPERATOR_APPROVAL`, RBAC |
 | Device Assignment | Device Pool |
+| Device Trust / Approve | `POST /v1/devices/{id}/trust`, `spanda device trust`, Control Center |
 | Device Quarantine | Device Pool lifecycle + trust downgrade |
 
 ### 6.12 SRE
@@ -504,9 +507,9 @@ Extends existing `spanda deploy plan|rollout|rollback|status`:
 | Recovery | recovery planner, knowledge | HTML, Markdown, JSON, PDF, CSV |
 | Executive Dashboard | scorecard | HTML, PDF |
 
-### 6.14 Digital Thread (Future)
+### 6.14 Digital Thread
 
-End-to-end traceability chain:
+End-to-end traceability chain (v1 query shipped; full lifecycle graph UI planned):
 
 Requirement → Mission → Capability → Hardware → Device → Provider → Package → Simulation → Verification → Deployment → Runtime → Recovery → Evidence → Audit → Retirement
 
@@ -608,7 +611,7 @@ Builds on `spanda-capability` traceability matrices + `spanda-audit` + mission c
 | Tauri packaging complexity | Low | Medium | Scaffold shipped; web-first; installers not published |
 | Duplicate drift logic | Medium | Medium | Single `spanda-config::drift` module; dimensions as plugins |
 | Breaking JSON schemas | High | Low | Version fields on all API responses |
-| Docs ahead of code | Low | High | All new docs marked **Planned** until CI smoke exists |
+| Docs ahead of code | Low | Medium | Enterprise ops pillars marked **Experimental** once `enterprise_ops_smoke.sh` passes; **Planned** only for not-yet-shipped scope |
 
 ---
 
