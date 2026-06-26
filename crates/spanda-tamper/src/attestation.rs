@@ -157,7 +157,7 @@ struct AttestationResponse {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_env::attestation_env_lock;
+    use crate::attestation_sync::attestation_env_lock;
 
     const SAMPLE_PEM: &str = "-----BEGIN CERTIFICATE-----\nQUJDRA==\n-----END CERTIFICATE-----";
 

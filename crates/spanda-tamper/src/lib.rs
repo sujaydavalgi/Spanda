@@ -2,6 +2,7 @@
 //!
 pub mod assurance;
 pub mod attestation;
+pub mod attestation_sync;
 pub mod detect;
 pub mod diagnosis;
 pub mod fleet;
@@ -12,8 +13,7 @@ pub mod runtime;
 pub mod secure_boot;
 pub mod tpm;
 
-#[cfg(test)]
-pub mod test_env;
+pub use attestation_sync::{attestation_env_lock, clear_attestation_env};
 
 pub use assurance::{
     format_security_assurance_report, generate_security_assurance, SecurityAssuranceFormat,
