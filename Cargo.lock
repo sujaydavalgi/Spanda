@@ -1789,6 +1789,7 @@ dependencies = [
  "spanda-parser",
  "spanda-readiness",
  "spanda-runtime",
+ "spanda-tamper",
  "spanda-trust",
 ]
 
@@ -2170,6 +2171,7 @@ dependencies = [
  "spanda-lexer",
  "spanda-parser",
  "spanda-readiness",
+ "spanda-tamper",
  "spanda-threat",
  "spanda-trust",
 ]

@@ -85,6 +85,7 @@ pub fn evaluate_scorecard(
         source_label,
         &spanda_trust::CompositeTrustOptions::default(),
     );
+    let secure_boot = spanda_tamper::evaluate_secure_boot_coverage(program, Some(source_label));
     let hardware = verify_program_compatibility(program, &VerifyOptions::default());
     let missions = verify_mission(program, None);
     let assurance = assure_program_with_config(program, source_label, config);
@@ -98,7 +99,27 @@ pub fn evaluate_scorecard(
         .saturating_sub(safety_audit.high_count.saturating_mul(8))
         .min(100);
     let threat_score = 100u32.saturating_sub(threat.risk_score);
-    let security_score = (threat_score + trust.score) / 2;
+    let security_score = if secure_boot.contracts.is_empty() {
+        (threat_score + trust.score) / 2
+    } else {
+        (threat_score + trust.score + secure_boot.score) / 3
+    };
+    let security_detail = if secure_boot.contracts.is_empty() {
+        format!(
+            "threat risk {}/100 composite trust {}/100 tier={}",
+            threat.risk_score,
+            trust.score,
+            trust.tier
+        )
+    } else {
+        format!(
+            "threat risk {}/100 composite trust {}/100 secure boot {}/100 tier={}",
+            threat.risk_score,
+            trust.score,
+            secure_boot.score,
+            trust.tier
+        )
+    };
     let verification_score = verification_score(&hardware, &missions);
     let assurance_score = if assurance.passed {
         100
@@ -124,12 +145,7 @@ pub fn evaluate_scorecard(
             health.checks.len(),
             health.overall
         )),
-        category("security", security_score, 15, &format!(
-            "threat risk {}/100 composite trust {}/100 tier={}",
-            threat.risk_score,
-            trust.score,
-            trust.tier
-        )),
+        category("security", security_score, 15, &security_detail),
         category("verification", verification_score, 10, &format!(
             "hardware_compatible={} missions={}",
             hardware.compatible,
@@ -157,6 +173,11 @@ pub fn evaluate_scorecard(
     }
     if threat.risk_score >= 30 {
         recommendations.push("Review `spanda threat-model` mitigations".into());
+    }
+    if !secure_boot.contracts.is_empty() && !secure_boot.passed {
+        recommendations.push(
+            "Resolve secure-boot contract trust or live attestation before deploy".into(),
+        );
     }
     if !hardware.compatible {
         recommendations.push("Run `spanda verify` for hardware compatibility".into());

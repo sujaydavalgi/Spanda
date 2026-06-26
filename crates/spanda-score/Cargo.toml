@@ -17,6 +17,7 @@ spanda-capability = { path = "../spanda-capability" }
 spanda-config = { path = "../spanda-config" }
 spanda-hardware = { path = "../spanda-hardware" }
 spanda-readiness = { path = "../spanda-readiness" }
+spanda-tamper = { path = "../spanda-tamper" }
 spanda-threat = { path = "../spanda-threat" }
 spanda-trust = { path = "../spanda-trust" }
 

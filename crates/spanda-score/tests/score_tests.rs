@@ -24,3 +24,37 @@ fn readiness_rover_produces_scorecard() {
     assert!(report.overall_score > 0);
     assert!(!report.tier.is_empty());
 }
+
+#[test]
+fn defense_showcase_scorecard_blends_secure_boot() {
+    let registry = repo_path(&["registry"]);
+    std::env::set_var(
+        "SPANDA_REGISTRY_URL",
+        format!("file://{}", registry.display()),
+    );
+    let path = repo_path(&[
+        "examples",
+        "showcase",
+        "compliance",
+        "defense_rover.sd",
+    ]);
+    let source = std::fs::read_to_string(&path).unwrap();
+    let program = parse(tokenize(&source).unwrap()).unwrap();
+    let report = evaluate_scorecard(
+        &program,
+        &source,
+        "compliance/defense_rover.sd",
+        &ScorecardOptions::default(),
+    );
+    let security = report
+        .categories
+        .iter()
+        .find(|entry| entry.name == "security")
+        .expect("security category");
+    assert!(
+        security.detail.contains("secure boot"),
+        "expected secure boot in security detail, got {}",
+        security.detail
+    );
+    std::env::remove_var("SPANDA_REGISTRY_URL");
+}

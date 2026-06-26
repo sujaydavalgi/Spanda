@@ -19,7 +19,7 @@ spanda score rover.sd --format markdown
 | Safety | Safety auditor, minimum-hardware analysis |
 | Health | Health checks, runtime health |
 | Readiness | `evaluate_readiness` |
-| Security | Threat model + `security check` |
+| Security | Threat model, composite program trust, secure-boot coverage (when `trust.jetson` / `trust.pi` imported) |
 | Resilience | Assurance recovery + chaos results |
 | Verification | `spanda verify` |
 | Assurance | `spanda assure` evidence |

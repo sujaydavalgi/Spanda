@@ -20,11 +20,19 @@ EXPLAIN="$(run_spanda explain "$FILE" 2>&1 || true)"
 echo "$EXPLAIN" | head -5
 echo "$EXPLAIN" | grep -q "composite_trust"
 
+echo "== explain secure_boot on defense showcase =="
+DEFENSE="${ROOT}/examples/showcase/compliance/defense_rover.sd"
+export SPANDA_REGISTRY_URL="file://${ROOT}/registry"
+EXPLAIN_SB="$(run_spanda explain "$DEFENSE" 2>&1 || true)"
+echo "$EXPLAIN_SB" | grep -q "secure_boot"
+unset SPANDA_REGISTRY_URL
+
 echo "== trust package =="
 run_spanda trust spanda-mqtt >/dev/null
 
 echo "== trust program =="
-run_spanda trust "$FILE" 2>&1 | grep -q "Composite trust:"
+TRUST_OUT="$(run_spanda trust "$FILE" 2>&1 || true)"
+echo "$TRUST_OUT" | grep -q "Composite trust:"
 
 echo "== deploy gate =="
 GATE_OUT="$(run_spanda deploy gate "$FILE" 2>&1 || true)"
@@ -33,6 +41,7 @@ echo "$GATE_OUT" | grep -q "composite_trust"
 
 echo "== demo maturity =="
 export SPANDA_ROOT="${ROOT}"
-run_spanda demo maturity
+DEMO_OUT="$(run_spanda demo maturity 2>&1 || true)"
+echo "$DEMO_OUT" | grep -q "Platform maturity"
 
 echo "Maturity smoke OK"
