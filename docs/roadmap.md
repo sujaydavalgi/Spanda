@@ -4,7 +4,7 @@ Version plan organized by **platform area**. Tiers: **Stable** (CI-backed, docum
 
 Current release line: **v0.4.0** (tagged 2026-06-22). **Next:** v0.5 beta (Q4 2026).
 
-**Last audited:** 2026-06-24 — [roadmap-codebase-audit-2026-06.md](./roadmap-codebase-audit-2026-06.md)
+**Last audited:** 2026-06-25 — [roadmap-codebase-audit-2026-06.md](./roadmap-codebase-audit-2026-06.md)
 
 Platform overview: [platform-overview.md](./platform-overview.md) · Feature truth table: [feature-status.md](./feature-status.md)
 
@@ -28,6 +28,7 @@ Platform overview: [platform-overview.md](./platform-overview.md) · Feature tru
 | [Self-healing](#self-healing--recovery) | Recovery planner + CLI (**Stable**); runtime dispatch experimental | Recovery Coverage CLI |
 | [Platform maturity](#platform-maturity) | 16-area design specs + topic guides | Phase A: `spanda graph`, `explain`, gates, package trust |
 | [Differentiation](#differentiation--signature-capabilities) | Topic guides + architecture specs (docs) | NOW engineering: contracts, explain, audit trail, coverage |
+| [Enterprise operations](#enterprise-operations) | Design spec + partial foundations (config, telemetry, OTA) | NOW: Control Center, Device Pool, Provisioning, RBAC, Secrets |
 
 ---
 
@@ -66,6 +67,62 @@ Full analysis: [platform-maturity-roadmap.md](./platform-maturity-roadmap.md)
 | D | v1.0 (2027) | Full trust platform | tamper/integrity, decision explain, runtime policy, AI generate/suggest (mock-first) |
 
 Topic guides: [dependency-graphs.md](./dependency-graphs.md) · [deployment-gates.md](./deployment-gates.md) · [tamper-detection.md](./tamper-detection.md) · [security-assurance.md](./security-assurance.md)
+
+---
+
+## Enterprise operations
+
+**Production-ready operations for enterprise, industrial, robotics, medical, warehouse, agricultural, research, and defense deployments** — composes Readiness, Assurance, Diagnosis, Recovery, Trust, Health, Device Registry, Configuration, Traceability, Audit, Security, and Packages without duplicating them.
+
+Full analysis: [enterprise-operations-roadmap.md](./enterprise-operations-roadmap.md)
+
+### Platform pillars (20 areas)
+
+| # | Pillar | Priority | Status |
+|---|--------|----------|--------|
+| 1 | Control Center (web UI) | NOW | **Experimental** — `spanda control-center serve` |
+| 2 | Device Pool (central inventory) | NOW | **Experimental** (extends `DeviceRegistry` + lifecycle) |
+| 3 | Device Discovery (package transports) | NOW | **Experimental** (IP subnet, manual) / **Planned** (mDNS, BLE, CAN, …) |
+| 4 | Provisioning (discover → ready workflow) | NOW | **Planned** |
+| 5 | Configuration Management (versioned cascading TOML) | NOW | **Experimental** (resolve, diff) / **Planned** (snapshots, approval) |
+| 6 | RBAC (roles + permissions) | NOW | **Experimental** — `SPANDA_API_KEY`, `/v1/rbac/matrix` |
+| 7 | Secret Management (rotation, audit) | NOW | **Experimental** — `ManagedSecretVault` contract |
+| 8 | Telemetry (time-series, trends) | NOW | **Experimental** — [telemetry-store.md](./telemetry-store.md) |
+| 9 | Alerting (multi-channel) | NOW | **Experimental** — `spanda-ops`, webhook/email env |
+| 10 | Configuration Drift (6 dimensions) | NEXT | **Experimental** (config, firmware) / **Planned** (package, provider, capability, policy, safety) |
+| 11 | OTA & Rollback (canary, blue/green) | NEXT | **Experimental** (rollout, rollback) / **Planned** (canary, phased) |
+| 12 | Package Trust (scoring) | NEXT | **Experimental** — `spanda trust` |
+| 13 | SDKs (Python, REST, gRPC, WebSocket) | NEXT | **Planned** |
+| 14 | Operator Workflows (approve, takeover, quarantine) | NEXT | **Experimental** (takeover, approval env) / **Planned** (UI workflows) |
+| 15 | SRE (SLO, MTTR, incidents) | NEXT | **Planned** |
+| 16 | Reporting (fleet, mission, compliance exports) | LATER | **Planned** |
+| 17 | Compliance (evidence packs) | LATER | **Experimental** — `spanda compliance report` |
+| 18 | APIs (REST + gRPC CLI parity) | NEXT | **Experimental** (REST v1) / **Planned** (gRPC) |
+| 19 | Observability (OTel, traces, correlation) | NEXT | **Experimental** (OTLP push/serve) / **Planned** (distributed tracing) |
+| 20 | Digital Thread (requirement → retirement) | LATER | **Future** |
+
+### Priority horizons
+
+| Horizon | Timeline | Pillars |
+|---------|----------|---------|
+| **NOW** | 0–6 months (v0.5–v0.6) | Control Center, Device Pool, Provisioning, Telemetry, Alerting, RBAC, Secrets |
+| **NEXT** | 6–12 months (v0.6–v0.7) | SDKs, Configuration Drift (full), OTA strategies, Package Trust UI, Observability |
+| **LATER** | 12–18 months (v0.8–v1.0) | Compliance Packs, Executive Dashboards, Digital Thread, Predictive Analytics |
+
+### Phased delivery
+
+| Phase | Release | Theme | Key deliverables |
+|-------|---------|-------|------------------|
+| E1 | v0.5+ (Q3–Q4 2026) | Control plane | `spanda-api` REST v1, Control Center shell (Dashboard, Fleet, Readiness), Device Pool lifecycle, RBAC v1, secret store contract, alerting core |
+| E2 | v0.6 (Q1 2027) | Provision & observe | Provisioning workflow, Device Pool UI, discovery packages, telemetry backend, alert channels, Health/Assurance/Diagnosis modules, config snapshots |
+| E3 | v0.7 (Q2 2027) | Deploy & integrate | Python SDK, gRPC, full drift, OTA canary/phased, Package Trust UI, OpenTelemetry, operator workflows, SRE dashboard |
+| E4 | v1.0 (2027) | Govern & trace | Compliance UI, executive dashboards, Digital Thread v1, predictive analytics, PDF reporting, Tauri desktop |
+
+**Exit criteria (E1):** `spanda control-center serve` + `scripts/enterprise_ops_smoke.sh` — **shipped**
+
+**UI stack:** React + TypeScript (`@spanda/control-center`, extends `packages/web`); Rust backend (`spanda-api`); future Tauri desktop packaging.
+
+**Lean-core:** Contracts in `spanda-api`, `spanda-config`, `spanda-security`, `spanda-ops`; vendor SDKs and alert channels in optional packages.
 
 ---
 
@@ -388,13 +445,15 @@ See [product-strategy.md](./product-strategy.md) § v0.5 beta and [tier-3-priori
 
 ### v1.0 — Production positioning
 
-**Theme:** Trust for field deployment.
+**Theme:** Trust for field deployment and enterprise operations.
 
 | Item | Tier |
 |------|------|
 | Interpreter + sim as supported LTS runtime | Stable |
 | Safety + verify + replay as certified workflows | Stable |
 | Native codegen for selected HAL profiles | Experimental → Stable |
+| Control Center + `spanda-api` (REST/gRPC CLI parity) | Planned → Stable |
+| Device Pool + Provisioning + RBAC | Planned → Stable |
 | Self-hosting compiler subset | Future (not primary) |
 | Blockchain / cryptocurrency adapters | **Out of scope** |
 | Advanced swarm intelligence research | **Out of scope** |
@@ -403,6 +462,7 @@ See [product-strategy.md](./product-strategy.md) § v0.5 beta and [tier-3-priori
 
 ## Related
 
+- [enterprise-operations-roadmap.md](./enterprise-operations-roadmap.md) — Control Center, Device Pool, provisioning, RBAC, APIs, observability (20 pillars)
 - [differentiation-roadmap.md](./differentiation-roadmap.md) — signature capabilities, mission contracts, explainability, coverage (15 areas)
 - [platform-maturity-roadmap.md](./platform-maturity-roadmap.md) — adoption, trust, operations expansion (16 areas)
 - [platform-overview.md](./platform-overview.md)

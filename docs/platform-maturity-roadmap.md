@@ -2,11 +2,13 @@
 
 Strategic expansion plan for Spanda as a **Safety, Verification, Readiness, Assurance, and Operations Platform** for autonomous systems. This document does not add unrelated features — it strengthens adoption, trust, operations, explanation, deployment, and maintenance on top of the existing language and engines.
 
+For **enterprise control plane** pillars (Control Center, Device Pool, RBAC, APIs, alerting), see [enterprise-operations-roadmap.md](./enterprise-operations-roadmap.md).
+
 **Principle:** Every item must strengthen at least one lifecycle phase: **Build · Verify · Simulate · Deploy · Operate · Recover**.
 
-**Related:** [roadmap.md](./roadmap.md) · [differentiation-roadmap.md](./differentiation-roadmap.md) · [product-strategy.md](./product-strategy.md) · [feature-status.md](./feature-status.md) · [platform-overview.md](./platform-overview.md)
+**Related:** [roadmap.md](./roadmap.md) · [enterprise-operations-roadmap.md](./enterprise-operations-roadmap.md) · [differentiation-roadmap.md](./differentiation-roadmap.md) · [product-strategy.md](./product-strategy.md) · [feature-status.md](./feature-status.md) · [platform-overview.md](./platform-overview.md)
 
-**Last updated:** 2026-06-24
+**Last updated:** 2026-06-25
 
 ---
 
@@ -451,6 +453,7 @@ Spanda evolves from *Autonomous Systems Language* to **Safety, Verification, Rea
 
 ## Related documents
 
+- [enterprise-operations-roadmap.md](./enterprise-operations-roadmap.md) — Control Center, Device Pool, provisioning, RBAC, APIs (20 enterprise pillars)
 - [tamper-detection.md](./tamper-detection.md) · [integrity-verification.md](./integrity-verification.md) · [trust-framework.md](./trust-framework.md)
 - [deployment-gates.md](./deployment-gates.md) · [dependency-graphs.md](./dependency-graphs.md) · [package-trust.md](./package-trust.md)
 - [security-architecture.md](./security-architecture.md) · [trust-boundaries.md](./trust-boundaries.md) · [readiness.md](./readiness.md)

@@ -23,7 +23,7 @@ Spanda should not compete as a general-purpose language, Python replacement, Rus
 
 ### Platform maturity focus (2026–2027)
 
-Beyond core language features, Spanda prioritizes **adoption, trust, and operations** — see [platform-maturity-roadmap.md](./platform-maturity-roadmap.md) and [differentiation-roadmap.md](./differentiation-roadmap.md). Planned areas compose existing engines (`spanda-readiness`, `spanda-assurance`, `spanda-security`) rather than replacing them. **NOW (v0.5+):** mission contracts, explainability, decision audit trail, safety/recovery coverage. **NEXT:** what-if, risk, trust graph, scorecards.
+Beyond core language features, Spanda prioritizes **adoption, trust, and operations** — see [platform-maturity-roadmap.md](./platform-maturity-roadmap.md), [enterprise-operations-roadmap.md](./enterprise-operations-roadmap.md), and [differentiation-roadmap.md](./differentiation-roadmap.md). Planned areas compose existing engines (`spanda-readiness`, `spanda-assurance`, `spanda-security`) rather than replacing them. **NOW (v0.5+):** mission contracts, explainability, decision audit trail, safety/recovery coverage, Control Center foundation. **NEXT:** SDKs, full drift, OTA strategies, observability.
 
 ### Philosophy
 

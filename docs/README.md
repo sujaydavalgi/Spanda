@@ -133,6 +133,8 @@
 | [roadmap.md](./roadmap.md) | Roadmap and self-hosting plan |
 | [differentiation-roadmap.md](./differentiation-roadmap.md) | **Signature capabilities — mission contracts, explainability, coverage, risk (15 areas)** |
 | [platform-maturity-roadmap.md](./platform-maturity-roadmap.md) | **Platform maturity expansion — adoption, trust, operations (16 areas)** |
+| [enterprise-operations-roadmap.md](./enterprise-operations-roadmap.md) | **Enterprise operations — Control Center, Device Pool, RBAC, APIs, observability (20 pillars)** |
+| [control-center.md](./control-center.md) | **Control Center — `spanda control-center serve`, REST v1, device pool UI** |
 | [mission-contracts.md](./mission-contracts.md) | **Mission Contracts — guarantees, constraints, assumptions** |
 | [decision-audit-trail.md](./decision-audit-trail.md) | **Decision audit trail — mission → decision → evidence → action** |
 | [safety-coverage.md](./safety-coverage.md) | **Safety scenario coverage reporting** |
