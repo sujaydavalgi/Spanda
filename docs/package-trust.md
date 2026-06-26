@@ -33,6 +33,7 @@ spanda trust spanda-mqtt --project examples/showcase/rover
 - `spanda explain --config` includes a `package_trust` section for configured packages
 - `spanda deploy gate --config` runs a `package_trust` gate when packages are declared in `spanda.toml`
 - Feeds composite `TrustScore` in `spanda-trust` (`spanda trust <file.sd>`)
+- When `SPANDA_REGISTRY_URL` is unset, the CLI defaults to the bundled registry slice (`spanda-trust-jetson`, `spanda-trust-pi`, `spanda-gps`, `spanda-fusion`) so `spanda trust` and `spoof-check` work offline after `cargo install` (sync via `scripts/sync_bundled_registry.sh`)
 
 ## Crate
 

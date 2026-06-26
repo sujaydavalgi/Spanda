@@ -177,59 +177,6 @@ fn repo_root_containing_showcase(parts: &[&str]) -> PathBuf {
     process::exit(1);
 }
 
-fn bundled_registry_dir() -> Option<PathBuf> {
-    // Locate the minimal trust registry shipped inside the spanda CLI crate.
-    //
-    // Parameters:
-    // None.
-    //
-    // Returns:
-    // Path to bundled-registry when index.json is present.
-    //
-    // Options:
-    // None.
-    //
-    // Example:
-    // let dir = bundled_registry_dir();
-
-    let bundled = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("bundled-registry");
-    if bundled.join("index.json").is_file() {
-        Some(bundled)
-    } else {
-        None
-    }
-}
-
-fn ensure_bundled_registry_env() {
-    // Point SPANDA_REGISTRY_URL at bundled trust packages when unset.
-    //
-    // Parameters:
-    // None.
-    //
-    // Returns:
-    // None (may set process environment for child CLI invocations).
-    //
-    // Options:
-    // Respects an existing non-empty `SPANDA_REGISTRY_URL`.
-    //
-    // Example:
-    // ensure_bundled_registry_env();
-
-    if env::var("SPANDA_REGISTRY_URL")
-        .ok()
-        .filter(|value| !value.trim().is_empty())
-        .is_some()
-    {
-        return;
-    }
-    if let Some(dir) = bundled_registry_dir() {
-        env::set_var(
-            "SPANDA_REGISTRY_URL",
-            format!("file://{}", dir.display()),
-        );
-    }
-}
-
 fn read_source(path: &Path) -> String {
     // Description:
     //     Read source.
@@ -767,7 +714,7 @@ fn demo_maturity(root: &Path) {
 fn demo_trust(root: &Path) {
     let trust_root = repo_root_containing_showcase(&["package_tampering", "approved.sd"]);
     let _ = root;
-    ensure_bundled_registry_env();
+    crate::bundled_registry::ensure_bundled_registry_env();
 
     let pkg_approved = showcase(&trust_root, &["package_tampering", "approved.sd"]);
     let pkg_tampered = showcase(&trust_root, &["package_tampering", "tampered.sd"]);

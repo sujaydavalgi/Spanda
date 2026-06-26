@@ -22,6 +22,7 @@ mod chaos_cli;
 mod estimate_cli;
 mod generate_cli;
 mod adr_cli;
+mod bundled_registry;
 mod integrity_cli;
 mod tamper_cli;
 mod trust_cli;
@@ -1477,6 +1478,8 @@ fn main() {
         println!("spanda {}", env!("CARGO_PKG_VERSION"));
         return;
     }
+
+    bundled_registry::ensure_bundled_registry_env();
 
     // Take the branch when len equals "--help" || args[1] == "-h".
     if args.len() < 2 || args[1] == "--help" || args[1] == "-h" {
