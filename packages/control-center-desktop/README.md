@@ -80,6 +80,8 @@ The Tauri shell includes `tauri-plugin-updater` with `active: false` by default.
 
 Until then, operators update via platform installers from CI (`TAURI_BUILD=1` on macOS).
 
+Set `TAURI_UPDATER_PUBKEY` (and optionally `TAURI_UPDATER_ACTIVE=true`) when running `TAURI_BUILD=1` to inject the signing pubkey at build time via `src-tauri/build.rs`.
+
 ## Status
 
 **Experimental** — scaffold, dev workflow, and updater plugin wiring; production installers and signed auto-update are not yet published.

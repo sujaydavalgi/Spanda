@@ -12,6 +12,9 @@ if command -v npm >/dev/null 2>&1; then
   npm install --workspace=@spanda/control-center-desktop --ignore-scripts 2>/dev/null || npm install
   if [[ "${TAURI_BUILD:-0}" == "1" ]]; then
     echo "[control-center-desktop] tauri build (TAURI_BUILD=1)"
+    if [[ -n "${TAURI_UPDATER_PUBKEY:-}" ]]; then
+      echo "[control-center-desktop] updater signing pubkey provided (TAURI_UPDATER_ACTIVE=${TAURI_UPDATER_ACTIVE:-true})"
+    fi
     npm run build --workspace=@spanda/control-center-desktop
     npm run tauri build --workspace=@spanda/control-center-desktop
     echo "[control-center-desktop] bundle artifacts under src-tauri/target/release/bundle/"
