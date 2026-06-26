@@ -324,11 +324,15 @@ fn cmd_approvals(args: &[String]) {
                 process::exit(1);
             });
             let note = flag_value(args, "--note");
-            let body = if let Some(note) = note {
-                serde_json::json!({ "snapshot_id": snapshot_id, "note": note })
-            } else {
-                serde_json::json!({ "snapshot_id": snapshot_id })
-            };
+            let required_approvals = flag_value(args, "--required-approvals")
+                .and_then(|value| value.parse::<u32>().ok());
+            let mut body = serde_json::json!({ "snapshot_id": snapshot_id });
+            if let Some(note) = note {
+                body["note"] = serde_json::Value::String(note);
+            }
+            if let Some(required) = required_approvals {
+                body["required_approvals"] = serde_json::json!(required);
+            }
             let response = client
                 .post("/v1/config/approvals", &body.to_string(), true)
                 .unwrap_or_else(|error| {

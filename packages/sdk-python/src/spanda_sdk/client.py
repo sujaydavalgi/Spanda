@@ -160,10 +160,13 @@ class ControlCenterClient:
         snapshot_id: str,
         *,
         note: Optional[str] = None,
+        required_approvals: Optional[int] = None,
     ) -> Any:
         body: dict[str, Any] = {"snapshot_id": snapshot_id}
         if note:
             body["note"] = note
+        if required_approvals is not None:
+            body["required_approvals"] = required_approvals
         return self._request("POST", "/v1/config/approvals", body, auth=True)
 
     def approve_config_approval(

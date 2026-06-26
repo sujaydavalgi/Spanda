@@ -129,8 +129,8 @@ grpcurl -plaintext -import-path crates/spanda-api/proto -proto spanda/v1/control
 | `/v1/discovery` | GET | — | Package-backed discovery (`?transport=mdns` or `subnet`) |
 | `/v1/config/snapshots` | GET/POST | POST: Bearer | List or save configuration snapshots |
 | `/v1/config/approvals` | GET | — | List config publish approval requests |
-| `/v1/config/approvals` | POST | Bearer (Deploy) | Submit approval request for a snapshot |
-| `/v1/config/approvals/{id}/approve` | POST | Bearer (Approve) | Approve and publish snapshot to runtime (+ disk when configured) |
+| `/v1/config/approvals` | POST | Bearer (Deploy) | Submit approval request for a snapshot (`required_approvals` or `SPANDA_CONFIG_APPROVALS_REQUIRED`) |
+| `/v1/config/approvals/{id}/approve` | POST | Bearer (Approve) | Record approver vote; publish when quorum met (`quorum.received` / `quorum.required`) |
 | `/v1/config/approvals/{id}/reject` | POST | Bearer (Approve) | Reject a pending config publish |
 | `/v1/health/summary` | GET | — | Device pool health rollup |
 | `/v1/assurance/summary` | GET | — | Assurance policy from resolved config |
