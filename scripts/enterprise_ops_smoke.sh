@@ -247,6 +247,9 @@ fetch /v1/version | grep -q supported_versions
 echo "== E3 GET /v1/audit/mutations =="
 curl -sf -H "Authorization: Bearer ${SPANDA_API_KEY}" \
   "http://${BIND}/v1/audit/mutations" | grep -q record_count
+echo "== E3 GET /v1/audit/mutations/export =="
+curl -sf -H "Authorization: Bearer ${SPANDA_API_KEY}" \
+  "http://${BIND}/v1/audit/mutations/export?format=cef" | grep -q 'CEF:0|Spanda'
 
 echo "== E3 live OTA execute (deploy agent) =="
 chmod +x "${ROOT}/scripts/ota_fleet_execute_smoke.sh"

@@ -107,3 +107,70 @@ fn append_audit_event(
         .map_err(|e| e.to_string())?;
     writeln!(file, "{encoded}").map_err(|e| e.to_string())
 }
+
+/// Read append-only mutation audit JSONL from disk.
+pub fn read_mutation_audit_lines(path: &std::path::Path) -> Result<Vec<serde_json::Value>, String> {
+    let content = std::fs::read_to_string(path).map_err(|error| error.to_string())?;
+    let mut lines = Vec::new();
+    for line in content.lines().filter(|line| !line.trim().is_empty()) {
+        let value: serde_json::Value =
+            serde_json::from_str(line).map_err(|error| error.to_string())?;
+        lines.push(value);
+    }
+    Ok(lines)
+}
+
+/// Export mutation audit records as CEF lines for SIEM ingestion.
+pub fn export_mutation_audit_cef(path: &std::path::Path) -> Result<String, String> {
+    let lines = read_mutation_audit_lines(path)?;
+    let mut output = String::new();
+    for record in lines {
+        let event_type = record
+            .get("event_type")
+            .and_then(|value| value.as_str())
+            .unwrap_or("mutation");
+        let payload = record
+            .get("payload")
+            .and_then(|value| value.as_str())
+            .unwrap_or("{}");
+        let parsed: serde_json::Value =
+            serde_json::from_str(payload).unwrap_or_else(|_| serde_json::json!({}));
+        let method = parsed
+            .get("method")
+            .and_then(|value| value.as_str())
+            .unwrap_or("POST");
+        let api_path = parsed
+            .get("path")
+            .and_then(|value| value.as_str())
+            .unwrap_or("/v1");
+        let actor = parsed
+            .get("actor_key_id")
+            .and_then(|value| value.as_str())
+            .unwrap_or("anonymous");
+        let correlation = parsed
+            .get("correlation_id")
+            .and_then(|value| value.as_str())
+            .unwrap_or("");
+        let timestamp_ms = record
+            .get("timestamp_ms")
+            .and_then(|value| value.as_f64())
+            .unwrap_or(0.0);
+        let cef = format!(
+            "CEF:0|Spanda|ControlCenter|1.0|{event_type}|API mutation|5|rt={timestamp_ms} requestMethod={method} request={api_path} suser={actor} cs1={correlation} cs1Label=CorrelationId msg={payload}"
+        );
+        output.push_str(&cef);
+        output.push('\n');
+    }
+    Ok(output)
+}
+
+/// Export mutation audit records as JSONL (normalized envelope per line).
+pub fn export_mutation_audit_jsonl(path: &std::path::Path) -> Result<String, String> {
+    let lines = read_mutation_audit_lines(path)?;
+    let mut output = String::new();
+    for record in lines {
+        output.push_str(&serde_json::to_string(&record).map_err(|error| error.to_string())?);
+        output.push('\n');
+    }
+    Ok(output)
+}

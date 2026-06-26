@@ -36,6 +36,10 @@ pub const REST_V1_ROUTES: &[ApiRoute] = &[
     },
     ApiRoute {
         method: "GET",
+        path: "/v1/audit/mutations/export",
+    },
+    ApiRoute {
+        method: "GET",
         path: "/v1/robots",
     },
     ApiRoute {

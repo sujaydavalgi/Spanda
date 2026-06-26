@@ -540,6 +540,16 @@
         "responses": { "200": { "description": "Hash-chained mutation records" } }
       }
     },
+    "/v1/audit/mutations/export": {
+      "get": {
+        "summary": "Export mutation audit for SIEM (CEF or JSONL)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "format", "in": "query", "schema": { "type": "string", "enum": ["cef", "jsonl"] } }
+        ],
+        "responses": { "200": { "description": "SIEM export payload" } }
+      }
+    },
     "/v1/operator/quarantine": {
       "post": {
         "summary": "Quarantine a device",
