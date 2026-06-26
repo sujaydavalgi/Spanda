@@ -4,7 +4,7 @@ Tauri v2 desktop shell for the Spanda Control Center. The UI reuses `ControlCent
 
 ## Security note
 
-The desktop `src-tauri/Cargo.lock` may report [RUSTSEC-2024-0429](https://rustsec.org/advisories/RUSTSEC-2024-0429.html) (`glib` &lt; 0.20) via the GTK/Tauri stack on Linux builds. Upstream fix requires gtk-rs 0.20+ when Tauri adopts it; the Control Center web/API path does not depend on `glib`.
+The desktop `src-tauri/Cargo.lock` may report [RUSTSEC-2024-0429](https://rustsec.org/advisories/RUSTSEC-2024-0429.html) (`glib` &lt; 0.20) on Linux builds. This repo patches `glib`/`glib-sys`/`glib-macros` from the gtk-rs `0.18` git branch (VariantStrIter backport) via `[patch.crates-io]` in `Cargo.toml`. Upstream gtk-rs 0.20+ adoption in Tauri is tracked for v3; the Control Center web/API path does not depend on `glib`.
 
 ## Prerequisites
 
