@@ -240,6 +240,13 @@ echo "== E3 live OTA execute (deploy agent) =="
 chmod +x "${ROOT}/scripts/ota_fleet_execute_smoke.sh"
 "${ROOT}/scripts/ota_fleet_execute_smoke.sh"
 
+echo "== E3 OTA fleet soak (multi-agent readiness-gated rollouts) =="
+chmod +x "${ROOT}/scripts/ota_fleet_soak.sh"
+"${ROOT}/scripts/ota_fleet_soak.sh"
+
+echo "== E2 remote CLI OpenAPI parity test =="
+cargo test -p spanda-cli --test control_center_openapi_parity --quiet
+
 echo "== E2 GET /v1/discovery?transport=ble (registry package) =="
 fetch "/v1/discovery?transport=ble" | grep -q spanda-discovery-ble
 
