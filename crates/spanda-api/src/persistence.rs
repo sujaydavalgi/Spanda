@@ -62,6 +62,7 @@ pub fn hydrate_runtime_state(state: &mut ControlCenterState) {
                 IncidentStore::from_records(persisted.max_entries, persisted.incidents);
         }
     }
+    crate::drift_scheduler::hydrate_drift_scans(state);
 }
 
 /// Persist alerts and traces to disk.

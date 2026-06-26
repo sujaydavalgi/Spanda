@@ -82,6 +82,17 @@ pub fn run_control_center_server(options: &ControlCenterOptions) -> Result<(), S
         crate::grpc::spawn_grpc_server(grpc_bind.clone(), Arc::clone(&state));
         eprintln!("  gRPC tonic server on {grpc_bind} (60 RPCs — Control Center service)");
     }
+    crate::drift_scheduler::spawn_drift_scheduler(Arc::clone(&state));
+    if std::env::var("SPANDA_DRIFT_SCAN_INTERVAL_SECS")
+        .ok()
+        .and_then(|value| value.parse::<u64>().ok())
+        .filter(|secs| *secs > 0)
+        .is_some()
+    {
+        eprintln!("  drift scan scheduler active (SPANDA_DRIFT_SCAN_INTERVAL_SECS)");
+        eprintln!("  GET  /v1/drift/scans     drift scan history");
+        eprintln!("  POST /v1/drift/scan      trigger drift scan (Bearer token)");
+    }
 
     if options.once {
         let (stream, _) = listener

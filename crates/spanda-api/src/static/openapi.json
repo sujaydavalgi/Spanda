@@ -292,6 +292,31 @@
         "responses": { "200": { "description": "Drift rollup across 7 dimensions" } }
       }
     },
+    "/v1/drift/scans": {
+      "get": {
+        "summary": "List recorded operational drift scans",
+        "responses": { "200": { "description": "Scan history (scheduled and manual)" } }
+      }
+    },
+    "/v1/drift/scan": {
+      "post": {
+        "summary": "Run operational drift scan and record result",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "baseline_id": { "type": "string", "description": "Defaults to latest snapshot or SPANDA_DRIFT_SCAN_BASELINE_ID" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Scan record with alert dispatch on failure" } }
+      }
+    },
     "/v1/ota/plan": {
       "post": {
         "summary": "Plan OTA rollout (canary, staged, blue_green)",

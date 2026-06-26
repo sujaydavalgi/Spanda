@@ -1,6 +1,7 @@
 //! Shared mutable state for the Control Center API server.
 //!
 use crate::correlation::TraceLog;
+use crate::drift_scheduler::DriftScanStore;
 use spanda_audit::AuditRuntime;
 use spanda_config::{DeviceRegistry, ResolvedSystemConfig};
 use spanda_ops::{AlertDispatcher, AlertStore, IncidentStore};
@@ -23,6 +24,7 @@ pub struct ControlCenterState {
     pub rate_limiter: RateLimiter,
     pub mutation_audit: AuditRuntime,
     pub tenant_id: String,
+    pub drift_scan_store: DriftScanStore,
 }
 
 impl ControlCenterState {
@@ -40,6 +42,7 @@ impl ControlCenterState {
             rate_limiter: RateLimiter::from_env(),
             mutation_audit: AuditRuntime::new("control-center", vec![]),
             tenant_id: default_tenant_id(),
+            drift_scan_store: DriftScanStore::new(200),
         };
         crate::persistence::hydrate_runtime_state(&mut state);
         state

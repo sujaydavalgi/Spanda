@@ -3,6 +3,7 @@
 pub mod audit_log;
 pub mod correlation;
 pub mod drift_collect;
+pub mod drift_scheduler;
 pub mod e3;
 pub mod e4;
 pub mod grpc;

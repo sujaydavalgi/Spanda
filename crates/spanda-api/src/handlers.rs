@@ -251,6 +251,10 @@ pub fn handle_request(
         ("/v1/assurance/summary", "GET") => assurance_summary(state),
         ("/v1/diagnosis/summary", "GET") => diagnosis_summary(state),
         ("/v1/drift", "GET") => e3::drift_report(state, query),
+        ("/v1/drift/scans", "GET") => crate::drift_scheduler::drift_scans_list(state),
+        ("/v1/drift/scan", "POST") => {
+            crate::drift_scheduler::drift_scan_run(state, &request.body, ctx.as_ref())
+        }
         ("/v1/ota/status", "GET") => e3::ota_status(),
         ("/v1/ota/plan", "POST") => e3::ota_plan(&request.body, ctx.as_ref()),
         ("/v1/ota/execute", "POST") => e3::ota_execute(&request.body, ctx.as_ref()),
@@ -406,7 +410,7 @@ fn alerts_list(state: &ControlCenterState) -> HttpResponse {
     }))
 }
 
-fn record_alert(state: &mut ControlCenterState, mut alert: Alert) {
+pub(crate) fn record_alert(state: &mut ControlCenterState, mut alert: Alert) {
     state.alert_dispatcher.dispatch(&mut alert);
     state.alert_store.push(alert.clone());
     let _ = state.incident_store.maybe_open_from_alert(&alert);

@@ -160,6 +160,14 @@ pub const REST_V1_ROUTES: &[ApiRoute] = &[
     },
     ApiRoute {
         method: "GET",
+        path: "/v1/drift/scans",
+    },
+    ApiRoute {
+        method: "POST",
+        path: "/v1/drift/scan",
+    },
+    ApiRoute {
+        method: "GET",
         path: "/v1/ota/status",
     },
     ApiRoute {
