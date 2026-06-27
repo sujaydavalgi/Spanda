@@ -373,7 +373,7 @@ assert c.list_incidents()['incidents']
 c.list_config_approvals()
 c.list_compliance_evidence()
 assert 'overall_score' in c.executive_scorecard()
-assert 'matched_node_count' in c.digital_thread_query()
+assert 'matched_node_count' in c.digital_thread_query()['digital_thread']
 assert c.list_config_snapshots()['snapshots']
 "
 
