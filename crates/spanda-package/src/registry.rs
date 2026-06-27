@@ -265,8 +265,7 @@ pub fn registry_package_dir(name: &str) -> Option<std::path::PathBuf> {
     // Example:
     //     let result = spanda_package::registry::registry_package_dir(name);
 
-    // Produce find registry entry as the result.
-    find_registry_entry(name)?;
+    // Resolve in-repo registry package trees (discovery transports, adapters, …).
     let candidates = [
         std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
             .join("../../packages/registry")
