@@ -139,7 +139,7 @@ curl -sf -X POST \
   "http://${BIND}/v1/devices/drive-controller/quarantine" | grep -q quarantined
 
 echo "== E2 GET /v1/discovery?transport=mdns =="
-fetch "/v1/discovery?transport=mdns&timeout_ms=100" | grep -q '"transport":"mdns"'
+fetch "/v1/discovery?transport=mdns&timeout_ms=100" | grep -qE '"transport":"mdns(:spanda-discovery-mdns)?"'
 
 echo "== E2 GET /v1/health/summary =="
 fetch /v1/health/summary | grep -q overall_status
