@@ -47,7 +47,10 @@ echo "${INFO}"
 echo "${INFO}" | grep -q 'Backend:'
 if [[ -n "${SESSION_ID}" ]]; then
   echo "== telemetry replay linked session =="
-  REPLAY="$("${SPANDA[@]}" telemetry replay --session "${SESSION_ID}" 2>&1 | head -3)"
+  REPLAY_FILE="$(mktemp)"
+  "${SPANDA[@]}" telemetry replay --session "${SESSION_ID}" >"${REPLAY_FILE}" 2>&1
+  REPLAY="$(head -3 "${REPLAY_FILE}")"
+  rm -f "${REPLAY_FILE}"
   echo "${REPLAY}"
   echo "${REPLAY}" | grep -q 'Replay'
 fi

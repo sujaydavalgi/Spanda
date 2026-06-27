@@ -27,6 +27,7 @@ fi
 BIND="127.0.0.1:${PORT}"
 GRPC_BIND="127.0.0.1:${GRPC_PORT}"
 export SPANDA_API_KEY="enterprise-ops-smoke-key"
+export SPANDA_CONFIG_SNAPSHOT_KEY="${SPANDA_CONFIG_SNAPSHOT_KEY:-smoke-snapshot-key}"
 
 export SPANDA_WS_STREAM_SECONDS=3
 echo "== start control-center on ${BIND} + gRPC ${GRPC_BIND} (warehouse config + program) =="
@@ -169,7 +170,6 @@ curl -sf -X POST \
   "http://${BIND}/v1/config/snapshots" | grep -q '"ok":true'
 
 echo "== E2 POST /v1/config/snapshots (encrypted at rest) =="
-export SPANDA_CONFIG_SNAPSHOT_KEY="${SPANDA_CONFIG_SNAPSHOT_KEY:-smoke-snapshot-key}"
 curl -sf -X POST \
   -H "Authorization: Bearer ${SPANDA_API_KEY}" \
   -H "Content-Type: application/json" \
