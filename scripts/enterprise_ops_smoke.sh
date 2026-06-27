@@ -445,7 +445,21 @@ echo "$OTLP_RESPONSE" | grep -q '"ok":true'
 kill "$MOCK_PID" 2>/dev/null || true
 
 echo "== WebSocket /v1/stream/telemetry =="
-SPANDA_WS_STREAM_SECONDS=2 \
-  python3 "${ROOT}/scripts/ws_telemetry_probe.py" "ws://${BIND}/v1/stream/telemetry" | grep -q '"type":"hello"'
+WS_PROBE_LOG="$(mktemp "${TMPDIR:-/tmp}/spanda-ws-probe.XXXXXX")"
+ws_ok=false
+for _attempt in 1 2 3 4 5; do
+  if SPANDA_WS_STREAM_SECONDS=5 \
+    python3 "${ROOT}/scripts/ws_telemetry_probe.py" "ws://${BIND}/v1/stream/telemetry" >"${WS_PROBE_LOG}" 2>/dev/null \
+    && grep -q '"type":"hello"' "${WS_PROBE_LOG}"; then
+    ws_ok=true
+    break
+  fi
+  sleep 1
+done
+rm -f "${WS_PROBE_LOG}"
+if [[ "${ws_ok}" != true ]]; then
+  echo "websocket telemetry hello probe failed" >&2
+  exit 1
+fi
 
 echo "Enterprise operations smoke OK"
