@@ -188,6 +188,62 @@ pub const REST_V1_ROUTES: &[ApiRoute] = &[
     },
     ApiRoute {
         method: "GET",
+        path: "/v1/trust/program",
+    },
+    ApiRoute {
+        method: "GET",
+        path: "/v1/entities",
+    },
+    ApiRoute {
+        method: "GET",
+        path: "/v1/entities/{id}",
+    },
+    ApiRoute {
+        method: "GET",
+        path: "/v1/entities/{id}/health",
+    },
+    ApiRoute {
+        method: "GET",
+        path: "/v1/entities/{id}/trust",
+    },
+    ApiRoute {
+        method: "POST",
+        path: "/v1/programs/readiness",
+    },
+    ApiRoute {
+        method: "POST",
+        path: "/v1/programs/assure",
+    },
+    ApiRoute {
+        method: "POST",
+        path: "/v1/programs/diagnose",
+    },
+    ApiRoute {
+        method: "POST",
+        path: "/v1/programs/recovery/heal",
+    },
+    ApiRoute {
+        method: "POST",
+        path: "/v1/programs/verify/hardware",
+    },
+    ApiRoute {
+        method: "POST",
+        path: "/v1/programs/verify/capabilities",
+    },
+    ApiRoute {
+        method: "POST",
+        path: "/v1/programs/verify/mission",
+    },
+    ApiRoute {
+        method: "POST",
+        path: "/v1/programs/simulation",
+    },
+    ApiRoute {
+        method: "POST",
+        path: "/v1/programs/replay",
+    },
+    ApiRoute {
+        method: "GET",
         path: "/v1/sre/summary",
     },
     ApiRoute {

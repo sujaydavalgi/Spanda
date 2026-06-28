@@ -23,7 +23,12 @@ spanda-ops = { path = "../spanda-ops" }
 spanda-ota = { path = "../spanda-ota" }
 spanda-package = { path = "../spanda-package" }
 spanda-parser = { path = "../spanda-parser" }
+spanda-assurance = { path = "../spanda-assurance" }
+spanda-capability = { path = "../spanda-capability" }
+spanda-hardware = { path = "../spanda-hardware" }
 spanda-readiness = { path = "../spanda-readiness" }
+spanda-runtime = { path = "../spanda-runtime" }
+spanda-trust = { path = "../spanda-trust" }
 spanda-score = { path = "../spanda-score" }
 spanda-security = { path = "../spanda-security" }
 spanda-ast = { path = "../spanda-ast" }

@@ -235,6 +235,18 @@ pub fn handle_request(
         );
         return (response, correlation_id);
     }
+    if let Some(response) = route_sdk_entities(state, path, &request.method) {
+        e3::record_trace(
+            state,
+            &correlation_id,
+            &request.method,
+            path,
+            response.status,
+            started_ms,
+            ctx.as_ref(),
+        );
+        return (response, correlation_id);
+    }
     if let Some(response) = route_humans(state, path, &request.method) {
         e3::record_trace(
             state,
@@ -283,6 +295,30 @@ pub fn handle_request(
         ("/v1/ota/plan", "POST") => e3::ota_plan(state, &request.body, ctx.as_ref()),
         ("/v1/ota/execute", "POST") => e3::ota_execute(state, &request.body, ctx.as_ref()),
         ("/v1/trust/package", "GET") => e3::trust_package(query),
+        ("/v1/trust/program", "GET") => crate::sdk_ops::trust_program(state, query),
+        ("/v1/programs/readiness", "POST") => {
+            crate::sdk_ops::program_readiness(state, &request.body)
+        }
+        ("/v1/programs/assure", "POST") => crate::sdk_ops::program_assure(state, &request.body),
+        ("/v1/programs/diagnose", "POST") => {
+            crate::sdk_ops::program_diagnose(state, &request.body)
+        }
+        ("/v1/programs/recovery/heal", "POST") => {
+            crate::sdk_ops::program_heal(state, &request.body)
+        }
+        ("/v1/programs/verify/hardware", "POST") => {
+            crate::sdk_ops::program_verify_hardware(state, &request.body)
+        }
+        ("/v1/programs/verify/capabilities", "POST") => {
+            crate::sdk_ops::program_verify_capabilities(state, &request.body)
+        }
+        ("/v1/programs/verify/mission", "POST") => {
+            crate::sdk_ops::program_verify_mission(state, &request.body)
+        }
+        ("/v1/programs/simulation", "POST") => {
+            crate::sdk_ops::program_simulation(state, &request.body)
+        }
+        ("/v1/programs/replay", "POST") => crate::sdk_ops::program_replay(state, &request.body),
         ("/v1/sre/summary", "GET") => e3::sre_summary(state),
         ("/v1/integrations/pagerduty/webhook", "POST") => crate::integrations::pagerduty_webhook(
             state,
@@ -866,6 +902,29 @@ fn route_hri_session(
         ("replay", "GET") => Some(crate::hri::hri_session_replay(state, session_id)),
         _ => None,
     }
+}
+
+fn route_sdk_entities(
+    state: &ControlCenterState,
+    path: &str,
+    method: &str,
+) -> Option<HttpResponse> {
+    if path == "/v1/entities" && method == "GET" {
+        return Some(crate::sdk_ops::list_entities(state));
+    }
+    let rest = path.strip_prefix("/v1/entities/")?;
+    if rest.contains('/') {
+        let (entity_id, action) = rest.split_once('/')?;
+        return match (action, method) {
+            ("health", "GET") => Some(crate::sdk_ops::entity_health(state, entity_id)),
+            ("trust", "GET") => Some(crate::sdk_ops::entity_trust(state, entity_id)),
+            _ => None,
+        };
+    }
+    if method == "GET" {
+        return Some(crate::sdk_ops::get_entity(state, rest));
+    }
+    None
 }
 
 fn route_humans(

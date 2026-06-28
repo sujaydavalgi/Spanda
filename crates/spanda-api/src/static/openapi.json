@@ -393,6 +393,202 @@
         "responses": { "200": { "description": "Trust score report" } }
       }
     },
+    "/v1/trust/program": {
+      "get": {
+        "summary": "Composite program trust evaluation (CLI parity)",
+        "parameters": [
+          { "name": "file", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Program trust report" } }
+      }
+    },
+    "/v1/entities": {
+      "get": {
+        "summary": "Unified entity inventory (humans and devices)",
+        "responses": { "200": { "description": "Entity list" } }
+      }
+    },
+    "/v1/entities/{id}": {
+      "get": {
+        "summary": "Get entity by id",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Entity record" }, "404": { "description": "Not found" } }
+      }
+    },
+    "/v1/entities/{id}/health": {
+      "get": {
+        "summary": "Health status for a device entity",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Entity health" } }
+      }
+    },
+    "/v1/entities/{id}/trust": {
+      "get": {
+        "summary": "Trust metadata for an entity",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Entity trust" } }
+      }
+    },
+    "/v1/programs/readiness": {
+      "post": {
+        "summary": "Evaluate program readiness (CLI parity)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": { "type": "string" },
+                  "target": { "type": "string" },
+                  "include_runtime": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Readiness report" } }
+      }
+    },
+    "/v1/programs/assure": {
+      "post": {
+        "summary": "Mission assurance evaluation (CLI parity)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "file": { "type": "string" } }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Assurance report" } }
+      }
+    },
+    "/v1/programs/diagnose": {
+      "post": {
+        "summary": "Diagnose program or trace (CLI parity)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "file": { "type": "string" } }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Diagnosis report" } }
+      }
+    },
+    "/v1/programs/recovery/heal": {
+      "post": {
+        "summary": "Recovery evaluation (CLI parity)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "file": { "type": "string" } }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Recovery report" } }
+      }
+    },
+    "/v1/programs/verify/hardware": {
+      "post": {
+        "summary": "Hardware compatibility verification (CLI parity)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": { "type": "string" },
+                  "target": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Hardware verification report" } }
+      }
+    },
+    "/v1/programs/verify/capabilities": {
+      "post": {
+        "summary": "Capability verification (CLI parity)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": { "type": "string" },
+                  "traceability": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Capability verification report" } }
+      }
+    },
+    "/v1/programs/verify/mission": {
+      "post": {
+        "summary": "Mission verification (CLI parity)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "file": { "type": "string" } }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Mission verification report" } }
+      }
+    },
+    "/v1/programs/simulation": {
+      "post": {
+        "summary": "Simulation planning metadata (CLI parity)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "file": { "type": "string" } }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Simulation result" } }
+      }
+    },
+    "/v1/programs/replay": {
+      "post": {
+        "summary": "Load and inspect mission trace for replay (CLI parity)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "file": { "type": "string" } }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Replay result" } }
+      }
+    },
     "/v1/sre/summary": {
       "get": {
         "summary": "SRE availability and incident rollup",
