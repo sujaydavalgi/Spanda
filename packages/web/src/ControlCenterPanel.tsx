@@ -5,6 +5,12 @@ import {
   type DigitalThreadGraphEdge,
   type DigitalThreadGraphNode,
 } from "./DigitalThreadGraph";
+import {
+  EntityGraphPanel,
+  type EntityGraphPayload,
+  type EntityRelationship,
+  type EntitySummary,
+} from "./EntityGraphPanel";
 
 type DashboardData = {
   device_pool: {
@@ -56,6 +62,7 @@ type ReadinessImpact = {
 
 type Tab =
   | "dashboard"
+  | "entities"
   | "devices"
   | "fleet"
   | "discovery"
@@ -158,6 +165,13 @@ export function ControlCenterPanel({ apiBase }: Props) {
   const [hriContext, setHriContext] = useState<Record<string, unknown> | null>(null);
   const [humanTwins, setHumanTwins] = useState<Record<string, unknown>[]>([]);
   const [missionApprovals, setMissionApprovals] = useState<Record<string, unknown>[]>([]);
+  const [entityList, setEntityList] = useState<EntitySummary[]>([]);
+  const [entityGraph, setEntityGraph] = useState<EntityGraphPayload | null>(null);
+  const [selectedEntity, setSelectedEntity] = useState<string | null>(null);
+  const [entityDetail, setEntityDetail] = useState<Record<string, unknown> | null>(null);
+  const [entityRelationships, setEntityRelationships] = useState<EntityRelationship[]>([]);
+  const [entityKindFilter, setEntityKindFilter] = useState("");
+  const [entitySearch, setEntitySearch] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -445,6 +459,7 @@ export function ControlCenterPanel({ apiBase }: Props) {
     if (tab === "audit") void loadAudit();
     if (tab === "executive") void loadExecutive();
     if (tab === "digital-thread") void loadDigitalThread();
+    if (tab === "entities") void loadEntities();
     if (tab === "adas") void loadAdas();
     if (tab === "humans") void loadHumans();
     if (tab === "config") void loadConfig();
@@ -515,6 +530,62 @@ export function ControlCenterPanel({ apiBase }: Props) {
     } finally {
       setBusy(false);
     }
+  };
+
+  const loadEntities = async () => {
+    setBusy(true);
+    try {
+      const params = new URLSearchParams();
+      if (entityKindFilter) params.set("kind", entityKindFilter);
+      if (entitySearch.trim()) params.set("search", entitySearch.trim());
+      const query = params.toString();
+      const [listRes, graphRes] = await Promise.all([
+        fetch(`${base}/v1/entities${query ? `?${query}` : ""}`),
+        fetch(`${base}/v1/entities/graph`),
+      ]);
+      if (!listRes.ok) throw new Error(`entities ${listRes.status}`);
+      const listBody = await listRes.json();
+      setEntityList((listBody.entities as EntitySummary[]) ?? []);
+      if (graphRes.ok) {
+        const graphBody = await graphRes.json();
+        const graph = (graphBody.graph as EntityGraphPayload) ?? null;
+        setEntityGraph(graph);
+      }
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const loadEntityDetail = async (entityId: string) => {
+    setBusy(true);
+    try {
+      const [detailRes, relRes] = await Promise.all([
+        fetch(`${base}/v1/entities/${encodeURIComponent(entityId)}`),
+        fetch(`${base}/v1/entities/${encodeURIComponent(entityId)}/relationships`),
+      ]);
+      if (!detailRes.ok) throw new Error(`entity ${detailRes.status}`);
+      const detailBody = await detailRes.json();
+      setEntityDetail((detailBody.entity as Record<string, unknown>) ?? null);
+      if (relRes.ok) {
+        const relBody = await relRes.json();
+        setEntityRelationships((relBody.relationships as EntityRelationship[]) ?? []);
+      } else {
+        setEntityRelationships([]);
+      }
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const selectEntity = (entityId: string | null) => {
+    setSelectedEntity(entityId);
+    setEntityDetail(null);
+    setEntityRelationships([]);
+    if (entityId) void loadEntityDetail(entityId);
   };
 
   const resolveMissionApproval = async (approvalId: string, missionId: string, approved: boolean) => {
@@ -807,6 +878,7 @@ export function ControlCenterPanel({ apiBase }: Props) {
 
   const tabs: Tab[] = [
     "dashboard",
+    "entities",
     "devices",
     "fleet",
     "discovery",
@@ -874,6 +946,25 @@ export function ControlCenterPanel({ apiBase }: Props) {
           <dt>Alerts</dt>
           <dd>{dashboard?.alert_count ?? 0}</dd>
         </dl>
+      )}
+
+      {tab === "entities" && (
+        <EntityGraphPanel
+          entities={entityList}
+          graph={entityGraph}
+          selectedId={selectedEntity}
+          onSelect={selectEntity}
+          kindFilter={entityKindFilter}
+          onKindFilterChange={(value) => {
+            setEntityKindFilter(value);
+            void loadEntities();
+          }}
+          search={entitySearch}
+          onSearchChange={setEntitySearch}
+          detail={entityDetail}
+          relationships={entityRelationships}
+          loading={busy}
+        />
       )}
 
       {tab === "devices" && (
