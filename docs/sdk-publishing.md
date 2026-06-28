@@ -46,6 +46,8 @@ You need **admin** (or equivalent) access on the repository to create secrets.
 2. **Account settings → API Tokens** → **New Token**.
 3. Name it (for example `spanda-github-actions`) and copy the token.
 
+Tokens expire (for example **365 days**). Set a calendar reminder to create a new token and update `CRATES_IO_TOKEN` in GitHub before expiry.
+
 ### Add to GitHub
 
 - **Name:** `CRATES_IO_TOKEN`
