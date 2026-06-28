@@ -39,11 +39,6 @@ pub mod snapshot_encryption;
 pub mod system_context;
 pub mod validation;
 
-pub use mission_approval::{
-    default_mission_approvals_path, load_mission_approval_queue, merge_mission_approval_seeds,
-    resolve_mission_approval, save_mission_approval_queue, MissionApprovalQueue,
-    MissionApprovalRecord, MissionApprovalSeed, MissionApprovalStatus,
-};
 pub use config_approval::{
     append_evidence_record, approval_policy_required_count, approval_quorum_met,
     approve_config_request, default_approvals_path, default_evidence_log_path,
@@ -102,10 +97,11 @@ pub use drift::{
     DriftDimension, DriftFinding, DriftSeverity, ExpectedAgentState,
 };
 pub use entity::{
-    build_entity_registry, EntityAuditInfo, EntityGraph, EntityHealthStatus, EntityKind,
-    EntityLifecycleState, EntityLocation, EntityQuery, EntityQueryResult, EntityReadinessStatus,
-    EntityRecord, EntityRegistry, EntityRelationship, EntityRelationshipKind,
-    EntitySecurityIdentity, EntityTrustStatus,
+    apply_runtime_mission_overlay, build_entity_registry, mission_entity_id,
+    runtime_missions_from_approval_seeds, EntityAuditInfo, EntityGraph, EntityHealthStatus,
+    EntityKind, EntityLifecycleState, EntityLocation, EntityQuery, EntityQueryResult,
+    EntityReadinessStatus, EntityRecord, EntityRegistry, EntityRelationship,
+    EntityRelationshipKind, EntitySecurityIdentity, EntityTrustStatus, RuntimeMissionEntity,
 };
 pub use error::{ConfigError, ConfigResult};
 pub use human_entities::{
@@ -125,6 +121,11 @@ pub use manifest::{
     MANIFEST_FILENAME,
 };
 pub use mapping::{ActuatorMapping, LogicalPhysicalMap, RobotMapping, SensorMapping};
+pub use mission_approval::{
+    default_mission_approvals_path, load_mission_approval_queue, merge_mission_approval_seeds,
+    resolve_mission_approval, save_mission_approval_queue, MissionApprovalQueue,
+    MissionApprovalRecord, MissionApprovalSeed, MissionApprovalStatus,
+};
 pub use network_validation::validate_device_registry;
 pub use operational_drift::{
     detect_operational_drift, detect_operational_drift_full, OperationalDriftDimension,

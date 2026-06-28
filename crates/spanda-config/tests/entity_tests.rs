@@ -1,14 +1,13 @@
 //! Unit tests for the unified entity model.
 //!
 use spanda_config::{
-    build_entity_registry, EntityHealthStatus, EntityKind, EntityQuery, EntityReadinessStatus,
-    EntityRelationshipKind, EntityTrustStatus, ConfigResolver,
+    build_entity_registry, ConfigResolver, EntityHealthStatus, EntityKind, EntityQuery,
+    EntityReadinessStatus, EntityRelationshipKind, EntityTrustStatus,
 };
 use std::path::PathBuf;
 
 fn warehouse_config() -> spanda_config::ResolvedSystemConfig {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/fixtures/warehouse");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/warehouse");
     ConfigResolver::new()
         .resolve_from_dir(&root)
         .expect("warehouse fixture should resolve")
@@ -20,7 +19,10 @@ fn entity_registry_includes_fleet_robots_and_devices() {
     let registry = build_entity_registry(&resolved);
     assert!(!registry.entities.is_empty());
     assert!(registry.relationships.iter().any(|r| {
-        matches!(r.kind, EntityRelationshipKind::Contains | EntityRelationshipKind::Owns)
+        matches!(
+            r.kind,
+            EntityRelationshipKind::Contains | EntityRelationshipKind::Owns
+        )
     }));
 }
 
@@ -48,7 +50,10 @@ fn entity_query_filters_by_kind_and_health() {
 #[test]
 fn entity_kind_parses_extensible_types() {
     assert_eq!(EntityKind::parse("robot"), EntityKind::Robot);
-    assert_eq!(EntityKind::parse("medical_device"), EntityKind::MedicalDevice);
+    assert_eq!(
+        EntityKind::parse("medical_device"),
+        EntityKind::MedicalDevice
+    );
     assert!(matches!(
         EntityKind::parse("custom_industry_widget"),
         EntityKind::Custom(_)
@@ -57,11 +62,77 @@ fn entity_kind_parses_extensible_types() {
 
 #[test]
 fn entity_trust_and_readiness_parse_legacy_strings() {
-    assert_eq!(EntityTrustStatus::parse("verified"), EntityTrustStatus::Verified);
+    assert_eq!(
+        EntityTrustStatus::parse("verified"),
+        EntityTrustStatus::Verified
+    );
     assert_eq!(
         EntityReadinessStatus::parse("available"),
         EntityReadinessStatus::Ready
     );
+}
+
+#[test]
+fn runtime_mission_overlay_links_robot_participation() {
+    use spanda_config::{apply_runtime_mission_overlay, mission_entity_id, RuntimeMissionEntity};
+
+    let resolved = warehouse_config();
+    let mut registry = build_entity_registry(&resolved);
+    let robot_id = resolved.robot_ids().into_iter().next().expect("robot");
+    let mission = RuntimeMissionEntity {
+        id: mission_entity_id(robot_id, "patrol"),
+        name: "patrol".into(),
+        robot_id: Some(robot_id.to_string()),
+        fleet_id: resolved.fleet_id().map(String::from),
+        mission_state: "Running".into(),
+        step_index: 1,
+        current_step: Some("scan".into()),
+        steps: vec!["navigate".into(), "scan".into()],
+        required_capabilities: vec!["navigate".into()],
+        approval_pending: false,
+    };
+    apply_runtime_mission_overlay(&mut registry, &[mission]);
+    let mission_id = mission_entity_id(robot_id, "patrol");
+    assert!(registry.get(&mission_id).is_some());
+    assert!(registry.relationships.iter().any(|edge| {
+        edge.from_id == robot_id
+            && edge.to_id == mission_id
+            && edge.kind == EntityRelationshipKind::ParticipatesIn
+    }));
+    let linked = registry.linked_missions(robot_id);
+    assert_eq!(linked.len(), 1);
+    assert_eq!(linked[0].readiness_status, EntityReadinessStatus::Ready);
+}
+
+#[test]
+fn entity_query_filters_participates_in_mission() {
+    use spanda_config::{apply_runtime_mission_overlay, mission_entity_id, RuntimeMissionEntity};
+
+    let resolved = warehouse_config();
+    let mut registry = build_entity_registry(&resolved);
+    let robot_id = resolved.robot_ids().into_iter().next().expect("robot");
+    let mission_id = mission_entity_id(robot_id, "patrol");
+    apply_runtime_mission_overlay(
+        &mut registry,
+        &[RuntimeMissionEntity {
+            id: mission_id.clone(),
+            name: "patrol".into(),
+            robot_id: Some(robot_id.to_string()),
+            fleet_id: None,
+            mission_state: "Pending".into(),
+            step_index: 0,
+            current_step: None,
+            steps: vec!["navigate".into()],
+            required_capabilities: Vec::new(),
+            approval_pending: false,
+        }],
+    );
+    let matches = registry.query(&EntityQuery {
+        participates_in: Some(mission_id),
+        ..Default::default()
+    });
+    assert_eq!(matches.count, 1);
+    assert_eq!(matches.entities[0].id, robot_id);
 }
 
 #[test]
