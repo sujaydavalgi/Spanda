@@ -733,14 +733,14 @@ export SPANDA_CONTROL_CENTER_URL=http://127.0.0.1:8080
 python -c "from spanda import SpandaClient; print(SpandaClient.local().readiness('rover.sd'))"
 ```
 
-**TypeScript** (`sdk/typescript`, package `@spanda/sdk`):
+**TypeScript** (`sdk/typescript`, package `@davalgi-spanda/sdk`):
 
 ```bash
 npm ci --prefix sdk/typescript && npm run build --prefix sdk/typescript
 ```
 
 ```typescript
-import { SpandaClient } from "@spanda/sdk";
+import { SpandaClient } from "@davalgi-spanda/sdk";
 const report = await SpandaClient.local().readiness("rover.sd");
 ```
 

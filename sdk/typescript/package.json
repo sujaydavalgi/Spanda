@@ -1,10 +1,13 @@
 {
-  "name": "@spanda/sdk",
+  "name": "@davalgi-spanda/sdk",
   "version": "0.4.0",
   "description": "Official TypeScript SDK for Spanda Control Center API v1",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": {
       "import": "./dist/index.js",

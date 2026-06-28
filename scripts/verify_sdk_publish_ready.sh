@@ -12,7 +12,7 @@ echo "Python wheel OK ($(ls sdk/python/dist/*.whl | tail -1))"
 echo "== Python SDK (legacy packages/sdk-python) =="
 pip install -q -e "packages/sdk-python[dev]"
 pytest packages/sdk-python/tests -q
-echo "== TypeScript @spanda/sdk =="
+echo "== TypeScript @davalgi-spanda/sdk =="
 npm ci --prefix sdk/typescript
 npm test --prefix sdk/typescript
 npm run build --prefix sdk/typescript

@@ -8,7 +8,7 @@ Official SDKs integrate with Spanda through the **Control Center API** (`spanda-
 |-----|---------|----------|--------|
 | Rust | `spanda-sdk` crate | P0 | Experimental |
 | Python | `pip install spanda-sdk` (`sdk/python/`) | P1 | Experimental |
-| TypeScript | `@spanda/sdk` (`sdk/typescript/`) | P2 | Experimental |
+| TypeScript | `@davalgi-spanda/sdk` (`sdk/typescript/`) | P2 | Experimental |
 
 Legacy Python client: `packages/sdk-python` (Control Center helpers; use `sdk/python` for full SDK surface).
 
@@ -59,7 +59,7 @@ print(report["report"]["score"])
 ### TypeScript
 
 ```typescript
-import { SpandaClient } from "@spanda/sdk";
+import { SpandaClient } from "@davalgi-spanda/sdk";
 
 const client = SpandaClient.local();
 const report = await client.readiness("rover.sd");

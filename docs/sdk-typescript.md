@@ -1,4 +1,4 @@
-# TypeScript SDK (`@spanda/sdk`)
+# TypeScript SDK (`@davalgi-spanda/sdk`)
 
 Official TypeScript/JavaScript client for Control Center UI, web dashboards, VS Code extensions, and cloud integrations.
 
@@ -11,13 +11,13 @@ cd sdk/typescript && npm install && npm run build
 In a monorepo workspace:
 
 ```json
-{ "dependencies": { "@spanda/sdk": "file:../../sdk/typescript" } }
+{ "dependencies": { "@davalgi-spanda/sdk": "file:../../sdk/typescript" } }
 ```
 
 ## Usage
 
 ```typescript
-import { SpandaClient } from "@spanda/sdk";
+import { SpandaClient } from "@davalgi-spanda/sdk";
 
 const client = SpandaClient.local();
 const report = await client.readiness("rover.sd");
@@ -36,7 +36,7 @@ const client = new SpandaClient({
 ## Event stream
 
 ```typescript
-import { EventStream } from "@spanda/sdk";
+import { EventStream } from "@davalgi-spanda/sdk";
 
 const stream = EventStream.local();
 // Connect with ws package or browser WebSocket to stream.wsUrl

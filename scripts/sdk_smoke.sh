@@ -76,7 +76,7 @@ entities = c.list_entities()
 assert 'entities' in entities
 "
 
-echo "== TypeScript @spanda/sdk (compiled client) =="
+echo "== TypeScript @davalgi-spanda/sdk (compiled client) =="
 if [[ -d "${ROOT}/sdk/typescript/node_modules" ]]; then
   npm run build --prefix "${ROOT}/sdk/typescript" --silent
   node --input-type=module -e "
