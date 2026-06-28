@@ -159,10 +159,10 @@ flowchart TB
 
 | # | Area | Priority | Status |
 |---|------|----------|--------|
-| 1 | Human entity model (roles, identity, capabilities, certifications) | NOW | **Planned** |
-| 2 | Operator capability framework extension | NOW | **Planned** |
-| 3 | Device tree: Human, Wearable, AR, VR nodes | NOW | **Planned** |
-| 4 | Human readiness (operator, team, mission) | NOW | **Planned** |
+| 1 | Human entity model (roles, identity, capabilities, certifications) | NOW | **Experimental** |
+| 2 | Operator capability framework extension | NOW | **Experimental** |
+| 3 | Device tree: Human, Wearable, AR, VR nodes | NOW | **Experimental** |
+| 4 | Human readiness (operator, team, mission) | NOW | **Experimental** |
 | 5 | Wearable device registry & reference packages | NEXT | **Planned** |
 | 6 | AR reference integrations (Vision Pro, HoloLens, ARKit, ARCore) | NEXT | **Planned** |
 | 7 | VR training & mission replay workflows | NEXT | **Planned** |
@@ -219,7 +219,7 @@ See [human-interaction.md](./human-interaction.md) and [operator-capabilities.md
 
 | Phase | Release | Theme | Status |
 |-------|---------|-------|--------|
-| **H1** | v0.6 (Q1 2027) | Human entity & readiness | **Planned** |
+| **H1** | v0.6 (Q1 2027) | Human entity & readiness | **Shipped (experimental)** |
 | **H2** | v0.7 (Q2 2027) | Wearables & AR packages | **Planned** |
 | **H3** | v0.8 (Q3 2027) | HRI, collaboration, remote expert | **Planned** |
 | **H4** | v1.0 (2027) | Control Center human UI, health opt-in, stable hardening | **Planned** |

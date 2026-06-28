@@ -143,10 +143,10 @@ Full analysis: [human-interaction-spatial-computing-roadmap.md](./human-interact
 
 | # | Area | Priority | Status |
 |---|------|----------|--------|
-| 1 | Human entity model (roles, identity, certifications, trust) | NOW | **Planned** |
-| 2 | Operator capability framework | NOW | **Planned** |
-| 3 | Device tree: Human, Wearable, AR, VR nodes | NOW | **Planned** |
-| 4 | Human readiness (operator, team, mission) | NOW | **Planned** |
+| 1 | Human entity model (roles, identity, certifications, trust) | NOW | **Experimental** |
+| 2 | Operator capability framework | NOW | **Experimental** |
+| 3 | Device tree: Human, Wearable, AR, VR nodes | NOW | **Experimental** |
+| 4 | Human readiness (operator, team, mission) | NOW | **Experimental** |
 | 5 | Wearable reference packages | NEXT | **Planned** |
 | 6 | AR integrations (Vision Pro, HoloLens, ARKit, ARCore) | NEXT | **Planned** |
 | 7 | VR training & mission replay | NEXT | **Planned** |
