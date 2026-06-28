@@ -914,6 +914,69 @@ fn demo_compliance(root: &Path) {
     println!("\nDemo complete. See examples/showcase/compliance/README.md and docs/compliance-profiles.md");
 }
 
+fn demo_adas(root: &Path) {
+    crate::bundled_registry::ensure_bundled_registry_env();
+
+    let adas_root = root.join("examples/solutions/adas");
+    let main = adas_root.join("src/highway_drive.sd");
+    let trace = adas_root.join("src/highway_drive.trace");
+    let main_sd = require_file(&main);
+    let main_str = main_sd.to_str().unwrap();
+
+    println!("== ADAS & Autonomous Driving Solution Blueprint ==\n");
+
+    println!("--- verify iso26262 (highway_drive.sd) ---");
+    run_spanda_args(&[
+        "verify",
+        main_str,
+        "--profile",
+        "iso26262",
+        "--capabilities",
+        "--traceability",
+    ]);
+
+    println!("\n--- readiness (highway_drive.sd) ---");
+    run_spanda_args(&["readiness", main_str, "--profile", "iso26262"]);
+
+    if trace.is_file() {
+        println!("\n--- replay (highway_drive.trace) ---");
+        run_spanda_args(&[
+            "replay",
+            trace.to_str().unwrap(),
+            "--deterministic",
+        ]);
+    }
+
+    let examples = [
+        ("lane_keeping/lane_keeping.sd", "Lane Keeping Assist"),
+        ("adaptive_cruise/adaptive_cruise.sd", "Adaptive Cruise Control"),
+        ("automatic_emergency_braking/aeb.sd", "Automatic Emergency Braking"),
+        ("sensor_failure_recovery/camera_failure.sd", "Sensor failure recovery"),
+        ("driver_takeover/driver_takeover.sd", "Driver takeover"),
+    ];
+
+    for (file, label) in examples {
+        let path = adas_root.join(file);
+        if path.is_file() {
+            println!("\n--- verify {label} ---");
+            run_spanda_args(&[
+                "verify",
+                path.to_str().unwrap(),
+                "--profile",
+                "iso26262",
+                "--capabilities",
+            ]);
+        }
+    }
+
+    println!("\n--- compliance report (iso26262) ---");
+    run_spanda_args(&["compliance", "report", main_str, "--profile", "iso26262"]);
+
+    println!(
+        "\nDemo complete. See examples/solutions/adas/README.md and docs/solutions/adas.md"
+    );
+}
+
 pub fn demo_dispatch(args: &[String]) {
     // Description:
     //     Demo dispatch.
@@ -948,6 +1011,7 @@ pub fn demo_dispatch(args: &[String]) {
         "spoof" | "spoofing" | "gps-spoofing" => demo_spoof(&root),
         "gaps" | "platform-gaps" | "maturity-gaps" => demo_gaps(&root),
         "compliance" | "profiles" => demo_compliance(&root),
+        "adas" | "automotive" | "highway" => demo_adas(&root),
         "" | "list" | "--help" | "-h" => {
             eprintln!(
                 "Spanda showcase demos\n\n\
@@ -968,6 +1032,7 @@ pub fn demo_dispatch(args: &[String]) {
                    trust — package/mission tampering, spoofing, runtime intrusion, tamper_policy\n\
                    spoof — GPS spoof-check coverage, trace alerts, mock ML merge\n\
                    compliance — industry profile verification (defense, medical, ISO 26262, ISO 13849, IEC 61508)\n\
+                   adas — ADAS & Autonomous Driving Solution Blueprint (verify, readiness, replay, compliance)\n\
                    gaps — vendor TPM, AK chain, compliance export, confidence gates\n\n\
                  Set SPANDA_ROOT to the repository root if examples are not found.\n\
                  See examples/showcase/README.md"
