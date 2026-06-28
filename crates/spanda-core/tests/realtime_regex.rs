@@ -301,6 +301,48 @@ robot R {
 }
 
 #[test]
+fn mission_trace_records_behavior_loop_frames() {
+    // Description:
+    //     Mission trace records behavior loop frames.
+    //
+    // Inputs:
+    //     None.
+    //
+    // Outputs:
+    //     None.
+    //
+    // Example:
+    //     let result = spanda_core::realtime_regex::mission_trace_records_behavior_loop_frames();
+
+    let source = r#"
+robot R {
+    actuator wheels: DifferentialDrive;
+    behavior patrol() {
+        loop every 50ms {
+            wheels.drive(linear: 0.5 m/s, angular: 0.0 rad/s);
+        }
+    }
+}
+"#;
+    let result = spanda_core::run(
+        source,
+        spanda_core::RunOptions {
+            max_loop_iterations: 3,
+            record_trace: true,
+            trace_source: Some("patrol.sd".into()),
+            ..Default::default()
+        },
+    )
+    .expect("run with trace");
+    let trace = result.mission_trace.expect("mission trace");
+    assert_eq!(trace.frames.len(), 3);
+    assert!(trace
+        .frames
+        .iter()
+        .all(|f| f.event == "behavior_tick"));
+}
+
+#[test]
 fn verify_traces_detects_event_mismatch() {
     // Description:
     //     Verify traces detects event mismatch.

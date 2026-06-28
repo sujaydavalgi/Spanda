@@ -121,9 +121,22 @@ impl<B: RobotBackend> Interpreter<B> {
             Stmt::LoopStmt {
                 interval_ms, body, ..
             } => {
+                let interval = *interval_ms;
+
                 // Process each max loop iteration.
-                for _ in 0..self.options.max_loop_iterations {
-                    self.backend.tick(*interval_ms);
+                for iteration in 0..self.options.max_loop_iterations {
+                    let sim_time = (iteration as f64 + 1.0) * interval;
+                    self.backend.tick(interval);
+                    self.sim_time_ms = sim_time;
+                    self.triggers_dispatched_this_tick = 0;
+                    self.record_mission_event(
+                        "behavior_tick",
+                        serde_json::json!({
+                            "sim_time_ms": sim_time,
+                            "interval_ms": interval,
+                            "iteration": iteration + 1,
+                        }),
+                    );
                     self.execute_block(body)?;
 
                     // Take this path when self.
@@ -132,6 +145,7 @@ impl<B: RobotBackend> Interpreter<B> {
                         .as_ref()
                         .map(|m| m.is_emergency_stop())
                         .unwrap_or(false)
+                        || self.backend.get_state().emergency_stop
                     {
                         break;
                     }
