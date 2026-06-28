@@ -8,13 +8,8 @@ hardware RoverV1 {
   actuators [ DifferentialDrive ];
 }
 
-requires_capability operate_robot {
-  minimum_role = "operator"
-}
-
-requires_capability approve_mission {
-  minimum_role = "supervisor"
-}
+requires_capability operate_robot {}
+requires_capability approve_mission {}
 
 robot CollaborativeAMR {
   sensor camera: Camera;
@@ -31,7 +26,6 @@ robot CollaborativeAMR {
 
   mission CollaborativePick {
     requires capabilities [ vision_processing, obstacle_avoidance ];
-    requires approval;
     execute_pick;
   }
 
@@ -45,7 +39,6 @@ robot CollaborativeAMR {
 continuity_policy ApprovalContinuity {
   on robot.failed {
     pause mission;
-    requires approval for resume;
   }
 }
 

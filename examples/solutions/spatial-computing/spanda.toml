@@ -9,6 +9,7 @@ spanda-gps = "0.1"
 spanda-nav = "0.1"
 spanda-mqtt = "0.1"
 spanda-opencv = "0.1"
+spanda-ble = "0.1"
 spanda-mission-continuity = "0.1"
 # Planned H2 packages (optional):
 # spanda-hololens = "0.1"

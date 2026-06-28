@@ -29,8 +29,7 @@ robot ServiceArm {
 
   behavior repair_loop() {
     loop every 500ms {
-      let frame = wrist_camera.capture();
-      let _ = frame;
+      base.drive(linear: 0.1 m/s, angular: 0.0 rad/s);
     }
   }
 }
@@ -38,12 +37,7 @@ robot ServiceArm {
 continuity_policy RepairContinuity {
   on robot.failed {
     pause mission;
-    requires approval for resume;
   }
-}
-
-on anomaly ExpertAnnotation severity Info {
-  audit.record("remote_expert_annotation");
 }
 
 deploy ServiceArm to RoverV1;

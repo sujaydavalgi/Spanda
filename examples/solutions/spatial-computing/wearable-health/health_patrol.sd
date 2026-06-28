@@ -1,6 +1,6 @@
 // Wearable health monitoring — optional, privacy-gated deployment
 //
-//   SPANDA_HUMAN_HEALTH_ENABLED=1 spanda readiness health_patrol.sd --config ../spanda.toml
+//   spanda readiness health_patrol.sd --profile human_collaboration --config ../spanda.toml
 
 hardware RoverV1 {
   sensors [ GPS ];
@@ -8,7 +8,6 @@ hardware RoverV1 {
 }
 
 requires_capability operate_robot {}
-
 requires_capability medical_responder {}
 
 robot HealthPatrol {
@@ -31,15 +30,6 @@ robot HealthPatrol {
       drive.drive(linear: 0.2 m/s, angular: 0.0 rad/s);
     }
   }
-}
-
-on anomaly FatigueAlert severity Warning {
-  audit.record("operator_fatigue_hint");
-  pause mission;
-}
-
-anomaly_detector FatigueAlert {
-  expected true;
 }
 
 deploy HealthPatrol to RoverV1;

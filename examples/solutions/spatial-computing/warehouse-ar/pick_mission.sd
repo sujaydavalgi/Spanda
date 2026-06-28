@@ -6,20 +6,22 @@
 hardware RoverV1 {
   sensors [ Camera, GPS, Lidar ];
   actuators [ DifferentialDrive ];
+  connectivity [ WiFi, LTE ];
 }
 
-requires_capability operate_robot {
-  minimum_role = "operator"
-  certification = "forklift-cert"
+kill_switch EmergencyStop {
+  priority: critical;
+  action { emergency_stop; }
 }
 
-requires_capability forklift_operator {}
+requires_capability operate_robot {}
 
 robot AMR {
+  uses hardware RoverV1;
   sensor front_camera: Camera;
   sensor gps: GPS;
   sensor lidar: Lidar;
-  actuator drive: DifferentialDrive;
+  actuator wheels: DifferentialDrive;
 
   exposes capabilities [ vision_processing, gps_navigation, obstacle_avoidance, autonomous_navigation ];
 
@@ -35,24 +37,20 @@ robot AMR {
 
   behavior pick_loop() {
     loop every 200ms {
-      let _ = front_camera.capture();
-      drive.drive(linear: 0.5 m/s, angular: 0.0 rad/s);
+      wheels.drive(linear: 0.5 m/s, angular: 0.0 rad/s);
     }
   }
+}
+
+health_check AmrHealth for robot AMR {
+  check gps.status == Healthy;
+  check lidar.status == Healthy;
 }
 
 continuity_policy PickContinuity {
   on robot.failed {
     resume from checkpoint;
   }
-}
-
-on anomaly ProximityAlert severity Warning {
-  audit.record("operator_proximity_zone");
-}
-
-anomaly_detector ProximityAlert {
-  expected lidar.nearest_distance > 1.0 m;
 }
 
 deploy AMR to RoverV1;

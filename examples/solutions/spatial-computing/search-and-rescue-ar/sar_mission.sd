@@ -1,7 +1,6 @@
 // Search and rescue AR — multi-human collaborative mission with drone
 //
 //   spanda check sar_mission.sd
-//   spanda fleet run sar_mission.sd
 
 hardware RoverV1 {
   sensors [ Camera, GPS, Lidar ];
@@ -9,7 +8,6 @@ hardware RoverV1 {
 }
 
 requires_capability search_rescue_operator {}
-
 requires_capability drone_pilot {}
 
 robot GroundUnit {
@@ -42,11 +40,6 @@ continuity_policy SARContinuity {
     reassign mission;
     resume from checkpoint;
   }
-}
-
-on anomaly TeamGeofenceBreach severity Critical {
-  request human_takeover;
-  audit.record("sar_geofence_breach");
 }
 
 deploy GroundUnit to RoverV1;

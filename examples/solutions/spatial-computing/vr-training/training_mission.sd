@@ -8,9 +8,7 @@ hardware RoverV1 {
   actuators [ DifferentialDrive ];
 }
 
-requires_capability operate_robot {
-  minimum_role = "operator"
-}
+requires_capability operate_robot {}
 
 robot TraineeRover {
   sensor camera: Camera;
