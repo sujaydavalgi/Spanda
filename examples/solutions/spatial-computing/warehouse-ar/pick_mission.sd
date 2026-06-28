@@ -1,0 +1,58 @@
+// Warehouse AR picking — operator + AR overlay + AMR coordination
+//
+//   spanda check pick_mission.sd
+//   spanda verify pick_mission.sd --capabilities --config ../spanda.toml
+
+hardware RoverV1 {
+  sensors [ Camera, GPS, Lidar ];
+  actuators [ DifferentialDrive ];
+}
+
+requires_capability operate_robot {
+  minimum_role = "operator"
+  certification = "forklift-cert"
+}
+
+requires_capability forklift_operator {}
+
+robot AMR {
+  sensor front_camera: Camera;
+  sensor gps: GPS;
+  sensor lidar: Lidar;
+  actuator drive: DifferentialDrive;
+
+  exposes capabilities [ vision_processing, gps_navigation, obstacle_avoidance, autonomous_navigation ];
+
+  safety {
+    max_speed = 1.2 m/s;
+    stop_if lidar.nearest_distance < 1.5 m;
+  }
+
+  mission WarehousePick {
+    requires capabilities [ vision_processing, gps_navigation, obstacle_avoidance ];
+    pick_loop;
+  }
+
+  behavior pick_loop() {
+    loop every 200ms {
+      let _ = front_camera.capture();
+      drive.drive(linear: 0.5 m/s, angular: 0.0 rad/s);
+    }
+  }
+}
+
+continuity_policy PickContinuity {
+  on robot.failed {
+    resume from checkpoint;
+  }
+}
+
+on anomaly ProximityAlert severity Warning {
+  audit.record("operator_proximity_zone");
+}
+
+anomaly_detector ProximityAlert {
+  expected lidar.nearest_distance > 1.0 m;
+}
+
+deploy AMR to RoverV1;

@@ -1,0 +1,52 @@
+// Search and rescue AR — multi-human collaborative mission with drone
+//
+//   spanda check sar_mission.sd
+//   spanda fleet run sar_mission.sd
+
+hardware RoverV1 {
+  sensors [ Camera, GPS, Lidar ];
+  actuators [ DifferentialDrive ];
+}
+
+requires_capability search_rescue_operator {}
+
+requires_capability drone_pilot {}
+
+robot GroundUnit {
+  sensor camera: Camera;
+  sensor gps: GPS;
+  sensor lidar: Lidar;
+  actuator drive: DifferentialDrive;
+
+  exposes capabilities [ vision_processing, gps_navigation, obstacle_avoidance ];
+
+  safety {
+    max_speed = 1.5 m/s;
+    stop_if lidar.nearest_distance < 2.0 m;
+  }
+
+  mission SARPatrol {
+    requires capabilities [ vision_processing, gps_navigation ];
+    patrol;
+  }
+
+  behavior patrol() {
+    loop every 150ms {
+      drive.drive(linear: 1.0 m/s, angular: 0.0 rad/s);
+    }
+  }
+}
+
+continuity_policy SARContinuity {
+  on robot.failed {
+    reassign mission;
+    resume from checkpoint;
+  }
+}
+
+on anomaly TeamGeofenceBreach severity Critical {
+  request human_takeover;
+  audit.record("sar_geofence_breach");
+}
+
+deploy GroundUnit to RoverV1;

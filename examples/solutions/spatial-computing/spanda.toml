@@ -1,0 +1,41 @@
+[package]
+name = "spatial-computing-blueprint"
+version = "0.1.0"
+description = "Official Spatial Computing & Human-Robot Collaboration Solution Blueprint"
+license = "Apache-2.0"
+
+[dependencies]
+spanda-gps = "0.1"
+spanda-nav = "0.1"
+spanda-mqtt = "0.1"
+spanda-opencv = "0.1"
+spanda-mission-continuity = "0.1"
+# Planned H2 packages (optional):
+# spanda-hololens = "0.1"
+# spanda-smartwatch = "0.1"
+# spanda-voice = "0.1"
+
+[hardware]
+targets = ["RoverV1", "JetsonOrin"]
+
+[capabilities]
+required = [
+  "gps_navigation",
+  "obstacle_avoidance",
+  "autonomous_navigation",
+  "vision_processing",
+  "telemetry_streaming",
+]
+
+[safety]
+level = "experimental"
+profile = "warehouse"
+
+[readiness]
+min_score = 85
+profile = "human_collaboration"
+
+[config]
+devices = "spanda.devices.toml"
+readiness = "spanda.readiness.toml"
+security = "spanda.security.toml"

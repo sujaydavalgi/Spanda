@@ -1,0 +1,52 @@
+// Operator approval — supervisor gate before collaborative mission start
+//
+//   spanda check collaborative_mission.sd
+//   spanda readiness collaborative_mission.sd --profile human_collaboration --config ../spanda.toml
+
+hardware RoverV1 {
+  sensors [ Camera, Lidar, GPS ];
+  actuators [ DifferentialDrive ];
+}
+
+requires_capability operate_robot {
+  minimum_role = "operator"
+}
+
+requires_capability approve_mission {
+  minimum_role = "supervisor"
+}
+
+robot CollaborativeAMR {
+  sensor camera: Camera;
+  sensor lidar: Lidar;
+  sensor gps: GPS;
+  actuator drive: DifferentialDrive;
+
+  exposes capabilities [ vision_processing, obstacle_avoidance, gps_navigation, autonomous_navigation ];
+
+  safety {
+    max_speed = 1.0 m/s;
+    stop_if lidar.nearest_distance < 1.8 m;
+  }
+
+  mission CollaborativePick {
+    requires capabilities [ vision_processing, obstacle_avoidance ];
+    requires approval;
+    execute_pick;
+  }
+
+  behavior execute_pick() {
+    loop every 200ms {
+      drive.drive(linear: 0.6 m/s, angular: 0.0 rad/s);
+    }
+  }
+}
+
+continuity_policy ApprovalContinuity {
+  on robot.failed {
+    pause mission;
+    requires approval for resume;
+  }
+}
+
+deploy CollaborativeAMR to RoverV1;

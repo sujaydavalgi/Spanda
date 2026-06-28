@@ -1,0 +1,40 @@
+// VR operator training — sim + replay for trainee certification
+//
+//   spanda sim training_mission.sd --record
+//   spanda replay training_mission.trace --playback
+
+hardware RoverV1 {
+  sensors [ Camera, GPS, Lidar ];
+  actuators [ DifferentialDrive ];
+}
+
+requires_capability operate_robot {
+  minimum_role = "operator"
+}
+
+robot TraineeRover {
+  sensor camera: Camera;
+  sensor gps: GPS;
+  sensor lidar: Lidar;
+  actuator drive: DifferentialDrive;
+
+  exposes capabilities [ vision_processing, gps_navigation, obstacle_avoidance ];
+
+  safety {
+    max_speed = 0.8 m/s;
+    stop_if lidar.nearest_distance < 2.0 m;
+  }
+
+  mission OperatorTraining {
+    requires capabilities [ vision_processing, obstacle_avoidance ];
+    training_loop;
+  }
+
+  behavior training_loop() {
+    loop every 100ms {
+      drive.drive(linear: 0.4 m/s, angular: 0.0 rad/s);
+    }
+  }
+}
+
+deploy TraineeRover to RoverV1;

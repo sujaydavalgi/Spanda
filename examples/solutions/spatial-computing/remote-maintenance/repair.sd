@@ -1,0 +1,49 @@
+// Remote maintenance — field technician + AR + remote expert guided repair
+//
+//   spanda check repair.sd
+//   spanda sim repair.sd --record
+
+hardware RoverV1 {
+  sensors [ Camera, Lidar ];
+  actuators [ DifferentialDrive ];
+}
+
+requires_capability maintenance_technician {}
+
+robot ServiceArm {
+  sensor wrist_camera: Camera;
+  sensor proximity: Lidar;
+  actuator base: DifferentialDrive;
+
+  exposes capabilities [ vision_processing, obstacle_avoidance ];
+
+  safety {
+    max_speed = 0.3 m/s;
+    stop_if proximity.nearest_distance < 0.5 m;
+  }
+
+  mission GuidedRepair {
+    requires capabilities [ vision_processing ];
+    repair_loop;
+  }
+
+  behavior repair_loop() {
+    loop every 500ms {
+      let frame = wrist_camera.capture();
+      let _ = frame;
+    }
+  }
+}
+
+continuity_policy RepairContinuity {
+  on robot.failed {
+    pause mission;
+    requires approval for resume;
+  }
+}
+
+on anomaly ExpertAnnotation severity Info {
+  audit.record("remote_expert_annotation");
+}
+
+deploy ServiceArm to RoverV1;

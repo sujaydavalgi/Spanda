@@ -1,0 +1,20 @@
+# Security and privacy for human collaboration deployments.
+# Health data requires SPANDA_HUMAN_HEALTH_ENABLED=1
+
+[security]
+require_rbac = true
+
+[security.human_health]
+enabled = false
+require_consent = true
+audit_health_reads = true
+retention_days = 0
+
+[security.ar_sessions]
+require_authenticated_session = true
+audit_annotations = true
+camera_stream_rbac = "ar:stream"
+
+[security.privacy]
+pii_in_telemetry = false
+anonymize_operator_location = false

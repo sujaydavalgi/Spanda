@@ -1,0 +1,49 @@
+# Human collaboration readiness — operator, team, and mission gates.
+# See docs/human-readiness.md
+
+[readiness]
+min_score = 85
+profile = "human_collaboration"
+
+[readiness.profiles.human_collaboration]
+min_score = 85
+require_supervisor_approval = true
+health_enabled = false
+
+[readiness.profiles.human_collaboration.weights]
+certification = 0.25
+capability = 0.20
+availability = 0.15
+trust = 0.15
+location = 0.10
+permissions = 0.10
+wearable_connectivity = 0.05
+
+[readiness.gates]
+require_kill_switch = true
+require_operator_certification = true
+require_wearable_connectivity = false
+require_supervisor_for_mission = true
+min_team_size = 1
+
+[readiness.humans]
+required_roles = ["operator"]
+supervisor_role = "supervisor"
+
+[readiness.wearables]
+required_for_operator = ["watch-001"]
+optional = ["vest-001"]
+
+[readiness.spatial]
+require_ar_session_for_ar_missions = true
+max_session_participants = 8
+
+[human_roles.operator]
+default_capabilities = ["operate_robot"]
+required_certifications = ["warehouse-safety"]
+
+[human_roles.supervisor]
+default_capabilities = ["approve_mission", "approve_recovery", "emergency_override"]
+
+[human_roles.technician]
+default_capabilities = ["maintenance_technician"]
