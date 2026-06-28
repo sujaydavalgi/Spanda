@@ -135,6 +135,7 @@
 | [platform-maturity-roadmap.md](./platform-maturity-roadmap.md) | **Platform maturity expansion — adoption, trust, operations (16 areas)** |
 | [enterprise-operations-roadmap.md](./enterprise-operations-roadmap.md) | **Enterprise operations — Control Center, Device Pool, RBAC, APIs, observability (20 pillars)** |
 | [stable-hardening-enterprise-ops.md](./stable-hardening-enterprise-ops.md) | **Experimental → Stable promotion checklist for enterprise operations** |
+| [stable-hardening-human-interaction.md](./stable-hardening-human-interaction.md) | **Experimental → Stable promotion checklist for Human Interaction (H1–H4)** |
 | [field-soak-gate.md](./field-soak-gate.md) | **30-day field pilot gate before Stable promotion** |
 | [security-audit-third-party.md](./security-audit-third-party.md) | **Third-party security audit scope and prep workflow** |
 | [desktop-release-runbook.md](./desktop-release-runbook.md) | **Signed/notarized desktop builds and auto-update** |

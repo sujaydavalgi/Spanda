@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **HRI stable promotion gate:** `scripts/hri_stable_promotion_gate.sh` and [stable-hardening-human-interaction.md](docs/stable-hardening-human-interaction.md); `@spanda/web` `ControlCenterPanel` Humans tab parity with embedded Control Center.
+
 - **H4 Control Center human UI (experimental):** Humans tab in Control Center; `GET /v1/humans`, `/v1/wearables`, `/v1/human-health/policy`; `HumanHealthGate` opt-in (`SPANDA_HUMAN_HEALTH_ENABLED` + `[security.human_health]`); VR training continuity example.
 
 - **H3 HRI & collaboration (experimental):** `spanda-voice`, `spanda-gesture`, `spanda-eye-tracking` registry packages; `HriInputProvider` and `OverlayProvider` wiring; `[[spatial_sessions]]` config; Control Center `/v1/hri/sessions` API; collaborative continuity in spatial-computing blueprint examples.

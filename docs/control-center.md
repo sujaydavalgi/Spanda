@@ -44,6 +44,10 @@ spanda control-center serve \
   --program examples/solutions/spatial-computing/warehouse-ar/pick_mission.sd
 ```
 
+The **Humans** tab shows operator dashboard, wearable inventory, AR/HRI sessions, VR training links, and health opt-in policy. The same panels ship in `@spanda/web` `ControlCenterPanel` (parity with embedded HTML).
+
+Before promoting Human Interaction to **Stable**: start HRI field soak (`date -u +%Y-%m-%d > .spanda/hri-field-soak-start.txt`), then run `./scripts/hri_stable_promotion_gate.sh` — see [stable-hardening-human-interaction.md](./stable-hardening-human-interaction.md).
+
 **Experimental (H4)** — Human Interaction tab and panels:
 
 | Panel | Content |

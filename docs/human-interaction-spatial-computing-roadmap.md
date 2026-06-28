@@ -263,13 +263,13 @@ See [human-interaction.md](./human-interaction.md) and [operator-capabilities.md
 
 | Deliverable | Owner | Status |
 |-------------|-------|--------|
-| Human Interaction tab (dashboard, wearables, sessions, VR links) | `spanda-api` Control Center UI | **Experimental** |
+| Human Interaction tab (dashboard, wearables, sessions, VR links) | `spanda-api` + `@spanda/web` | **Experimental** (stable hardening checklist **shipped**) |
 | REST: `GET /v1/humans`, `/wearables`, `/human-health/policy` | `spanda-api` | **Experimental** |
 | Human health opt-in gate (`SPANDA_HUMAN_HEALTH_ENABLED` + TOML) | `spanda-security` | **Experimental** |
 | VR training continuity example | `examples/solutions/spatial-computing/vr-training/` | **Experimental** |
-| Stable tier promotion after field soak | Ops gates | **Planned** |
+| Stable promotion gate | `scripts/hri_stable_promotion_gate.sh` | **Shipped** — [stable-hardening-human-interaction.md](./stable-hardening-human-interaction.md) |
 
-**Exit criteria:** Control Center Humans tab loads spatial blueprint config; health gate blocks telemetry until opt-in; OpenAPI documents human endpoints.
+**Exit criteria:** `SPANDA_HRI_SKIP_SOAK=1 ./scripts/hri_stable_promotion_gate.sh` passes; Humans tab parity in embedded UI and `ControlCenterPanel`; health gate blocks telemetry until opt-in; 30-day field soak + audit sign-off before **Stable** tier label.
 
 ---
 
