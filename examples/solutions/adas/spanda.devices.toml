@@ -1,0 +1,104 @@
+# Automotive device hierarchy — maps logical ADAS capabilities to physical devices.
+# See docs/automotive-device-tree.md
+
+[fleet]
+id = "adas-fleet"
+
+[[fleet.robots]]
+id = "vehicle-001"
+model = "PassengerSedan"
+hardware_profile = "JetsonAutomotive"
+
+[fleet.robots.compute]
+id = "compute-001"
+type = "JetsonOrin"
+serial = "JTN-ADAS-001"
+
+[[fleet.robots.compute.devices]]
+id = "front-camera"
+type = "Camera"
+provider = "spanda-opencv"
+mount = "front"
+capabilities = ["lane_detection", "traffic_sign_recognition", "pedestrian_detection"]
+
+[[fleet.robots.compute.devices]]
+id = "rear-camera"
+type = "Camera"
+provider = "spanda-opencv"
+mount = "rear"
+capabilities = ["obstacle_detection", "parking_assist"]
+
+[[fleet.robots.compute.devices]]
+id = "stereo-camera"
+type = "DepthCamera"
+provider = "spanda-opencv"
+mount = "front"
+capabilities = ["obstacle_detection", "parking_assist"]
+
+[[fleet.robots.compute.devices]]
+id = "front-radar"
+type = "Radar"
+provider = "spanda-radar"
+mount = "front"
+capabilities = ["obstacle_detection", "adaptive_speed_control"]
+
+[[fleet.robots.compute.devices]]
+id = "front-lidar"
+type = "Lidar"
+provider = "spanda-lidar"
+mount = "front"
+capabilities = ["obstacle_detection", "localization"]
+
+[[fleet.robots.compute.devices]]
+id = "ultrasonic-array"
+type = "Ultrasonic"
+provider = "spanda-ultrasonic"
+mount = "bumper"
+capabilities = ["parking_assist"]
+
+[[fleet.robots.compute.devices]]
+id = "gps-receiver"
+type = "GPS"
+provider = "spanda-gps"
+port = "/dev/ttyUSB0"
+capabilities = ["localization", "route_following", "read_location"]
+
+[[fleet.robots.compute.devices]]
+id = "imu"
+type = "IMU"
+provider = "spanda-imu"
+capabilities = ["localization"]
+
+[[fleet.robots.compute.devices]]
+id = "driver-monitor"
+type = "Camera"
+provider = "spanda-opencv"
+mount = "cabin"
+capabilities = ["driver_monitoring"]
+
+[[fleet.robots.compute.devices]]
+id = "steering-ecu"
+type = "SteeringController"
+provider = "spanda-canbus"
+bus = "can0"
+capabilities = ["steering_control"]
+
+[[fleet.robots.compute.devices]]
+id = "brake-ecu"
+type = "BrakeController"
+provider = "spanda-canbus"
+bus = "can0"
+capabilities = ["emergency_braking"]
+
+[[fleet.robots.compute.devices]]
+id = "powertrain-ecu"
+type = "PowertrainController"
+provider = "spanda-canbus"
+bus = "can0"
+capabilities = ["adaptive_speed_control"]
+
+[[fleet.robots.compute.devices]]
+id = "comm-gateway"
+type = "CommunicationGateway"
+provider = "spanda-automotive-ethernet"
+capabilities = ["secure_communication", "v2x_relay"]

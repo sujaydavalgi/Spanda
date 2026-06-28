@@ -1,0 +1,193 @@
+// ADAS & Autonomous Driving — Official Solution Blueprint (primary reference)
+//
+//   spanda verify src/highway_drive.sd --profile iso26262 --capabilities --traceability
+//   spanda readiness src/highway_drive.sd --profile iso26262 --config ../spanda.toml
+//   spanda sim src/highway_drive.sd --record
+//   spanda diagnose src/highway_drive.sd src/highway_drive.trace
+//   spanda explain src/highway_drive.trace
+//
+// Demonstrates safety-first ADAS workflows without automotive-specific core extensions.
+// Radar and ECU actuators are modeled in spanda.devices.toml; programs use Lidar/Camera/DifferentialDrive.
+
+import trust.jetson;
+
+hardware JetsonAutomotive {
+  sensors [ GPS, Lidar, Camera, IMU ];
+  actuators [ DifferentialDrive ];
+  connectivity [ WiFi, LTE ];
+}
+
+kill_switch EmergencyStop {
+  priority: critical;
+  action { emergency_stop; }
+}
+
+health_check BatteryHealth for robot Vehicle {
+  check battery.level >= 20%;
+}
+
+health_check CameraHealth for robot Vehicle {
+  check front_camera.status == Healthy;
+}
+
+health_check LidarHealth for robot Vehicle {
+  check front_lidar.range_min <= 5 m;
+}
+
+health_check DriveHealth for robot Vehicle {
+  check wheels.emergency_stop_supported == true;
+}
+
+assurance_case AdasDeployCase {
+  evidence hardware_verification;
+  evidence capability_traceability;
+  evidence health_checks;
+  evidence simulation_replay;
+}
+
+tamper_policy AutomotiveTamperResponse {
+  on tamper severity Critical {
+    enter degraded_mode;
+    audit.record("adas_tamper_detected");
+  }
+}
+
+mitigation CameraObstructionMitigation {
+  if front_camera.failed {
+    switch_to visual_odometry;
+    enter degraded_mode;
+    audit.record("camera_obstruction");
+  }
+}
+
+mitigation GpsLossMitigation {
+  if gps.lost {
+    switch_to visual_odometry;
+    enter degraded_mode;
+    audit.record("gps_loss");
+  }
+}
+
+mitigation LidarFailureMitigation {
+  if front_lidar.failed {
+    enter degraded_mode;
+    audit.record("lidar_degradation");
+  }
+}
+
+recovery_policy AdasRecovery {
+  on sensor.degraded {
+    restart perception_provider;
+    verify remaining_capabilities;
+  }
+  on network.disconnected {
+    reconnect vehicle_network;
+    retry localization;
+  }
+}
+
+continuity_policy AdasContinuity {
+  on robot.failed {
+    resume from checkpoint;
+    reassign mission;
+  }
+  on sensor.failed {
+    verify remaining_capabilities;
+    reduce operating_speed;
+    request driver_takeover if insufficient_sensors;
+    generate assurance_evidence;
+  }
+}
+
+operating_mode NormalMode { normal; }
+operating_mode DegradedMode { degraded; }
+operating_mode SafeMode { safe; }
+
+mission_plan HighwayDrive {
+  step readiness_check;
+  step localize;
+  step lane_keep;
+  step adaptive_cruise;
+  step monitor_driver;
+  constraint battery.level >= 20%;
+}
+
+robot Vehicle {
+  uses hardware JetsonAutomotive;
+  sensor gps: GPS;
+  sensor front_lidar: Lidar;
+  sensor front_camera: Camera;
+  sensor imu: IMU;
+  sensor driver_camera: Camera;
+  actuator wheels: DifferentialDrive;
+
+  exposes capabilities [
+    gps_navigation,
+    obstacle_avoidance,
+    autonomous_navigation,
+    vision_processing,
+    telemetry_streaming
+  ];
+
+  secure_comm {
+    encryption: required;
+    authentication: signed;
+  }
+
+  mode degraded { }
+  mode safe { wheels.stop(); }
+
+  safety {
+    max_speed = 1.0 m/s;
+    stop_if front_lidar.nearest_distance < 2 m;
+  }
+
+  mission HighwayPilot {
+    requires capabilities [
+      gps_navigation,
+      obstacle_avoidance,
+      autonomous_navigation,
+      vision_processing
+    ];
+    highway_drive_loop;
+  }
+
+  behavior highway_drive_loop() {
+    loop every 50ms {
+      let lane = front_camera.analyze();
+      let obstacles = front_lidar.read();
+      let _ = lane;
+      let _ = obstacles;
+      wheels.drive(linear: 0.8 m/s, angular: 0.0 rad/s);
+    }
+  }
+
+  behavior emergency_brake() {
+    wheels.stop();
+  }
+
+  behavior parking_assist() {
+    loop every 100ms {
+      let depth = front_lidar.read();
+      let _ = depth;
+      wheels.drive(linear: 0.5 m/s, angular: 0.0 rad/s);
+    }
+  }
+}
+
+on anomaly SensorDegradation severity Warning {
+  diagnose root_cause;
+  enter degraded_mode;
+}
+
+on anomaly DriverDistraction severity Critical {
+  request driver_takeover;
+  audit.record("driver_distraction_detected");
+}
+
+anomaly_detector SensorDegradation {
+  expected front_camera.status == Healthy;
+  expected front_lidar.status == Healthy;
+}
+
+deploy Vehicle to JetsonAutomotive;

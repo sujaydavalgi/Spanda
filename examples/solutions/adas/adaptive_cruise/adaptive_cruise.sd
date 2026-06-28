@@ -1,0 +1,43 @@
+// Adaptive Cruise Control — reference workflow
+//
+//   spanda verify adaptive_cruise.sd --profile iso26262 --capabilities
+//   spanda readiness adaptive_cruise.sd --profile iso26262
+
+hardware JetsonAutomotive {
+  sensors [ Lidar, Camera, GPS ];
+  actuators [ DifferentialDrive ];
+  connectivity [ WiFi ];
+}
+
+health_check LidarCalibration for robot Vehicle {
+  check front_lidar.range_min <= 5 m;
+}
+
+robot Vehicle {
+  sensor front_lidar: Lidar;
+  sensor front_camera: Camera;
+  sensor gps: GPS;
+  actuator wheels: DifferentialDrive;
+
+  exposes capabilities [ obstacle_avoidance, gps_navigation, autonomous_navigation ];
+
+  safety {
+    max_speed = 1.0 m/s;
+    stop_if front_lidar.nearest_distance < 3 m;
+  }
+
+  mission AdaptiveCruise {
+    requires capabilities [ obstacle_avoidance, autonomous_navigation ];
+    cruise_loop;
+  }
+
+  behavior cruise_loop() {
+    loop every 50ms {
+      let lead_vehicle = front_lidar.read();
+      let _ = lead_vehicle;
+      wheels.drive(linear: 0.8 m/s, angular: 0.0 rad/s);
+    }
+  }
+}
+
+deploy Vehicle to JetsonAutomotive;

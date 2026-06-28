@@ -1,0 +1,32 @@
+# Optional automotive protocol provider packages — not core implementations.
+# Install when integrating with vehicle networks. See docs/solutions/adas.md#automotive-protocols.
+
+[providers.can]
+package = "spanda-canbus"
+protocols = ["CAN", "CAN_FD"]
+status = "planned"
+
+[providers.lin]
+package = "spanda-lin"
+protocols = ["LIN"]
+status = "planned"
+
+[providers.automotive_ethernet]
+package = "spanda-automotive-ethernet"
+protocols = ["AutomotiveEthernet", "SOME_IP", "DoIP"]
+status = "planned"
+
+[providers.dds]
+package = "spanda-dds"
+protocols = ["DDS"]
+status = "experimental"
+
+[providers.diagnostics]
+package = "spanda-uds"
+protocols = ["UDS", "ISO_TP"]
+status = "planned"
+
+[providers.v2x]
+package = "spanda-v2x"
+protocols = ["DSRC", "C-V2X"]
+status = "planned"

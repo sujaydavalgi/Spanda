@@ -1,0 +1,21 @@
+# ADAS assurance evidence configuration.
+# See docs/adas-assurance.md
+
+[assurance]
+profile = "iso26262"
+require_case = true
+
+[assurance.evidence]
+sensor_readiness = true
+calibration_status = true
+capability_verification = true
+hardware_verification = true
+safety_validation = true
+traceability = true
+replay_references = true
+software_versions = true
+ota_history = true
+
+[assurance.replay]
+golden_traces = ["src/highway_drive.trace"]
+retain_days = 90

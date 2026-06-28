@@ -1,0 +1,31 @@
+[package]
+name = "adas-blueprint"
+version = "0.1.0"
+description = "Official ADAS & Autonomous Driving Solution Blueprint"
+license = "Apache-2.0"
+
+[dependencies]
+spanda-gps = "0.1"
+spanda-nav = "0.1"
+spanda-mqtt = "0.1"
+spanda-opencv = "0.1"
+
+[hardware]
+targets = ["JetsonAutomotive"]
+
+[capabilities]
+required = [
+  "gps_navigation",
+  "obstacle_avoidance",
+  "autonomous_navigation",
+  "vision_processing",
+  "telemetry_streaming",
+]
+
+[safety]
+level = "experimental"
+profile = "iso26262"
+
+[readiness]
+min_score = 90
+profile = "iso26262"

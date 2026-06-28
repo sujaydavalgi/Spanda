@@ -1,0 +1,51 @@
+// Automatic Emergency Braking — reference workflow
+//
+//   spanda verify aeb.sd --profile iso26262 --capabilities
+//   spanda sim aeb.sd --record
+
+hardware JetsonAutomotive {
+  sensors [ Lidar, Camera ];
+  actuators [ DifferentialDrive ];
+  connectivity [ WiFi ];
+}
+
+kill_switch EmergencyStop {
+  priority: critical;
+  action { emergency_stop; }
+}
+
+assurance_case AebAssuranceCase {
+  evidence safety_validation;
+  evidence capability_traceability;
+  evidence simulation_replay;
+}
+
+robot Vehicle {
+  sensor front_lidar: Lidar;
+  sensor front_camera: Camera;
+  actuator wheels: DifferentialDrive;
+
+  exposes capabilities [ obstacle_avoidance, telemetry_streaming ];
+
+  safety {
+    max_speed = 1.0 m/s;
+    stop_if front_lidar.nearest_distance < 2 m;
+  }
+
+  mission EmergencyBraking {
+    requires capabilities [ obstacle_avoidance ];
+    monitor_collision;
+  }
+
+  behavior monitor_collision() {
+    loop every 20ms {
+      let scan = front_lidar.read();
+      let _ = scan;
+      if front_lidar.nearest_distance < 2 m {
+        wheels.stop();
+      }
+    }
+  }
+}
+
+deploy Vehicle to JetsonAutomotive;

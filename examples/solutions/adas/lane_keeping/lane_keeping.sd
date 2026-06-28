@@ -1,0 +1,41 @@
+// Lane Keeping Assist — reference workflow
+//
+//   spanda verify lane_keeping.sd --profile iso26262 --capabilities
+//   spanda readiness lane_keeping.sd --profile iso26262
+
+hardware JetsonAutomotive {
+  sensors [ Camera, IMU ];
+  actuators [ DifferentialDrive ];
+  connectivity [ WiFi ];
+}
+
+health_check LaneCameraHealth for robot Vehicle {
+  check imu.status == Healthy;
+}
+
+robot Vehicle {
+  sensor front_camera: Camera;
+  sensor imu: IMU;
+  actuator wheels: DifferentialDrive;
+
+  exposes capabilities [ vision_processing, autonomous_navigation ];
+
+  safety {
+    max_speed = 1.0 m/s;
+  }
+
+  mission LaneKeep {
+    requires capabilities [ vision_processing, autonomous_navigation ];
+    lane_keep_loop;
+  }
+
+  behavior lane_keep_loop() {
+    loop every 33ms {
+      let lane = front_camera.analyze();
+      let _ = lane;
+      wheels.drive(linear: 0.8 m/s, angular: 0.0 rad/s);
+    }
+  }
+}
+
+deploy Vehicle to JetsonAutomotive;

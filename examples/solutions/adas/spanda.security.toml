@@ -1,0 +1,26 @@
+# ADAS security configuration — integrates existing security framework.
+# See docs/adas-security.md
+
+[security]
+encryption = "required"
+authentication = "signed"
+secure_boot = true
+
+[security.trust]
+min_package_trust = 0.8
+require_signed_providers = true
+
+[security.tamper]
+policy = "AutomotiveTamperResponse"
+on_critical = "degraded_mode"
+
+[security.ota]
+require_certify = true
+rollback_on_readiness_fail = true
+
+[security.scenarios]
+can_intrusion_detection = true
+ecu_firmware_validation = true
+sensor_spoofing_detection = true
+gps_spoofing_detection = true
+unauthorized_provider_block = true

@@ -1,0 +1,70 @@
+// Sensor failure recovery — mission continuity reference
+//
+//   spanda continuity camera_failure.sd --failed front_camera --trigger sensor_failed
+//   spanda sim camera_failure.sd --record
+
+hardware JetsonAutomotive {
+  sensors [ Camera, Lidar, GPS, IMU ];
+  actuators [ DifferentialDrive ];
+  connectivity [ WiFi ];
+}
+
+mitigation CameraFailureMitigation {
+  if front_camera.failed {
+    switch_to visual_odometry;
+    enter degraded_mode;
+    audit.record("camera_failure");
+  }
+}
+
+recovery_policy SensorRecovery {
+  on sensor.failed {
+    restart perception_provider;
+    verify remaining_capabilities;
+  }
+}
+
+continuity_policy SensorContinuity {
+  on sensor.failed {
+    verify remaining_capabilities;
+    reduce operating_speed;
+    request driver_takeover if insufficient_sensors;
+    generate assurance_evidence;
+  }
+}
+
+operating_mode NormalMode { normal; }
+operating_mode DegradedMode { degraded; }
+
+robot Vehicle {
+  sensor front_camera: Camera;
+  sensor front_lidar: Lidar;
+  sensor gps: GPS;
+  sensor imu: IMU;
+  actuator wheels: DifferentialDrive;
+
+  exposes capabilities [
+    vision_processing,
+    obstacle_avoidance,
+    autonomous_navigation,
+    gps_navigation
+  ];
+
+  mode degraded { wheels.stop(); }
+
+  safety {
+    max_speed = 1.0 m/s;
+  }
+
+  behavior highway_drive() {
+    loop every 50ms {
+      let lane = front_camera.analyze();
+      let obstacles = front_lidar.read();
+      let _ = lane;
+      let _ = obstacles;
+      wheels.drive(linear: 0.5 m/s, angular: 0.0 rad/s);
+    }
+  }
+}
+
+deploy Vehicle to JetsonAutomotive;

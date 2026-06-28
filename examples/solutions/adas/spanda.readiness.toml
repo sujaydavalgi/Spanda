@@ -1,0 +1,33 @@
+# ADAS readiness configuration — aligned with ISO 26262 template (min score 90).
+# See docs/adas-readiness.md
+
+[readiness]
+min_score = 90
+profile = "iso26262"
+
+[readiness.factors]
+sensor_availability = 0.25
+calibration_valid = 0.20
+firmware_approved = 0.15
+vehicle_health = 0.15
+safety_systems = 0.10
+connectivity = 0.05
+trust_score = 0.10
+
+[readiness.gates]
+require_kill_switch = true
+require_secure_comm = true
+require_tamper_policy = true
+require_assurance_case = true
+min_health_checks = 4
+
+[readiness.sensors]
+required = ["front-camera", "front-radar", "gps-receiver", "imu", "brake-ecu"]
+optional = ["front-lidar", "stereo-camera", "driver-monitor"]
+
+[readiness.calibration]
+max_age_days = 30
+required = ["front-camera", "front-radar", "imu"]
+
+[readiness.firmware]
+approved_versions = ["2.1.0", "2.1.1", "2.2.0"]

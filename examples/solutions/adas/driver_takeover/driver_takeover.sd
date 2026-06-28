@@ -1,0 +1,58 @@
+// Driver takeover — continuity framework reference
+//
+//   spanda takeover driver_takeover.sd --trigger driver_distraction
+
+hardware JetsonAutomotive {
+  sensors [ Camera, Lidar, GPS ];
+  actuators [ DifferentialDrive ];
+  connectivity [ LTE ];
+}
+
+health_check DriverMonitorHealth for robot Vehicle {
+  check driver_camera.status == Healthy;
+}
+
+continuity_policy TakeoverContinuity {
+  on robot.failed {
+    resume from checkpoint;
+    reassign mission;
+  }
+}
+
+robot Vehicle {
+  sensor driver_camera: Camera;
+  sensor front_lidar: Lidar;
+  sensor gps: GPS;
+  actuator wheels: DifferentialDrive;
+
+  exposes capabilities [ vision_processing, obstacle_avoidance, autonomous_navigation ];
+
+  safety {
+    max_speed = 1.0 m/s;
+    stop_if front_lidar.nearest_distance < 3 m;
+  }
+
+  mission HighwayPilot {
+    requires capabilities [ vision_processing, obstacle_avoidance, autonomous_navigation ];
+    pilot_loop;
+  }
+
+  behavior pilot_loop() {
+    loop every 100ms {
+      let driver = driver_camera.analyze();
+      let _ = driver;
+      wheels.drive(linear: 0.8 m/s, angular: 0.0 rad/s);
+    }
+  }
+}
+
+on anomaly DriverDistraction severity Critical {
+  request driver_takeover;
+  audit.record("driver_distraction_detected");
+}
+
+anomaly_detector DriverDistraction {
+  expected driver_camera.status == Healthy;
+}
+
+deploy Vehicle to JetsonAutomotive;
