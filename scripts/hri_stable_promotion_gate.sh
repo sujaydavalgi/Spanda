@@ -18,7 +18,7 @@ if [[ "${SPANDA_HRI_SKIP_SOAK:-0}" != "1" ]]; then
   echo "--- Field soak (min ${MIN_DAYS} days) ---"
   if [[ ! -f "$SOAK_FILE" ]]; then
     echo "missing soak start file: $SOAK_FILE" >&2
-    echo "Create with: date -u +%Y-%m-%d > $SOAK_FILE" >&2
+    echo "Create with: ./scripts/hri_field_soak_init.sh" >&2
     exit 1
   fi
   START_DATE="$(tr -d '[:space:]' < "$SOAK_FILE")"
@@ -36,6 +36,20 @@ if [[ "${SPANDA_HRI_SKIP_SOAK:-0}" != "1" ]]; then
   fi
 else
   echo "Skipping field soak (SPANDA_HRI_SKIP_SOAK=1)"
+fi
+
+AUDIT_FILE="${SPANDA_HRI_SECURITY_AUDIT_PREP_FILE:-$ROOT/.spanda/hri-security-audit-prep.json}"
+if [[ "${SPANDA_HRI_SKIP_AUDIT:-0}" != "1" ]]; then
+  echo "--- HRI security audit prep artifact ---"
+  if [[ ! -f "$AUDIT_FILE" ]]; then
+    echo "missing HRI audit prep file: $AUDIT_FILE" >&2
+    echo "Run: ./scripts/hri_security_audit_prep.sh" >&2
+    exit 1
+  fi
+  python3 -c 'import json,sys; json.load(open(sys.argv[1]))' "$AUDIT_FILE"
+  echo "HRI audit prep artifact present"
+else
+  echo "Skipping audit prep check (SPANDA_HRI_SKIP_AUDIT=1)"
 fi
 
 echo "--- Spatial computing blueprint smoke ---"
@@ -87,11 +101,13 @@ fetch() {
 for path in \
   /v1/humans \
   /v1/humans/readiness \
+  /v1/humans/twins \
   /v1/wearables \
   /v1/human-health/policy \
   /v1/hri/sessions \
   /v1/hri/collaboration \
   /v1/hri/context \
+  /v1/operator/mission/approvals \
   "/v1/humans/operator-001/readiness"
 do
   echo "GET ${path}"

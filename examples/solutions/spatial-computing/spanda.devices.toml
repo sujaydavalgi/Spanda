@@ -153,3 +153,27 @@ radius_m = 12.0
 linked_robots = ["AMR"]
 alert_on_entry = true
 description = "High-voltage charging — geofence breach triggers human takeover"
+
+[[twins]]
+id = "operator-twin-001"
+entity_id = "operator-001"
+entity_type = "human"
+mirror = ["assignment", "current_task", "mission_state", "safety_status", "training_history"]
+replay = true
+telemetry_sync = true
+
+[[twins]]
+id = "training-twin-001"
+entity_id = "vr-training-001"
+entity_type = "training"
+mirror = ["mission_state", "training_history"]
+training_session_id = "training_mission"
+replay = true
+
+[[mission_approvals]]
+id = "pick-mission-approval"
+mission_id = "warehouse-ar/pick_mission"
+requested_by = "operator-001"
+requires_capability = "approve_mission"
+status = "pending"
+note = "Warehouse AR pick loop requires supervisor sign-off"
