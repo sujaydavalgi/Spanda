@@ -96,6 +96,19 @@ SDK wrappers mirror these in each language (`spanda-sdk` types modules).
 - RBAC enforced on mutations (provision, OTA, config approvals)
 - Correlation: `X-Correlation-ID` header (optional, echoed in responses)
 
+## JSON-RPC gateway (`POST /v1/rpc`)
+
+gRPC-compatible JSON gateway for clients without tonic. Example:
+
+```json
+{
+  "method": "spanda.v1.ControlCenter/EvaluateProgramReadiness",
+  "params": { "body_json": "{\"file\":\"rover.sd\"}" }
+}
+```
+
+Supported SDK methods include `ListEntities`, `EvaluateProgramReadiness`, `EvaluateProgramAssure`, `EvaluateProgramDiagnose`, `GetTrustProgram`.
+
 ## Event types (WebSocket)
 
 - `health_changed`

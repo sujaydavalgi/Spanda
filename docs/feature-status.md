@@ -219,12 +219,12 @@ See [tier-3-experimental.md](./tier-3-experimental.md) and [tier-3-golden-paths.
 | **Configuration Drift** | **Experimental** | Full operational drift API; scheduled scans (`SPANDA_DRIFT_SCAN_INTERVAL_SECS`); seven dimensions via `GET /v1/drift` |
 | **OTA & Rollback** | **Experimental** | Canary, blue/green, phased dry-run; production `--require-certify` via `SPANDA_OTA_REQUIRE_CERTIFY` |
 | **Package Trust** | **Experimental** | `spanda trust`, `/v1/trust/package`, trust score |
-| **SDKs** | **Experimental** | Python SDK, REST v1, remote CLI (`spanda control-center *`), WebSocket; tonic gRPC (60 RPCs) |
+| **SDKs** | **Experimental** | Official Rust (`crates/spanda-sdk`), Python (`sdk/python`), TypeScript (`sdk/typescript`); program-level REST + gRPC; legacy `packages/sdk-python` Control Center client |
 | **Operator Workflows** | **Experimental** | Mission approve, takeover, quarantine, recovery approval |
 | **SRE** | **Experimental** | `/v1/sre/summary` with `slo`, `burn_rate`, MTTR/MTBF hints; incident workflow; PagerDuty webhook sync; fast-burn background monitor |
 | **Reporting** | **Experimental** | Markdown, JSON, PDF exports; scheduled webhook delivery (`GET/POST /v1/reports/schedules`) |
 | **Compliance** | **Experimental** | Evidence packs, `GET /v1/compliance/export`, signed profile catalog (`GET /v1/compliance/profiles`) |
-| **APIs** | **Experimental** | REST v1 + OpenAPI; JSON-RPC gateway; native gRPC (tonic) **Experimental** — 60 RPCs; rate limits (`SPANDA_API_RATE_LIMIT_PER_MINUTE`); versioning policy (`GET /v1/version`, `X-Spanda-Api-Version`) |
+| **APIs** | **Experimental** | REST v1 + OpenAPI; program-level SDK routes (`/v1/programs/*`, `/v1/entities/*`); JSON-RPC gateway (Control Center methods); native gRPC (tonic) **Experimental** — 73 RPCs; rate limits (`SPANDA_API_RATE_LIMIT_PER_MINUTE`); versioning policy (`GET /v1/version`, `X-Spanda-Api-Version`) |
 | **Observability** | **Experimental** | OTLP trace/metrics export, correlation IDs, WebSocket telemetry; `spanda-otel-collector`; Grafana templates (`spanda-grafana-dashboards`); HA collector guide |
 | **Digital Thread** | **Experimental** | Full lifecycle graph (requirement → retirement); `GET /v1/digital-thread/query` with `lifecycle_phase` filter |
 
