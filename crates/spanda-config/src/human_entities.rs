@@ -2,6 +2,7 @@
 //!
 use crate::device_identity::{DeviceIdentityRecord, TrustLevel};
 use crate::device_tree::{DeviceTree, FleetNode};
+use crate::mission_approval::MissionApprovalSeed;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -100,6 +101,22 @@ pub struct HazardZoneEntity {
     pub description: Option<String>,
 }
 
+/// Digital twin metadata for humans, teams, or training sessions.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct TwinEntity {
+    pub id: String,
+    pub entity_id: String,
+    pub entity_type: String,
+    #[serde(default)]
+    pub mirror: Vec<String>,
+    #[serde(default)]
+    pub replay: Option<bool>,
+    #[serde(default)]
+    pub telemetry_sync: Option<bool>,
+    #[serde(default)]
+    pub training_session_id: Option<String>,
+}
+
 /// Remote expert or collaborative spatial session configuration.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RemoteExpertSession {
@@ -155,6 +172,10 @@ pub struct HumanRegistry {
     pub spatial_sessions: Vec<RemoteExpertSession>,
     #[serde(default)]
     pub hazard_zones: Vec<HazardZoneEntity>,
+    #[serde(default)]
+    pub twins: Vec<TwinEntity>,
+    #[serde(default)]
+    pub mission_approvals: Vec<MissionApprovalSeed>,
 }
 
 impl HumanEntity {
@@ -234,6 +255,17 @@ impl HumanRegistry {
 
     pub fn hazard_zone(&self, id: &str) -> Option<&HazardZoneEntity> {
         self.hazard_zones.iter().find(|z| z.id == id)
+    }
+
+    pub fn human_twins(&self) -> Vec<&TwinEntity> {
+        self.twins
+            .iter()
+            .filter(|twin| twin.entity_type.eq_ignore_ascii_case("human"))
+            .collect()
+    }
+
+    pub fn twin_for_entity(&self, entity_id: &str) -> Option<&TwinEntity> {
+        self.twins.iter().find(|t| t.entity_id == entity_id)
     }
 }
 
@@ -362,6 +394,8 @@ fn merge_flat_tables(raw: &toml::Value, registry: &mut HumanRegistry) {
     append_table(raw, "control_center", &mut registry.control_center);
     append_table(raw, "spatial_sessions", &mut registry.spatial_sessions);
     append_table(raw, "hazard_zones", &mut registry.hazard_zones);
+    append_table(raw, "twins", &mut registry.twins);
+    append_table(raw, "mission_approvals", &mut registry.mission_approvals);
 }
 
 fn append_table<T: for<'de> Deserialize<'de>>(raw: &toml::Value, key: &str, target: &mut Vec<T>) {
@@ -385,6 +419,8 @@ fn dedupe_registry(registry: &mut HumanRegistry) {
     dedupe_by_id(&mut registry.control_center, |c| c.id.clone());
     dedupe_by_id(&mut registry.spatial_sessions, |s| s.id.clone());
     dedupe_by_id(&mut registry.hazard_zones, |z| z.id.clone());
+    dedupe_by_id(&mut registry.twins, |t| t.id.clone());
+    dedupe_by_id(&mut registry.mission_approvals, |m| m.id.clone());
 }
 
 fn dedupe_by_id<T, F>(items: &mut Vec<T>, id_fn: F)
