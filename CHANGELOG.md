@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Sim `stop_if` false E-stop:** `RunOptions::default()` now sets `lidar_range = 10.0 m` (was `0.0` from derived `Default`, forcing `nearest_distance = 0.01 m` and spurious `stop_if` triggers in `spanda sim` / `spanda run`).
+
 ### Changed
 
 - **README slim-down:** Root [README.md](README.md) now keeps only the landing intro, code sample, quick start, and doc links; detailed sections moved to [docs/overview/](docs/overview/README.md) subpages (flagship demos, audience paths, platform map, feature snapshot, signature capabilities, what Spanda is/is not).
@@ -40,7 +44,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Control Center human interaction dashboard** (planned panels documented) and **website/solutions.html** Human Interaction & Spatial Computing blueprint section.
 - **Master roadmap** updated with Human Interaction & Spatial Computing platform pillar.
 
-- **ADAS & Autonomous Driving Solution Blueprint:** `examples/solutions/adas/` with highway pilot reference, five ADAS function examples, automotive device tree, readiness/assurance/security configs; `spanda demo adas`; `./scripts/adas_smoke.sh`.
+- **ADAS blueprint phase 2:** CI `adas-smoke` job; bundled `spanda demo adas`; application variants (shuttle, mining, delivery, agricultural, construction); scenario trace fixtures; diagnose/explain in smoke.
+- **ADAS blueprint phase 3:** parking assist, blind spot monitoring, CAN bus gateway examples; `spanda-canbus` dependency; providers catalog update.
+- **ADAS device tree validation:** device trees use registered providers only (`spanda-opencv`, `spanda-slam`, `spanda-gps`, `spanda-fusion`, `spanda-canbus`, `spanda-mqtt`); consolidated vehicle CAN gateway; `hardware_profile = "JetsonAutomotive"` matches program `deploy` target so `spanda verify` and `spanda config validate` pass with `[config] devices`.
+- **ADAS blueprint phase 4:** passenger, truck, airport, and campus application variants; `sim_record/lane_keep_task` golden trace (20 scheduler frames); smoke covers all nine application device trees.
 - **ADAS documentation:** [docs/solutions/adas.md](docs/solutions/adas.md), [automotive-device-tree.md](docs/automotive-device-tree.md), [adas-readiness.md](docs/adas-readiness.md), [adas-assurance.md](docs/adas-assurance.md), [adas-security.md](docs/adas-security.md), [adas-replay.md](docs/adas-replay.md), [demo-plan-adas.md](docs/demo-plan-adas.md).
 - **Control Center ADAS tab** and **website/solutions.html** Official Solution Blueprints page.
 

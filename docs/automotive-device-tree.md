@@ -10,20 +10,18 @@ Device hierarchy and capability mapping for the ADAS Solution Blueprint.
 
 ```
 Vehicle (vehicle-001)
-├── Compute Platform (compute-001, JetsonOrin)
+├── Compute Platform (compute-001, JetsonAutomotive)
 │   ├── Front Camera          → lane_detection, traffic_sign_recognition, pedestrian_detection
 │   ├── Rear Camera           → obstacle_detection, parking_assist
 │   ├── Stereo Camera         → obstacle_detection, parking_assist
 │   ├── Front Radar           → obstacle_detection, adaptive_speed_control
 │   ├── Front LiDAR           → obstacle_detection, localization
-│   ├── Ultrasonic Array      → parking_assist
 │   ├── GPS Receiver          → localization, route_following
 │   ├── IMU                   → localization
-│   └── Driver Monitor Camera → driver_monitoring
-├── Steering ECU              → steering_control
-├── Brake ECU                 → emergency_braking
-├── Powertrain ECU            → adaptive_speed_control
-└── Communication Gateway     → secure_communication, v2x_relay
+│   ├── Driver Monitor Camera → driver_monitoring
+│   ├── Drive Controller      → move, stop, emergency_stop (DifferentialDrive)
+│   ├── Vehicle CAN Bus       → steering_control, emergency_braking, adaptive_speed_control
+│   └── Comm Gateway (MQTT)   → secure_communication, telemetry_streaming
 ```
 
 ---
@@ -40,25 +38,24 @@ Vehicle (vehicle-001)
 | `localization` | GPS + IMU | Front LiDAR |
 | `route_following` | GPS | IMU + visual odometry |
 | `driver_monitoring` | Driver monitor camera | — |
-| `parking_assist` | Ultrasonic array | Stereo camera, rear camera |
+| `parking_assist` | Stereo camera, rear camera | Front LiDAR |
 
 ---
 
 ## Device types
 
-| Type | Spanda sensor/actuator | Provider |
-|------|------------------------|----------|
+| Type | Spanda sensor/actuator | Provider (registered) |
+|------|------------------------|------------------------|
 | Camera | `Camera` | `spanda-opencv` |
 | DepthCamera | `DepthCamera` | `spanda-opencv` |
-| Radar | `Radar` | `spanda-radar` |
-| Lidar | `Lidar` | `spanda-lidar` |
-| Ultrasonic | `Ultrasonic` | `spanda-ultrasonic` |
+| Radar | `Radar` | `spanda-slam` (stub) |
+| Lidar | `Lidar` | `spanda-slam` |
 | GPS | `GPS` | `spanda-gps` |
-| IMU | `IMU` | `spanda-imu` |
-| SteeringController | `SteeringController` | `spanda-canbus` |
-| BrakeController | `BrakeController` | `spanda-canbus` |
-| PowertrainController | `PowertrainController` | `spanda-canbus` |
-| CommunicationGateway | — | `spanda-automotive-ethernet` |
+| IMU | `IMU` | `spanda-fusion` |
+| DifferentialDrive | `DifferentialDrive` | `spanda-canbus` |
+| CommunicationGateway | — | `spanda-canbus`, `spanda-mqtt` |
+
+Planned providers (`spanda-radar`, `spanda-lidar`, `spanda-ultrasonic`, `spanda-automotive-ethernet`) are listed in `spanda.providers.toml` with `status = "experimental"` or `planned`.
 
 Wheel speed, steering angle, brake, and tire pressure sensors attach to ECUs via CAN and surface as health-check inputs.
 
@@ -79,16 +76,17 @@ Control Center: `GET /v1/device-tree` with `--config spanda.toml`.
 
 Adjust the device tree per application without changing core types:
 
-| Application | Add / remove devices |
-|-------------|---------------------|
-| Passenger vehicle | Full suite (default fixture) |
-| Commercial truck | Long-range radar, additional rear radar |
-| Mining vehicle | Ruggedized LiDAR, redundant GPS |
-| Agricultural | RTK GPS, remove highway radar |
-| Delivery | Reduce LiDAR, add rear ultrasonic |
-| Airport ground | Remove driver monitor, add geofence provider |
-| Campus shuttle | Full pedestrian detection suite |
-| Construction | Remove ACC, add 360° obstacle detection |
+| Application | Add / remove devices | Fixture |
+|-------------|----------------------|---------|
+| Passenger vehicle | Full suite (default) | `applications/passenger/` → `spanda.devices.toml` |
+| Commercial truck | Long-range radar, rear radar | `applications/truck/` |
+| Autonomous shuttle | Geo-fenced pedestrian focus | `applications/shuttle/` |
+| Mining vehicle | Ruggedized LiDAR, redundant GPS | `applications/mining/` |
+| Agricultural | RTK GPS, remove highway radar | `applications/agricultural/` |
+| Delivery | Urban cameras, parking assist | `applications/delivery/` |
+| Airport ground | Remove driver monitor, geofence gateway | `applications/airport/` |
+| Campus shuttle | Multi-camera pedestrian suite | `applications/campus/` |
+| Construction | 360° LiDAR, machinery safety | `applications/construction/` |
 
 Copy `spanda.devices.toml` and edit `[[fleet.robots.compute.devices]]` entries for each deployment.
 

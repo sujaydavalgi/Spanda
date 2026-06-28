@@ -81,7 +81,9 @@ Reference configurations for nine vehicle classes. Each uses the same blueprint 
 | Campus mobility | `research` | Low-speed autonomy, pedestrian detection | Relaxed gates with warnings |
 | Construction equipment | `iso13849` | Obstacle detection, emergency braking | Machinery safety profile |
 
-Configure application-specific limits in `spanda.readiness.toml` and select compliance profile at verify time.
+Configure application-specific limits in `spanda.readiness.toml` and select compliance profile at verify time. Device-tree fixtures live under [`applications/`](../../examples/solutions/adas/applications/).
+
+Sim-recorded golden trace (scheduler frames): [`sim_record/lane_keep_task.trace`](../../examples/solutions/adas/sim_record/lane_keep_task.trace).
 
 ---
 
@@ -94,11 +96,11 @@ Reference implementations (demonstration workflows, not full perception algorith
 | Lane Keeping Assist | `lane_keeping/lane_keeping.sd` | `lane_detection`, `steering_control` |
 | Adaptive Cruise Control | `adaptive_cruise/adaptive_cruise.sd` | `adaptive_speed_control`, `obstacle_detection` |
 | Automatic Emergency Braking | `automatic_emergency_braking/aeb.sd` | `emergency_braking`, `obstacle_detection` |
-| Blind Spot Monitoring | `src/highway_drive.sd` | `obstacle_detection` |
+| Blind Spot Monitoring | `blind_spot_monitoring/blind_spot.sd` | `obstacle_detection` |
 | Traffic Sign Recognition | `src/highway_drive.sd` | `lane_detection` (camera) |
 | Pedestrian Detection | `src/highway_drive.sd` | `obstacle_detection` |
 | Collision Avoidance | `automatic_emergency_braking/aeb.sd` | `emergency_braking` |
-| Parking Assist | `src/highway_drive.sd` | `parking_assist` |
+| Parking Assist | `parking_assist/parking_assist.sd` | `parking_assist` |
 | Driver Monitoring | `driver_takeover/driver_takeover.sd` | `driver_monitoring` |
 | Highway Pilot | `src/highway_drive.sd` | Full capability set |
 | Low-Speed Autonomy | `lane_keeping/lane_keeping.sd` | `steering_control`, `obstacle_detection` |
