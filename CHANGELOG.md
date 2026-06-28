@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Entity Model Phase 2 — runtime missions:** overlay `MissionRuntime` from loaded programs and approval seeds into `/v1/entities`; `participates_in` relationships and mission readiness payloads on `/v1/entities/{id}/readiness`.
 - **Unified Entity Model (foundational pillar):** `EntityRecord`, `EntityRegistry`, `EntityGraph`, and `EntityQuery` in `spanda-config`; expanded `/v1/entities/*` API (graph, relationships, readiness, query); Control Center **Entities** tab; SDK entity helpers; docs in [docs/entity-model.md](docs/entity-model.md) (+ registry, graph, relationships, query language guides) and [ROADMAP.md](ROADMAP.md) Pillar 0.
 - **@davalgi-spanda/web npm package:** rename from `@spanda/web` for npm org parity; publish via `npm-web-v*` with `ControlCenterPanel` exports.
 - **spanda-sdk v0.4.1:** crates.io README manifest; tag `crates-sdk-v0.4.1`.

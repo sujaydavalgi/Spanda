@@ -95,6 +95,17 @@ Use:
 - **Device pool APIs** (`/v1/devices/*`) for lifecycle mutations
 - **Entity APIs** (`/v1/entities/*`) for cross-domain inventory, graph, and queries
 
-## Future: runtime overlay (Phase 2)
+## Runtime mission overlay (Phase 2)
 
-Active missions, incidents, and transient sessions will merge into an overlay registry at API time without persisting duplicate TOML records.
+When Control Center is started with `--program`, mission declarations from the loaded `.sd` file are projected into the entity registry:
+
+- Mission entities use ids like `mission:{robot_id}:{mission_name}`
+- Robots link to missions via `participates_in`
+- Fleets `contain` bound missions
+- `[[mission_approvals]]` seeds appear as pending mission entities until approved
+
+The overlay is merged at API time in `ControlCenterState::entity_registry()` — no duplicate TOML records.
+
+## Future overlay extensions
+
+Live interpreter mission state, incidents, and transient sessions will enrich the overlay without persisting duplicate TOML records.

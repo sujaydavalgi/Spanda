@@ -78,7 +78,7 @@ Unified Entity Model (all platform objects)
 | **Entity query language** | GET filters + `POST /v1/entities/query` | **Experimental** | Now | Core |
 | **Entity REST API** | `/v1/entities/*` (health, readiness, trust, relationships, graph) | **Experimental** | Now | Core |
 | **Control Center Entities tab** | Browse, search, graph neighborhood | **Experimental** | Now | Control Center |
-| **Runtime mission entities** | Project active missions into registry | **Future** | Next | Core |
+| **Runtime mission entities** | Project active missions into registry | **Experimental** | Now | Core |
 | **Graph unification** | Align `spanda-graph` + digital thread with entity IDs | **Future** | Next | Core |
 | **Entity mutation API** | Register, tag, relate with audit | **Future** | Later | Core |
 

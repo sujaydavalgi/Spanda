@@ -73,6 +73,69 @@ fn entity_trust_and_readiness_parse_legacy_strings() {
 }
 
 #[test]
+fn runtime_mission_overlay_links_robot_participation() {
+    use spanda_config::{apply_runtime_mission_overlay, mission_entity_id, RuntimeMissionEntity};
+
+    let resolved = warehouse_config();
+    let mut registry = build_entity_registry(&resolved);
+    let robot_id = resolved.robot_ids().into_iter().next().expect("robot");
+    let mission = RuntimeMissionEntity {
+        id: mission_entity_id(robot_id, "patrol"),
+        name: "patrol".into(),
+        robot_id: Some(robot_id.to_string()),
+        fleet_id: resolved.fleet_id().map(String::from),
+        mission_state: "Running".into(),
+        step_index: 1,
+        current_step: Some("scan".into()),
+        steps: vec!["navigate".into(), "scan".into()],
+        required_capabilities: vec!["navigate".into()],
+        approval_pending: false,
+    };
+    apply_runtime_mission_overlay(&mut registry, &[mission]);
+    let mission_id = mission_entity_id(robot_id, "patrol");
+    assert!(registry.get(&mission_id).is_some());
+    assert!(registry.relationships.iter().any(|edge| {
+        edge.from_id == robot_id
+            && edge.to_id == mission_id
+            && edge.kind == EntityRelationshipKind::ParticipatesIn
+    }));
+    let linked = registry.linked_missions(robot_id);
+    assert_eq!(linked.len(), 1);
+    assert_eq!(linked[0].readiness_status, EntityReadinessStatus::Ready);
+}
+
+#[test]
+fn entity_query_filters_participates_in_mission() {
+    use spanda_config::{apply_runtime_mission_overlay, mission_entity_id, RuntimeMissionEntity};
+
+    let resolved = warehouse_config();
+    let mut registry = build_entity_registry(&resolved);
+    let robot_id = resolved.robot_ids().into_iter().next().expect("robot");
+    let mission_id = mission_entity_id(robot_id, "patrol");
+    apply_runtime_mission_overlay(
+        &mut registry,
+        &[RuntimeMissionEntity {
+            id: mission_id.clone(),
+            name: "patrol".into(),
+            robot_id: Some(robot_id.to_string()),
+            fleet_id: None,
+            mission_state: "Pending".into(),
+            step_index: 0,
+            current_step: None,
+            steps: vec!["navigate".into()],
+            required_capabilities: Vec::new(),
+            approval_pending: false,
+        }],
+    );
+    let matches = registry.query(&EntityQuery {
+        participates_in: Some(mission_id),
+        ..Default::default()
+    });
+    assert_eq!(matches.count, 1);
+    assert_eq!(matches.entities[0].id, robot_id);
+}
+
+#[test]
 fn impact_analysis_traverses_relationships() {
     let resolved = warehouse_config();
     let registry = build_entity_registry(&resolved);

@@ -338,13 +338,68 @@ pub fn entity_readiness(state: &ControlCenterState, entity_id: &str) -> HttpResp
     let Some(entity) = registry.get(entity_id) else {
         return entity_not_found(&format!("entity '{entity_id}' not found"));
     };
-    json_ok(&serde_json::json!({
+    let mut payload = serde_json::json!({
         "version": API_VERSION,
         "entity_id": entity_id,
         "kind": entity.kind(),
         "readiness_status": entity.readiness_status,
         "capabilities": entity.capabilities,
-    }))
+    });
+    if entity.entity_type == spanda_config::EntityKind::Mission {
+        payload["mission_state"] = entity
+            .metadata
+            .get("mission_state")
+            .map(|value| serde_json::Value::String(value.clone()))
+            .unwrap_or(serde_json::Value::Null);
+        payload["current_step"] = entity
+            .metadata
+            .get("current_step")
+            .filter(|step| !step.is_empty())
+            .map(|value| serde_json::Value::String(value.clone()))
+            .unwrap_or(serde_json::Value::Null);
+        payload["mission_ready"] = serde_json::json!(
+            entity.readiness_status == spanda_config::EntityReadinessStatus::Ready
+        );
+    }
+    if entity.entity_type == spanda_config::EntityKind::Robot {
+        let linked: Vec<_> = registry
+            .linked_missions(entity_id)
+            .iter()
+            .map(|mission| {
+                serde_json::json!({
+                    "id": mission.id,
+                    "name": mission.name,
+                    "readiness_status": mission.readiness_status,
+                    "mission_state": mission.metadata.get("mission_state"),
+                })
+            })
+            .collect();
+        if !linked.is_empty() {
+            payload["linked_missions"] = serde_json::Value::Array(linked);
+            payload["mission_ready"] =
+                serde_json::json!(registry.linked_missions(entity_id).iter().all(|mission| {
+                    matches!(
+                        mission.readiness_status,
+                        spanda_config::EntityReadinessStatus::Ready
+                            | spanda_config::EntityReadinessStatus::Partial
+                    )
+                }));
+        }
+    }
+    if let Some(resolved) = state.resolved.as_ref() {
+        if entity.entity_type == spanda_config::EntityKind::Robot {
+            let impact = spanda_config::readiness_impact(
+                &resolved.device_registry,
+                crate::correlation::now_ms(),
+            );
+            payload["device_readiness"] = serde_json::json!({
+                "mission_ready": impact.blocked_count == 0,
+                "blocked_count": impact.blocked_count,
+                "total_devices": impact.total_devices,
+            });
+        }
+    }
+    json_ok(&payload)
 }
 
 /// GET /v1/entities/{id}/trust — trust metadata for an entity.
@@ -408,6 +463,7 @@ pub fn entity_query_from_params(params: &str) -> EntityQuery {
             "firmware" | "firmware_version" => query.firmware_version = Some(value),
             "assigned_to" => query.assigned_to = Some(value),
             "depends_on" => query.depends_on = Some(value),
+            "participates_in" => query.participates_in = Some(value),
             "parent_id" => query.parent_id = Some(value),
             "search" | "q" => query.search = Some(value),
             _ => {}

@@ -19,6 +19,7 @@ pub struct EntityQuery {
     pub firmware_version: Option<String>,
     pub assigned_to: Option<String>,
     pub depends_on: Option<String>,
+    pub participates_in: Option<String>,
     pub parent_id: Option<String>,
     pub search: Option<String>,
 }
@@ -90,6 +91,7 @@ GET /v1/entities/{camera_id}/relationships
 
 ```http
 GET /v1/entities?kind=wearable&assigned_to=operator-001
+GET /v1/entities?kind=robot&participates_in=mission:rover-001:patrol
 ```
 
 ### Find every mission affected by GPS outage

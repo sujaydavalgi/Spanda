@@ -155,9 +155,9 @@ Cross-references:
 
 ### Phase 2 — Runtime missions (Next)
 
-- [ ] Project runtime `MissionRuntime` into entity registry during active programs
-- [ ] Link mission entities to robot/fleet entities via `participates_in` edges
-- [ ] Mission readiness overlays on entity readiness API
+- [x] Project runtime `MissionRuntime` into entity registry during active programs
+- [x] Link mission entities to robot/fleet entities via `participates_in` edges
+- [x] Mission readiness overlays on entity readiness API
 
 ### Phase 3 — Graph unification (Next)
 

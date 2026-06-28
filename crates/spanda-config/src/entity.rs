@@ -572,6 +572,8 @@ pub struct EntityQuery {
     #[serde(default)]
     pub depends_on: Option<String>,
     #[serde(default)]
+    pub participates_in: Option<String>,
+    #[serde(default)]
     pub parent_id: Option<String>,
     #[serde(default)]
     pub search: Option<String>,
@@ -680,6 +682,23 @@ impl EntityRegistry {
             current = dep.to_id.clone();
         }
         chain
+    }
+
+    /// Mission entities linked via `participates_in` from a robot, operator, or fleet member.
+    pub fn linked_missions(&self, participant_id: &str) -> Vec<&EntityRecord> {
+        let mut ids = Vec::new();
+        for edge in &self.relationships {
+            if edge.from_id == participant_id && edge.kind == EntityRelationshipKind::ParticipatesIn
+            {
+                ids.push(edge.to_id.as_str());
+            }
+        }
+        ids.sort_unstable();
+        ids.dedup();
+        ids.iter()
+            .filter_map(|id| self.get(id))
+            .filter(|entity| entity.entity_type == EntityKind::Mission)
+            .collect()
     }
 }
 
@@ -818,6 +837,16 @@ fn matches_query(entity: &EntityRecord, query: &EntityQuery, registry: &EntityRe
                 )
         });
         if !depends_ok {
+            return false;
+        }
+    }
+    if let Some(mission_id) = &query.participates_in {
+        let participates_ok = registry.relationships.iter().any(|r| {
+            r.from_id == entity.id
+                && r.to_id == *mission_id
+                && r.kind == EntityRelationshipKind::ParticipatesIn
+        });
+        if !participates_ok {
             return false;
         }
     }
@@ -1528,6 +1557,187 @@ fn readiness_from_lifecycle(lifecycle: EntityLifecycleState) -> EntityReadinessS
         | EntityLifecycleState::Retired
         | EntityLifecycleState::Archived => EntityReadinessStatus::NotReady,
         _ => EntityReadinessStatus::Unknown,
+    }
+}
+
+/// Runtime mission snapshot merged into the entity registry during active programs.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct RuntimeMissionEntity {
+    pub id: String,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub robot_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fleet_id: Option<String>,
+    pub mission_state: String,
+    #[serde(default)]
+    pub step_index: usize,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub current_step: Option<String>,
+    #[serde(default)]
+    pub steps: Vec<String>,
+    #[serde(default)]
+    pub required_capabilities: Vec<String>,
+    #[serde(default)]
+    pub approval_pending: bool,
+}
+
+/// Stable mission entity id for a robot-bound mission declaration.
+pub fn mission_entity_id(robot_id: &str, mission_name: &str) -> String {
+    format!("mission:{robot_id}:{mission_name}")
+}
+
+/// Build pending mission entities from declarative approval seeds in TOML.
+pub fn runtime_missions_from_approval_seeds(
+    seeds: &[crate::mission_approval::MissionApprovalSeed],
+) -> Vec<RuntimeMissionEntity> {
+    seeds
+        .iter()
+        .map(|seed| {
+            let pending = seed
+                .status
+                .as_deref()
+                .map(|s| s.eq_ignore_ascii_case("approved"))
+                .unwrap_or(false)
+                == false;
+            RuntimeMissionEntity {
+                id: format!("mission:{}", seed.mission_id),
+                name: seed.mission_id.clone(),
+                robot_id: None,
+                fleet_id: None,
+                mission_state: if pending {
+                    "PendingApproval".into()
+                } else {
+                    "Pending".into()
+                },
+                step_index: 0,
+                current_step: None,
+                steps: Vec::new(),
+                required_capabilities: seed
+                    .requires_capability
+                    .clone()
+                    .map(|cap| vec![cap])
+                    .unwrap_or_default(),
+                approval_pending: pending,
+            }
+        })
+        .collect()
+}
+
+/// Merge runtime mission entities into a configuration-backed registry overlay.
+pub fn apply_runtime_mission_overlay(
+    registry: &mut EntityRegistry,
+    missions: &[RuntimeMissionEntity],
+) {
+    for mission in missions {
+        let (health, readiness, lifecycle) = mission_status_to_entity_state(&mission.mission_state);
+        let mut capabilities = vec!["pause".into(), "resume".into(), "cancel".into()];
+        capabilities.extend(mission.required_capabilities.clone());
+        if mission.approval_pending {
+            capabilities.push("awaiting_approval".into());
+        }
+        let readiness = if mission.approval_pending {
+            EntityReadinessStatus::NotReady
+        } else {
+            readiness
+        };
+        registry.entities.insert(
+            mission.id.clone(),
+            EntityRecord {
+                id: mission.id.clone(),
+                name: Some(mission.name.clone()),
+                display_name: Some(mission.name.clone()),
+                entity_type: EntityKind::Mission,
+                parent_id: mission.fleet_id.clone(),
+                capabilities,
+                health_status: health,
+                readiness_status: readiness,
+                trust_status: EntityTrustStatus::Trusted,
+                lifecycle_state: lifecycle,
+                metadata: HashMap::from([
+                    ("mission_state".into(), mission.mission_state.clone()),
+                    (
+                        "current_step".into(),
+                        mission.current_step.clone().unwrap_or_default(),
+                    ),
+                    ("step_index".into(), mission.step_index.to_string()),
+                    (
+                        "approval_pending".into(),
+                        mission.approval_pending.to_string(),
+                    ),
+                ]),
+                tags: vec!["mission".into()],
+                ..Default::default()
+            },
+        );
+        if let Some(robot_id) = mission.robot_id.as_ref() {
+            if registry.entities.contains_key(robot_id) {
+                link(
+                    registry,
+                    robot_id,
+                    &mission.id,
+                    EntityRelationshipKind::ParticipatesIn,
+                    None,
+                );
+            }
+        }
+        if let Some(fleet_id) = mission.fleet_id.as_ref() {
+            if registry.entities.contains_key(fleet_id) {
+                link(
+                    registry,
+                    fleet_id,
+                    &mission.id,
+                    EntityRelationshipKind::Contains,
+                    Some("mission"),
+                );
+            }
+        }
+    }
+}
+
+fn mission_status_to_entity_state(
+    mission_state: &str,
+) -> (
+    EntityHealthStatus,
+    EntityReadinessStatus,
+    EntityLifecycleState,
+) {
+    match mission_state.to_ascii_lowercase().as_str() {
+        "running" => (
+            EntityHealthStatus::Healthy,
+            EntityReadinessStatus::Ready,
+            EntityLifecycleState::Active,
+        ),
+        "paused" => (
+            EntityHealthStatus::Warning,
+            EntityReadinessStatus::Partial,
+            EntityLifecycleState::Suspended,
+        ),
+        "completed" => (
+            EntityHealthStatus::Healthy,
+            EntityReadinessStatus::Ready,
+            EntityLifecycleState::Archived,
+        ),
+        "failed" => (
+            EntityHealthStatus::Critical,
+            EntityReadinessStatus::NotReady,
+            EntityLifecycleState::Degraded,
+        ),
+        "pendingapproval" | "pending_approval" => (
+            EntityHealthStatus::Warning,
+            EntityReadinessStatus::NotReady,
+            EntityLifecycleState::Assigned,
+        ),
+        "pending" => (
+            EntityHealthStatus::Healthy,
+            EntityReadinessStatus::Partial,
+            EntityLifecycleState::Assigned,
+        ),
+        _ => (
+            EntityHealthStatus::Unknown,
+            EntityReadinessStatus::Unknown,
+            EntityLifecycleState::Unknown,
+        ),
     }
 }
 
