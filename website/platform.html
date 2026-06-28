@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Platform — Spanda</title>
+  <meta name="description" content="Spanda Platform Pillars — Language, Runtime, Verification, Device & Fleet, Security, Operations, Developer, Packages.">
+  <link rel="icon" type="image/png" href="../assets/image/app_favicon.png">
+  <style>
+    :root { color-scheme: dark; --bg: #0b0f14; --surface: #121820; --text: #e8edf4; --muted: #9aa7b8; --accent: #5eead4; --border: #243041; --max: 56rem; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: ui-sans-serif, system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    header, main, footer { max-width: var(--max); margin: 0 auto; padding: 0 1.25rem; }
+    header { display: flex; justify-content: space-between; align-items: center; padding-top: 1.5rem; padding-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem; }
+    .brand { font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 0.6rem; }
+    .brand img { height: 2rem; }
+    nav a { margin-left: 0.75rem; color: var(--muted); font-size: 0.9rem; }
+    h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); margin: 2rem 0 0.5rem; }
+    .lead { color: var(--muted); max-width: 55ch; margin-bottom: 2rem; }
+    .diagram { background: #0a0e13; border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; font-family: ui-monospace, monospace; font-size: 0.8rem; white-space: pre; overflow-x: auto; margin: 1.5rem 0; }
+    .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); margin: 2rem 0; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 0.75rem; padding: 1.1rem; }
+    .card h2 { margin: 0 0 0.5rem; font-size: 1rem; }
+    .card p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+    footer { border-top: 1px solid var(--border); margin-top: 3rem; padding: 1.5rem 0 2.5rem; color: var(--muted); font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><img src="../assets/image/low_res_logo.png" alt="Spanda"><span>Spanda</span></div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="platform.html">Platform</a>
+      <a href="solutions.html">Solutions</a>
+      <a href="roadmap.html">Roadmap</a>
+      <a href="https://github.com/Davalgi/Spanda/tree/main/docs">Documentation</a>
+      <a href="https://github.com/Davalgi/Spanda">GitHub</a>
+    </nav>
+  </header>
+  <main>
+    <h1>Platform Pillars</h1>
+    <p class="lead">Spanda is a product ecosystem. Eight pillars compose into industry solution blueprints — lean core, optional packages, no duplicate engines.</p>
+
+    <div class="diagram">Spanda Language
+        │
+Spanda Runtime
+        │
+Spanda Verify ───── Spanda Safety
+        │
+Spanda Readiness ── Spanda Assurance ── Spanda Diagnosis
+        │
+Spanda Recovery ─── Spanda Trust
+        │
+Spanda Control Center
+        │
+Spanda Registry ─── Spanda SDKs</div>
+
+    <section class="grid">
+      <article class="card"><h2>1. Spanda Language</h2><p>Syntax, types, triggers, tasks, concurrency, LSP, formatter, linter, debugger.</p></article>
+      <article class="card"><h2>2. Compiler &amp; Runtime</h2><p>Parser, type checker, interpreter, LLVM, WASM, package loader, provider registry.</p></article>
+      <article class="card"><h2>3. Verification Platform</h2><p>Verify, readiness, assurance, diagnosis, recovery, contracts, trust, sim, replay, twins.</p></article>
+      <article class="card"><h2>4. Device &amp; Fleet</h2><p>Device tree, pool, provisioning, discovery, health, continuity, takeover, swarm, OTA.</p></article>
+      <article class="card"><h2>5. Security</h2><p>Encryption, identity, RBAC, secrets, tamper detection, policy, compliance.</p></article>
+      <article class="card"><h2>6. Operations</h2><p>Control Center, telemetry, alerting, observability, SRE, reports, drift.</p></article>
+      <article class="card"><h2>7. Developer Platform</h2><p>CLI, REST, gRPC, SDKs, examples, CI/CD, VS Code, documentation.</p></article>
+      <article class="card"><h2>8. Packages &amp; Ecosystem</h2><p>38 official packages, registry, providers, package trust, marketplace growth.</p></article>
+    </section>
+
+    <p><a href="https://github.com/Davalgi/Spanda/blob/main/ROADMAP.md#platform-pillars">Full pillar detail in ROADMAP.md →</a></p>
+    <p><a href="https://github.com/Davalgi/Spanda/blob/main/docs/platform-overview.md">Platform overview guide →</a></p>
+  </main>
+  <footer><p>Apache-2.0 · <a href="https://github.com/Davalgi/Spanda">github.com/Davalgi/Spanda</a></p></footer>
+</body>
+</html>

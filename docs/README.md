@@ -10,6 +10,10 @@
 
 **Start here:** [platform-overview.md](./platform-overview.md) — platform vs language, component map, and workflow.
 
+**Product roadmap:** [../ROADMAP.md](../ROADMAP.md) — Platform Pillars, Official Solution Blueprints, ownership model, timeline.
+
+**Platform pillars (navigation hubs):** [pillars/README.md](./pillars/README.md)
+
 **Project home:** [../README.md](../README.md) — quick start and links to overview subpages.
 
 **Expanded overview:** [overview/README.md](./overview/README.md) — flagship demos, audience paths, platform map, feature snapshot, philosophy, differentiators, CLI, code samples.
@@ -132,7 +136,10 @@
 | [robotics-platform.md](./robotics-platform.md) | **Robotics platform: missions, fleet, safety zones, navigation, fusion, package strategy** |
 | [spanda-type-system.md](./spanda-type-system.md) | Type system: units, generics, AI/safety types |
 | [man/](./man/) | Man-page style CLI reference |
-| [roadmap.md](./roadmap.md) | Roadmap and self-hosting plan |
+| [roadmap.md](./roadmap.md) | Redirect to [ROADMAP.md](../ROADMAP.md) — product roadmap |
+| [roadmap-migration.md](./roadmap-migration.md) | **Roadmap restructure migration notes** |
+| [repository-organization.md](./repository-organization.md) | **Docs/examples/packages layout recommendations** |
+| [../ROADMAP.md](../ROADMAP.md) | **Canonical product roadmap** — pillars, blueprints, timeline |
 | [differentiation-roadmap.md](./differentiation-roadmap.md) | **Signature capabilities — mission contracts, explainability, coverage, risk (15 areas)** |
 | [platform-maturity-roadmap.md](./platform-maturity-roadmap.md) | **Platform maturity expansion — adoption, trust, operations (16 areas)** |
 | [enterprise-operations-roadmap.md](./enterprise-operations-roadmap.md) | **Enterprise operations — Control Center, Device Pool, RBAC, APIs, observability (20 pillars)** |
@@ -162,6 +169,12 @@
 | [policy-engine.md](./policy-engine.md) | **Declarative operational policies** |
 | [compliance-profiles.md](./compliance-profiles.md) | **Industry verification profile templates** |
 | [solutions/README.md](./solutions/README.md) | **Official Solution Blueprints index** |
+| [solutions/warehouse.md](./solutions/warehouse.md) | **Warehouse Automation blueprint** |
+| [solutions/smart-factory.md](./solutions/smart-factory.md) | **Smart Factory blueprint** |
+| [solutions/defense.md](./solutions/defense.md) | **Defense blueprint** |
+| [solutions/environmental-monitoring.md](./solutions/environmental-monitoring.md) | **Environmental monitoring blueprint (planned)** |
+| [solutions/maritime.md](./solutions/maritime.md) | **Maritime blueprint (planned)** |
+| [pillars/README.md](./pillars/README.md) | **Platform Pillars — navigation hubs** |
 | [solutions/adas.md](./solutions/adas.md) | **ADAS & Autonomous Driving blueprint** |
 | [human-interaction-spatial-computing-roadmap.md](./human-interaction-spatial-computing-roadmap.md) | **Human Interaction, wearables, AR/VR/XR roadmap (H1–H4)** |
 | [solutions/spatial-computing.md](./solutions/spatial-computing.md) | **Spatial Computing & Human-Robot Collaboration blueprint** |

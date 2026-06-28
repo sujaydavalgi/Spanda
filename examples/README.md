@@ -4,6 +4,35 @@ Runnable `.sd` programs for learning, demos, regression, and CI. **Start here** 
 
 **Guided tutorials:** [Tutorials index](../docs/tutorials/README.md) · [Spanda 101](../docs/spanda-101/README.md) · [Getting started](../docs/getting-started.md)
 
+**Platform pillars:** [docs/pillars/](../docs/pillars/README.md) · **Solution blueprints:** [ROADMAP.md § Blueprints](../ROADMAP.md#official-solution-blueprints)
+
+---
+
+## By platform pillar & blueprint
+
+Examples tagged by [Platform Pillar](../docs/pillars/README.md) and [Official Solution Blueprint](../docs/solutions/README.md).
+
+| Directory | Pillar(s) | Blueprint |
+|-----------|-----------|-----------|
+| [`basics/`](basics/) | Language, Developer | Research & Education |
+| [`features/`](features/) | Language, Verification | — |
+| [`showcase/`](showcase/) | Verification, Developer | Research & Education |
+| [`showcase/autonomous_rover/`](showcase/autonomous_rover/) | Verification, Device & Fleet | Research & Education |
+| [`showcase/self_healing/`](showcase/self_healing/) | Verification | — |
+| [`showcase/continuity/`](showcase/continuity/) | Device & Fleet, Verification | Warehouse |
+| [`showcase/compliance/`](showcase/compliance/) | Security, Verification | Critical Infrastructure |
+| [`showcase/secure_boot/`](showcase/secure_boot/) | Security | Defense |
+| [`security/`](security/) | Security | Defense |
+| [`communication/`](communication/) | Device & Fleet | — |
+| [`end_to_end/warehouse_delivery/`](end_to_end/warehouse_delivery/) | Device & Fleet, Verification | Warehouse Automation |
+| [`end_to_end/pick_and_place_cell/`](end_to_end/pick_and_place_cell/) | Verification, Device & Fleet | Smart Factory |
+| [`solutions/agriculture/`](solutions/agriculture/) | Device & Fleet, Verification | Agriculture |
+| [`solutions/adas/`](solutions/adas/) | Verification, Device & Fleet, Security | ADAS |
+| [`solutions/spatial-computing/`](solutions/spatial-computing/) | Device & Fleet, Operations | SAR, Healthcare, Spatial HRI |
+| [`iot/`](iot/) | Packages, Device & Fleet | Environmental Monitoring |
+| [`packages/`](packages/) | Packages & Ecosystem | — |
+| [`robotics/`](robotics/) | Verification, Packages | Smart Factory |
+
 ---
 
 ## Quick start (three pillars)

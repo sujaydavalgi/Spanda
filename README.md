@@ -58,6 +58,21 @@ What Spanda is / isn't: [docs/overview/what-spanda-is.md](docs/overview/what-spa
 
 ---
 
+## Platform navigation
+
+Spanda is a **product ecosystem** — not only a language repository.
+
+| | |
+|---|---|
+| **[Platform Pillars](ROADMAP.md#platform-pillars)** | Language · Compiler & Runtime · Verification · Device & Fleet · Security · Operations · Developer · Packages |
+| **[Official Solution Blueprints](ROADMAP.md#official-solution-blueprints)** | Warehouse · Search & Rescue · Healthcare · ADAS · Smart Factory · Agriculture · Critical Infrastructure · Environmental · Maritime · Transportation · Space · Defense · Research · Spatial HRI |
+| **[Architecture overview](docs/platform-overview.md)** | Components, workflow, product family |
+| **[Full roadmap](ROADMAP.md)** | Ownership model, dependency maps, timeline (Now / Next / Later / Long Term / Research) |
+
+**Product family:** Spanda Language → Runtime → Verify → Readiness → Assurance → Diagnosis → Recovery → Trust → Control Center → Registry → SDKs
+
+---
+
 ## Quick start
 
 ```bash
@@ -102,9 +117,11 @@ Install options: [docs/installation.md](docs/installation.md) · First project: 
 
 | Start here | Description |
 |------------|-------------|
+| [ROADMAP.md](ROADMAP.md) | **Product roadmap** — pillars, blueprints, timeline |
 | [docs/getting-started.md](docs/getting-started.md) | First robot in 10 minutes |
 | [docs/platform-overview.md](docs/platform-overview.md) | Platform components and workflow |
 | [docs/spanda-language.md](docs/spanda-language.md) | Language guide |
+| [docs/solutions/README.md](docs/solutions/README.md) | Official Solution Blueprints |
 | [docs/tutorials/README.md](docs/tutorials/README.md) | Tutorials and learning paths |
 | [examples/README.md](examples/README.md) | Runnable examples library |
 | [docs/README.md](docs/README.md) | Full documentation index |

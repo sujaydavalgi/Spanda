@@ -1,8 +1,10 @@
 # Davalgi / Spanda landing page
 
-Static single-page site for **davalgi.com** (or **spanda.davalgi.com**) until a full marketing site exists.
+Static site for **davalgi.com** (or **spanda.davalgi.com**) until a full marketing site exists.
 
-Source copy lives in [docs/website-content.md](../docs/website-content.md).
+**Pages:** `index.html` (home) · `platform.html` (8 pillars) · `solutions.html` (14 blueprints) · `roadmap.html` (timeline)
+
+Source copy lives in [docs/website-content.md](../docs/website-content.md). Product roadmap: [ROADMAP.md](../ROADMAP.md).
 
 ## Deploy
 

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Roadmap — Spanda</title>
+  <meta name="description" content="Spanda product roadmap — Platform Pillars, Solution Blueprints, timeline by maturity.">
+  <link rel="icon" type="image/png" href="../assets/image/app_favicon.png">
+  <style>
+    :root { color-scheme: dark; --bg: #0b0f14; --surface: #121820; --text: #e8edf4; --muted: #9aa7b8; --accent: #5eead4; --border: #243041; --max: 56rem; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: ui-sans-serif, system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+    a { color: var(--accent); }
+    header, main, footer { max-width: var(--max); margin: 0 auto; padding: 0 1.25rem; }
+    header { display: flex; justify-content: space-between; align-items: center; padding-top: 1.5rem; flex-wrap: wrap; gap: 0.5rem; }
+    .brand { font-weight: 700; display: flex; align-items: center; gap: 0.6rem; }
+    .brand img { height: 2rem; }
+    nav a { margin-left: 0.75rem; color: var(--muted); font-size: 0.9rem; text-decoration: none; }
+    h1 { margin: 2rem 0 0.5rem; }
+    .lead { color: var(--muted); }
+    table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.9rem; }
+    th, td { border: 1px solid var(--border); padding: 0.6rem 0.75rem; text-align: left; }
+    th { background: var(--surface); }
+    .badge { font-size: 0.75rem; padding: 0.1rem 0.4rem; border-radius: 4px; background: #1e3a5f; color: var(--accent); }
+    footer { border-top: 1px solid var(--border); margin-top: 3rem; padding: 1.5rem 0 2.5rem; color: var(--muted); font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><img src="../assets/image/low_res_logo.png" alt="Spanda"><span>Spanda</span></div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="platform.html">Platform</a>
+      <a href="solutions.html">Solutions</a>
+      <a href="roadmap.html">Roadmap</a>
+      <a href="https://github.com/Davalgi/Spanda/tree/main/docs">Documentation</a>
+      <a href="https://github.com/Davalgi/Spanda">GitHub</a>
+    </nav>
+  </header>
+  <main>
+    <h1>Product Roadmap</h1>
+    <p class="lead">Current release: <strong>v0.4.0</strong> · Next: <strong>v0.5 beta</strong>. Timeline is maturity-based — not arbitrary dates.</p>
+
+    <h2>Timeline horizons</h2>
+    <table>
+      <thead><tr><th>Horizon</th><th>Focus</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge">Now</span></td><td>Stable core — language, verify, sim, replay, continuity, recovery, bundled demos</td></tr>
+        <tr><td><span class="badge">Next</span></td><td>Control Center Stable promotion, Marketplace, swarm hardening, SDKs, HRI H1–H2</td></tr>
+        <tr><td><span class="badge">Later</span></td><td>Compliance polish, agriculture/environmental blueprints, Gazebo scaffolds</td></tr>
+        <tr><td><span class="badge">Long Term</span></td><td>Production verify on 5+ profiles, native codegen Stable, v1.0 positioning</td></tr>
+        <tr><td><span class="badge">Research</span></td><td>Space blueprint, advanced swarm (out of core scope)</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Ownership model</h2>
+    <p class="lead">Core · Package · Provider · Solution Blueprint · Control Center · Optional · Experimental · Future</p>
+
+    <p><a href="https://github.com/Davalgi/Spanda/blob/main/ROADMAP.md">Read the full ROADMAP.md →</a></p>
+    <p><a href="https://github.com/Davalgi/Spanda/blob/main/docs/feature-status.md">Feature status matrix →</a></p>
+  </main>
+  <footer><p>Apache-2.0 · <a href="https://github.com/Davalgi/Spanda">github.com/Davalgi/Spanda</a></p></footer>
+</body>
+</html>

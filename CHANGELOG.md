@@ -7,17 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Product roadmap restructure:** Canonical roadmap moved to root [ROADMAP.md](ROADMAP.md) — organized into 8 Platform Pillars, 14 Official Solution Blueprints, feature ownership model, dependency diagrams, and maturity-based timeline (Now / Next / Later / Long Term / Research). [docs/roadmap.md](docs/roadmap.md) is now a redirect; migration notes in [docs/roadmap-migration.md](docs/roadmap-migration.md). README navigation updated for product ecosystem presentation.
+- **README slim-down:** Root [README.md](README.md) now keeps only the landing intro, code sample, quick start, and doc links; detailed sections moved to [docs/overview/](docs/overview/README.md) subpages (flagship demos, audience paths, platform map, feature snapshot, signature capabilities, what Spanda is/is not).
+
 ### Fixed
 
 - **Sim `stop_if` false E-stop:** `RunOptions::default()` now sets `lidar_range = 10.0 m` (was `0.0` from derived `Default`, forcing `nearest_distance = 0.01 m` and spurious `stop_if` triggers in `spanda sim` / `spanda run`).
 - **Behavior loop trace recording:** `loop every` in behaviors now emits `behavior_tick` mission trace frames when `--record` is enabled (ADAS `highway_drive.trace` replays deterministically).
 
-### Changed
-
-- **README slim-down:** Root [README.md](README.md) now keeps only the landing intro, code sample, quick start, and doc links; detailed sections moved to [docs/overview/](docs/overview/README.md) subpages (flagship demos, audience paths, platform map, feature snapshot, signature capabilities, what Spanda is/is not).
-
 ### Added
 
+- **Website roadmap & platform pages:** [website/roadmap.html](website/roadmap.html), [website/platform.html](website/platform.html) — product ecosystem navigation.
+- **Platform pillar link hubs:** [docs/pillars/](docs/pillars/README.md) — 8 navigation hubs cross-linking topic guides.
+- **CI gates index:** [scripts/gates/README.md](scripts/gates/README.md) — smoke scripts by pillar and blueprint.
+- **Planned blueprint docs:** [agriculture](docs/solutions/agriculture.md), [environmental-monitoring](docs/solutions/environmental-monitoring.md), [maritime](docs/solutions/maritime.md).
+- **Registry README:** [packages/registry/README.md](packages/registry/README.md) — authoritative package source vs mirror paths.
 - **Grafana ADAS dashboard:** `spanda-grafana-dashboards` template `control-center-adas.json` for fleet health, safety alerts, and mission trace volume.
 - **ADAS lane keeping trace:** `lane_keeping/lane_keeping.trace` (20 `behavior_tick` frames) replayed in `adas_smoke.sh`.
 - **Automotive registry packages:** `spanda-radar`, `spanda-lidar`, `spanda-ultrasonic`, `spanda-automotive-ethernet`, `spanda-lin`, `spanda-uds`, `spanda-v2x` (experimental stubs); ADAS device trees use dedicated radar/LiDAR providers; traffic sign and pedestrian detection examples.
