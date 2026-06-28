@@ -11,7 +11,7 @@ build = "build.rs"
 
 [features]
 default = []
-grpc = ["dep:tonic", "dep:prost", "dep:tokio", "dep:tonic-build"]
+grpc = ["dep:tonic", "dep:prost", "dep:tokio"]
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
@@ -24,7 +24,7 @@ prost = { version = "0.13", optional = true }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"], optional = true }
 
 [build-dependencies]
-tonic-build = { version = "0.12", optional = true }
+tonic-build = { version = "0.12" }
 
 [dev-dependencies]
 serde_json = "1"

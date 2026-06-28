@@ -1,5 +1,5 @@
 //! SDK program-operation contract tests (no live server required for parsing).
-use spanda_api::sdk_ops::{program_simulation, ProgramRequest};
+use spanda_api::sdk_ops::{program_replay, program_simulation, ProgramRequest};
 use spanda_api::state::ControlCenterState;
 use std::path::PathBuf;
 
@@ -43,4 +43,30 @@ fn program_simulation_execute_hello_world() {
     let json: serde_json::Value = serde_json::from_str(&resp.body).unwrap();
     assert_eq!(json["simulation"]["dry_run"], false);
     assert_eq!(json["simulation"]["status"], "completed");
+}
+
+#[test]
+fn program_replay_inspect_mission_trace() {
+    let showcase = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../../examples/showcase/root_cause_analysis");
+    let state = ControlCenterState::new().with_config_path(showcase.clone());
+    let body = r#"{"file":"mission.trace"}"#;
+    let resp = program_replay(&state, body);
+    assert_eq!(resp.status, 200);
+    let json: serde_json::Value = serde_json::from_str(&resp.body).unwrap();
+    assert_eq!(json["replay"]["loaded"], true);
+    assert!(json["replay"]["frame_count"].as_u64().unwrap_or(0) > 0);
+}
+
+#[test]
+fn program_replay_playback_mission_trace() {
+    let showcase = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../../examples/showcase/root_cause_analysis");
+    let state = ControlCenterState::new().with_config_path(showcase);
+    let body = r#"{"file":"mission.trace","playback":true}"#;
+    let resp = program_replay(&state, body);
+    assert_eq!(resp.status, 200);
+    let json: serde_json::Value = serde_json::from_str(&resp.body).unwrap();
+    assert_eq!(json["replay"]["mode"], "playback");
+    assert!(json["replay"]["frames_applied"].as_u64().is_some());
 }
