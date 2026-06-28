@@ -42,6 +42,8 @@ fn template_json(path: &str) -> Option<&'static str> {
         "templates/defense.json" => Some(include_str!("../templates/defense.json")),
         "templates/medical.json" => Some(include_str!("../templates/medical.json")),
         "templates/iso26262.json" => Some(include_str!("../templates/iso26262.json")),
+        "templates/iso13849.json" => Some(include_str!("../templates/iso13849.json")),
+        "templates/iec61508.json" => Some(include_str!("../templates/iec61508.json")),
         _ => None,
     }
 }
@@ -108,6 +110,12 @@ mod tests {
         assert!(templates
             .iter()
             .any(|entry| entry.name == "iso26262" && entry.verified));
+        assert!(templates
+            .iter()
+            .any(|entry| entry.name == "iso13849" && entry.verified));
+        assert!(templates
+            .iter()
+            .any(|entry| entry.name == "iec61508" && entry.verified));
     }
 
     #[test]
@@ -119,6 +127,8 @@ mod tests {
             ("defense", "templates/defense.json"),
             ("medical", "templates/medical.json"),
             ("iso26262", "templates/iso26262.json"),
+            ("iso13849", "templates/iso13849.json"),
+            ("iec61508", "templates/iec61508.json"),
         ] {
             let raw = template_json(path).expect("template");
             let hash = sha256(raw);

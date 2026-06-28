@@ -1,0 +1,15 @@
+{
+  "name": "iec61508",
+  "description": "IEC 61508 functional safety profile template (SIL-oriented)",
+  "requires_kill_switch": true,
+  "min_readiness_score": 85,
+  "required_capabilities": [],
+  "min_health_checks": 2,
+  "requires_assurance_case": true,
+  "max_speed_mps": 1.2,
+  "operation_hours": null,
+  "requires_secure_comm": true,
+  "requires_tamper_policy": true,
+  "requires_secure_boot": false,
+  "warn_only": false
+}

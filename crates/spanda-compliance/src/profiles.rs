@@ -38,6 +38,8 @@ pub fn list_builtin_profiles() -> Vec<&'static str> {
         "agriculture",
         "defense",
         "iso26262",
+        "iso13849",
+        "iec61508",
         "research",
     ]
 }
@@ -51,6 +53,8 @@ pub fn builtin_profile(name: &str) -> Option<ComplianceProfile> {
         "agriculture" => Some(agriculture_profile()),
         "defense" => Some(defense_profile()),
         "iso26262" | "iso_26262" | "automotive" => Some(iso26262_profile()),
+        "iso13849" | "iso_13849" | "machinery" => Some(iso13849_profile()),
+        "iec61508" | "iec_61508" | "functional_safety" => Some(iec61508_profile()),
         "research" => Some(research_profile()),
         _ => None,
     }
@@ -165,6 +169,44 @@ fn iso26262_profile() -> ComplianceProfile {
         requires_secure_comm: true,
         requires_tamper_policy: true,
         requires_secure_boot: true,
+        warn_only: false,
+        template_notice: ACCREDITATION_TEMPLATE_NOTICE,
+    }
+}
+
+fn iso13849_profile() -> ComplianceProfile {
+    ComplianceProfile {
+        name: "iso13849".into(),
+        description: "ISO 13849 machinery safety profile template (PL-oriented)".into(),
+        requires_kill_switch: true,
+        min_readiness_score: 80,
+        required_capabilities: vec!["obstacle_avoidance".into()],
+        min_health_checks: 2,
+        requires_assurance_case: true,
+        max_speed_mps: Some(1.5),
+        operation_hours: None,
+        requires_secure_comm: false,
+        requires_tamper_policy: false,
+        requires_secure_boot: false,
+        warn_only: false,
+        template_notice: ACCREDITATION_TEMPLATE_NOTICE,
+    }
+}
+
+fn iec61508_profile() -> ComplianceProfile {
+    ComplianceProfile {
+        name: "iec61508".into(),
+        description: "IEC 61508 functional safety profile template (SIL-oriented)".into(),
+        requires_kill_switch: true,
+        min_readiness_score: 85,
+        required_capabilities: vec![],
+        min_health_checks: 2,
+        requires_assurance_case: true,
+        max_speed_mps: Some(1.2),
+        operation_hours: None,
+        requires_secure_comm: true,
+        requires_tamper_policy: true,
+        requires_secure_boot: false,
         warn_only: false,
         template_notice: ACCREDITATION_TEMPLATE_NOTICE,
     }

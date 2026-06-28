@@ -11,6 +11,8 @@ fn main() {
         ("defense", "templates/defense.json"),
         ("medical", "templates/medical.json"),
         ("iso26262", "templates/iso26262.json"),
+        ("iso13849", "templates/iso13849.json"),
+        ("iec61508", "templates/iec61508.json"),
     ];
     let mut entries = Vec::new();
     for (name, path) in templates {

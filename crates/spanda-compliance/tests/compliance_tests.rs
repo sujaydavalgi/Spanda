@@ -124,6 +124,70 @@ fn medical_showcase_passes_profile() {
 }
 
 #[test]
+fn iso26262_showcase_passes_profile() {
+    let registry = repo_path(&["registry"]);
+    std::env::set_var(
+        "SPANDA_REGISTRY_URL",
+        format!("file://{}", registry.display()),
+    );
+    let program = parse_file(repo_path(&[
+        "examples",
+        "showcase",
+        "compliance",
+        "automotive_rover.sd",
+    ]));
+    let report = evaluate_compliance_profile(
+        &program,
+        "iso26262",
+        "compliance/automotive_rover.sd",
+    )
+    .unwrap();
+    assert!(report.passed, "{:?}", report.violations);
+    std::env::remove_var("SPANDA_REGISTRY_URL");
+}
+
+#[test]
+fn iso13849_showcase_passes_profile() {
+    let program = parse_file(repo_path(&[
+        "examples",
+        "showcase",
+        "compliance",
+        "machinery_rover.sd",
+    ]));
+    let report = evaluate_compliance_profile(
+        &program,
+        "iso13849",
+        "compliance/machinery_rover.sd",
+    )
+    .unwrap();
+    assert!(report.passed, "{:?}", report.violations);
+}
+
+#[test]
+fn iec61508_showcase_passes_profile() {
+    let program = parse_file(repo_path(&[
+        "examples",
+        "showcase",
+        "compliance",
+        "iec61508_rover.sd",
+    ]));
+    let report = evaluate_compliance_profile(
+        &program,
+        "iec61508",
+        "compliance/iec61508_rover.sd",
+    )
+    .unwrap();
+    assert!(report.passed, "{:?}", report.violations);
+}
+
+#[test]
+fn lists_functional_safety_profile_aliases() {
+    let profiles = list_compliance_profiles();
+    assert!(profiles.iter().any(|name| name == "iso13849"));
+    assert!(profiles.iter().any(|name| name == "iec61508"));
+}
+
+#[test]
 fn secure_boot_showcase_satisfies_secure_boot_requirement() {
     let registry = repo_path(&["registry"]);
     std::env::set_var(

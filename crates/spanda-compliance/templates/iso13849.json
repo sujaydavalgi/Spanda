@@ -1,0 +1,15 @@
+{
+  "name": "iso13849",
+  "description": "ISO 13849 machinery safety profile template (PL-oriented)",
+  "requires_kill_switch": true,
+  "min_readiness_score": 80,
+  "required_capabilities": ["obstacle_avoidance"],
+  "min_health_checks": 2,
+  "requires_assurance_case": true,
+  "max_speed_mps": 1.5,
+  "operation_hours": null,
+  "requires_secure_comm": false,
+  "requires_tamper_policy": false,
+  "requires_secure_boot": false,
+  "warn_only": false
+}

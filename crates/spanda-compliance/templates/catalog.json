@@ -20,6 +20,20 @@
       "signature": "42401d24decda9294b59e9488b3e7f76d324a447cbac0145c0cbb85ea888fea2b6c7e4e0090f7cd88ba5caf406a2812f4fbe0d96b84ea4beac589f2e10d77d0f",
       "template_path": "templates/iso26262.json",
       "version": "1.0.0"
+    },
+    {
+      "content_sha256": "aa02fa6628a0d919a64ccd97bd23158e3f45c203cca945394eacdc3bd3eba8c6",
+      "name": "iso13849",
+      "signature": "db6f444b454c02d09eacbd4cca2b344a5a9348c9de5191e9ca02f44547937b94783ad3092661375aa4d2318f73b6c66722b210008d45225f806865342f824601",
+      "template_path": "templates/iso13849.json",
+      "version": "1.0.0"
+    },
+    {
+      "content_sha256": "0ed2b43676208d4bc35922c6554c65c50f533974bd30d549738b2057fff5bb0b",
+      "name": "iec61508",
+      "signature": "185f5238a0df8e11cbe74bbcd7e64a392eddbb5cf06ac3ac67b8eb5e86adceb06b04165c19a7e50d91a2337ad2ce76a0ea92fe610b4b2ee26a9a7f2234d72400",
+      "template_path": "templates/iec61508.json",
+      "version": "1.0.0"
     }
   ],
   "publisher_pubkey": "2d7309426eab09db1c830e45a93e78d632e6d3a9b8eae242eaefb559015d2478"

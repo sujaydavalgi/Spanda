@@ -3,7 +3,7 @@
 use crate::profiles::{builtin_profile, list_builtin_profiles, ComplianceProfile};
 use serde::{Deserialize, Serialize};
 use spanda_ast::nodes::{Expr, Program, RobotDecl, SafetyBlock, SafetyRule, UnitKind};
-use spanda_readiness::{evaluate_readiness, ReadinessOptions};
+use spanda_readiness::{default_deploy_target, evaluate_readiness, ReadinessOptions};
 
 /// Severity for a compliance violation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -178,7 +178,11 @@ fn check_readiness(
     program: &Program,
     violations: &mut Vec<ComplianceViolation>,
 ) {
-    let readiness = evaluate_readiness(program, &ReadinessOptions::default());
+    let options = ReadinessOptions {
+        target: default_deploy_target(program),
+        ..ReadinessOptions::default()
+    };
+    let readiness = evaluate_readiness(program, &options);
     if readiness.score.total < profile.min_readiness_score {
         push_violation(
             profile,
