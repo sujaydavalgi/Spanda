@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **H5 HRI engineering expansion (experimental):** `[[hazard_zones]]` config; `GET /v1/humans/readiness` team rollup; `GET /v1/hri/collaboration` participant graph; `GET /v1/hri/context` hazard and location snapshot; Control Center Humans tab panels for team readiness, collaboration, and context awareness.
+
 - **HRI stable promotion gate:** `scripts/hri_stable_promotion_gate.sh` and [stable-hardening-human-interaction.md](docs/stable-hardening-human-interaction.md); `@spanda/web` `ControlCenterPanel` Humans tab parity with embedded Control Center.
 
 - **H4 Control Center human UI (experimental):** Humans tab in Control Center; `GET /v1/humans`, `/v1/wearables`, `/v1/human-health/policy`; `HumanHealthGate` opt-in (`SPANDA_HUMAN_HEALTH_ENABLED` + `[security.human_health]`); VR training continuity example.

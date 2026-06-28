@@ -271,6 +271,18 @@ See [human-interaction.md](./human-interaction.md) and [operator-capabilities.md
 
 **Exit criteria:** `SPANDA_HRI_SKIP_SOAK=1 ./scripts/hri_stable_promotion_gate.sh` passes; Humans tab parity in embedded UI and `ControlCenterPanel`; health gate blocks telemetry until opt-in; 30-day field soak + audit sign-off before **Stable** tier label.
 
+### H5 — Control Center depth & context awareness
+
+| Deliverable | Owner | Status |
+|-------------|-------|--------|
+| `[[hazard_zones]]` TOML + fleet merge | `spanda-config` | **Experimental** |
+| Team readiness rollup API | `spanda-api` | **Experimental** |
+| Collaboration participant graph API | `spanda-api` | **Experimental** |
+| Context awareness snapshot API | `spanda-api` | **Experimental** |
+| Humans tab: team readiness, collaboration, hazard zones | `spanda-api` + `@spanda/web` | **Experimental** |
+
+**Exit criteria:** Blueprint lists hazard zones; `/v1/humans/readiness`, `/v1/hri/collaboration`, `/v1/hri/context` return JSON; promotion gate probes new endpoints; operator approval queue remains via E1 `POST /v1/operator/mission/approve`.
+
 ---
 
 ## 5. Solution blueprint

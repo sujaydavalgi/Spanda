@@ -133,3 +133,23 @@ capabilities = ["vr_training", "mission_replay", "digital_twin_view"]
 id = "cc-primary"
 type = "ControlCenter"
 capabilities = ["human_dashboard", "approval_queue", "ar_session_viewer", "live_collaboration"]
+
+[[hazard_zones]]
+id = "warehouse-a-restricted"
+type = "restricted"
+severity = "high"
+center = { zone = "warehouse-a" }
+radius_m = 75.0
+linked_robots = ["AMR"]
+alert_on_entry = true
+description = "Forklift-only zone — human entry triggers supervisor alert"
+
+[[hazard_zones]]
+id = "charging-bay"
+type = "hazard"
+severity = "medium"
+center = { lat = 30.2672, lon = -97.7431 }
+radius_m = 12.0
+linked_robots = ["AMR"]
+alert_on_entry = true
+description = "High-voltage charging — geofence breach triggers human takeover"

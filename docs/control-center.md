@@ -68,9 +68,12 @@ Planned REST endpoints (experimental — humans/wearables/health and HRI session
 |----------|-------------|
 | `GET /v1/humans` | Human operator list |
 | `GET /v1/humans/{id}/readiness` | Per-operator readiness |
+| `GET /v1/humans/readiness` | Team readiness rollup (H5) |
 | `GET /v1/wearables` | Wearable inventory |
 | `GET /v1/human-health/policy` | Health opt-in gate |
 | `GET /v1/hri/sessions` | HRI / remote expert sessions |
+| `GET /v1/hri/collaboration` | Live collaboration participant graph (H5) |
+| `GET /v1/hri/context` | Hazard zones and human location context (H5) |
 | `POST /v1/hri/sessions/{id}/annotate` | AR annotation publish |
 
 See [solutions/spatial-computing.md](./solutions/spatial-computing.md) · [human-interaction-spatial-computing-roadmap.md](./human-interaction-spatial-computing-roadmap.md).

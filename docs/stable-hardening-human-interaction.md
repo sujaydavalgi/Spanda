@@ -18,6 +18,7 @@ Phases **H1–H4** are shipped at **Experimental** tier with CI smoke (`scripts/
 | H2 packages | Wearable + spatial session registry stubs + provider traits | **Shipped** (experimental) |
 | H3 packages | Voice / gesture / eye + `/v1/hri/sessions` API | **Shipped** (experimental) |
 | H4 UI | Embedded HTML Humans tab + `@spanda/web` `ControlCenterPanel` parity | **Shipped** |
+| H5 APIs | Team readiness, collaboration graph, hazard zones / context | **Shipped** (experimental) |
 | Health opt-in | `HumanHealthGate` — config + `SPANDA_HUMAN_HEALTH_ENABLED` | **Shipped** |
 | OpenAPI | `/v1/humans`, `/wearables`, `/human-health/policy`, HRI sessions documented | **Shipped** (parity CI) |
 | Field soak | 30-day HRI pilot without regression | **Pending** — `SPANDA_HRI_FIELD_SOAK_START_FILE` (default `.spanda/hri-field-soak-start.txt`) |
@@ -45,7 +46,7 @@ The gate runs:
 1. Field soak check (unless `SPANDA_HRI_SKIP_SOAK=1`)
 2. `scripts/spatial_computing_smoke.sh`
 3. HRI unit tests (`spanda-api`, `spanda-security`, `spanda-providers`)
-4. Live Control Center probe against the spatial-computing blueprint (`/v1/humans`, `/v1/wearables`, `/v1/human-health/policy`, `/v1/hri/sessions`, per-operator readiness)
+4. Live Control Center probe against the spatial-computing blueprint (`/v1/humans`, `/v1/humans/readiness`, `/v1/wearables`, `/v1/human-health/policy`, `/v1/hri/sessions`, `/v1/hri/collaboration`, `/v1/hri/context`, per-operator readiness)
 
 ---
 
