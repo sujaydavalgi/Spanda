@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "source": "emergency-response/fire_response.sd",
+  "deterministic": true,
+  "frames": [
+    {
+      "sim_time_ms": 0.0,
+      "event": "readiness_check",
+      "payload": {
+        "profile": "smart_space",
+        "facility_id": "tower-demo",
+        "score": 88,
+        "passed": true
+      },
+      "state": null
+    },
+    {
+      "sim_time_ms": 45000.0,
+      "event": "sensor_alert",
+      "payload": {
+        "device_id": "fire-panel-lobby",
+        "type": "FirePanel",
+        "zone": "room-lobby",
+        "severity": "critical"
+      },
+      "state": null
+    },
+    {
+      "sim_time_ms": 45050.0,
+      "event": "emergency_stop",
+      "payload": {
+        "policy": "LifeSafetyOverride",
+        "reason": "fire_panel_activation"
+      },
+      "state": null
+    },
+    {
+      "sim_time_ms": 46000.0,
+      "event": "continuity_failover",
+      "payload": {
+        "primary": "bacnet-gw-primary",
+        "backup": "bacnet-gw-backup",
+        "on_failure": "activate_backup"
+      },
+      "state": null
+    },
+    {
+      "sim_time_ms": 47000.0,
+      "event": "mission_started",
+      "payload": {
+        "mission": "FireResponse",
+        "robot": "EmergencyOrchestrator"
+      },
+      "state": null
+    },
+    {
+      "sim_time_ms": 52000.0,
+      "event": "mission_started",
+      "payload": {
+        "mission": "Evacuation",
+        "robot": "EmergencyOrchestrator"
+      },
+      "state": null
+    }
+  ]
+}

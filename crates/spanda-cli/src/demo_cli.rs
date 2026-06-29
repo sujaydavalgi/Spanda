@@ -1136,6 +1136,12 @@ fn demo_smart_spaces(root: &Path) {
         ]);
     }
 
+    let fire_trace = ss_root.join("fixtures/fire_panel_activation.trace");
+    if fire_trace.is_file() {
+        println!("\n--- replay (fire_panel_activation.trace) ---");
+        run_spanda_args(&["replay", fire_trace.to_str().unwrap(), "--deterministic"]);
+    }
+
     println!(
         "\nDemo complete. Serve Control Center:\n  spanda control-center serve --config {} --program smart-building/floor_readiness.sd",
         config_str

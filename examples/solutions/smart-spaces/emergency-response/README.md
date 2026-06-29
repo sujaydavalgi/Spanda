@@ -12,6 +12,7 @@ Fire response, evacuation, and life-safety continuity for any smart space scale.
 cd examples/solutions/smart-spaces
 spanda check emergency-response/fire_response.sd
 spanda readiness emergency-response/fire_response.sd --profile smart_space --config spanda.toml --json
+spanda replay fixtures/fire_panel_activation.trace --deterministic
 ```
 
 ---

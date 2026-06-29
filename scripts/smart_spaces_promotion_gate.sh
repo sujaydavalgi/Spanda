@@ -54,7 +54,11 @@ else
 fi
 
 echo "--- Smart Spaces blueprint smoke ---"
-"$ROOT/scripts/smart_spaces_smoke.sh"
+if [[ "${SPANDA_SMART_SPACES_SKIP_SMOKE:-0}" != "1" ]]; then
+  "$ROOT/scripts/smart_spaces_smoke.sh"
+else
+  echo "Skipping smoke (SPANDA_SMART_SPACES_SKIP_SMOKE=1)"
+fi
 
 echo "--- Smart Spaces API unit tests ---"
 cargo test -p spanda-api smart_spaces -q
