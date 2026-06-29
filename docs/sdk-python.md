@@ -45,6 +45,21 @@ from spanda_sdk import SpandaClient
 | `SPANDA_CONTROL_CENTER_URL` | Base URL (default `http://127.0.0.1:8080`) |
 | `SPANDA_API_KEY` | Bearer token for authenticated endpoints |
 
+## Entity model
+
+```python
+client = SpandaClient.local()
+graph = client.entity_graph()
+trace = client.entity_traceability(entity_id="rover-001")
+result = client.query_entities({"kind": "robot"})
+client.register_entity({"id": "bay-1", "entity_type": "calibration_station"})
+client.tag_entity("bay-1", {"add": ["production"]})
+client.relate_entities({"from_id": "rover-001", "to_id": "gps-001", "kind": "depends_on"})
+client.sync_entities()
+```
+
+Mutation endpoints require `SPANDA_API_KEY`.
+
 ## Event stream
 
 ```python

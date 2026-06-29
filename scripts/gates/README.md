@@ -64,7 +64,7 @@ Index of regression and promotion gates organized by **Platform Pillar** and **S
 | Script | Validates |
 |--------|-----------|
 | `enterprise_ops_smoke.sh` | Control Center E1–E4 exit criteria |
-| `entity_model_smoke.sh` | Unified entity model read + mutation + traceability APIs |
+| `entity_model_smoke.sh` | Unified entity model read + mutation + traceability APIs (REST, TypeScript SDK, Python SDK) |
 | `control_center_desktop_smoke.sh` | Tauri desktop shell |
 | `telemetry_store_golden_path.sh` | Persistent telemetry |
 | `device_pool_perf_bench.sh` | 1000-device perf gate |

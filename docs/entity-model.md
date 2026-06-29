@@ -178,9 +178,9 @@ Cross-references:
 
 ### Stabilization (Complete)
 
-- [x] CI smoke script `scripts/entity_model_smoke.sh` (graph, traceability, query, mutations, TypeScript SDK)
+- [x] CI smoke script `scripts/entity_model_smoke.sh` (graph, traceability, query, mutations, TypeScript + Python SDK)
 - [x] Control Center **Entities** tab write UI (register, tag, relate, sync) with API key auth
-- [x] TypeScript SDK parity: `registerEntity`, `tagEntity`, `relateEntities`, `syncEntities`, `entityGraph`, `entityTraceability`, `queryEntities`
+- [x] SDK parity: `registerEntity` / `register_entity`, `tagEntity` / `tag_entity`, `relateEntities` / `relate_entities`, `syncEntities` / `sync_entities`, `entityGraph` / `entity_graph`, `entityTraceability` / `entity_traceability`, `queryEntities` / `query_entities` (TypeScript, Python, Rust)
 
 ### Compatibility guarantees
 

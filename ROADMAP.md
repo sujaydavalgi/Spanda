@@ -985,10 +985,10 @@ Maturity-based horizons — **not arbitrary calendar dates**.
 | Live AI + ROS2 rclpy golden path + CI | **Stable** |
 | Hosted registry (38 packages) + publish mirror | **Stable** |
 | CI verify guide + adoption paths | **Stable** |
-| VS Code Marketplace listing | **Partial** — needs `VSCE_PAT` |
+| VS Code Marketplace listing | **Deferred** — needs `VSCE_PAT` (manual publisher setup) |
 | Mission Contracts, Explainability, Audit Trail, Coverage CLIs | **Stable** |
 
-**Exit criteria:** Marketplace publish + `spanda demo differentiation` + `scripts/differentiation_smoke.sh` (CI job: `differentiation-smoke`)
+**Exit criteria:** `spanda demo differentiation` + `scripts/differentiation_smoke.sh` (CI job: `differentiation-smoke`) — **met**. Marketplace publish remains optional until `VSCE_PAT` is configured.
 
 ### v0.3 / v0.2 — Complete
 

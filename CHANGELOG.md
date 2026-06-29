@@ -14,14 +14,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **TypeScript SDK npm publish:** add `@types/node` so CI `tsc` build succeeds on clean `npm ci` installs (`@davalgi-spanda/sdk` v0.4.1).
+- **`@davalgi-spanda/web` PR CI:** validate publish tarball with `npm pack --dry-run` instead of `npm publish --dry-run` (fails when the registry version already exists).
 - **Rust SDK crates.io packaging:** make `tonic-build` a required build-dependency so `cargo package` verifies without the `grpc` feature.
 - **Sim `stop_if` false E-stop:** `RunOptions::default()` now sets `lidar_range = 10.0 m` (was `0.0` from derived `Default`, forcing `nearest_distance = 0.01 m` and spurious `stop_if` triggers in `spanda sim` / `spanda run`).
 - **Behavior loop trace recording:** `loop every` in behaviors now emits `behavior_tick` mission trace frames when `--record` is enabled (ADAS `highway_drive.trace` replays deterministically).
 
 ### Added
 
-- **v0.5 differentiation CI gate:** `differentiation-smoke` job runs `scripts/differentiation_smoke.sh` (contracts, explain, coverage, audit, demo differentiation).
+- **Python SDK entity helpers:** `entity_graph`, `entity_traceability`, `query_entities`, `register_entity`, `tag_entity`, `relate_entities`, `sync_entities` — parity with TypeScript and Rust SDKs; covered in `scripts/entity_model_smoke.sh`.
+- **Rust SDK `entity_traceability`:** query helper for `GET /v1/entities/traceability`.
 - **Entity model stabilization:** `scripts/entity_model_smoke.sh` CI job covering graph, traceability, query, and mutation APIs; Control Center Entities tab write UI (register, tag, relate, sync); TypeScript SDK entity mutation helpers (`registerEntity`, `tagEntity`, `relateEntities`, `syncEntities`, `entityGraph`, `entityTraceability`, `queryEntities`).
 - **Entity Model Phase 5 — write path:** mutation overlay store with `POST /v1/entities/register`, `{id}/tags`, `relationships`, and `sync`; audit events; TOML sync to facilities/overrides fragments; SDK helpers.
 - **Entity Model Phase 4 — industry extensions:** facility/building/zone TOML projection, ADAS `vehicle` entity kind + compliance metadata, flat hazard zones and spatial sessions, package `entity_kinds` manifest section, and `spanda.facilities.toml` config fragment.
