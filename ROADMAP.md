@@ -410,8 +410,8 @@ Full enterprise analysis: [docs/enterprise-operations-roadmap.md](docs/enterpris
 | [Smart Factory](#smart-factory) | **Experimental** | Now | Verification, Device & Fleet, Operations |
 | [Agriculture](#agriculture) | **Experimental** (scaffold) | Later | Device & Fleet, Verification, Packages |
 | [Critical Infrastructure](#critical-infrastructure) | **Experimental** | Next | Security, Verification, Operations |
-| [Environmental Monitoring](#environmental-monitoring) | **Planned** | Later | Device & Fleet, Operations, Packages |
-| [Maritime](#maritime) | **Planned** | Later | Device & Fleet, Verification, Security |
+| [Environmental Monitoring](#environmental-monitoring) | **Experimental** (scaffold) | Later | Device & Fleet, Operations, Packages |
+| [Maritime](#maritime) | **Experimental** (scaffold) | Later | Device & Fleet, Verification, Security |
 | [Transportation](#transportation) | **Experimental** | Now | Verification, Device & Fleet, Security |
 | [Space](#space) | **Research** | Long Term | Verification, Device & Fleet, Assurance |
 | [Defense](#defense) | **Experimental** | Next | Security, Verification, Operations |
@@ -568,7 +568,7 @@ Full enterprise analysis: [docs/enterprise-operations-roadmap.md](docs/enterpris
 
 **Uses pillars:** Device & Fleet Platform · Verification Platform · Packages & Ecosystem · Operations Platform
 
-**Status:** **Experimental** (scaffold) — CI `scripts/agriculture_smoke.sh`
+**Status:** **Experimental** (scaffold) — CI `scripts/solution_blueprints_smoke.sh`
 
 ---
 
@@ -611,14 +611,14 @@ Full enterprise analysis: [docs/enterprise-operations-roadmap.md](docs/enterpris
 | **Assurance** | Drift on sensor baselines |
 | **Recovery** | Mesh relay, OTA firmware |
 | **Control Center** | Telemetry trends, alerting |
-| **Example Projects** | **Planned** — `examples/solutions/environmental-monitoring/` |
+| **Example Projects** | [examples/solutions/environmental-monitoring/](examples/solutions/environmental-monitoring/) (`sensor_mesh.sd` scaffold) |
 | **Documentation** | [solutions/environmental-monitoring.md](docs/solutions/environmental-monitoring.md) · [telemetry-store.md](docs/telemetry-store.md) |
 | **Simulation** | Fault injection on readings |
 | **Replay** | Historical trend replay |
 
 **Uses pillars:** Device & Fleet Platform · Operations Platform · Packages & Ecosystem
 
-**Status:** **Planned**
+**Status:** **Experimental** (scaffold) — CI `scripts/solution_blueprints_smoke.sh`
 
 ---
 
@@ -627,24 +627,24 @@ Full enterprise analysis: [docs/enterprise-operations-roadmap.md](docs/enterpris
 | Section | Reference |
 |---------|-----------|
 | **Purpose** | Autonomous vessels, port logistics, GNSS-denied navigation, corrosion prognostics |
-| **Reference Architecture** | **Planned** — compose positioning + fleet mesh |
+| **Reference Architecture** | [examples/solutions/maritime/](examples/solutions/maritime/) — harbor patrol scaffold |
 | **Device Tree** | Vessel, payload, shore station |
 | **Packages** | `spanda-gps`, `spanda-radar`, `spanda-cellular`, `spanda-prognostics` |
 | **Providers** | GNSS, radar, SATCOM |
-| **Mission Examples** | **Planned** |
+| **Mission Examples** | `harbor_patrol.sd` |
 | **Health Policies** | Redundant navigation require |
 | **Readiness** | Pre-departure checklist |
 | **Assurance** | Hull/machinery prognostics |
 | **Recovery** | Shore takeover, drift to safe harbor |
 | **Control Center** | Fleet map, incident workflow |
-| **Example Projects** | **Planned** — `examples/solutions/maritime/` |
+| **Example Projects** | [examples/solutions/maritime/](examples/solutions/maritime/) (`harbor_patrol.sd` scaffold) |
 | **Documentation** | [solutions/maritime.md](docs/solutions/maritime.md) |
 | **Simulation** | Sea state + GNSS denial |
 | **Replay** | Voyage black box |
 
 **Uses pillars:** Device & Fleet Platform · Verification Platform · Security Platform · Operations Platform
 
-**Status:** **Planned**
+**Status:** **Experimental** (scaffold) — CI `scripts/solution_blueprints_smoke.sh`
 
 ---
 

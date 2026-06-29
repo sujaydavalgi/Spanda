@@ -1,6 +1,6 @@
 # Environmental Monitoring — Solution Blueprint
 
-**Status:** Planned · **Timeline:** Later · **Path:** (scaffold pending)
+**Status:** Experimental (scaffold) · **Timeline:** Later · **Path:** [examples/solutions/environmental-monitoring/](../../examples/solutions/environmental-monitoring/)
 
 Official Solution Blueprint for distributed sensor networks monitoring air, water, and environmental conditions.
 
@@ -58,9 +58,9 @@ Sensor Network
 - [health-checks.md](../health-checks.md)
 - [anomaly-detection.md](../anomaly-detection.md)
 
-## Example projects (planned)
+## Example projects
 
-- `examples/solutions/environmental-monitoring/` — mesh node, gateway, alert on threshold
+- [examples/solutions/environmental-monitoring/](../../examples/solutions/environmental-monitoring/) — `sensor_mesh.sd` mesh node scaffold (CI: `scripts/solution_blueprints_smoke.sh`)
 
 ## Simulation & replay
 

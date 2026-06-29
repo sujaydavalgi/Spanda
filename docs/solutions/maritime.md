@@ -1,6 +1,6 @@
 # Maritime — Solution Blueprint
 
-**Status:** Planned · **Timeline:** Later · **Path:** (scaffold pending)
+**Status:** Experimental (scaffold) · **Timeline:** Later · **Path:** [examples/solutions/maritime/](../../examples/solutions/maritime/)
 
 Official Solution Blueprint for autonomous vessels, port logistics, and shore coordination.
 
@@ -62,9 +62,9 @@ Vessel Stack
 - [connectivity.md](../connectivity.md)
 - [fleet-distributed.md](../fleet-distributed.md)
 
-## Example projects (planned)
+## Example projects
 
-- `examples/solutions/maritime/` — harbor patrol, convoy escort, docking assist
+- [examples/solutions/maritime/](../../examples/solutions/maritime/) — `harbor_patrol.sd` coastal patrol scaffold (CI: `scripts/solution_blueprints_smoke.sh`)
 
 ## Simulation & replay
 
