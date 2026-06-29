@@ -1,6 +1,7 @@
 //! Production-style OTA fleet soak — multi-agent version bumps across deploy agents.
 
-use spanda_driver::{build_deploy_plan, compile};
+use spanda_driver::compile;
+use spanda_ota::build_deploy_plan;
 use spanda_ota::{
     agent_entry_for_port, agent_status, build_deploy_bundle, deploy_target_key,
     execute_remote_rollout, register_agent, save_agent_registry, sign_deploy_bundle,

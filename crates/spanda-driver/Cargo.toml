@@ -16,7 +16,6 @@ spanda-parser = { path = "../spanda-parser" }
 spanda-runtime-host = { path = "../spanda-runtime-host" }
 spanda-typecheck = { path = "../spanda-typecheck" }
 spanda-interpreter = { path = "../spanda-interpreter", default-features = false }
-spanda-certify = { path = "../spanda-certify", optional = true }
 spanda-bridge = { path = "../spanda-bridge", optional = true }
 spanda-debug = { path = "../spanda-debug" }
 spanda-hardware = { path = "../spanda-hardware" }
@@ -27,10 +26,9 @@ serde = { version = "1", features = ["derive"] }
 
 [features]
 default = ["full"]
-full = ["certify", "bridge", "ota", "transport-tls", "spanda-interpreter/telemetry-sqlite", "spanda-interpreter/fleet-http", "spanda-interpreter/tamper-http"]
-certify = ["dep:spanda-certify"]
+full = ["bridge", "ota", "spanda-interpreter/certify", "transport-tls", "spanda-interpreter/telemetry-sqlite", "spanda-interpreter/fleet-http", "spanda-interpreter/tamper-http"]
 bridge = ["dep:spanda-bridge"]
-ota = ["dep:spanda-ota", "certify"]
+ota = ["dep:spanda-ota"]
 transport-tls = ["spanda-interpreter/transport-tls"]
 live-mqtt = ["spanda-interpreter/live-mqtt"]
 live-websocket = ["spanda-interpreter/live-websocket"]

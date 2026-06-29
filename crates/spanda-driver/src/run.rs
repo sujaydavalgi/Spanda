@@ -1,10 +1,8 @@
-//! High-level run helpers from source through compile, certify, and interpreter.
+//! High-level run helpers from source through compile and interpreter.
 //!
 use spanda_ast::nodes::Program;
 #[cfg(feature = "bridge")]
 use spanda_bridge::default_ffi_registry;
-#[cfg(feature = "certify")]
-use spanda_certify::{certification_runtime_enabled_from_env, enforce_certification_runtime};
 use spanda_error::SpandaError;
 use spanda_interpreter::{run_program as interpreter_run_program, RunOptions, RunResult};
 use spanda_typecheck::ModuleRegistry;
@@ -76,10 +74,6 @@ pub fn run_program(program: &Program, options: RunOptions) -> Result<RunResult, 
     #[cfg(feature = "bridge")]
     if options.ffi_registry.is_none() {
         options.ffi_registry = Some(default_ffi_registry());
-    }
-    #[cfg(feature = "certify")]
-    if options.enforce_certify || certification_runtime_enabled_from_env() {
-        enforce_certification_runtime(program, true)?;
     }
     interpreter_run_program(program, options)
 }

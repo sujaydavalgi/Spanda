@@ -1,6 +1,7 @@
 //! Deploy agent certification enforcement tests.
 
-use spanda_driver::{build_deploy_plan, compile};
+use spanda_driver::compile;
+use spanda_ota::build_deploy_plan;
 use spanda_ota::{
     agent_entry_for_port, agent_rollout, build_deploy_bundle, spawn_test_agent_with_options,
 };

@@ -1,6 +1,7 @@
 //! Remote OTA deploy agent integration tests.
 
-use spanda_driver::{build_deploy_plan, compile};
+use spanda_driver::compile;
+use spanda_ota::build_deploy_plan;
 use spanda_ota::{
     agent_entry_for_port, agent_health, agent_rollout, agent_status, build_deploy_bundle,
     default_agents_path, deploy_target_key, execute_remote_rollout, load_agent_registry,

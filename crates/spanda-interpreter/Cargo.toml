@@ -43,6 +43,7 @@ spanda-deploy-http = { path = "../spanda-deploy-http", optional = true }
 
 [features]
 default = ["transport-tls", "tamper-http"]
+certify = ["spanda-assurance/certify-runtime"]
 transport-tls = ["spanda-transport/tls", "spanda-transport-routing/transport-tls"]
 tamper-http = ["spanda-tamper/http"]
 telemetry-sqlite = ["spanda-telemetry-store/sqlite"]

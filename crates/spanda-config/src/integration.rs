@@ -5,7 +5,8 @@ use crate::resolved::ResolvedSystemConfig;
 use crate::resolver::ConfigResolver;
 use crate::validation::ValidationSeverity;
 use spanda_ast::nodes::Program;
-use spanda_hardware::{verify_program_compatibility, CompatibilityReport, VerifyOptions};
+use spanda_certify::verify_certification_proof;
+use spanda_hardware::{verify_program_compatibility, CompatSeverity, CompatibilityReport, VerifyOptions};
 use spanda_package::{
     official_packages_from_lockfile, official_packages_from_manifest, PackageManifest,
     LOCKFILE_FILENAME, MANIFEST_FILENAME,
@@ -140,6 +141,13 @@ pub fn verify_with_system_config(
             }
         }
     }
+    report
+        .items
+        .extend(verify_certification_proof(program, options.strict_certify));
+    report.compatible = !report
+        .items
+        .iter()
+        .any(|item| item.severity == CompatSeverity::Error);
     report
 }
 

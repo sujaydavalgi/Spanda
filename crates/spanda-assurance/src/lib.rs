@@ -5,6 +5,8 @@
 
 pub mod analyze;
 pub mod anomaly;
+#[cfg(feature = "certify-runtime")]
+pub mod certify;
 pub mod continuity;
 pub mod continuity_checkpoint;
 pub mod continuity_diagnostics;
@@ -27,6 +29,8 @@ pub use analyze::{
     assure_program, assure_program_with_config, diagnosis_report, diagnosis_report_with_config,
     mitigation_report, MissionAssuranceSummary,
 };
+#[cfg(feature = "certify-runtime")]
+pub use certify::enforce_runtime_certification;
 pub use anomaly::{learned_models, scan_anomalies, AnomalyReport};
 pub use continuity::{
     evaluate_continuity, extract_continuity_policies, issue_to_continuity_trigger, parse_scope,

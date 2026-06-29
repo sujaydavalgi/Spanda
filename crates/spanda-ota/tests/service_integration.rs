@@ -1,6 +1,7 @@
 //! OTA deploy service integration tests.
 
-use spanda_driver::{build_deploy_plan, check, compile};
+use spanda_driver::{check, compile};
+use spanda_ota::build_deploy_plan;
 use spanda_ota::{
     apply_rollout, plan_rollout, validate_rollout_certification, DeployState, RolloutOptions,
     RolloutStrategy,

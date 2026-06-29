@@ -17,7 +17,11 @@ spanda-error = { path = "../spanda-error" }
 spanda-hardware = { path = "../spanda-hardware" }
 spanda-readiness = { path = "../spanda-readiness" }
 spanda-config = { path = "../spanda-config" }
+spanda-certify = { path = "../spanda-certify", optional = true }
 spanda-runtime = { path = "../spanda-runtime" }
+
+[features]
+certify-runtime = ["dep:spanda-certify"]
 
 [dev-dependencies]
 spanda-lexer = { path = "../spanda-lexer" }

@@ -1,7 +1,8 @@
 //! Certification proof checklist tests for strict verify.
 
 use spanda_certify::verify_certification_proof;
-use spanda_driver::{compile, verify_compatibility};
+use spanda_config::verify_with_system_config;
+use spanda_driver::compile;
 use spanda_hardware::{CompatSeverity, VerifyOptions};
 
 #[test]
@@ -137,15 +138,16 @@ fn strict_certify_flag_surfaces_in_verify_report() {
     //     let result = spanda_certify::verify_integration::strict_certify_flag_surfaces_in_verify_report();
 
     let source = include_str!("../../../examples/robotics/ota_deployment.sd");
-    let report = verify_compatibility(
-        source,
-        &VerifyOptions {
+    let program = compile(source).expect("compile").program;
+    let report = verify_with_system_config(
+        &program,
+        None,
+        VerifyOptions {
             all_targets: true,
             strict_certify: true,
             ..Default::default()
         },
-    )
-    .expect("verify");
+    );
     assert!(
         report
             .items

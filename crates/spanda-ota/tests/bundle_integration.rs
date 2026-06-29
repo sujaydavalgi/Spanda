@@ -1,6 +1,7 @@
 //! Signed deploy artifact bundle tests.
 
-use spanda_driver::{build_deploy_plan, compile};
+use spanda_driver::compile;
+use spanda_ota::build_deploy_plan;
 use spanda_ota::{build_deploy_bundle, sign_deploy_bundle, verify_deploy_bundle};
 
 #[test]
