@@ -100,6 +100,9 @@ post_json /v1/entities/relationships '{
 echo "== POST /v1/entities/sync =="
 post_json /v1/entities/sync '{}' 1 | grep -q '"sync"'
 
+echo "== GET /v1/entities/rover-001/readiness =="
+fetch /v1/entities/rover-001/readiness | grep -q '"report"'
+
 echo "== POST /v1/entities/rover-001/verify =="
 post_json /v1/entities/rover-001/verify '{"include_dependencies":true}' 0 | grep -q '"compatible"'
 

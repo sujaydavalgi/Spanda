@@ -18,10 +18,12 @@ use spanda_config::EntityQuery;
 use spanda_deploy_http::HttpResponse;
 use spanda_hardware::VerifyOptions;
 use spanda_readiness::{
-    evaluate_readiness_with_runtime, verify_entity, verify_mission, EntityVerifyOptions,
-    ReadinessOptions, ReadinessReport,
+    evaluate_entity_health, evaluate_entity_readiness, evaluate_readiness_with_runtime,
+    verify_entity, verify_mission, EntityHealthOptions, EntityReadinessOptions,
+    EntityVerifyOptions, ReadinessOptions, ReadinessReport,
 };
 use spanda_trust::{evaluate_composite_trust, CompositeTrustOptions};
+use spanda_trust::{evaluate_entity_trust, EntityTrustOptions};
 use std::path::{Path, PathBuf};
 
 fn entity_not_found(message: &str) -> HttpResponse {
@@ -324,13 +326,29 @@ pub fn entity_health(state: &ControlCenterState, entity_id: &str) -> HttpRespons
     let Some(entity) = registry.get(entity_id) else {
         return entity_not_found(&format!("entity '{entity_id}' not found"));
     };
-    json_ok(&serde_json::json!({
+    let mut payload = serde_json::json!({
         "version": API_VERSION,
         "entity_id": entity_id,
         "kind": entity.kind(),
         "health_status": entity.health_status,
         "lifecycle_state": entity.lifecycle_state,
-    }))
+    });
+    if let Some(resolved) = state.resolved.as_ref() {
+        let program = resolve_verify_program(state, None);
+        let report = evaluate_entity_health(
+            entity_id,
+            &registry,
+            resolved,
+            &EntityHealthOptions {
+                program,
+                now_ms: crate::correlation::now_ms(),
+            },
+        );
+        if let Some(report) = report {
+            payload["report"] = serde_json::to_value(report).unwrap_or_default();
+        }
+    }
+    json_ok(&payload)
 }
 
 /// GET /v1/entities/{id}/readiness — readiness snapshot for any entity.
@@ -399,6 +417,20 @@ pub fn entity_readiness(state: &ControlCenterState, entity_id: &str) -> HttpResp
                 "total_devices": impact.total_devices,
             });
         }
+        let program = resolve_verify_program(state, None);
+        if let Some(report) = evaluate_entity_readiness(
+            entity_id,
+            &registry,
+            resolved,
+            &EntityReadinessOptions {
+                program,
+                now_ms: crate::correlation::now_ms(),
+                include_dependencies: false,
+            },
+        ) {
+            payload["mission_ready"] = serde_json::json!(report.mission_ready);
+            payload["report"] = serde_json::to_value(report).unwrap_or_default();
+        }
     }
     json_ok(&payload)
 }
@@ -409,14 +441,30 @@ pub fn entity_trust(state: &ControlCenterState, entity_id: &str) -> HttpResponse
     let Some(entity) = registry.get(entity_id) else {
         return entity_not_found(&format!("entity '{entity_id}' not found"));
     };
-    json_ok(&serde_json::json!({
+    let mut payload = serde_json::json!({
         "version": API_VERSION,
         "entity_id": entity_id,
         "kind": entity.kind(),
         "trust_status": entity.trust_status,
         "lifecycle_state": entity.lifecycle_state,
         "security": entity.security,
-    }))
+    });
+    if let Some(resolved) = state.resolved.as_ref() {
+        let (program, source, label) = entity_program_bundle(state);
+        if let Some(report) = evaluate_entity_trust(
+            entity_id,
+            &registry,
+            resolved,
+            &EntityTrustOptions {
+                program,
+                program_source: source,
+                program_label: label,
+            },
+        ) {
+            payload["report"] = serde_json::to_value(report).unwrap_or_default();
+        }
+    }
+    json_ok(&payload)
 }
 
 /// Optional body for `POST /v1/entities/{id}/verify`.
@@ -467,6 +515,24 @@ fn resolve_verify_program(
     parse_program_file(&path)
         .ok()
         .map(|(program, _, _)| program)
+}
+
+fn entity_program_bundle(
+    state: &ControlCenterState,
+) -> (
+    Option<spanda_ast::nodes::Program>,
+    Option<String>,
+    Option<String>,
+) {
+    let Some(path) = state.program_path.clone() else {
+        return (None, None, None);
+    };
+    let source = std::fs::read_to_string(&path).ok();
+    let program = parse_program_file(&path)
+        .ok()
+        .map(|(program, _, _)| program);
+    let label = path.file_name().and_then(|n| n.to_str()).map(String::from);
+    (program, source, label)
 }
 
 /// GET /v1/entities/graph — full entity graph for traversal and visualization.

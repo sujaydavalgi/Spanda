@@ -3,7 +3,11 @@
 use spanda_config::{
     build_entity_registry, config_flag_from_args, ConfigResolver, EntityQuery, SpandaManifest,
 };
-use spanda_readiness::{verify_entity, EntityVerifyOptions};
+use spanda_readiness::{
+    evaluate_entity_health, evaluate_entity_readiness, verify_entity, EntityHealthOptions,
+    EntityReadinessOptions, EntityVerifyOptions,
+};
+use spanda_trust::{evaluate_entity_trust, EntityTrustOptions};
 use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -266,21 +270,33 @@ fn cmd_readiness(args: &[String]) {
     let root = project_root(args);
     let resolved = load_resolved(&root);
     let registry = build_entity_registry(&resolved);
-    let Some(entity) = registry.get(&id) else {
+    if registry.get(&id).is_none() {
         eprintln!("entity '{id}' not found");
         process::exit(1);
-    };
-    let payload = serde_json::json!({
-        "entity_id": id,
-        "kind": entity.kind(),
-        "readiness_status": entity.readiness_status,
-        "capabilities": entity.capabilities,
-    });
+    }
+    let program = program_from_args(args);
+    let report = evaluate_entity_readiness(
+        &id,
+        &registry,
+        &resolved,
+        &EntityReadinessOptions {
+            program,
+            now_ms: 0.0,
+            include_dependencies: args.iter().any(|a| a == "--dependencies"),
+        },
+    )
+    .expect("entity readiness report");
     if json_output(args) {
-        println!("{}", serde_json::to_string_pretty(&payload).unwrap());
+        println!("{}", serde_json::to_string_pretty(&report).unwrap());
         return;
     }
-    println!("Readiness for {}: {}", id, entity.readiness_status.as_str());
+    println!(
+        "Readiness for {}: {} (score {:?}, mission_ready {})",
+        id, report.readiness_status, report.score, report.mission_ready
+    );
+    for issue in &report.issues {
+        println!("  [{}] {}: {}", issue.severity, issue.factor, issue.message);
+    }
 }
 
 fn cmd_health(args: &[String]) {
@@ -291,21 +307,29 @@ fn cmd_health(args: &[String]) {
     let root = project_root(args);
     let resolved = load_resolved(&root);
     let registry = build_entity_registry(&resolved);
-    let Some(entity) = registry.get(&id) else {
+    if registry.get(&id).is_none() {
         eprintln!("entity '{id}' not found");
         process::exit(1);
-    };
-    let payload = serde_json::json!({
-        "entity_id": id,
-        "kind": entity.kind(),
-        "health_status": entity.health_status,
-        "lifecycle_state": entity.lifecycle_state,
-    });
+    }
+    let program = program_from_args(args);
+    let report = evaluate_entity_health(
+        &id,
+        &registry,
+        &resolved,
+        &EntityHealthOptions {
+            program,
+            now_ms: 0.0,
+        },
+    )
+    .expect("entity health report");
     if json_output(args) {
-        println!("{}", serde_json::to_string_pretty(&payload).unwrap());
+        println!("{}", serde_json::to_string_pretty(&report).unwrap());
         return;
     }
-    println!("Health for {}: {}", id, entity.health_status.as_str());
+    println!("Health for {}: {}", id, report.health_status);
+    for diag in &report.diagnostics {
+        println!("  [{}] {}: {}", diag.severity, diag.category, diag.message);
+    }
 }
 
 fn cmd_trust(args: &[String]) {
@@ -316,21 +340,48 @@ fn cmd_trust(args: &[String]) {
     let root = project_root(args);
     let resolved = load_resolved(&root);
     let registry = build_entity_registry(&resolved);
-    let Some(entity) = registry.get(&id) else {
+    if registry.get(&id).is_none() {
         eprintln!("entity '{id}' not found");
         process::exit(1);
-    };
-    let payload = serde_json::json!({
-        "entity_id": id,
-        "kind": entity.kind(),
-        "trust_status": entity.trust_status,
-        "security": entity.security,
+    }
+    let program = program_from_args(args);
+    let (program_source, program_label) = program.as_ref().map_or((None, None), |_| {
+        let path = args
+            .iter()
+            .position(|a| a == "--program")
+            .and_then(|i| args.get(i + 1))
+            .map(String::as_str);
+        let label = path.and_then(|p| Path::new(p).file_name()?.to_str());
+        (
+            path.and_then(|p| fs::read_to_string(p).ok()),
+            label.map(String::from),
+        )
     });
+    let report = evaluate_entity_trust(
+        &id,
+        &registry,
+        &resolved,
+        &EntityTrustOptions {
+            program,
+            program_source,
+            program_label,
+        },
+    )
+    .expect("entity trust report");
     if json_output(args) {
-        println!("{}", serde_json::to_string_pretty(&payload).unwrap());
+        println!("{}", serde_json::to_string_pretty(&report).unwrap());
         return;
     }
-    println!("Trust for {}: {}", id, entity.trust_status.as_str());
+    println!(
+        "Trust for {}: {} (score {:?}, passed {})",
+        id, report.trust_status, report.score, report.passed
+    );
+    for category in &report.categories {
+        println!(
+            "  {} score={} passed={} — {}",
+            category.name, category.score, category.passed, category.detail
+        );
+    }
 }
 
 fn cmd_verify(args: &[String]) {
