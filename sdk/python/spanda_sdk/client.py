@@ -148,6 +148,12 @@ class SpandaClient:
     def get_trust(self, entity_id: str) -> Any:
         return self._request("GET", f"/v1/entities/{entity_id}/trust")
 
+    def entity_relationships(self, entity_id: str) -> Any:
+        return self._request("GET", f"/v1/entities/{entity_id}/relationships")
+
+    def entity_readiness(self, entity_id: str) -> Any:
+        return self._request("GET", f"/v1/entities/{entity_id}/readiness")
+
     def entity_graph(self) -> Any:
         return self._request("GET", "/v1/entities/graph")
 
