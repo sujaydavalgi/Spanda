@@ -405,7 +405,7 @@ Full enterprise analysis: [docs/enterprise-operations-roadmap.md](docs/enterpris
 |-----------|--------|----------|-----------------|
 | [Warehouse Automation](#warehouse-automation) | **Experimental** | Now | Device & Fleet, Verification, Operations |
 | [Search & Rescue](#search--rescue) | **Experimental** | Next | Verification, Operations, Device & Fleet |
-| [Connected Healthcare](#connected-healthcare) | **Planned** | Next | Verification, Security, Device & Fleet |
+| [Connected Healthcare](#connected-healthcare) | **Experimental** (wearable-health scaffold) | Next | Verification, Security, Device & Fleet |
 | [ADAS & Autonomous Driving](#adas--autonomous-driving) | **Experimental** | Now | Verification, Device & Fleet, Security |
 | [Smart Factory](#smart-factory) | **Experimental** | Now | Verification, Device & Fleet, Operations |
 | [Agriculture](#agriculture) | **Experimental** (scaffold) | Later | Device & Fleet, Verification, Packages |
@@ -492,7 +492,7 @@ Full enterprise analysis: [docs/enterprise-operations-roadmap.md](docs/enterpris
 
 **Uses pillars:** Verification Platform · Security Platform · Device & Fleet Platform · Operations Platform
 
-**Status:** **Planned** — medical device blueprint on roadmap; wearable-health scaffold **Experimental**
+**Status:** **Experimental** — `wearable-health/` scaffold; CI via `scripts/spatial_computing_smoke.sh`
 
 ---
 
