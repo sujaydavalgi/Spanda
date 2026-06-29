@@ -990,11 +990,7 @@ fn robot_entity_kind(robot: &RobotNode) -> EntityKind {
     if let Some(kind) = robot.entity_kind.as_deref() {
         return EntityKind::parse(kind);
     }
-    if robot
-        .model
-        .as_deref()
-        .is_some_and(is_automotive_model)
-    {
+    if robot.model.as_deref().is_some_and(is_automotive_model) {
         return EntityKind::Vehicle;
     }
     EntityKind::Robot
