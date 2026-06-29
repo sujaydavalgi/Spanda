@@ -1,0 +1,5 @@
+module iot.zwave;
+
+export fn read_value(device: String, command_class: String) -> String {
+  return "zwave-stub";
+}

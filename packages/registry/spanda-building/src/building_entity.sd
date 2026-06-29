@@ -1,0 +1,5 @@
+module building.entity;
+
+export fn facility_readiness(facility_id: String) -> String {
+  return "building-stub";
+}

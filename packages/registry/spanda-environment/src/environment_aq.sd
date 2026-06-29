@@ -1,0 +1,5 @@
+module environment.aq;
+
+export fn read_aq(sensor_id: String) -> String {
+  return "environment-stub";
+}

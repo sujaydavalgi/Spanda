@@ -1,0 +1,5 @@
+module access.lock;
+
+export fn lock_state(lock_id: String) -> String {
+  return "lock-stub";
+}

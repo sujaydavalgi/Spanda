@@ -1,0 +1,5 @@
+module iot.bacnet;
+
+export fn read_point(device: String, object_id: String) -> String {
+  return "bacnet-stub";
+}

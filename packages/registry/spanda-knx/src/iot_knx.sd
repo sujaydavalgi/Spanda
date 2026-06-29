@@ -1,0 +1,5 @@
+module iot.knx;
+
+export fn read_group_address(address: String) -> String {
+  return "knx-stub";
+}

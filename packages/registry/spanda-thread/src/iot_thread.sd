@@ -1,0 +1,5 @@
+module iot.thread;
+
+export fn read_endpoint(device: String) -> String {
+  return "thread-stub";
+}

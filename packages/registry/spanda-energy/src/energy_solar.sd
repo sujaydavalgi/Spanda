@@ -1,0 +1,5 @@
+module energy.solar;
+
+export fn read_generation(inverter_id: String) -> String {
+  return "energy-stub";
+}

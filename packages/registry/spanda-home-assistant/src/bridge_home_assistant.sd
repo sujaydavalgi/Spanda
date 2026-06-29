@@ -1,0 +1,5 @@
+module bridge.home_assistant;
+
+export fn get_state(entity_id: String) -> String {
+  return "home-assistant-stub";
+}
