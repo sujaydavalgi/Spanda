@@ -1006,6 +1006,48 @@
         "responses": { "200": { "description": "Health privacy policy" } }
       }
     },
+    "/v1/facilities": {
+      "get": {
+        "summary": "List facilities, zones, and gateways from smart-space config",
+        "responses": { "200": { "description": "Facility inventory" } }
+      }
+    },
+    "/v1/facilities/{id}/readiness": {
+      "get": {
+        "summary": "Facility readiness score, gateways, zones, and continuity pairs",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Facility readiness" } }
+      }
+    },
+    "/v1/zones/{id}/occupancy": {
+      "get": {
+        "summary": "Zone occupancy snapshot and digital twin mirror",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Zone occupancy" } }
+      }
+    },
+    "/v1/energy/systems": {
+      "get": {
+        "summary": "Energy systems (solar, battery, EV, demand response)",
+        "responses": { "200": { "description": "Energy system list" } }
+      }
+    },
+    "/v1/emergency/status": {
+      "get": {
+        "summary": "Emergency and life-safety status with continuity pairs",
+        "responses": { "200": { "description": "Emergency status" } }
+      }
+    },
+    "/v1/smart-spaces/summary": {
+      "get": {
+        "summary": "Smart Spaces blueprint rollup (facilities, energy, emergency)",
+        "responses": { "200": { "description": "Smart Spaces summary" } }
+      }
+    },
     "/v1/rpc": {
       "post": {
         "summary": "gRPC-compatible JSON gateway",

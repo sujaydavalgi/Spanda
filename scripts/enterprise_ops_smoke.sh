@@ -239,6 +239,8 @@ fetch /v1/openapi.json | grep -q '"/v1/digital-thread/query"'
 fetch /v1/openapi.json | grep -q '"/v1/compliance/export"'
 fetch /v1/openapi.json | grep -q '"/v1/compliance/profiles"'
 fetch /v1/openapi.json | grep -q '"/v1/reports/schedules"'
+fetch /v1/openapi.json | grep -q '"/v1/smart-spaces/summary"'
+fetch /v1/openapi.json | grep -q '"/v1/facilities"'
 
 echo "== E3 OpenAPI REST parity test =="
 cargo test -p spanda-api --test openapi_parity_tests --quiet
