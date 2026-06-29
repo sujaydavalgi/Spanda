@@ -54,6 +54,8 @@
 | [entity-graph.md](./entity-graph.md) | **Entity graph — traversal, impact, visualization** |
 | [entity-relationships.md](./entity-relationships.md) | **Entity relationship taxonomy** |
 | [entity-query-language.md](./entity-query-language.md) | **Entity query language — REST and JSON filters** |
+| [entity-verification.md](./entity-verification.md) | **Entity verification — unified verify(entity) engine** |
+| [entity-integration-report.md](./entity-integration-report.md) | **Entity model integration report (Phase 2)** |
 | [cascading-config.md](./cascading-config.md) | **Layered config overrides (base → environment → deployment → robot)** |
 | [device-tree.md](./device-tree.md) | **Fleet/device hierarchy and device identity in TOML** |
 | [config-validation.md](./config-validation.md) | **Configuration validation rules and CLI** |

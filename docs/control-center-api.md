@@ -59,6 +59,7 @@ Read endpoints are unauthenticated by default; mutations require Bearer `SPANDA_
 | `GET /v1/entities/{id}/health` | — | Health snapshot |
 | `GET /v1/entities/{id}/readiness` | — | Readiness snapshot |
 | `GET /v1/entities/{id}/trust` | — | Trust and security metadata |
+| `POST /v1/entities/{id}/verify` | — | Unified entity verification (hardware, mission, fleet, device pool) |
 | `POST /v1/entities/register` | Bearer | Register or update entity overlay |
 | `POST /v1/entities/{id}/tags` | Bearer | Add or remove tags |
 | `POST /v1/entities/relationships` | Bearer | Relate two entities |

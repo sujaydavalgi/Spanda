@@ -1,0 +1,45 @@
+// Entity model verification example — warehouse patrol robot
+//
+// Pair with the warehouse fixture config:
+//   spanda entity verify rover-001 --config crates/spanda-config/tests/fixtures/warehouse/spanda.toml
+//   spanda entity verify rover-001 --program examples/entity/entity_verify.sd --config .../spanda.toml
+//
+// Traceability chain demonstrated:
+//   Operator → Mission → Robot → Camera → Firmware → Provider → Package
+
+import trust.jetson;
+
+hardware RoverV1 {
+  sensors [ GPS, Lidar ];
+  actuators [ DifferentialDrive ];
+  connectivity [ WiFi ];
+}
+
+mission PatrolMission {
+  required_capabilities [ navigate, inspect ];
+}
+
+robot rover-001 {
+  uses hardware RoverV1;
+  sensor gps: GPS { provider: "spanda-gps"; }
+  sensor lidar: Lidar { provider: "spanda-lidar"; }
+  actuator drive: DifferentialDrive { provider: "spanda-canbus"; }
+  mission PatrolMission;
+  exposes_capabilities [ navigate, inspect, emergency_stop ];
+
+  behavior patrol() {
+    loop every 500ms {
+      let fix = gps.read();
+      let scan = lidar.scan();
+      if scan.nearest_distance < 0.5 m {
+        drive.stop();
+      } else {
+        drive.move(speed: 0.3 m/s);
+      }
+    }
+  }
+}
+
+fleet warehouse-fleet {
+  members [ rover-001 ];
+}

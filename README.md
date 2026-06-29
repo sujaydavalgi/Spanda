@@ -73,6 +73,27 @@ Spanda is a **product ecosystem** — not only a language repository.
 
 ---
 
+## Unified Entity Model
+
+Everything managed by Spanda is represented as an **Entity** — robots, humans, devices, wearables, packages, providers, missions, facilities, and cloud services share one common architecture for identity, health, readiness, trust, relationships, and lifecycle.
+
+```text
+Entity
+ ├── Health / Readiness / Trust
+ ├── Capabilities & Relationships
+ └── Verification (verify_entity)
+         ↓
+   Platform Services (Verify, Readiness, Device Pool, Fleet)
+```
+
+- **Browse:** `spanda entity list` · Control Center **Entities** tab · `GET /v1/entities`
+- **Verify:** `spanda entity verify rover-001` · `POST /v1/entities/{id}/verify`
+- **Graph:** `spanda entity graph` · `GET /v1/entities/graph`
+
+Guide: [docs/entity-model.md](docs/entity-model.md) · Verification: [docs/entity-verification.md](docs/entity-verification.md)
+
+---
+
 ## Quick start
 
 ```bash

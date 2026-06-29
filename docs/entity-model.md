@@ -96,7 +96,7 @@ Capability requirements for missions continue to flow through readiness and assu
 | Lifecycle | `EntityLifecycleState` | Maps `DeviceLifecycleState` and availability |
 | Security | `EntitySecurityIdentity` | Certificates, permissions from TOML security sections |
 
-See also: [entity-relationships.md](./entity-relationships.md), [entity-registry.md](./entity-registry.md), [entity-graph.md](./entity-graph.md), [entity-query-language.md](./entity-query-language.md).
+See also: [entity-verification.md](./entity-verification.md), [entity-relationships.md](./entity-relationships.md), [entity-registry.md](./entity-registry.md), [entity-graph.md](./entity-graph.md), [entity-query-language.md](./entity-query-language.md).
 
 ## API (additive)
 
@@ -109,6 +109,7 @@ See also: [entity-relationships.md](./entity-relationships.md), [entity-registry
 | GET | `/v1/entities/{id}/relationships` | Edges, impact analysis, dependency chain |
 | GET | `/v1/entities/{id}/health` | Health snapshot |
 | GET | `/v1/entities/{id}/readiness` | Readiness snapshot |
+| POST | `/v1/entities/{id}/verify` | Unified verification (hardware, mission, fleet, device pool) |
 | GET | `/v1/entities/traceability` | Unified traceability (entity + program graph) |
 | POST | `/v1/entities/register` | Register or update entity overlay (Bearer) |
 | POST | `/v1/entities/{id}/tags` | Add or remove tags (Bearer) |
@@ -181,6 +182,14 @@ Cross-references:
 
 - [x] Entity mutation APIs (register, tag, relate) with audit
 - [x] Bi-directional sync from entity registry to TOML fragments (`POST /v1/entities/sync`)
+
+### Phase 6 — Verification integration (Complete)
+
+- [x] `verify_entity` in `spanda-readiness` routes all verification engines through `EntityRegistry`
+- [x] `POST /v1/entities/{id}/verify` REST endpoint
+- [x] `spanda entity verify` CLI and full `spanda entity` command family
+- [x] SDK `entity_verify` / `verifyEntity` on Rust, TypeScript, and Python clients
+- [x] CI smoke coverage in `scripts/entity_model_smoke.sh`
 
 ### Stabilization (Complete)
 
