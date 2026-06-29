@@ -82,7 +82,7 @@ For the **Spanda language** (`.sd` syntax, `std.*`, triggers, CLI), see [spanda-
   - [TypeScript core](#ts-src)
   - [@spanda/native](#ts-packages-native)
   - [@spanda/lsp](#ts-packages-lsp)
-  - [@spanda/web](#ts-packages-web-src)
+  - [@davalgi-spanda/web](#ts-packages-web-src)
   - [VS Code extension](#ts-editor-vscode-src)
 - [Quick lookup](#quick-lookup)
 
@@ -110,7 +110,7 @@ In-repo code and new integrations should use the **canonical crate** column. `sp
 | Type check | `spanda_core::types` | `spanda_driver::type_check` |
 | SIR | `spanda_core::sir` | `spanda_sir` |
 | Errors / diagnostics | `spanda_core::SpandaError` | `spanda_error` |
-| Hardware verify | `spanda_core::verify_compatibility` | `spanda_driver / spanda_hardware` |
+| Hardware verify | `spanda_core::verify_compatibility` | `spanda_core::hardware_verify (connectivity + hardware profiles)` |
 | Interpreter runtime | `spanda_core::runtime` | `spanda_interpreter::runtime` |
 | RoutingCommBus | `spanda_core::transport` | `spanda_transport_routing` |
 | Live transport hooks | `spanda_core::transport_live (removed)` | `spanda_transport_routing::transport_live` |
@@ -164,6 +164,7 @@ Crate root: [`crates/spanda-core`](../crates/spanda-core/) · [README](../crates
 - [hal](#spanda-core-hal)
 - [hardware](#spanda-core-hardware)
 - [hardware_monitor](#spanda-core-hardware-monitor)
+- [hardware_verify](#spanda-core-hardware-verify)
 - [language_reference](#spanda-core-language-reference)
 - [lexer](#spanda-core-lexer)
 - [lib_registry](#spanda-core-lib-registry)
@@ -194,10 +195,6 @@ Crate root: [`crates/spanda-core`](../crates/spanda-core/) · [README](../crates
 - [stdlib](#spanda-core-stdlib)
 - [swarm_coordinator](#spanda-core-swarm-coordinator)
 - [telemetry](#spanda-core-telemetry)
-- [transport](#spanda-core-transport)
-- [transport_rclrs](#spanda-core-transport-rclrs)
-- [transport_security](#spanda-core-transport-security)
-- [transport_wire](#spanda-core-transport-wire)
 - [triggers](#spanda-core-triggers)
 - [twin](#spanda-core-twin)
 - [type_check_host](#spanda-core-type-check-host)
@@ -339,16 +336,8 @@ Source: [crates/spanda-core/src/deploy_service.rs](../crates/spanda-core/src/dep
 
 **export**
 
-- [`spanda_driver::build_deploy_plan`](../crates/spanda-core/src/deploy_service.rs#L3)
 - [`spanda_ota::*`](../crates/spanda-core/src/deploy_service.rs#L4)
-
-##### `docs` {#spanda-core-docs}
-
-Source: [crates/spanda-core/src/docs.rs](../crates/spanda-core/src/docs.rs#L1)
-
-**export**
-
-- [`spanda_docs::generate_markdown`](../crates/spanda-core/src/docs.rs#L3)
+- [`spanda_ota::build_deploy_plan`](../crates/spanda-core/src/deploy_service.rs#L3)
 
 ##### `error` {#spanda-core-error}
 
@@ -398,6 +387,7 @@ Source: [crates/spanda-core/src/fleet_mesh.rs](../crates/spanda-core/src/fleet_m
 **export**
 
 - [`spanda_fleet::mesh::*`](../crates/spanda-core/src/fleet_mesh.rs#L3)
+- [`spanda_fleet::recovery_mesh::*`](../crates/spanda-core/src/fleet_mesh.rs#L4)
 
 ##### `fleet_orchestrator` {#spanda-core-fleet-orchestrator}
 
@@ -447,14 +437,32 @@ Source: [crates/spanda-core/src/hardware_monitor.rs](../crates/spanda-core/src/h
 
 - [`spanda_hal::hardware_monitor::*`](../crates/spanda-core/src/hardware_monitor.rs#L3)
 
+##### `hardware_verify` {#spanda-core-hardware-verify}
+
+Source: [crates/spanda-core/src/hardware_verify.rs](../crates/spanda-core/src/hardware_verify.rs#L1)
+
+**fn**
+
+- [`verify_compatibility`](../crates/spanda-core/src/hardware_verify.rs#L10)
+- [`verify_compatibility_target`](../crates/spanda-core/src/hardware_verify.rs#L35)
+- [`verify_compatibility_with_registry`](../crates/spanda-core/src/hardware_verify.rs#L17)
+
+##### `language_reference` {#spanda-core-language-reference}
+
+Source: [crates/spanda-core/src/language_reference.rs](../crates/spanda-core/src/language_reference.rs#L1)
+
+**fn**
+
+- [`generate_language_reference`](../crates/spanda-core/src/language_reference.rs#L5)
+
 ##### `lexer` {#spanda-core-lexer}
 
 Source: [crates/spanda-core/src/lexer.rs](../crates/spanda-core/src/lexer.rs#L1)
 
 **export**
 
-- [`spanda_driver::tokenize`](../crates/spanda-core/src/lexer.rs#L4)
-- [`spanda_lexer::*`](../crates/spanda-core/src/lexer.rs#L3)
+- [`spanda_driver::tokenize`](../crates/spanda-core/src/lexer.rs#L3)
+- [`spanda_lexer::*`](../crates/spanda-core/src/lexer.rs#L4)
 
 ##### `lib_registry` {#spanda-core-lib-registry}
 
@@ -510,7 +518,7 @@ Source: [crates/spanda-core/src/providers.rs](../crates/spanda-core/src/provider
 
 **export**
 
-- [`spanda_providers::package_stubs::*`](../crates/spanda-core/src/providers.rs#L7)
+- [`spanda_providers::package_stubs::*`](../crates/spanda-core/src/providers.rs#L4)
 
 ##### `regex_lang` {#spanda-core-regex-lang}
 
@@ -554,85 +562,80 @@ Source: [crates/spanda-core/src/lib.rs](../crates/spanda-core/src/lib.rs#L1)
 - [`ai`](../crates/spanda-core/src/lib.rs#L4)
 - [`ast`](../crates/spanda-core/src/lib.rs#L5)
 - [`audit`](../crates/spanda-core/src/lib.rs#L6)
-- [`bridge`](../crates/spanda-core/src/lib.rs#L7)
-- [`certify_prover`](../crates/spanda-core/src/lib.rs#L8)
-- [`certify_runtime`](../crates/spanda-core/src/lib.rs#L9)
-- [`certify_verify`](../crates/spanda-core/src/lib.rs#L10)
-- [`codegen`](../crates/spanda-core/src/lib.rs#L11)
-- [`comm`](../crates/spanda-core/src/lib.rs#L12)
-- [`concurrency`](../crates/spanda-core/src/lib.rs#L13)
-- [`connectivity_positioning`](../crates/spanda-core/src/lib.rs#L14)
-- [`debug`](../crates/spanda-core/src/lib.rs#L15)
-- [`debug_session`](../crates/spanda-core/src/lib.rs#L16)
-- [`deploy_agent`](../crates/spanda-core/src/lib.rs#L17)
-- [`deploy_bundle`](../crates/spanda-core/src/lib.rs#L18)
-- [`deploy_http`](../crates/spanda-core/src/lib.rs#L19)
-- [`deploy_remote`](../crates/spanda-core/src/lib.rs#L20)
-- [`deploy_service`](../crates/spanda-core/src/lib.rs#L21)
-- [`docs`](../crates/spanda-core/src/lib.rs#L22)
-- [`events`](../crates/spanda-core/src/lib.rs#L24)
-- [`ffi`](../crates/spanda-core/src/lib.rs#L25)
-- [`ffi_registry`](../crates/spanda-core/src/lib.rs#L26)
-- [`fleet_agent`](../crates/spanda-core/src/lib.rs#L27)
-- [`fleet_mesh`](../crates/spanda-core/src/lib.rs#L28)
-- [`fleet_orchestrator`](../crates/spanda-core/src/lib.rs#L29)
-- [`fleet_remote`](../crates/spanda-core/src/lib.rs#L30)
-- [`format`](../crates/spanda-core/src/lib.rs#L31)
-- [`foundations`](../crates/spanda-core/src/lib.rs#L32)
-- [`hal`](../crates/spanda-core/src/lib.rs#L33)
-- [`hardware`](../crates/spanda-core/src/lib.rs#L34)
-- [`hardware_monitor`](../crates/spanda-core/src/lib.rs#L35)
-- [`language_reference`](../crates/spanda-core/src/lib.rs#L36)
-- [`lexer`](../crates/spanda-core/src/lib.rs#L37)
-- [`lib_registry`](../crates/spanda-core/src/lib.rs#L38)
-- [`lint`](../crates/spanda-core/src/lib.rs#L39)
-- [`modules`](../crates/spanda-core/src/lib.rs#L40)
-- [`nav2_adapter`](../crates/spanda-core/src/lib.rs#L41)
-- [`parser`](../crates/spanda-core/src/lib.rs#L42)
-- [`pretty`](../crates/spanda-core/src/lib.rs#L43)
-- [`providers`](../crates/spanda-core/src/lib.rs#L44)
-- [`regex_lang`](../crates/spanda-core/src/lib.rs#L45)
-- [`reliability`](../crates/spanda-core/src/lib.rs#L46)
-- [`reliability_runtime`](../crates/spanda-core/src/lib.rs#L47)
-- [`replay`](../crates/spanda-core/src/lib.rs#L48)
-- [`robotics_platform`](../crates/spanda-core/src/lib.rs#L49)
-- [`runtime`](../crates/spanda-core/src/lib.rs#L50)
-- [`safety`](../crates/spanda-core/src/lib.rs#L51)
-- [`scheduler`](../crates/spanda-core/src/lib.rs#L52)
-- [`security`](../crates/spanda-core/src/lib.rs#L53)
-- [`security_validate`](../crates/spanda-core/src/lib.rs#L54)
-- [`serialize`](../crates/spanda-core/src/lib.rs#L55)
-- [`simulator`](../crates/spanda-core/src/lib.rs#L56)
-- [`sir`](../crates/spanda-core/src/lib.rs#L57)
-- [`slam_adapter`](../crates/spanda-core/src/lib.rs#L58)
-- [`soc`](../crates/spanda-core/src/lib.rs#L59)
-- [`state_machine`](../crates/spanda-core/src/lib.rs#L60)
-- [`stdlib`](../crates/spanda-core/src/lib.rs#L61)
-- [`swarm_coordinator`](../crates/spanda-core/src/lib.rs#L62)
-- [`telemetry`](../crates/spanda-core/src/lib.rs#L63)
-- [`transport`](../crates/spanda-core/src/lib.rs#L64)
-- [`transport_rclrs`](../crates/spanda-core/src/lib.rs#L65)
-- [`transport_security`](../crates/spanda-core/src/lib.rs#L66)
-- [`transport_wire`](../crates/spanda-core/src/lib.rs#L67)
-- [`triggers`](../crates/spanda-core/src/lib.rs#L68)
-- [`twin`](../crates/spanda-core/src/lib.rs#L69)
-- [`type_system`](../crates/spanda-core/src/lib.rs#L72)
-- [`types`](../crates/spanda-core/src/lib.rs#L73)
-- [`units`](../crates/spanda-core/src/lib.rs#L74)
+- [`bridge`](../crates/spanda-core/src/lib.rs#L8)
+- [`certify_prover`](../crates/spanda-core/src/lib.rs#L10)
+- [`certify_runtime`](../crates/spanda-core/src/lib.rs#L12)
+- [`certify_verify`](../crates/spanda-core/src/lib.rs#L14)
+- [`codegen`](../crates/spanda-core/src/lib.rs#L15)
+- [`comm`](../crates/spanda-core/src/lib.rs#L16)
+- [`concurrency`](../crates/spanda-core/src/lib.rs#L17)
+- [`connectivity_positioning`](../crates/spanda-core/src/lib.rs#L18)
+- [`debug`](../crates/spanda-core/src/lib.rs#L19)
+- [`debug_session`](../crates/spanda-core/src/lib.rs#L20)
+- [`deploy_agent`](../crates/spanda-core/src/lib.rs#L22)
+- [`deploy_bundle`](../crates/spanda-core/src/lib.rs#L24)
+- [`deploy_http`](../crates/spanda-core/src/lib.rs#L26)
+- [`deploy_remote`](../crates/spanda-core/src/lib.rs#L28)
+- [`deploy_service`](../crates/spanda-core/src/lib.rs#L30)
+- [`docs`](../crates/spanda-core/src/lib.rs#L31)
+- [`events`](../crates/spanda-core/src/lib.rs#L33)
+- [`ffi`](../crates/spanda-core/src/lib.rs#L35)
+- [`ffi_registry`](../crates/spanda-core/src/lib.rs#L37)
+- [`fleet_agent`](../crates/spanda-core/src/lib.rs#L39)
+- [`fleet_mesh`](../crates/spanda-core/src/lib.rs#L41)
+- [`fleet_orchestrator`](../crates/spanda-core/src/lib.rs#L43)
+- [`fleet_remote`](../crates/spanda-core/src/lib.rs#L45)
+- [`format`](../crates/spanda-core/src/lib.rs#L46)
+- [`foundations`](../crates/spanda-core/src/lib.rs#L47)
+- [`hal`](../crates/spanda-core/src/lib.rs#L48)
+- [`hardware`](../crates/spanda-core/src/lib.rs#L49)
+- [`hardware_monitor`](../crates/spanda-core/src/lib.rs#L51)
+- [`hardware_verify`](../crates/spanda-core/src/lib.rs#L50)
+- [`language_reference`](../crates/spanda-core/src/lib.rs#L52)
+- [`lexer`](../crates/spanda-core/src/lib.rs#L53)
+- [`lib_registry`](../crates/spanda-core/src/lib.rs#L54)
+- [`lint`](../crates/spanda-core/src/lib.rs#L55)
+- [`modules`](../crates/spanda-core/src/lib.rs#L56)
+- [`nav2_adapter`](../crates/spanda-core/src/lib.rs#L57)
+- [`parser`](../crates/spanda-core/src/lib.rs#L58)
+- [`pretty`](../crates/spanda-core/src/lib.rs#L59)
+- [`providers`](../crates/spanda-core/src/lib.rs#L60)
+- [`regex_lang`](../crates/spanda-core/src/lib.rs#L61)
+- [`reliability`](../crates/spanda-core/src/lib.rs#L62)
+- [`reliability_runtime`](../crates/spanda-core/src/lib.rs#L63)
+- [`replay`](../crates/spanda-core/src/lib.rs#L64)
+- [`robotics_platform`](../crates/spanda-core/src/lib.rs#L65)
+- [`runtime`](../crates/spanda-core/src/lib.rs#L66)
+- [`safety`](../crates/spanda-core/src/lib.rs#L68)
+- [`scheduler`](../crates/spanda-core/src/lib.rs#L69)
+- [`serialize`](../crates/spanda-core/src/lib.rs#L70)
+- [`simulator`](../crates/spanda-core/src/lib.rs#L71)
+- [`sir`](../crates/spanda-core/src/lib.rs#L72)
+- [`slam_adapter`](../crates/spanda-core/src/lib.rs#L73)
+- [`soc`](../crates/spanda-core/src/lib.rs#L74)
+- [`state_machine`](../crates/spanda-core/src/lib.rs#L75)
+- [`stdlib`](../crates/spanda-core/src/lib.rs#L76)
+- [`swarm_coordinator`](../crates/spanda-core/src/lib.rs#L78)
+- [`telemetry`](../crates/spanda-core/src/lib.rs#L79)
+- [`triggers`](../crates/spanda-core/src/lib.rs#L80)
+- [`twin`](../crates/spanda-core/src/lib.rs#L81)
+- [`type_system`](../crates/spanda-core/src/lib.rs#L83)
+- [`types`](../crates/spanda-core/src/lib.rs#L84)
+- [`units`](../crates/spanda-core/src/lib.rs#L85)
 
 **export**
 
-- [`ast::*`](../crates/spanda-core/src/lib.rs#L77)
-- [`certify_verify::verify_certification_proof`](../crates/spanda-core/src/lib.rs#L83)
-- [`docs::generate_markdown`](../crates/spanda-core/src/lib.rs#L110)
-- [`error::*`](../crates/spanda-core/src/lib.rs#L111)
-- [`robotics_platform::SwarmPolicy`](../crates/spanda-core/src/lib.rs#L144)
-- [`scheduler::SchedulerClock`](../crates/spanda-core/src/lib.rs#L145)
+- [`ast::*`](../crates/spanda-core/src/lib.rs#L87)
+- [`certify_verify::verify_certification_proof`](../crates/spanda-core/src/lib.rs#L96)
+- [`docs::generate_markdown`](../crates/spanda-core/src/lib.rs#L127)
+- [`error::*`](../crates/spanda-core/src/lib.rs#L128)
+- [`robotics_platform::SwarmPolicy`](../crates/spanda-core/src/lib.rs#L170)
+- [`scheduler::SchedulerClock`](../crates/spanda-core/src/lib.rs#L171)
 
 **fn**
 
-- [`check`](../crates/spanda-core/src/lib.rs#L168)
-- [`check_with_registry`](../crates/spanda-core/src/lib.rs#L172)
+- [`check`](../crates/spanda-core/src/lib.rs#L193)
+- [`check_with_registry`](../crates/spanda-core/src/lib.rs#L212)
 
 ##### `runtime` {#spanda-core-runtime}
 
@@ -665,22 +668,6 @@ Source: [crates/spanda-core/src/scheduler.rs](../crates/spanda-core/src/schedule
 **export**
 
 - [`spanda_runtime::scheduler::*`](../crates/spanda-core/src/scheduler.rs#L3)
-
-##### `security` {#spanda-core-security}
-
-Source: [crates/spanda-core/src/security.rs](../crates/spanda-core/src/security.rs#L1)
-
-**export**
-
-- [`spanda_security::*`](../crates/spanda-core/src/security.rs#L3)
-
-##### `security_validate` {#spanda-core-security-validate}
-
-Source: [crates/spanda-core/src/security_validate.rs](../crates/spanda-core/src/security_validate.rs#L1)
-
-**export**
-
-- [`spanda_security::validate::*`](../crates/spanda-core/src/security_validate.rs#L3)
 
 ##### `serialize` {#spanda-core-serialize}
 
@@ -736,8 +723,8 @@ Source: [crates/spanda-core/src/stdlib.rs](../crates/spanda-core/src/stdlib.rs#L
 
 **export**
 
-- [`crate::type_system::std_namespaces`](../crates/spanda-core/src/stdlib.rs#L4)
-- [`spanda_typecheck::resolve_std_import`](../crates/spanda-core/src/stdlib.rs#L3)
+- [`crate::type_system::std_namespaces`](../crates/spanda-core/src/stdlib.rs#L3)
+- [`spanda_typecheck::resolve_std_import`](../crates/spanda-core/src/stdlib.rs#L4)
 
 ##### `swarm_coordinator` {#spanda-core-swarm-coordinator}
 
@@ -754,24 +741,6 @@ Source: [crates/spanda-core/src/telemetry.rs](../crates/spanda-core/src/telemetr
 **export**
 
 - [`spanda_runtime::telemetry::*`](../crates/spanda-core/src/telemetry.rs#L3)
-
-##### `transport` {#spanda-core-transport}
-
-Source: [crates/spanda-core/src/transport.rs](../crates/spanda-core/src/transport.rs#L1)
-
-**export**
-
-- [`spanda_transport_mqtt::MqttTransportAdapter`](../crates/spanda-core/src/transport.rs#L11)
-- [`spanda_transport_ros2::Ros2TransportAdapter`](../crates/spanda-core/src/transport.rs#L12)
-- [`spanda_transport_routing::RoutingCommBus`](../crates/spanda-core/src/transport.rs#L14)
-
-##### `transport_security` {#spanda-core-transport-security}
-
-Source: [crates/spanda-core/src/transport_security.rs](../crates/spanda-core/src/transport_security.rs#L1)
-
-**export**
-
-- [`spanda_transport::security::*`](../crates/spanda-core/src/transport_security.rs#L3)
 
 ##### `triggers` {#spanda-core-triggers}
 
@@ -821,11 +790,103 @@ Crate root: [`crates/spanda-cli`](../crates/spanda-cli/) · [README](../crates/s
 
 **Modules**
 
+- [adr_cli](#spanda-cli-adr-cli)
+- [assurance_cli](#spanda-cli-assurance-cli)
+- [assurance_runtime](#spanda-cli-assurance-runtime)
+- [bundled_registry](#spanda-cli-bundled-registry)
 - [certify_cli](#spanda-cli-certify-cli)
+- [chaos_cli](#spanda-cli-chaos-cli)
+- [comm_bus_runtime](#spanda-cli-comm-bus-runtime)
+- [compliance_cli](#spanda-cli-compliance-cli)
+- [config_cli](#spanda-cli-config-cli)
+- [config_load](#spanda-cli-config-load)
+- [continuity_cli](#spanda-cli-continuity-cli)
+- [contract_cli](#spanda-cli-contract-cli)
+- [control_center_cli](#spanda-cli-control-center-cli)
+- [control_center_client](#spanda-cli-control-center-client)
+- [decision_cli](#spanda-cli-decision-cli)
+- [demo_cli](#spanda-cli-demo-cli)
 - [deploy_ota](#spanda-cli-deploy-ota)
+- [device_cli](#spanda-cli-device-cli)
+- [device_tree_cli](#spanda-cli-device-tree-cli)
+- [diff_cli](#spanda-cli-diff-cli)
+- [drift_cli](#spanda-cli-drift-cli)
+- [entity_cli](#spanda-cli-entity-cli)
+- [estimate_cli](#spanda-cli-estimate-cli)
+- [explain_cli](#spanda-cli-explain-cli)
+- [fault_cli](#spanda-cli-fault-cli)
+- [fault_runtime](#spanda-cli-fault-runtime)
+- [generate_cli](#spanda-cli-generate-cli)
+- [graph_cli](#spanda-cli-graph-cli)
+- [integrity_cli](#spanda-cli-integrity-cli)
+- [network_cli](#spanda-cli-network-cli)
 - [package](#spanda-cli-package)
+- [provider_runtime](#spanda-cli-provider-runtime)
+- [readiness_cli](#spanda-cli-readiness-cli)
+- [recovery_cli](#spanda-cli-recovery-cli)
+- [replay_cli](#spanda-cli-replay-cli)
 - [root](#spanda-cli-root)
+- [ros2_cli](#spanda-cli-ros2-cli)
+- [runtime_hooks](#spanda-cli-runtime-hooks)
+- [score_cli](#spanda-cli-score-cli)
+- [security_assurance_cli](#spanda-cli-security-assurance-cli)
+- [security_runtime](#spanda-cli-security-runtime)
+- [spoof_cli](#spanda-cli-spoof-cli)
 - [swarm_cli](#spanda-cli-swarm-cli)
+- [tamper_cli](#spanda-cli-tamper-cli)
+- [telemetry_cli](#spanda-cli-telemetry-cli)
+- [telemetry_runtime](#spanda-cli-telemetry-runtime)
+- [threat_model_cli](#spanda-cli-threat-model-cli)
+- [trace_cli](#spanda-cli-trace-cli)
+- [trust_cli](#spanda-cli-trust-cli)
+
+##### `adr_cli` {#spanda-cli-adr-cli}
+
+Source: [crates/spanda-cli/src/adr_cli.rs](../crates/spanda-cli/src/adr_cli.rs#L1)
+
+**fn**
+
+- [`adr_dispatch`](../crates/spanda-cli/src/adr_cli.rs#L49)
+
+##### `assurance_cli` {#spanda-cli-assurance-cli}
+
+Source: [crates/spanda-cli/src/assurance_cli.rs](../crates/spanda-cli/src/assurance_cli.rs#L1)
+
+**fn**
+
+- [`anomaly_dispatch`](../crates/spanda-cli/src/assurance_cli.rs#L311)
+- [`cmd_anomaly_scan`](../crates/spanda-cli/src/assurance_cli.rs#L161)
+- [`cmd_assure`](../crates/spanda-cli/src/assurance_cli.rs#L126)
+- [`cmd_diagnose_assurance`](../crates/spanda-cli/src/assurance_cli.rs#L188)
+- [`cmd_mission_verify`](../crates/spanda-cli/src/assurance_cli.rs#L253)
+- [`cmd_mitigation_plan`](../crates/spanda-cli/src/assurance_cli.rs#L389)
+- [`cmd_prognostics`](../crates/spanda-cli/src/assurance_cli.rs#L226)
+- [`cmd_recovery_coverage`](../crates/spanda-cli/src/assurance_cli.rs#L492)
+- [`cmd_resilience_check`](../crates/spanda-cli/src/assurance_cli.rs#L284)
+- [`cmd_state_estimate`](../crates/spanda-cli/src/assurance_cli.rs#L413)
+- [`mission_dispatch`](../crates/spanda-cli/src/assurance_cli.rs#L337)
+- [`mitigation_dispatch`](../crates/spanda-cli/src/assurance_cli.rs#L466)
+- [`resilience_dispatch`](../crates/spanda-cli/src/assurance_cli.rs#L363)
+- [`state_dispatch`](../crates/spanda-cli/src/assurance_cli.rs#L440)
+
+##### `assurance_runtime` {#spanda-cli-assurance-runtime}
+
+Source: [crates/spanda-cli/src/assurance_runtime.rs](../crates/spanda-cli/src/assurance_runtime.rs#L1)
+
+**fn**
+
+- [`default_assurance_runtime`](../crates/spanda-cli/src/assurance_runtime.rs#L7)
+
+##### `bundled_registry` {#spanda-cli-bundled-registry}
+
+Source: [crates/spanda-cli/src/bundled_registry.rs](../crates/spanda-cli/src/bundled_registry.rs#L1)
+
+**fn**
+
+- [`bundled_registry_dir`](../crates/spanda-cli/src/bundled_registry.rs#L7)
+- [`bundled_registry_url`](../crates/spanda-cli/src/bundled_registry.rs#L31)
+- [`ensure_bundled_registry_env`](../crates/spanda-cli/src/bundled_registry.rs#L36)
+- [`is_bundled_registry_path`](../crates/spanda-cli/src/bundled_registry.rs#L65)
 
 ##### `certify_cli` {#spanda-cli-certify-cli}
 
@@ -833,7 +894,118 @@ Source: [crates/spanda-cli/src/certify_cli.rs](../crates/spanda-cli/src/certify_
 
 **fn**
 
-- [`certify_dispatch`](../crates/spanda-cli/src/certify_cli.rs#L17)
+- [`certify_dispatch`](../crates/spanda-cli/src/certify_cli.rs#L32)
+
+##### `chaos_cli` {#spanda-cli-chaos-cli}
+
+Source: [crates/spanda-cli/src/chaos_cli.rs](../crates/spanda-cli/src/chaos_cli.rs#L1)
+
+**fn**
+
+- [`chaos_dispatch`](../crates/spanda-cli/src/chaos_cli.rs#L58)
+
+##### `comm_bus_runtime` {#spanda-cli-comm-bus-runtime}
+
+Source: [crates/spanda-cli/src/comm_bus_runtime.rs](../crates/spanda-cli/src/comm_bus_runtime.rs#L1)
+
+**fn**
+
+- [`default_comm_bus_factory`](../crates/spanda-cli/src/comm_bus_runtime.rs#L7)
+
+##### `compliance_cli` {#spanda-cli-compliance-cli}
+
+Source: [crates/spanda-cli/src/compliance_cli.rs](../crates/spanda-cli/src/compliance_cli.rs#L1)
+
+**fn**
+
+- [`compliance_dispatch`](../crates/spanda-cli/src/compliance_cli.rs#L37)
+
+##### `config_cli` {#spanda-cli-config-cli}
+
+Source: [crates/spanda-cli/src/config_cli.rs](../crates/spanda-cli/src/config_cli.rs#L1)
+
+**fn**
+
+- [`config_dispatch`](../crates/spanda-cli/src/config_cli.rs#L33)
+
+##### `config_load` {#spanda-cli-config-load}
+
+Source: [crates/spanda-cli/src/config_load.rs](../crates/spanda-cli/src/config_load.rs#L1)
+
+**fn**
+
+- [`apply_system_config_to_run_options`](../crates/spanda-cli/src/config_load.rs#L16)
+- [`load_system_config`](../crates/spanda-cli/src/config_load.rs#L67)
+- [`load_system_config_from_cli_args`](../crates/spanda-cli/src/config_load.rs#L75)
+
+##### `continuity_cli` {#spanda-cli-continuity-cli}
+
+Source: [crates/spanda-cli/src/continuity_cli.rs](../crates/spanda-cli/src/continuity_cli.rs#L1)
+
+**fn**
+
+- [`cmd_continuity`](../crates/spanda-cli/src/continuity_cli.rs#L104)
+- [`cmd_delegate`](../crates/spanda-cli/src/continuity_cli.rs#L133)
+- [`cmd_succession`](../crates/spanda-cli/src/continuity_cli.rs#L148)
+- [`cmd_takeover`](../crates/spanda-cli/src/continuity_cli.rs#L118)
+
+##### `contract_cli` {#spanda-cli-contract-cli}
+
+Source: [crates/spanda-cli/src/contract_cli.rs](../crates/spanda-cli/src/contract_cli.rs#L1)
+
+**fn**
+
+- [`cmd_contract_verify`](../crates/spanda-cli/src/contract_cli.rs#L38)
+- [`contract_dispatch`](../crates/spanda-cli/src/contract_cli.rs#L51)
+
+##### `control_center_cli` {#spanda-cli-control-center-cli}
+
+Source: [crates/spanda-cli/src/control_center_cli.rs](../crates/spanda-cli/src/control_center_cli.rs#L1)
+
+**fn**
+
+- [`control_center_dispatch`](../crates/spanda-cli/src/control_center_cli.rs#L9)
+
+##### `control_center_client` {#spanda-cli-control-center-client}
+
+Source: [crates/spanda-cli/src/control_center_client.rs](../crates/spanda-cli/src/control_center_client.rs#L1)
+
+**struct**
+
+- [`ControlCenterClient`](../crates/spanda-cli/src/control_center_client.rs#L7)
+
+**impl**
+
+- [`ControlCenterClient`](../crates/spanda-cli/src/control_center_client.rs#L12)
+
+**fn**
+
+- [`get`](../crates/spanda-cli/src/control_center_client.rs#L87)
+- [`patch`](../crates/spanda-cli/src/control_center_client.rs#L95)
+- [`post`](../crates/spanda-cli/src/control_center_client.rs#L91)
+- [`request`](../crates/spanda-cli/src/control_center_client.rs#L53)
+- [`with_url`](../crates/spanda-cli/src/control_center_client.rs#L34)
+
+**method**
+
+- [`ControlCenterClient::from_env`](../crates/spanda-cli/src/control_center_client.rs#L13)
+
+##### `decision_cli` {#spanda-cli-decision-cli}
+
+Source: [crates/spanda-cli/src/decision_cli.rs](../crates/spanda-cli/src/decision_cli.rs#L1)
+
+**fn**
+
+- [`audit_dispatch`](../crates/spanda-cli/src/decision_cli.rs#L39)
+- [`cmd_audit_decisions`](../crates/spanda-cli/src/decision_cli.rs#L19)
+
+##### `demo_cli` {#spanda-cli-demo-cli}
+
+Source: [crates/spanda-cli/src/demo_cli.rs](../crates/spanda-cli/src/demo_cli.rs#L1)
+
+**fn**
+
+- [`demo_dispatch`](../crates/spanda-cli/src/demo_cli.rs#L1099)
 
 ##### `deploy_ota` {#spanda-cli-deploy-ota}
 
@@ -841,11 +1013,128 @@ Source: [crates/spanda-cli/src/deploy_ota.rs](../crates/spanda-cli/src/deploy_ot
 
 **fn**
 
-- [`deploy_dispatch`](../crates/spanda-cli/src/deploy_ota.rs#L58)
-- [`deploy_usage_lines`](../crates/spanda-cli/src/deploy_ota.rs#L81)
-- [`fleet_agent_dispatch`](../crates/spanda-cli/src/deploy_ota.rs#L648)
-- [`fleet_mesh_dispatch`](../crates/spanda-cli/src/deploy_ota.rs#L596)
-- [`fleet_orchestrate_dispatch`](../crates/spanda-cli/src/deploy_ota.rs#L507)
+- [`deploy_dispatch`](../crates/spanda-cli/src/deploy_ota.rs#L135)
+- [`deploy_usage_lines`](../crates/spanda-cli/src/deploy_ota.rs#L173)
+- [`fleet_agent_dispatch`](../crates/spanda-cli/src/deploy_ota.rs#L1155)
+- [`fleet_mesh_dispatch`](../crates/spanda-cli/src/deploy_ota.rs#L1083)
+- [`fleet_orchestrate_dispatch`](../crates/spanda-cli/src/deploy_ota.rs#L985)
+
+##### `device_cli` {#spanda-cli-device-cli}
+
+Source: [crates/spanda-cli/src/device_cli.rs](../crates/spanda-cli/src/device_cli.rs#L1)
+
+**fn**
+
+- [`device_dispatch`](../crates/spanda-cli/src/device_cli.rs#L36)
+
+##### `device_tree_cli` {#spanda-cli-device-tree-cli}
+
+Source: [crates/spanda-cli/src/device_tree_cli.rs](../crates/spanda-cli/src/device_tree_cli.rs#L1)
+
+**fn**
+
+- [`cmd_map_verify`](../crates/spanda-cli/src/device_tree_cli.rs#L110)
+- [`device_tree_dispatch`](../crates/spanda-cli/src/device_tree_cli.rs#L35)
+
+##### `diff_cli` {#spanda-cli-diff-cli}
+
+Source: [crates/spanda-cli/src/diff_cli.rs](../crates/spanda-cli/src/diff_cli.rs#L1)
+
+**fn**
+
+- [`diff_dispatch`](../crates/spanda-cli/src/diff_cli.rs#L39)
+
+##### `drift_cli` {#spanda-cli-drift-cli}
+
+Source: [crates/spanda-cli/src/drift_cli.rs](../crates/spanda-cli/src/drift_cli.rs#L1)
+
+**fn**
+
+- [`drift_dispatch`](../crates/spanda-cli/src/drift_cli.rs#L83)
+
+##### `entity_cli` {#spanda-cli-entity-cli}
+
+Source: [crates/spanda-cli/src/entity_cli.rs](../crates/spanda-cli/src/entity_cli.rs#L1)
+
+**fn**
+
+- [`entity_dispatch`](../crates/spanda-cli/src/entity_cli.rs#L66)
+
+##### `estimate_cli` {#spanda-cli-estimate-cli}
+
+Source: [crates/spanda-cli/src/estimate_cli.rs](../crates/spanda-cli/src/estimate_cli.rs#L1)
+
+**fn**
+
+- [`estimate_dispatch`](../crates/spanda-cli/src/estimate_cli.rs#L49)
+
+##### `explain_cli` {#spanda-cli-explain-cli}
+
+Source: [crates/spanda-cli/src/explain_cli.rs](../crates/spanda-cli/src/explain_cli.rs#L1)
+
+**fn**
+
+- [`cmd_explain_decision`](../crates/spanda-cli/src/explain_cli.rs#L141)
+- [`cmd_explain_program`](../crates/spanda-cli/src/explain_cli.rs#L70)
+- [`cmd_explain_readiness`](../crates/spanda-cli/src/explain_cli.rs#L90)
+- [`cmd_explain_safety`](../crates/spanda-cli/src/explain_cli.rs#L124)
+- [`cmd_explain_trace`](../crates/spanda-cli/src/explain_cli.rs#L160)
+- [`cmd_explain_verify`](../crates/spanda-cli/src/explain_cli.rs#L107)
+- [`explain_dispatch`](../crates/spanda-cli/src/explain_cli.rs#L172)
+
+##### `fault_cli` {#spanda-cli-fault-cli}
+
+Source: [crates/spanda-cli/src/fault_cli.rs](../crates/spanda-cli/src/fault_cli.rs#L1)
+
+**fn**
+
+- [`cmd_fault_report`](../crates/spanda-cli/src/fault_cli.rs#L124)
+- [`cmd_fault_scan`](../crates/spanda-cli/src/fault_cli.rs#L57)
+- [`cmd_runtime_diagnose`](../crates/spanda-cli/src/fault_cli.rs#L100)
+- [`cmd_runtime_health`](../crates/spanda-cli/src/fault_cli.rs#L77)
+- [`fault_dispatch`](../crates/spanda-cli/src/fault_cli.rs#L160)
+- [`runtime_dispatch`](../crates/spanda-cli/src/fault_cli.rs#L173)
+
+##### `fault_runtime` {#spanda-cli-fault-runtime}
+
+Source: [crates/spanda-cli/src/fault_runtime.rs](../crates/spanda-cli/src/fault_runtime.rs#L1)
+
+**fn**
+
+- [`default_fault_runtime`](../crates/spanda-cli/src/fault_runtime.rs#L7)
+
+##### `generate_cli` {#spanda-cli-generate-cli}
+
+Source: [crates/spanda-cli/src/generate_cli.rs](../crates/spanda-cli/src/generate_cli.rs#L1)
+
+**fn**
+
+- [`generate_dispatch`](../crates/spanda-cli/src/generate_cli.rs#L87)
+- [`suggest_dispatch`](../crates/spanda-cli/src/generate_cli.rs#L104)
+
+##### `graph_cli` {#spanda-cli-graph-cli}
+
+Source: [crates/spanda-cli/src/graph_cli.rs](../crates/spanda-cli/src/graph_cli.rs#L1)
+
+**fn**
+
+- [`graph_dispatch`](../crates/spanda-cli/src/graph_cli.rs#L51)
+
+##### `integrity_cli` {#spanda-cli-integrity-cli}
+
+Source: [crates/spanda-cli/src/integrity_cli.rs](../crates/spanda-cli/src/integrity_cli.rs#L1)
+
+**fn**
+
+- [`integrity_dispatch`](../crates/spanda-cli/src/integrity_cli.rs#L123)
+
+##### `network_cli` {#spanda-cli-network-cli}
+
+Source: [crates/spanda-cli/src/network_cli.rs](../crates/spanda-cli/src/network_cli.rs#L1)
+
+**fn**
+
+- [`cmd_network_scan`](../crates/spanda-cli/src/network_cli.rs#L7)
 
 ##### `package` {#spanda-cli-package}
 
@@ -853,19 +1142,71 @@ Source: [crates/spanda-cli/src/package.rs](../crates/spanda-cli/src/package.rs#L
 
 **fn**
 
-- [`cmd_add`](../crates/spanda-cli/src/package.rs#L343)
+- [`cmd_add`](../crates/spanda-cli/src/package.rs#L489)
 - [`cmd_build`](../crates/spanda-cli/src/package.rs#L151)
-- [`cmd_check_project`](../crates/spanda-cli/src/package.rs#L201)
-- [`cmd_init`](../crates/spanda-cli/src/package.rs#L96)
-- [`cmd_install`](../crates/spanda-cli/src/package.rs#L458)
-- [`cmd_publish`](../crates/spanda-cli/src/package.rs#L557)
-- [`cmd_registry_info`](../crates/spanda-cli/src/package.rs#L663)
-- [`cmd_registry_search`](../crates/spanda-cli/src/package.rs#L607)
-- [`cmd_remove`](../crates/spanda-cli/src/package.rs#L421)
-- [`cmd_test`](../crates/spanda-cli/src/package.rs#L259)
-- [`cmd_verify_adapter`](../crates/spanda-cli/src/package.rs#L763)
-- [`official_packages_for_source`](../crates/spanda-cli/src/package.rs#L553)
-- [`usage_package`](../crates/spanda-cli/src/package.rs#L17)
+- [`cmd_check_project`](../crates/spanda-cli/src/package.rs#L207)
+- [`cmd_init`](../crates/spanda-cli/src/package.rs#L97)
+- [`cmd_install`](../crates/spanda-cli/src/package.rs#L602)
+- [`cmd_publish`](../crates/spanda-cli/src/package.rs#L763)
+- [`cmd_registry_info`](../crates/spanda-cli/src/package.rs#L867)
+- [`cmd_registry_search`](../crates/spanda-cli/src/package.rs#L812)
+- [`cmd_remove`](../crates/spanda-cli/src/package.rs#L566)
+- [`cmd_test`](../crates/spanda-cli/src/package.rs#L271)
+- [`cmd_trust`](../crates/spanda-cli/src/package.rs#L901)
+- [`cmd_update`](../crates/spanda-cli/src/package.rs#L622)
+- [`cmd_verify_adapter`](../crates/spanda-cli/src/package.rs#L1055)
+- [`module_registry_for_source`](../crates/spanda-cli/src/package.rs#L738)
+- [`official_packages_for_source`](../crates/spanda-cli/src/package.rs#L720)
+- [`usage_package`](../crates/spanda-cli/src/package.rs#L18)
+
+##### `provider_runtime` {#spanda-cli-provider-runtime}
+
+Source: [crates/spanda-cli/src/provider_runtime.rs](../crates/spanda-cli/src/provider_runtime.rs#L1)
+
+**fn**
+
+- [`default_provider_runtime`](../crates/spanda-cli/src/provider_runtime.rs#L7)
+
+##### `readiness_cli` {#spanda-cli-readiness-cli}
+
+Source: [crates/spanda-cli/src/readiness_cli.rs](../crates/spanda-cli/src/readiness_cli.rs#L1)
+
+**fn**
+
+- [`cmd_analyze_failure`](../crates/spanda-cli/src/readiness_cli.rs#L568)
+- [`cmd_audit`](../crates/spanda-cli/src/readiness_cli.rs#L695)
+- [`cmd_fleet_readiness`](../crates/spanda-cli/src/readiness_cli.rs#L668)
+- [`cmd_readiness`](../crates/spanda-cli/src/readiness_cli.rs#L410)
+- [`cmd_readiness_trends`](../crates/spanda-cli/src/readiness_cli.rs#L880)
+- [`cmd_safety_coverage`](../crates/spanda-cli/src/readiness_cli.rs#L857)
+- [`cmd_safety_report`](../crates/spanda-cli/src/readiness_cli.rs#L603)
+- [`cmd_twin_readiness`](../crates/spanda-cli/src/readiness_cli.rs#L629)
+- [`cmd_verify_approval`](../crates/spanda-cli/src/readiness_cli.rs#L773)
+- [`cmd_verify_fleet`](../crates/spanda-cli/src/readiness_cli.rs#L733)
+- [`cmd_verify_mission`](../crates/spanda-cli/src/readiness_cli.rs#L538)
+- [`evaluate_agent_readiness_json`](../crates/spanda-cli/src/readiness_cli.rs#L821)
+- [`readiness_dispatch`](../crates/spanda-cli/src/readiness_cli.rs#L938)
+
+##### `recovery_cli` {#spanda-cli-recovery-cli}
+
+Source: [crates/spanda-cli/src/recovery_cli.rs](../crates/spanda-cli/src/recovery_cli.rs#L1)
+
+**fn**
+
+- [`cmd_analyze_failure_recovery`](../crates/spanda-cli/src/recovery_cli.rs#L354)
+- [`cmd_heal`](../crates/spanda-cli/src/recovery_cli.rs#L191)
+- [`cmd_recover`](../crates/spanda-cli/src/recovery_cli.rs#L219)
+- [`cmd_recovery_knowledge`](../crates/spanda-cli/src/recovery_cli.rs#L290)
+- [`cmd_recovery_report`](../crates/spanda-cli/src/recovery_cli.rs#L261)
+- [`recovery_dispatch`](../crates/spanda-cli/src/recovery_cli.rs#L328)
+
+##### `replay_cli` {#spanda-cli-replay-cli}
+
+Source: [crates/spanda-cli/src/replay_cli.rs](../crates/spanda-cli/src/replay_cli.rs#L1)
+
+**fn**
+
+- [`human_replay`](../crates/spanda-cli/src/replay_cli.rs#L12)
 
 ##### `root` {#spanda-cli-root}
 
@@ -873,7 +1214,63 @@ Source: [crates/spanda-cli/src/main.rs](../crates/spanda-cli/src/main.rs#L1)
 
 **impl**
 
-- [`From`](../crates/spanda-cli/src/main.rs#L1173)
+- [`From`](../crates/spanda-cli/src/main.rs#L1310)
+
+##### `ros2_cli` {#spanda-cli-ros2-cli}
+
+Source: [crates/spanda-cli/src/ros2_cli.rs](../crates/spanda-cli/src/ros2_cli.rs#L1)
+
+**fn**
+
+- [`ros2_dispatch`](../crates/spanda-cli/src/ros2_cli.rs#L33)
+
+##### `runtime_hooks` {#spanda-cli-runtime-hooks}
+
+Source: [crates/spanda-cli/src/runtime_hooks.rs](../crates/spanda-cli/src/runtime_hooks.rs#L1)
+
+**struct**
+
+- [`CliRuntimeHooks`](../crates/spanda-cli/src/runtime_hooks.rs#L9)
+
+**impl**
+
+- [`CliRuntimeHooks`](../crates/spanda-cli/src/runtime_hooks.rs#L11)
+
+**fn**
+
+- [`default_runtime_hooks`](../crates/spanda-cli/src/runtime_hooks.rs#L18)
+
+##### `score_cli` {#spanda-cli-score-cli}
+
+Source: [crates/spanda-cli/src/score_cli.rs](../crates/spanda-cli/src/score_cli.rs#L1)
+
+**fn**
+
+- [`score_dispatch`](../crates/spanda-cli/src/score_cli.rs#L62)
+
+##### `security_assurance_cli` {#spanda-cli-security-assurance-cli}
+
+Source: [crates/spanda-cli/src/security_assurance_cli.rs](../crates/spanda-cli/src/security_assurance_cli.rs#L1)
+
+**fn**
+
+- [`assurance_dispatch`](../crates/spanda-cli/src/security_assurance_cli.rs#L45)
+
+##### `security_runtime` {#spanda-cli-security-runtime}
+
+Source: [crates/spanda-cli/src/security_runtime.rs](../crates/spanda-cli/src/security_runtime.rs#L1)
+
+**fn**
+
+- [`default_security_runtime_factory`](../crates/spanda-cli/src/security_runtime.rs#L7)
+
+##### `spoof_cli` {#spanda-cli-spoof-cli}
+
+Source: [crates/spanda-cli/src/spoof_cli.rs](../crates/spanda-cli/src/spoof_cli.rs#L1)
+
+**fn**
+
+- [`spoof_check_dispatch`](../crates/spanda-cli/src/spoof_cli.rs#L41)
 
 ##### `swarm_cli` {#spanda-cli-swarm-cli}
 
@@ -881,8 +1278,63 @@ Source: [crates/spanda-cli/src/swarm_cli.rs](../crates/spanda-cli/src/swarm_cli.
 
 **fn**
 
-- [`swarm_dispatch`](../crates/spanda-cli/src/swarm_cli.rs#L34)
-- [`swarm_usage_lines`](../crates/spanda-cli/src/swarm_cli.rs#L53)
+- [`swarm_dispatch`](../crates/spanda-cli/src/swarm_cli.rs#L83)
+- [`swarm_usage_lines`](../crates/spanda-cli/src/swarm_cli.rs#L116)
+
+##### `tamper_cli` {#spanda-cli-tamper-cli}
+
+Source: [crates/spanda-cli/src/tamper_cli.rs](../crates/spanda-cli/src/tamper_cli.rs#L1)
+
+**fn**
+
+- [`tamper_check_dispatch`](../crates/spanda-cli/src/tamper_cli.rs#L131)
+- [`tamper_diagnose_dispatch`](../crates/spanda-cli/src/tamper_cli.rs#L172)
+
+##### `telemetry_cli` {#spanda-cli-telemetry-cli}
+
+Source: [crates/spanda-cli/src/telemetry_cli.rs](../crates/spanda-cli/src/telemetry_cli.rs#L1)
+
+**fn**
+
+- [`cmd_telemetry`](../crates/spanda-cli/src/telemetry_cli.rs#L14)
+
+##### `telemetry_runtime` {#spanda-cli-telemetry-runtime}
+
+Source: [crates/spanda-cli/src/telemetry_runtime.rs](../crates/spanda-cli/src/telemetry_runtime.rs#L1)
+
+**fn**
+
+- [`default_telemetry_sink`](../crates/spanda-cli/src/telemetry_runtime.rs#L10)
+
+##### `threat_model_cli` {#spanda-cli-threat-model-cli}
+
+Source: [crates/spanda-cli/src/threat_model_cli.rs](../crates/spanda-cli/src/threat_model_cli.rs#L1)
+
+**fn**
+
+- [`threat_model_dispatch`](../crates/spanda-cli/src/threat_model_cli.rs#L36)
+
+##### `trace_cli` {#spanda-cli-trace-cli}
+
+Source: [crates/spanda-cli/src/trace_cli.rs](../crates/spanda-cli/src/trace_cli.rs#L1)
+
+**fn**
+
+- [`cmd_hardware_capabilities`](../crates/spanda-cli/src/trace_cli.rs#L137)
+- [`cmd_health`](../crates/spanda-cli/src/trace_cli.rs#L87)
+- [`cmd_robot_capabilities`](../crates/spanda-cli/src/trace_cli.rs#L170)
+- [`cmd_safety_check`](../crates/spanda-cli/src/trace_cli.rs#L212)
+- [`cmd_trace`](../crates/spanda-cli/src/trace_cli.rs#L12)
+- [`parse_program`](../crates/spanda-cli/src/trace_cli.rs#L434)
+- [`verify_extensions`](../crates/spanda-cli/src/trace_cli.rs#L262)
+
+##### `trust_cli` {#spanda-cli-trust-cli}
+
+Source: [crates/spanda-cli/src/trust_cli.rs](../crates/spanda-cli/src/trust_cli.rs#L1)
+
+**fn**
+
+- [`cmd_trust`](../crates/spanda-cli/src/trust_cli.rs#L113)
 
 #### `spanda-node` {#crate-spanda-node}
 
@@ -898,28 +1350,28 @@ Source: [crates/spanda-node/src/lib.rs](../crates/spanda-node/src/lib.rs#L1)
 
 **struct**
 
-- [`CheckResultJs`](../crates/spanda-node/src/lib.rs#L22)
-- [`CompatItemJs`](../crates/spanda-node/src/lib.rs#L278)
-- [`DiagnosticJs`](../crates/spanda-node/src/lib.rs#L15)
-- [`ExecutionMetricsJs`](../crates/spanda-node/src/lib.rs#L77)
-- [`PoseStateJs`](../crates/spanda-node/src/lib.rs#L28)
-- [`RobotStateJs`](../crates/spanda-node/src/lib.rs#L42)
-- [`RunOptionsJs`](../crates/spanda-node/src/lib.rs#L106)
-- [`RunResultJs`](../crates/spanda-node/src/lib.rs#L98)
-- [`RuntimeTelemetryJs`](../crates/spanda-node/src/lib.rs#L89)
-- [`SchedulerMetricsJs`](../crates/spanda-node/src/lib.rs#L66)
-- [`TaskMetricsJs`](../crates/spanda-node/src/lib.rs#L49)
-- [`VelocityStateJs`](../crates/spanda-node/src/lib.rs#L36)
-- [`VerifyResultJs`](../crates/spanda-node/src/lib.rs#L287)
+- [`CheckResultJs`](../crates/spanda-node/src/lib.rs#L20)
+- [`CompatItemJs`](../crates/spanda-node/src/lib.rs#L276)
+- [`DiagnosticJs`](../crates/spanda-node/src/lib.rs#L13)
+- [`ExecutionMetricsJs`](../crates/spanda-node/src/lib.rs#L75)
+- [`PoseStateJs`](../crates/spanda-node/src/lib.rs#L26)
+- [`RobotStateJs`](../crates/spanda-node/src/lib.rs#L40)
+- [`RunOptionsJs`](../crates/spanda-node/src/lib.rs#L104)
+- [`RunResultJs`](../crates/spanda-node/src/lib.rs#L96)
+- [`RuntimeTelemetryJs`](../crates/spanda-node/src/lib.rs#L87)
+- [`SchedulerMetricsJs`](../crates/spanda-node/src/lib.rs#L64)
+- [`TaskMetricsJs`](../crates/spanda-node/src/lib.rs#L47)
+- [`VelocityStateJs`](../crates/spanda-node/src/lib.rs#L34)
+- [`VerifyResultJs`](../crates/spanda-node/src/lib.rs#L285)
 
 **fn**
 
-- [`check_source`](../crates/spanda-node/src/lib.rs#L142)
-- [`core_version`](../crates/spanda-node/src/lib.rs#L258)
-- [`fmt_source`](../crates/spanda-node/src/lib.rs#L366)
-- [`run_source`](../crates/spanda-node/src/lib.rs#L171)
-- [`sir_source`](../crates/spanda-node/src/lib.rs#L344)
-- [`verify_source`](../crates/spanda-node/src/lib.rs#L294)
+- [`check_source`](../crates/spanda-node/src/lib.rs#L140)
+- [`core_version`](../crates/spanda-node/src/lib.rs#L257)
+- [`fmt_source`](../crates/spanda-node/src/lib.rs#L364)
+- [`run_source`](../crates/spanda-node/src/lib.rs#L169)
+- [`sir_source`](../crates/spanda-node/src/lib.rs#L342)
+- [`verify_source`](../crates/spanda-node/src/lib.rs#L292)
 
 #### `spanda-wasm` {#crate-spanda-wasm}
 
@@ -935,12 +1387,17 @@ Source: [crates/spanda-wasm/src/lib.rs](../crates/spanda-wasm/src/lib.rs#L1)
 
 **fn**
 
-- [`wasm_check`](../crates/spanda-wasm/src/lib.rs#L47)
-- [`wasm_fmt`](../crates/spanda-wasm/src/lib.rs#L142)
-- [`wasm_ir`](../crates/spanda-wasm/src/lib.rs#L116)
-- [`wasm_run`](../crates/spanda-wasm/src/lib.rs#L77)
-- [`wasm_verify`](../crates/spanda-wasm/src/lib.rs#L189)
-- [`wasm_version`](../crates/spanda-wasm/src/lib.rs#L162)
+- [`wasm_check`](../crates/spanda-wasm/src/lib.rs#L49)
+- [`wasm_fmt`](../crates/spanda-wasm/src/lib.rs#L154)
+- [`wasm_ir`](../crates/spanda-wasm/src/lib.rs#L128)
+- [`wasm_run`](../crates/spanda-wasm/src/lib.rs#L79)
+- [`wasm_telemetry_append`](../crates/spanda-wasm/src/lib.rs#L289)
+- [`wasm_telemetry_clear`](../crates/spanda-wasm/src/lib.rs#L276)
+- [`wasm_telemetry_otlp`](../crates/spanda-wasm/src/lib.rs#L339)
+- [`wasm_telemetry_prometheus`](../crates/spanda-wasm/src/lib.rs#L326)
+- [`wasm_telemetry_stats`](../crates/spanda-wasm/src/lib.rs#L302)
+- [`wasm_verify`](../crates/spanda-wasm/src/lib.rs#L200)
+- [`wasm_version`](../crates/spanda-wasm/src/lib.rs#L174)
 
 #### `spanda-dap` {#crate-spanda-dap}
 
@@ -956,7 +1413,7 @@ Source: [crates/spanda-dap/src/main.rs](../crates/spanda-dap/src/main.rs#L1)
 
 **fn**
 
-- [`serve`](../crates/spanda-dap/src/main.rs#L161)
+- [`serve`](../crates/spanda-dap/src/main.rs#L200)
 
 ### Compile and run pipeline {#group-compileandrunpipeline}
 
@@ -969,13 +1426,12 @@ Crate root: [`crates/spanda-driver`](../crates/spanda-driver/) · [README](../cr
 - [compile](#spanda-driver-compile)
 - [debug_run](#spanda-driver-debug-run)
 - [debug_session](#spanda-driver-debug-session)
-- [deploy_plan](#spanda-driver-deploy-plan)
 - [pipeline](#spanda-driver-pipeline)
+- [recovery_run](#spanda-driver-recovery-run)
 - [replay](#spanda-driver-replay)
 - [root](#spanda-driver-root)
 - [run](#spanda-driver-run)
 - [type_check](#spanda-driver-type-check)
-- [verify](#spanda-driver-verify)
 
 ##### `compile` {#spanda-driver-compile}
 
@@ -987,10 +1443,10 @@ Source: [crates/spanda-driver/src/compile.rs](../crates/spanda-driver/src/compil
 
 **fn**
 
-- [`check`](../crates/spanda-driver/src/compile.rs#L64)
-- [`check_with_registry`](../crates/spanda-driver/src/compile.rs#L84)
-- [`compile`](../crates/spanda-driver/src/compile.rs#L40)
-- [`compile_with_registry`](../crates/spanda-driver/src/compile.rs#L106)
+- [`check`](../crates/spanda-driver/src/compile.rs#L81)
+- [`check_with_registry`](../crates/spanda-driver/src/compile.rs#L102)
+- [`compile`](../crates/spanda-driver/src/compile.rs#L56)
+- [`compile_with_registry`](../crates/spanda-driver/src/compile.rs#L126)
 - [`tokenize`](../crates/spanda-driver/src/compile.rs#L18)
 
 ##### `debug_run` {#spanda-driver-debug-run}
@@ -1020,26 +1476,18 @@ Source: [crates/spanda-driver/src/debug_session.rs](../crates/spanda-driver/src/
 
 **fn**
 
-- [`frame_variables`](../crates/spanda-driver/src/debug_session.rs#L211)
-- [`is_finished`](../crates/spanda-driver/src/debug_session.rs#L102)
-- [`pauses`](../crates/spanda-driver/src/debug_session.rs#L139)
-- [`run_until_pause`](../crates/spanda-driver/src/debug_session.rs#L267)
-- [`set_variable`](../crates/spanda-driver/src/debug_session.rs#L238)
-- [`source_path`](../crates/spanda-driver/src/debug_session.rs#L120)
-- [`stack_trace`](../crates/spanda-driver/src/debug_session.rs#L158)
-- [`stack_trace_frames`](../crates/spanda-driver/src/debug_session.rs#L180)
+- [`frame_variables`](../crates/spanda-driver/src/debug_session.rs#L213)
+- [`is_finished`](../crates/spanda-driver/src/debug_session.rs#L103)
+- [`pauses`](../crates/spanda-driver/src/debug_session.rs#L141)
+- [`run_until_pause`](../crates/spanda-driver/src/debug_session.rs#L272)
+- [`set_variable`](../crates/spanda-driver/src/debug_session.rs#L241)
+- [`source_path`](../crates/spanda-driver/src/debug_session.rs#L122)
+- [`stack_trace`](../crates/spanda-driver/src/debug_session.rs#L160)
+- [`stack_trace_frames`](../crates/spanda-driver/src/debug_session.rs#L182)
 
 **method**
 
 - [`DebugMachine::start`](../crates/spanda-driver/src/debug_session.rs#L45)
-
-##### `deploy_plan` {#spanda-driver-deploy-plan}
-
-Source: [crates/spanda-driver/src/deploy_plan.rs](../crates/spanda-driver/src/deploy_plan.rs#L1)
-
-**fn**
-
-- [`build_deploy_plan`](../crates/spanda-driver/src/deploy_plan.rs#L8)
 
 ##### `pipeline` {#spanda-driver-pipeline}
 
@@ -1048,7 +1496,16 @@ Source: [crates/spanda-driver/src/pipeline.rs](../crates/spanda-driver/src/pipel
 **fn**
 
 - [`lower_to_sir`](../crates/spanda-driver/src/pipeline.rs#L10)
-- [`run_tests`](../crates/spanda-driver/src/pipeline.rs#L29)
+- [`run_tests`](../crates/spanda-driver/src/pipeline.rs#L30)
+
+##### `recovery_run` {#spanda-driver-recovery-run}
+
+Source: [crates/spanda-driver/src/recovery_run.rs](../crates/spanda-driver/src/recovery_run.rs#L1)
+
+**fn**
+
+- [`execute_recovery_on_program`](../crates/spanda-driver/src/recovery_run.rs#L42)
+- [`execute_recovery_source`](../crates/spanda-driver/src/recovery_run.rs#L13)
 
 ##### `replay` {#spanda-driver-replay}
 
@@ -1056,8 +1513,8 @@ Source: [crates/spanda-driver/src/replay.rs](../crates/spanda-driver/src/replay.
 
 **fn**
 
-- [`playback_mission`](../crates/spanda-driver/src/replay.rs#L52)
-- [`replay_mission`](../crates/spanda-driver/src/replay.rs#L12)
+- [`playback_mission`](../crates/spanda-driver/src/replay.rs#L57)
+- [`replay_mission`](../crates/spanda-driver/src/replay.rs#L14)
 
 ##### `root` {#spanda-driver-root}
 
@@ -1065,14 +1522,13 @@ Source: [crates/spanda-driver/src/lib.rs](../crates/spanda-driver/src/lib.rs#L1)
 
 **mod**
 
-- [`debug_session`](../crates/spanda-driver/src/lib.rs#L4)
-- [`pipeline`](../crates/spanda-driver/src/lib.rs#L7)
+- [`debug_session`](../crates/spanda-driver/src/lib.rs#L5)
+- [`pipeline`](../crates/spanda-driver/src/lib.rs#L6)
 - [`type_check`](../crates/spanda-driver/src/lib.rs#L10)
 
 **export**
 
-- [`debug_run::run_debug`](../crates/spanda-driver/src/lib.rs#L17)
-- [`deploy_plan::build_deploy_plan`](../crates/spanda-driver/src/lib.rs#L16)
+- [`debug_run::run_debug`](../crates/spanda-driver/src/lib.rs#L15)
 
 ##### `run` {#spanda-driver-run}
 
@@ -1081,8 +1537,8 @@ Source: [crates/spanda-driver/src/run.rs](../crates/spanda-driver/src/run.rs#L1)
 **fn**
 
 - [`run`](../crates/spanda-driver/src/run.rs#L13)
-- [`run_program`](../crates/spanda-driver/src/run.rs#L38)
-- [`run_tests_with_registry`](../crates/spanda-driver/src/run.rs#L64)
+- [`run_program`](../crates/spanda-driver/src/run.rs#L40)
+- [`run_tests_with_registry`](../crates/spanda-driver/src/run.rs#L82)
 
 ##### `type_check` {#spanda-driver-type-check}
 
@@ -1090,22 +1546,13 @@ Source: [crates/spanda-driver/src/type_check.rs](../crates/spanda-driver/src/typ
 
 **fn**
 
-- [`BUILTIN_METHODS`](../crates/spanda-driver/src/type_check.rs#L80)
-- [`check`](../crates/spanda-driver/src/type_check.rs#L32)
-- [`check_with_registry`](../crates/spanda-driver/src/type_check.rs#L50)
-- [`get_library_for_sensor_type`](../crates/spanda-driver/src/type_check.rs#L90)
-- [`merge_library_methods`](../crates/spanda-driver/src/type_check.rs#L94)
-- [`SENSOR_TYPES`](../crates/spanda-driver/src/type_check.rs#L86)
+- [`BUILTIN_METHODS`](../crates/spanda-driver/src/type_check.rs#L145)
+- [`check`](../crates/spanda-driver/src/type_check.rs#L44)
+- [`check_with_registry`](../crates/spanda-driver/src/type_check.rs#L74)
+- [`get_library_for_sensor_type`](../crates/spanda-driver/src/type_check.rs#L182)
+- [`merge_library_methods`](../crates/spanda-driver/src/type_check.rs#L212)
+- [`SENSOR_TYPES`](../crates/spanda-driver/src/type_check.rs#L165)
 - [`type_check`](../crates/spanda-driver/src/type_check.rs#L14)
-
-##### `verify` {#spanda-driver-verify}
-
-Source: [crates/spanda-driver/src/verify.rs](../crates/spanda-driver/src/verify.rs#L1)
-
-**fn**
-
-- [`verify_compatibility`](../crates/spanda-driver/src/verify.rs#L11)
-- [`verify_compatibility_target`](../crates/spanda-driver/src/verify.rs#L43)
 
 #### `spanda-lexer` {#crate-spanda-lexer}
 
@@ -1122,29 +1569,29 @@ Source: [crates/spanda-lexer/src/lib.rs](../crates/spanda-lexer/src/lib.rs#L1)
 **struct**
 
 - [`LexerError`](../crates/spanda-lexer/src/lib.rs#L8)
-- [`Token`](../crates/spanda-lexer/src/lib.rs#L503)
+- [`Token`](../crates/spanda-lexer/src/lib.rs#L506)
 
 **enum**
 
 - [`TokenType`](../crates/spanda-lexer/src/lib.rs#L31)
-- [`TokenValue`](../crates/spanda-lexer/src/lib.rs#L517)
-- [`UnitLexeme`](../crates/spanda-lexer/src/lib.rs#L241)
+- [`TokenValue`](../crates/spanda-lexer/src/lib.rs#L520)
+- [`UnitLexeme`](../crates/spanda-lexer/src/lib.rs#L244)
 
 **impl**
 
 - [`fmt`](../crates/spanda-lexer/src/lib.rs#L14)
 - [`std`](../crates/spanda-lexer/src/lib.rs#L24)
-- [`UnitLexeme`](../crates/spanda-lexer/src/lib.rs#L402)
+- [`UnitLexeme`](../crates/spanda-lexer/src/lib.rs#L405)
 
 **fn**
 
-- [`reserved_keywords`](../crates/spanda-lexer/src/lib.rs#L822)
-- [`tokenize`](../crates/spanda-lexer/src/lib.rs#L843)
-- [`unit_from_lexeme`](../crates/spanda-lexer/src/lib.rs#L524)
+- [`reserved_keywords`](../crates/spanda-lexer/src/lib.rs#L824)
+- [`tokenize`](../crates/spanda-lexer/src/lib.rs#L844)
+- [`unit_from_lexeme`](../crates/spanda-lexer/src/lib.rs#L527)
 
 **method**
 
-- [`UnitLexeme::as_str`](../crates/spanda-lexer/src/lib.rs#L403)
+- [`UnitLexeme::as_str`](../crates/spanda-lexer/src/lib.rs#L406)
 
 #### `spanda-parser` {#crate-spanda-parser}
 
@@ -1160,7 +1607,7 @@ Source: [crates/spanda-parser/src/lib.rs](../crates/spanda-parser/src/lib.rs#L1)
 
 **impl**
 
-- [`Parser`](../crates/spanda-parser/src/lib.rs#L35)
+- [`Parser`](../crates/spanda-parser/src/lib.rs#L49)
 
 **fn**
 
@@ -1175,10 +1622,12 @@ Crate root: [`crates/spanda-typecheck`](../crates/spanda-typecheck/) · [README]
 - [checker](#spanda-typecheck-checker)
 - [diagnostics](#spanda-typecheck-diagnostics)
 - [host](#spanda-typecheck-host)
+- [import_catalog](#spanda-typecheck-import-catalog)
 - [message_registry](#spanda-typecheck-message-registry)
 - [module_registry](#spanda-typecheck-module-registry)
 - [reliability_validation](#spanda-typecheck-reliability-validation)
 - [root](#spanda-typecheck-root)
+- [security_capabilities](#spanda-typecheck-security-capabilities)
 - [type_system](#spanda-typecheck-type-system)
 - [units](#spanda-typecheck-units)
 
@@ -1188,54 +1637,54 @@ Source: [crates/spanda-typecheck/src/checker.rs](../crates/spanda-typecheck/src/
 
 **struct**
 
-- [`FnSig`](../crates/spanda-typecheck/src/checker.rs#L5506)
-- [`MethodSig`](../crates/spanda-typecheck/src/checker.rs#L342)
-- [`TypeChecker`](../crates/spanda-typecheck/src/checker.rs#L387)
-- [`TypeCheckError`](../crates/spanda-typecheck/src/checker.rs#L25)
+- [`FnSig`](../crates/spanda-typecheck/src/checker.rs#L5808)
+- [`MethodSig`](../crates/spanda-typecheck/src/checker.rs#L355)
+- [`TypeChecker`](../crates/spanda-typecheck/src/checker.rs#L445)
+- [`TypeCheckError`](../crates/spanda-typecheck/src/checker.rs#L26)
 
 **impl**
 
-- [`FnSig`](../crates/spanda-typecheck/src/checker.rs#L5511)
-- [`HalMemberDecl`](../crates/spanda-typecheck/src/checker.rs#L5429)
-- [`MethodSig`](../crates/spanda-typecheck/src/checker.rs#L348)
-- [`SafetyBlock`](../crates/spanda-typecheck/src/checker.rs#L5462)
-- [`SpandaType`](../crates/spanda-typecheck/src/checker.rs#L5349)
-- [`TypeChecker`](../crates/spanda-typecheck/src/checker.rs#L414)
+- [`FnSig`](../crates/spanda-typecheck/src/checker.rs#L5813)
+- [`HalMemberDecl`](../crates/spanda-typecheck/src/checker.rs#L5731)
+- [`MethodSig`](../crates/spanda-typecheck/src/checker.rs#L361)
+- [`SafetyBlock`](../crates/spanda-typecheck/src/checker.rs#L5764)
+- [`SpandaType`](../crates/spanda-typecheck/src/checker.rs#L5651)
+- [`TypeChecker`](../crates/spanda-typecheck/src/checker.rs#L474)
 
 **fn**
 
-- [`ACTION_TYPES`](../crates/spanda-typecheck/src/checker.rs#L6837)
-- [`ACTUATOR_TYPES`](../crates/spanda-typecheck/src/checker.rs#L6935)
-- [`AI_MODEL_TYPES`](../crates/spanda-typecheck/src/checker.rs#L6980)
-- [`AI_VALUE_TYPES`](../crates/spanda-typecheck/src/checker.rs#L7014)
-- [`BUILTIN_FUNCTIONS`](../crates/spanda-typecheck/src/checker.rs#L7102)
-- [`BUILTIN_METHODS`](../crates/spanda-typecheck/src/checker.rs#L7142)
-- [`check`](../crates/spanda-typecheck/src/checker.rs#L48)
-- [`check_program`](../crates/spanda-typecheck/src/checker.rs#L459)
-- [`check_with_registry`](../crates/spanda-typecheck/src/checker.rs#L67)
-- [`format_type_name`](../crates/spanda-typecheck/src/checker.rs#L5522)
-- [`get_library_for_sensor_type`](../crates/spanda-typecheck/src/checker.rs#L6754)
-- [`merge_library_methods`](../crates/spanda-typecheck/src/checker.rs#L6674)
-- [`MESSAGE_TYPES`](../crates/spanda-typecheck/src/checker.rs#L6773)
-- [`named_params`](../crates/spanda-typecheck/src/checker.rs#L353)
-- [`OBJECT_PROPERTIES`](../crates/spanda-typecheck/src/checker.rs#L7212)
-- [`POSE_PROPERTIES`](../crates/spanda-typecheck/src/checker.rs#L7284)
-- [`result_unit_for_binary`](../crates/spanda-typecheck/src/checker.rs#L239)
-- [`returns`](../crates/spanda-typecheck/src/checker.rs#L357)
-- [`returns`](../crates/spanda-typecheck/src/checker.rs#L5516)
-- [`ROBOT_METHODS`](../crates/spanda-typecheck/src/checker.rs#L7122)
-- [`SCAN_PROPERTIES`](../crates/spanda-typecheck/src/checker.rs#L7189)
-- [`SENSOR_TYPES`](../crates/spanda-typecheck/src/checker.rs#L6876)
-- [`SERVICE_TYPES`](../crates/spanda-typecheck/src/checker.rs#L6798)
-- [`type_check`](../crates/spanda-typecheck/src/checker.rs#L29)
-- [`units_compatible`](../crates/spanda-typecheck/src/checker.rs#L102)
-- [`VELOCITY_PROPERTIES`](../crates/spanda-typecheck/src/checker.rs#L7314)
+- [`ACTION_TYPES`](../crates/spanda-typecheck/src/checker.rs#L7219)
+- [`ACTUATOR_TYPES`](../crates/spanda-typecheck/src/checker.rs#L7316)
+- [`AI_MODEL_TYPES`](../crates/spanda-typecheck/src/checker.rs#L7360)
+- [`AI_VALUE_TYPES`](../crates/spanda-typecheck/src/checker.rs#L7393)
+- [`BUILTIN_FUNCTIONS`](../crates/spanda-typecheck/src/checker.rs#L7480)
+- [`BUILTIN_METHODS`](../crates/spanda-typecheck/src/checker.rs#L7518)
+- [`check`](../crates/spanda-typecheck/src/checker.rs#L51)
+- [`check_program`](../crates/spanda-typecheck/src/checker.rs#L521)
+- [`check_with_registry`](../crates/spanda-typecheck/src/checker.rs#L72)
+- [`format_type_name`](../crates/spanda-typecheck/src/checker.rs#L5854)
+- [`get_library_for_sensor_type`](../crates/spanda-typecheck/src/checker.rs#L7135)
+- [`merge_library_methods`](../crates/spanda-typecheck/src/checker.rs#L7051)
+- [`MESSAGE_TYPES`](../crates/spanda-typecheck/src/checker.rs#L7157)
+- [`named_params`](../crates/spanda-typecheck/src/checker.rs#L381)
+- [`OBJECT_PROPERTIES`](../crates/spanda-typecheck/src/checker.rs#L7587)
+- [`POSE_PROPERTIES`](../crates/spanda-typecheck/src/checker.rs#L7658)
+- [`result_unit_for_binary`](../crates/spanda-typecheck/src/checker.rs#L250)
+- [`returns`](../crates/spanda-typecheck/src/checker.rs#L400)
+- [`returns`](../crates/spanda-typecheck/src/checker.rs#L5833)
+- [`ROBOT_METHODS`](../crates/spanda-typecheck/src/checker.rs#L7499)
+- [`SCAN_PROPERTIES`](../crates/spanda-typecheck/src/checker.rs#L7565)
+- [`SENSOR_TYPES`](../crates/spanda-typecheck/src/checker.rs#L7257)
+- [`SERVICE_TYPES`](../crates/spanda-typecheck/src/checker.rs#L7181)
+- [`type_check`](../crates/spanda-typecheck/src/checker.rs#L30)
+- [`units_compatible`](../crates/spanda-typecheck/src/checker.rs#L110)
+- [`VELOCITY_PROPERTIES`](../crates/spanda-typecheck/src/checker.rs#L7687)
 
 **method**
 
-- [`FnSig::named_params`](../crates/spanda-typecheck/src/checker.rs#L5512)
-- [`MethodSig::params`](../crates/spanda-typecheck/src/checker.rs#L349)
-- [`TypeChecker::new`](../crates/spanda-typecheck/src/checker.rs#L415)
+- [`FnSig::named_params`](../crates/spanda-typecheck/src/checker.rs#L5814)
+- [`MethodSig::params`](../crates/spanda-typecheck/src/checker.rs#L362)
+- [`TypeChecker::new`](../crates/spanda-typecheck/src/checker.rs#L475)
 
 ##### `diagnostics` {#spanda-typecheck-diagnostics}
 
@@ -1253,6 +1702,17 @@ Source: [crates/spanda-typecheck/src/host.rs](../crates/spanda-typecheck/src/hos
 
 - [`TypeCheckHost`](../crates/spanda-typecheck/src/host.rs#L9)
 
+##### `import_catalog` {#spanda-typecheck-import-catalog}
+
+Source: [crates/spanda-typecheck/src/import_catalog.rs](../crates/spanda-typecheck/src/import_catalog.rs#L1)
+
+**fn**
+
+- [`adapter_import_paths`](../crates/spanda-typecheck/src/import_catalog.rs#L64)
+- [`builtin_import_paths`](../crates/spanda-typecheck/src/import_catalog.rs#L8)
+- [`registry_import_paths`](../crates/spanda-typecheck/src/import_catalog.rs#L156)
+- [`resolve_package_import`](../crates/spanda-typecheck/src/import_catalog.rs#L194)
+
 ##### `message_registry` {#spanda-typecheck-message-registry}
 
 Source: [crates/spanda-typecheck/src/message_registry.rs](../crates/spanda-typecheck/src/message_registry.rs#L1)
@@ -1263,7 +1723,7 @@ Source: [crates/spanda-typecheck/src/message_registry.rs](../crates/spanda-typec
 
 **const**
 
-- [`COMM_CAPABILITIES`](../crates/spanda-typecheck/src/message_registry.rs#L108)
+- [`COMM_CAPABILITIES`](../crates/spanda-typecheck/src/message_registry.rs#L203)
 
 **impl**
 
@@ -1271,12 +1731,12 @@ Source: [crates/spanda-typecheck/src/message_registry.rs](../crates/spanda-typec
 
 **fn**
 
-- [`from_program`](../crates/spanda-typecheck/src/message_registry.rs#L44)
-- [`get`](../crates/spanda-typecheck/src/message_registry.rs#L70)
-- [`is_comm_capability`](../crates/spanda-typecheck/src/message_registry.rs#L110)
-- [`is_known`](../crates/spanda-typecheck/src/message_registry.rs#L66)
-- [`register`](../crates/spanda-typecheck/src/message_registry.rs#L24)
-- [`resolve_type`](../crates/spanda-typecheck/src/message_registry.rs#L74)
+- [`from_program`](../crates/spanda-typecheck/src/message_registry.rs#L71)
+- [`get`](../crates/spanda-typecheck/src/message_registry.rs#L131)
+- [`is_comm_capability`](../crates/spanda-typecheck/src/message_registry.rs#L205)
+- [`is_known`](../crates/spanda-typecheck/src/message_registry.rs#L110)
+- [`register`](../crates/spanda-typecheck/src/message_registry.rs#L35)
+- [`resolve_type`](../crates/spanda-typecheck/src/message_registry.rs#L152)
 
 **method**
 
@@ -1297,11 +1757,11 @@ Source: [crates/spanda-typecheck/src/module_registry.rs](../crates/spanda-typech
 
 **fn**
 
-- [`exports_for`](../crates/spanda-typecheck/src/module_registry.rs#L46)
-- [`from_programs`](../crates/spanda-typecheck/src/module_registry.rs#L38)
-- [`function`](../crates/spanda-typecheck/src/module_registry.rs#L50)
-- [`module_count`](../crates/spanda-typecheck/src/module_registry.rs#L55)
-- [`register`](../crates/spanda-typecheck/src/module_registry.rs#L24)
+- [`exports_for`](../crates/spanda-typecheck/src/module_registry.rs#L93)
+- [`from_programs`](../crates/spanda-typecheck/src/module_registry.rs#L70)
+- [`function`](../crates/spanda-typecheck/src/module_registry.rs#L114)
+- [`module_count`](../crates/spanda-typecheck/src/module_registry.rs#L138)
+- [`register`](../crates/spanda-typecheck/src/module_registry.rs#L38)
 
 **method**
 
@@ -1313,13 +1773,13 @@ Source: [crates/spanda-typecheck/src/reliability_validation.rs](../crates/spanda
 
 **fn**
 
-- [`resolve_std_import`](../crates/spanda-typecheck/src/reliability_validation.rs#L320)
-- [`validate_pipeline`](../crates/spanda-typecheck/src/reliability_validation.rs#L189)
-- [`validate_recover`](../crates/spanda-typecheck/src/reliability_validation.rs#L276)
-- [`validate_resource_budget`](../crates/spanda-typecheck/src/reliability_validation.rs#L118)
-- [`validate_task_priority`](../crates/spanda-typecheck/src/reliability_validation.rs#L82)
+- [`resolve_std_import`](../crates/spanda-typecheck/src/reliability_validation.rs#L328)
+- [`validate_pipeline`](../crates/spanda-typecheck/src/reliability_validation.rs#L193)
+- [`validate_recover`](../crates/spanda-typecheck/src/reliability_validation.rs#L283)
+- [`validate_resource_budget`](../crates/spanda-typecheck/src/reliability_validation.rs#L120)
+- [`validate_task_priority`](../crates/spanda-typecheck/src/reliability_validation.rs#L83)
 - [`validate_task_timing`](../crates/spanda-typecheck/src/reliability_validation.rs#L7)
-- [`validate_watchdog`](../crates/spanda-typecheck/src/reliability_validation.rs#L224)
+- [`validate_watchdog`](../crates/spanda-typecheck/src/reliability_validation.rs#L229)
 
 ##### `root` {#spanda-typecheck-root}
 
@@ -1330,16 +1790,29 @@ Source: [crates/spanda-typecheck/src/lib.rs](../crates/spanda-typecheck/src/lib.
 - [`checker`](../crates/spanda-typecheck/src/lib.rs#L3)
 - [`diagnostics`](../crates/spanda-typecheck/src/lib.rs#L4)
 - [`host`](../crates/spanda-typecheck/src/lib.rs#L5)
-- [`message_registry`](../crates/spanda-typecheck/src/lib.rs#L6)
-- [`module_registry`](../crates/spanda-typecheck/src/lib.rs#L7)
-- [`reliability_validation`](../crates/spanda-typecheck/src/lib.rs#L8)
-- [`type_system`](../crates/spanda-typecheck/src/lib.rs#L9)
-- [`units`](../crates/spanda-typecheck/src/lib.rs#L10)
+- [`import_catalog`](../crates/spanda-typecheck/src/lib.rs#L6)
+- [`message_registry`](../crates/spanda-typecheck/src/lib.rs#L7)
+- [`module_registry`](../crates/spanda-typecheck/src/lib.rs#L8)
+- [`reliability_validation`](../crates/spanda-typecheck/src/lib.rs#L9)
+- [`security_capabilities`](../crates/spanda-typecheck/src/lib.rs#L10)
+- [`type_system`](../crates/spanda-typecheck/src/lib.rs#L11)
+- [`units`](../crates/spanda-typecheck/src/lib.rs#L12)
 
 **export**
 
-- [`diagnostics::Diagnostic`](../crates/spanda-typecheck/src/lib.rs#L19)
-- [`host::TypeCheckHost`](../crates/spanda-typecheck/src/lib.rs#L20)
+- [`diagnostics::Diagnostic`](../crates/spanda-typecheck/src/lib.rs#L24)
+- [`host::TypeCheckHost`](../crates/spanda-typecheck/src/lib.rs#L25)
+- [`import_catalog::resolve_package_import`](../crates/spanda-typecheck/src/lib.rs#L14)
+- [`security_capabilities::is_known_capability`](../crates/spanda-typecheck/src/lib.rs#L15)
+
+##### `security_capabilities` {#spanda-typecheck-security-capabilities}
+
+Source: [crates/spanda-typecheck/src/security_capabilities.rs](../crates/spanda-typecheck/src/security_capabilities.rs#L1)
+
+**fn**
+
+- [`is_known_capability`](../crates/spanda-typecheck/src/security_capabilities.rs#L94)
+- [`known_capabilities`](../crates/spanda-typecheck/src/security_capabilities.rs#L20)
 
 ##### `type_system` {#spanda-typecheck-type-system}
 
@@ -1351,14 +1824,14 @@ Source: [crates/spanda-typecheck/src/type_system.rs](../crates/spanda-typecheck/
 
 **fn**
 
-- [`binary_physical_op_allowed`](../crates/spanda-typecheck/src/type_system.rs#L482)
-- [`generic_arity`](../crates/spanda-typecheck/src/type_system.rs#L247)
+- [`binary_physical_op_allowed`](../crates/spanda-typecheck/src/type_system.rs#L484)
+- [`generic_arity`](../crates/spanda-typecheck/src/type_system.rs#L248)
 - [`is_action_proposal_type`](../crates/spanda-typecheck/src/type_system.rs#L530)
-- [`is_safe_action_type`](../crates/spanda-typecheck/src/type_system.rs#L551)
-- [`physical_category`](../crates/spanda-typecheck/src/type_system.rs#L424)
+- [`is_safe_action_type`](../crates/spanda-typecheck/src/type_system.rs#L552)
+- [`physical_category`](../crates/spanda-typecheck/src/type_system.rs#L426)
 - [`resolve_generic_type`](../crates/spanda-typecheck/src/type_system.rs#L214)
 - [`resolve_type_name`](../crates/spanda-typecheck/src/type_system.rs#L16)
-- [`std_namespaces`](../crates/spanda-typecheck/src/type_system.rs#L572)
+- [`std_namespaces`](../crates/spanda-typecheck/src/type_system.rs#L574)
 
 ##### `units` {#spanda-typecheck-units}
 
@@ -1370,12 +1843,12 @@ Source: [crates/spanda-typecheck/src/units.rs](../crates/spanda-typecheck/src/un
 
 **fn**
 
-- [`align_for_binary`](../crates/spanda-typecheck/src/units.rs#L567)
-- [`canonical_unit`](../crates/spanda-typecheck/src/units.rs#L209)
-- [`convert_value`](../crates/spanda-typecheck/src/units.rs#L261)
-- [`to_canonical`](../crates/spanda-typecheck/src/units.rs#L187)
+- [`align_for_binary`](../crates/spanda-typecheck/src/units.rs#L575)
+- [`canonical_unit`](../crates/spanda-typecheck/src/units.rs#L212)
+- [`convert_value`](../crates/spanda-typecheck/src/units.rs#L264)
+- [`to_canonical`](../crates/spanda-typecheck/src/units.rs#L189)
 - [`unit_category`](../crates/spanda-typecheck/src/units.rs#L44)
-- [`unit_matches_named_type`](../crates/spanda-typecheck/src/units.rs#L134)
+- [`unit_matches_named_type`](../crates/spanda-typecheck/src/units.rs#L135)
 - [`units_compatible`](../crates/spanda-typecheck/src/units.rs#L106)
 
 #### `spanda-sir` {#crate-spanda-sir}
@@ -1409,12 +1882,12 @@ Source: [crates/spanda-sir/src/lib.rs](../crates/spanda-sir/src/lib.rs#L1)
 
 **impl**
 
-- [`LowerCtx`](../crates/spanda-sir/src/lib.rs#L398)
+- [`LowerCtx`](../crates/spanda-sir/src/lib.rs#L399)
 
 **fn**
 
 - [`lower_program`](../crates/spanda-sir/src/lib.rs#L251)
-- [`serialize_expr_condition`](../crates/spanda-sir/src/lib.rs#L1574)
+- [`serialize_expr_condition`](../crates/spanda-sir/src/lib.rs#L1588)
 
 #### `spanda-error` {#crate-spanda-error}
 
@@ -1438,14 +1911,13 @@ Source: [crates/spanda-error/src/lib.rs](../crates/spanda-error/src/lib.rs#L1)
 
 **impl**
 
-- [`From`](../crates/spanda-error/src/lib.rs#L28)
-- [`From`](../crates/spanda-error/src/lib.rs#L87)
-- [`From`](../crates/spanda-error/src/lib.rs#L97)
-- [`SpandaError`](../crates/spanda-error/src/lib.rs#L37)
+- [`From`](../crates/spanda-error/src/lib.rs#L79)
+- [`From`](../crates/spanda-error/src/lib.rs#L104)
+- [`SpandaError`](../crates/spanda-error/src/lib.rs#L28)
 
 **method**
 
-- [`SpandaError::diagnostics`](../crates/spanda-error/src/lib.rs#L38)
+- [`SpandaError::diagnostics`](../crates/spanda-error/src/lib.rs#L29)
 
 ### Front-end AST {#group-front-endast}
 
@@ -1455,12 +1927,48 @@ Crate root: [`crates/spanda-ast`](../crates/spanda-ast/) · [README](../crates/s
 
 **Modules**
 
+- [assurance_decl](#spanda-ast-assurance-decl)
 - [comm_decl](#spanda-ast-comm-decl)
+- [fault_decl](#spanda-ast-fault-decl)
 - [foundations](#spanda-ast-foundations)
 - [nodes](#spanda-ast-nodes)
+- [policy_decl](#spanda-ast-policy-decl)
 - [regex](#spanda-ast-regex)
 - [robotics_decl](#spanda-ast-robotics-decl)
 - [root](#spanda-ast-root)
+
+##### `assurance_decl` {#spanda-ast-assurance-decl}
+
+Source: [crates/spanda-ast/src/assurance_decl.rs](../crates/spanda-ast/src/assurance_decl.rs#L1)
+
+**struct**
+
+- [`ContinuityPolicyBranch`](../crates/spanda-ast/src/assurance_decl.rs#L206)
+- [`ExpectedBehavior`](../crates/spanda-ast/src/assurance_decl.rs#L47)
+- [`KnowledgeComponent`](../crates/spanda-ast/src/assurance_decl.rs#L8)
+- [`KnowledgeDependency`](../crates/spanda-ast/src/assurance_decl.rs#L15)
+- [`MissionConstraintDecl`](../crates/spanda-ast/src/assurance_decl.rs#L138)
+- [`MissionStepDecl`](../crates/spanda-ast/src/assurance_decl.rs#L131)
+- [`MitigationBranch`](../crates/spanda-ast/src/assurance_decl.rs#L101)
+- [`PrognosticRule`](../crates/spanda-ast/src/assurance_decl.rs#L81)
+- [`RecoveryPolicyBranch`](../crates/spanda-ast/src/assurance_decl.rs#L187)
+- [`TamperPolicyBranch`](../crates/spanda-ast/src/assurance_decl.rs#L168)
+
+**enum**
+
+- [`AnomalyDetectorDecl`](../crates/spanda-ast/src/assurance_decl.rs#L57)
+- [`AnomalyHandlerDecl`](../crates/spanda-ast/src/assurance_decl.rs#L70)
+- [`AssuranceCaseDecl`](../crates/spanda-ast/src/assurance_decl.rs#L226)
+- [`ContinuityPolicyDecl`](../crates/spanda-ast/src/assurance_decl.rs#L215)
+- [`KnowledgeModelDecl`](../crates/spanda-ast/src/assurance_decl.rs#L24)
+- [`MissionPlanDecl`](../crates/spanda-ast/src/assurance_decl.rs#L146)
+- [`MitigationDecl`](../crates/spanda-ast/src/assurance_decl.rs#L110)
+- [`OperatingModeDecl`](../crates/spanda-ast/src/assurance_decl.rs#L121)
+- [`PrognosticsDecl`](../crates/spanda-ast/src/assurance_decl.rs#L91)
+- [`RecoveryPolicyDecl`](../crates/spanda-ast/src/assurance_decl.rs#L196)
+- [`ResiliencePolicyDecl`](../crates/spanda-ast/src/assurance_decl.rs#L158)
+- [`StateEstimatorDecl`](../crates/spanda-ast/src/assurance_decl.rs#L36)
+- [`TamperPolicyDecl`](../crates/spanda-ast/src/assurance_decl.rs#L177)
 
 ##### `comm_decl` {#spanda-ast-comm-decl}
 
@@ -1468,24 +1976,24 @@ Source: [crates/spanda-ast/src/comm_decl.rs](../crates/spanda-ast/src/comm_decl.
 
 **struct**
 
-- [`DiscoverFilter`](../crates/spanda-ast/src/comm_decl.rs#L188)
-- [`MessageSchema`](../crates/spanda-ast/src/comm_decl.rs#L118)
-- [`QosDecl`](../crates/spanda-ast/src/comm_decl.rs#L87)
-- [`TypedActionFields`](../crates/spanda-ast/src/comm_decl.rs#L201)
-- [`TypedServiceFields`](../crates/spanda-ast/src/comm_decl.rs#L195)
+- [`DiscoverFilter`](../crates/spanda-ast/src/comm_decl.rs#L203)
+- [`MessageSchema`](../crates/spanda-ast/src/comm_decl.rs#L132)
+- [`QosDecl`](../crates/spanda-ast/src/comm_decl.rs#L101)
+- [`TypedActionFields`](../crates/spanda-ast/src/comm_decl.rs#L216)
+- [`TypedServiceFields`](../crates/spanda-ast/src/comm_decl.rs#L210)
 
 **enum**
 
-- [`AgentChannelDecl`](../crates/spanda-ast/src/comm_decl.rs#L158)
-- [`BusDecl`](../crates/spanda-ast/src/comm_decl.rs#L127)
-- [`DeviceDecl`](../crates/spanda-ast/src/comm_decl.rs#L148)
-- [`DiscoverTarget`](../crates/spanda-ast/src/comm_decl.rs#L181)
-- [`MessageDecl`](../crates/spanda-ast/src/comm_decl.rs#L108)
-- [`PeerRobotDecl`](../crates/spanda-ast/src/comm_decl.rs#L142)
-- [`QosReliability`](../crates/spanda-ast/src/comm_decl.rs#L81)
-- [`TopicRole`](../crates/spanda-ast/src/comm_decl.rs#L97)
+- [`AgentChannelDecl`](../crates/spanda-ast/src/comm_decl.rs#L173)
+- [`BusDecl`](../crates/spanda-ast/src/comm_decl.rs#L142)
+- [`DeviceDecl`](../crates/spanda-ast/src/comm_decl.rs#L163)
+- [`DiscoverTarget`](../crates/spanda-ast/src/comm_decl.rs#L196)
+- [`MessageDecl`](../crates/spanda-ast/src/comm_decl.rs#L122)
+- [`PeerRobotDecl`](../crates/spanda-ast/src/comm_decl.rs#L157)
+- [`QosReliability`](../crates/spanda-ast/src/comm_decl.rs#L95)
+- [`TopicRole`](../crates/spanda-ast/src/comm_decl.rs#L111)
 - [`TransportKind`](../crates/spanda-ast/src/comm_decl.rs#L9)
-- [`TwinSyncDecl`](../crates/spanda-ast/src/comm_decl.rs#L169)
+- [`TwinSyncDecl`](../crates/spanda-ast/src/comm_decl.rs#L184)
 
 **impl**
 
@@ -1500,92 +2008,118 @@ Source: [crates/spanda-ast/src/comm_decl.rs](../crates/spanda-ast/src/comm_decl.
 
 - [`TransportKind::from_ident`](../crates/spanda-ast/src/comm_decl.rs#L19)
 
+##### `fault_decl` {#spanda-ast-fault-decl}
+
+Source: [crates/spanda-ast/src/fault_decl.rs](../crates/spanda-ast/src/fault_decl.rs#L1)
+
+**struct**
+
+- [`ResourceWatchCondition`](../crates/spanda-ast/src/fault_decl.rs#L34)
+
+**enum**
+
+- [`HeartbeatDecl`](../crates/spanda-ast/src/fault_decl.rs#L9)
+- [`MemoryWatchDecl`](../crates/spanda-ast/src/fault_decl.rs#L22)
+- [`ResourceWatchDecl`](../crates/spanda-ast/src/fault_decl.rs#L46)
+- [`RestartPolicyDecl`](../crates/spanda-ast/src/fault_decl.rs#L56)
+- [`RuntimeFaultTriggerDecl`](../crates/spanda-ast/src/fault_decl.rs#L69)
+
 ##### `foundations` {#spanda-ast-foundations}
 
 Source: [crates/spanda-ast/src/foundations.rs](../crates/spanda-ast/src/foundations.rs#L1)
 
 **struct**
 
-- [`CapabilityDecl`](../crates/spanda-ast/src/foundations.rs#L833)
-- [`EnumVariantDecl`](../crates/spanda-ast/src/foundations.rs#L121)
-- [`ExternFnDecl`](../crates/spanda-ast/src/foundations.rs#L73)
-- [`FieldDecl`](../crates/spanda-ast/src/foundations.rs#L113)
-- [`MatchArm`](../crates/spanda-ast/src/foundations.rs#L188)
+- [`CapabilityDecl`](../crates/spanda-ast/src/foundations.rs#L991)
+- [`EnumVariantDecl`](../crates/spanda-ast/src/foundations.rs#L127)
+- [`ExternFnDecl`](../crates/spanda-ast/src/foundations.rs#L77)
+- [`FieldDecl`](../crates/spanda-ast/src/foundations.rs#L119)
+- [`HardwareComponentDecl`](../crates/spanda-ast/src/foundations.rs#L893)
+- [`HealthCheckCondition`](../crates/spanda-ast/src/foundations.rs#L920)
+- [`HealthPolicyReaction`](../crates/spanda-ast/src/foundations.rs#L944)
+- [`MatchArm`](../crates/spanda-ast/src/foundations.rs#L198)
+- [`MissionApprovalReq`](../crates/spanda-ast/src/foundations.rs#L650)
 - [`ModuleFnDecl`](../crates/spanda-ast/src/foundations.rs#L18)
-- [`ModuleParamDecl`](../crates/spanda-ast/src/foundations.rs#L31)
-- [`SecureBlockDecl`](../crates/spanda-ast/src/foundations.rs#L776)
-- [`SelectArm`](../crates/spanda-ast/src/foundations.rs#L93)
-- [`SimFaultDecl`](../crates/spanda-ast/src/foundations.rs#L624)
-- [`SubscribeFilterDecl`](../crates/spanda-ast/src/foundations.rs#L518)
-- [`TestDecl`](../crates/spanda-ast/src/foundations.rs#L85)
-- [`TraitImplMethodDecl`](../crates/spanda-ast/src/foundations.rs#L178)
-- [`TraitMethodDecl`](../crates/spanda-ast/src/foundations.rs#L151)
-- [`TraitParamDecl`](../crates/spanda-ast/src/foundations.rs#L159)
-- [`TransitionDecl`](../crates/spanda-ast/src/foundations.rs#L209)
+- [`ModuleParamDecl`](../crates/spanda-ast/src/foundations.rs#L34)
+- [`RequiresCapabilityDecl`](../crates/spanda-ast/src/foundations.rs#L962)
+- [`SecureBlockDecl`](../crates/spanda-ast/src/foundations.rs#L836)
+- [`SelectArm`](../crates/spanda-ast/src/foundations.rs#L97)
+- [`SimFaultDecl`](../crates/spanda-ast/src/foundations.rs#L677)
+- [`SubscribeFilterDecl`](../crates/spanda-ast/src/foundations.rs#L559)
+- [`TestDecl`](../crates/spanda-ast/src/foundations.rs#L89)
+- [`TraitImplMethodDecl`](../crates/spanda-ast/src/foundations.rs#L188)
+- [`TraitMethodDecl`](../crates/spanda-ast/src/foundations.rs#L161)
+- [`TraitParamDecl`](../crates/spanda-ast/src/foundations.rs#L169)
+- [`TransitionDecl`](../crates/spanda-ast/src/foundations.rs#L219)
 
 **enum**
 
-- [`AuditDecl`](../crates/spanda-ast/src/foundations.rs#L688)
-- [`BleServiceDecl`](../crates/spanda-ast/src/foundations.rs#L492)
-- [`BluetoothConfigDecl`](../crates/spanda-ast/src/foundations.rs#L481)
-- [`BridgeKind`](../crates/spanda-ast/src/foundations.rs#L40)
-- [`ConnectivityPolicyDecl`](../crates/spanda-ast/src/foundations.rs#L466)
-- [`DeployDecl`](../crates/spanda-ast/src/foundations.rs#L400)
-- [`EnumDecl`](../crates/spanda-ast/src/foundations.rs#L131)
-- [`EventDecl`](../crates/spanda-ast/src/foundations.rs#L279)
-- [`EventHandlerDecl`](../crates/spanda-ast/src/foundations.rs#L290)
-- [`FaultHandlerDecl`](../crates/spanda-ast/src/foundations.rs#L588)
-- [`GeofenceDecl`](../crates/spanda-ast/src/foundations.rs#L453)
-- [`HardwareDecl`](../crates/spanda-ast/src/foundations.rs#L376)
-- [`IdentityDecl`](../crates/spanda-ast/src/foundations.rs#L677)
-- [`MissionDecl`](../crates/spanda-ast/src/foundations.rs#L610)
-- [`ModeDecl`](../crates/spanda-ast/src/foundations.rs#L553)
-- [`ObserveDecl`](../crates/spanda-ast/src/foundations.rs#L646)
-- [`PermissionsDecl`](../crates/spanda-ast/src/foundations.rs#L748)
-- [`PipelineDecl`](../crates/spanda-ast/src/foundations.rs#L527)
-- [`ProvenanceDecl`](../crates/spanda-ast/src/foundations.rs#L699)
-- [`RecoverDecl`](../crates/spanda-ast/src/foundations.rs#L577)
-- [`RequiresConnectivityDecl`](../crates/spanda-ast/src/foundations.rs#L437)
-- [`RequiresHardwareDecl`](../crates/spanda-ast/src/foundations.rs#L411)
-- [`RequiresNetworkDecl`](../crates/spanda-ast/src/foundations.rs#L426)
-- [`ResourceBudgetDecl`](../crates/spanda-ast/src/foundations.rs#L503)
-- [`RetryDecl`](../crates/spanda-ast/src/foundations.rs#L564)
-- [`SecretDecl`](../crates/spanda-ast/src/foundations.rs#L722)
-- [`SecretSourceDecl`](../crates/spanda-ast/src/foundations.rs#L732)
-- [`SecureCommPolicyDecl`](../crates/spanda-ast/src/foundations.rs#L758)
-- [`SignedRecordDecl`](../crates/spanda-ast/src/foundations.rs#L711)
-- [`SimulateCompatibilityDecl`](../crates/spanda-ast/src/foundations.rs#L636)
-- [`StateMachineDecl`](../crates/spanda-ast/src/foundations.rs#L199)
-- [`StructDecl`](../crates/spanda-ast/src/foundations.rs#L102)
-- [`TaskDecl`](../crates/spanda-ast/src/foundations.rs#L218)
-- [`TaskPriority`](../crates/spanda-ast/src/foundations.rs#L241)
-- [`TraitDecl`](../crates/spanda-ast/src/foundations.rs#L142)
-- [`TraitImplDecl`](../crates/spanda-ast/src/foundations.rs#L168)
-- [`TriggerHandlerDecl`](../crates/spanda-ast/src/foundations.rs#L364)
-- [`TriggerKind`](../crates/spanda-ast/src/foundations.rs#L301)
-- [`TrustBoundaryDecl`](../crates/spanda-ast/src/foundations.rs#L770)
-- [`TrustDecl`](../crates/spanda-ast/src/foundations.rs#L741)
-- [`TwinDecl`](../crates/spanda-ast/src/foundations.rs#L665)
-- [`ValidateRuleDecl`](../crates/spanda-ast/src/foundations.rs#L599)
-- [`VerifyDecl`](../crates/spanda-ast/src/foundations.rs#L653)
+- [`AuditDecl`](../crates/spanda-ast/src/foundations.rs#L748)
+- [`BleServiceDecl`](../crates/spanda-ast/src/foundations.rs#L533)
+- [`BluetoothConfigDecl`](../crates/spanda-ast/src/foundations.rs#L522)
+- [`BridgeKind`](../crates/spanda-ast/src/foundations.rs#L43)
+- [`ConnectivityPolicyDecl`](../crates/spanda-ast/src/foundations.rs#L507)
+- [`DeployDecl`](../crates/spanda-ast/src/foundations.rs#L444)
+- [`EnumDecl`](../crates/spanda-ast/src/foundations.rs#L137)
+- [`EventDecl`](../crates/spanda-ast/src/foundations.rs#L309)
+- [`EventHandlerDecl`](../crates/spanda-ast/src/foundations.rs#L320)
+- [`FaultHandlerDecl`](../crates/spanda-ast/src/foundations.rs#L629)
+- [`GeofenceDecl`](../crates/spanda-ast/src/foundations.rs#L494)
+- [`HardwareDecl`](../crates/spanda-ast/src/foundations.rs#L418)
+- [`HealthCheckDecl`](../crates/spanda-ast/src/foundations.rs#L930)
+- [`HealthPolicyDecl`](../crates/spanda-ast/src/foundations.rs#L952)
+- [`IdentityDecl`](../crates/spanda-ast/src/foundations.rs#L737)
+- [`KillSwitchDecl`](../crates/spanda-ast/src/foundations.rs#L907)
+- [`MissionDecl`](../crates/spanda-ast/src/foundations.rs#L659)
+- [`ModeDecl`](../crates/spanda-ast/src/foundations.rs#L594)
+- [`ObserveDecl`](../crates/spanda-ast/src/foundations.rs#L699)
+- [`PermissionsDecl`](../crates/spanda-ast/src/foundations.rs#L808)
+- [`PipelineDecl`](../crates/spanda-ast/src/foundations.rs#L568)
+- [`ProvenanceDecl`](../crates/spanda-ast/src/foundations.rs#L759)
+- [`RecoverDecl`](../crates/spanda-ast/src/foundations.rs#L618)
+- [`RequiresCapabilitySeverity`](../crates/spanda-ast/src/foundations.rs#L982)
+- [`RequiresConnectivityDecl`](../crates/spanda-ast/src/foundations.rs#L481)
+- [`RequiresHardwareDecl`](../crates/spanda-ast/src/foundations.rs#L455)
+- [`RequiresNetworkDecl`](../crates/spanda-ast/src/foundations.rs#L470)
+- [`ResourceBudgetDecl`](../crates/spanda-ast/src/foundations.rs#L544)
+- [`RetryDecl`](../crates/spanda-ast/src/foundations.rs#L605)
+- [`SecretDecl`](../crates/spanda-ast/src/foundations.rs#L782)
+- [`SecretSourceDecl`](../crates/spanda-ast/src/foundations.rs#L792)
+- [`SecureCommPolicyDecl`](../crates/spanda-ast/src/foundations.rs#L818)
+- [`SignedRecordDecl`](../crates/spanda-ast/src/foundations.rs#L771)
+- [`SimulateCompatibilityDecl`](../crates/spanda-ast/src/foundations.rs#L689)
+- [`StateMachineDecl`](../crates/spanda-ast/src/foundations.rs#L209)
+- [`StructDecl`](../crates/spanda-ast/src/foundations.rs#L106)
+- [`TaskDecl`](../crates/spanda-ast/src/foundations.rs#L228)
+- [`TaskPriority`](../crates/spanda-ast/src/foundations.rs#L271)
+- [`TraitDecl`](../crates/spanda-ast/src/foundations.rs#L150)
+- [`TraitImplDecl`](../crates/spanda-ast/src/foundations.rs#L178)
+- [`TriggerHandlerDecl`](../crates/spanda-ast/src/foundations.rs#L404)
+- [`TriggerKind`](../crates/spanda-ast/src/foundations.rs#L333)
+- [`TrustBoundaryDecl`](../crates/spanda-ast/src/foundations.rs#L830)
+- [`TrustDecl`](../crates/spanda-ast/src/foundations.rs#L801)
+- [`TwinDecl`](../crates/spanda-ast/src/foundations.rs#L725)
+- [`ValidateRuleDecl`](../crates/spanda-ast/src/foundations.rs#L640)
+- [`VerifyDecl`](../crates/spanda-ast/src/foundations.rs#L713)
 - [`Visibility`](../crates/spanda-ast/src/foundations.rs#L10)
-- [`WatchdogDecl`](../crates/spanda-ast/src/foundations.rs#L539)
+- [`WatchdogDecl`](../crates/spanda-ast/src/foundations.rs#L580)
+- [`WorldModelDecl`](../crates/spanda-ast/src/foundations.rs#L706)
 
 **impl**
 
-- [`BridgeKind`](../crates/spanda-ast/src/foundations.rs#L47)
-- [`SecureBlockDecl`](../crates/spanda-ast/src/foundations.rs#L789)
-- [`TaskPriority`](../crates/spanda-ast/src/foundations.rs#L249)
+- [`BridgeKind`](../crates/spanda-ast/src/foundations.rs#L50)
+- [`SecureBlockDecl`](../crates/spanda-ast/src/foundations.rs#L849)
+- [`TaskPriority`](../crates/spanda-ast/src/foundations.rs#L279)
 
 **fn**
 
-- [`resolve_module_import`](../crates/spanda-ast/src/foundations.rs#L840)
-- [`resolve_type_alias`](../crates/spanda-ast/src/foundations.rs#L920)
+- [`resolve_module_import`](../crates/spanda-ast/src/foundations.rs#L998)
+- [`resolve_type_alias`](../crates/spanda-ast/src/foundations.rs#L1079)
 
 **method**
 
-- [`BridgeKind::as_str`](../crates/spanda-ast/src/foundations.rs#L48)
-- [`TaskPriority::from_ident`](../crates/spanda-ast/src/foundations.rs#L250)
+- [`BridgeKind::as_str`](../crates/spanda-ast/src/foundations.rs#L51)
+- [`TaskPriority::from_ident`](../crates/spanda-ast/src/foundations.rs#L280)
 
 ##### `nodes` {#spanda-ast-nodes}
 
@@ -1593,70 +2127,79 @@ Source: [crates/spanda-ast/src/nodes.rs](../crates/spanda-ast/src/nodes.rs#L1)
 
 **struct**
 
-- [`AiConfigEntry`](../crates/spanda-ast/src/nodes.rs#L771)
-- [`NamedArg`](../crates/spanda-ast/src/nodes.rs#L1080)
+- [`AiConfigEntry`](../crates/spanda-ast/src/nodes.rs#L829)
+- [`NamedArg`](../crates/spanda-ast/src/nodes.rs#L1164)
 - [`SourceLocation`](../crates/spanda-ast/src/nodes.rs#L6)
 - [`Span`](../crates/spanda-ast/src/nodes.rs#L13)
-- [`StructFieldInit`](../crates/spanda-ast/src/nodes.rs#L1063)
+- [`StructFieldInit`](../crates/spanda-ast/src/nodes.rs#L1147)
 
 **enum**
 
-- [`ActionDecl`](../crates/spanda-ast/src/nodes.rs#L712)
-- [`ActuatorDecl`](../crates/spanda-ast/src/nodes.rs#L752)
-- [`AgentDecl`](../crates/spanda-ast/src/nodes.rs#L798)
-- [`AiModelDecl`](../crates/spanda-ast/src/nodes.rs#L787)
-- [`BehaviorDecl`](../crates/spanda-ast/src/nodes.rs#L860)
-- [`BinaryOp`](../crates/spanda-ast/src/nodes.rs#L1087)
-- [`ConfigValue`](../crates/spanda-ast/src/nodes.rs#L779)
-- [`Expr`](../crates/spanda-ast/src/nodes.rs#L991)
-- [`GpioDirection`](../crates/spanda-ast/src/nodes.rs#L658)
-- [`HalBlock`](../crates/spanda-ast/src/nodes.rs#L610)
-- [`HalMemberDecl`](../crates/spanda-ast/src/nodes.rs#L619)
-- [`ImportDecl`](../crates/spanda-ast/src/nodes.rs#L533)
-- [`LiteralValue`](../crates/spanda-ast/src/nodes.rs#L1071)
-- [`MemoryKind`](../crates/spanda-ast/src/nodes.rs#L816)
-- [`NodeDecl`](../crates/spanda-ast/src/nodes.rs#L665)
+- [`ActionDecl`](../crates/spanda-ast/src/nodes.rs#L770)
+- [`ActuatorDecl`](../crates/spanda-ast/src/nodes.rs#L810)
+- [`AgentDecl`](../crates/spanda-ast/src/nodes.rs#L856)
+- [`AiModelDecl`](../crates/spanda-ast/src/nodes.rs#L845)
+- [`BehaviorDecl`](../crates/spanda-ast/src/nodes.rs#L920)
+- [`BinaryOp`](../crates/spanda-ast/src/nodes.rs#L1171)
+- [`ConfigValue`](../crates/spanda-ast/src/nodes.rs#L837)
+- [`Expr`](../crates/spanda-ast/src/nodes.rs#L1075)
+- [`GpioDirection`](../crates/spanda-ast/src/nodes.rs#L716)
+- [`HalBlock`](../crates/spanda-ast/src/nodes.rs#L668)
+- [`HalMemberDecl`](../crates/spanda-ast/src/nodes.rs#L677)
+- [`ImportDecl`](../crates/spanda-ast/src/nodes.rs#L571)
+- [`LiteralValue`](../crates/spanda-ast/src/nodes.rs#L1155)
+- [`MemoryKind`](../crates/spanda-ast/src/nodes.rs#L876)
+- [`NodeDecl`](../crates/spanda-ast/src/nodes.rs#L723)
 - [`Program`](../crates/spanda-ast/src/nodes.rs#L489)
-- [`RobotDecl`](../crates/spanda-ast/src/nodes.rs#L539)
-- [`SafetyBlock`](../crates/spanda-ast/src/nodes.rs#L762)
-- [`SafetyRule`](../crates/spanda-ast/src/nodes.rs#L823)
-- [`SafetyZoneDecl`](../crates/spanda-ast/src/nodes.rs#L838)
-- [`SensorBinding`](../crates/spanda-ast/src/nodes.rs#L743)
-- [`SensorDecl`](../crates/spanda-ast/src/nodes.rs#L731)
-- [`ServiceDecl`](../crates/spanda-ast/src/nodes.rs#L695)
-- [`SocDecl`](../crates/spanda-ast/src/nodes.rs#L604)
+- [`RobotDecl`](../crates/spanda-ast/src/nodes.rs#L577)
+- [`SafetyBlock`](../crates/spanda-ast/src/nodes.rs#L820)
+- [`SafetyRule`](../crates/spanda-ast/src/nodes.rs#L883)
+- [`SafetyZoneDecl`](../crates/spanda-ast/src/nodes.rs#L898)
+- [`SensorBinding`](../crates/spanda-ast/src/nodes.rs#L801)
+- [`SensorDecl`](../crates/spanda-ast/src/nodes.rs#L789)
+- [`ServiceDecl`](../crates/spanda-ast/src/nodes.rs#L753)
+- [`SocDecl`](../crates/spanda-ast/src/nodes.rs#L662)
 - [`SpandaType`](../crates/spanda-ast/src/nodes.rs#L435)
-- [`Stmt`](../crates/spanda-ast/src/nodes.rs#L873)
-- [`TopicDecl`](../crates/spanda-ast/src/nodes.rs#L675)
-- [`UnaryOp`](../crates/spanda-ast/src/nodes.rs#L1181)
+- [`Stmt`](../crates/spanda-ast/src/nodes.rs#L953)
+- [`TopicDecl`](../crates/spanda-ast/src/nodes.rs#L733)
+- [`UnaryOp`](../crates/spanda-ast/src/nodes.rs#L1265)
 - [`UnitKind`](../crates/spanda-ast/src/nodes.rs#L20)
-- [`ZoneShape`](../crates/spanda-ast/src/nodes.rs#L853)
+- [`ZoneShape`](../crates/spanda-ast/src/nodes.rs#L913)
 
 **const**
 
-- [`ACTION_TYPES`](../crates/spanda-ast/src/nodes.rs#L1190)
-- [`MESSAGE_TYPES`](../crates/spanda-ast/src/nodes.rs#L1188)
-- [`SERVICE_TYPES`](../crates/spanda-ast/src/nodes.rs#L1189)
+- [`ACTION_TYPES`](../crates/spanda-ast/src/nodes.rs#L1274)
+- [`MESSAGE_TYPES`](../crates/spanda-ast/src/nodes.rs#L1272)
+- [`SERVICE_TYPES`](../crates/spanda-ast/src/nodes.rs#L1273)
 
 **impl**
 
-- [`BinaryOp`](../crates/spanda-ast/src/nodes.rs#L1114)
-- [`Program`](../crates/spanda-ast/src/nodes.rs#L1193)
-- [`RobotDecl`](../crates/spanda-ast/src/nodes.rs#L1237)
+- [`BinaryOp`](../crates/spanda-ast/src/nodes.rs#L1198)
+- [`Program`](../crates/spanda-ast/src/nodes.rs#L1277)
+- [`RobotDecl`](../crates/spanda-ast/src/nodes.rs#L1321)
 - [`UnitKind`](../crates/spanda-ast/src/nodes.rs#L239)
 
 **fn**
 
-- [`as_str`](../crates/spanda-ast/src/nodes.rs#L1148)
+- [`as_str`](../crates/spanda-ast/src/nodes.rs#L1232)
 - [`from_lexeme`](../crates/spanda-ast/src/nodes.rs#L336)
-- [`robots`](../crates/spanda-ast/src/nodes.rs#L1215)
+- [`robots`](../crates/spanda-ast/src/nodes.rs#L1299)
 
 **method**
 
-- [`BinaryOp::from_lexeme`](../crates/spanda-ast/src/nodes.rs#L1115)
-- [`Program::imports`](../crates/spanda-ast/src/nodes.rs#L1194)
-- [`RobotDecl::name`](../crates/spanda-ast/src/nodes.rs#L1238)
+- [`BinaryOp::from_lexeme`](../crates/spanda-ast/src/nodes.rs#L1199)
+- [`Program::imports`](../crates/spanda-ast/src/nodes.rs#L1278)
+- [`RobotDecl::name`](../crates/spanda-ast/src/nodes.rs#L1322)
 - [`UnitKind::as_str`](../crates/spanda-ast/src/nodes.rs#L240)
+
+##### `policy_decl` {#spanda-ast-policy-decl}
+
+Source: [crates/spanda-ast/src/policy_decl.rs](../crates/spanda-ast/src/policy_decl.rs#L1)
+
+**enum**
+
+- [`OperationalPolicyDecl`](../crates/spanda-ast/src/policy_decl.rs#L34)
+- [`OperationalPolicyRule`](../crates/spanda-ast/src/policy_decl.rs#L9)
 
 ##### `regex` {#spanda-ast-regex}
 
@@ -1683,27 +2226,27 @@ Source: [crates/spanda-ast/src/robotics_decl.rs](../crates/spanda-ast/src/roboti
 **enum**
 
 - [`CertificationStandard`](../crates/spanda-ast/src/robotics_decl.rs#L9)
-- [`CertifyDecl`](../crates/spanda-ast/src/robotics_decl.rs#L41)
-- [`FleetDecl`](../crates/spanda-ast/src/robotics_decl.rs#L52)
-- [`ProgramSafetyZoneDecl`](../crates/spanda-ast/src/robotics_decl.rs#L103)
-- [`SwarmDecl`](../crates/spanda-ast/src/robotics_decl.rs#L91)
-- [`SwarmPolicy`](../crates/spanda-ast/src/robotics_decl.rs#L63)
+- [`CertifyDecl`](../crates/spanda-ast/src/robotics_decl.rs#L84)
+- [`FleetDecl`](../crates/spanda-ast/src/robotics_decl.rs#L95)
+- [`ProgramSafetyZoneDecl`](../crates/spanda-ast/src/robotics_decl.rs#L175)
+- [`SwarmDecl`](../crates/spanda-ast/src/robotics_decl.rs#L163)
+- [`SwarmPolicy`](../crates/spanda-ast/src/robotics_decl.rs#L106)
 
 **impl**
 
 - [`CertificationStandard`](../crates/spanda-ast/src/robotics_decl.rs#L15)
-- [`SwarmPolicy`](../crates/spanda-ast/src/robotics_decl.rs#L69)
+- [`SwarmPolicy`](../crates/spanda-ast/src/robotics_decl.rs#L112)
 
 **fn**
 
-- [`all`](../crates/spanda-ast/src/robotics_decl.rs#L33)
-- [`parse_ident`](../crates/spanda-ast/src/robotics_decl.rs#L24)
-- [`parse_ident`](../crates/spanda-ast/src/robotics_decl.rs#L78)
+- [`all`](../crates/spanda-ast/src/robotics_decl.rs#L62)
+- [`parse_ident`](../crates/spanda-ast/src/robotics_decl.rs#L38)
+- [`parse_ident`](../crates/spanda-ast/src/robotics_decl.rs#L135)
 
 **method**
 
 - [`CertificationStandard::as_str`](../crates/spanda-ast/src/robotics_decl.rs#L16)
-- [`SwarmPolicy::as_str`](../crates/spanda-ast/src/robotics_decl.rs#L70)
+- [`SwarmPolicy::as_str`](../crates/spanda-ast/src/robotics_decl.rs#L113)
 
 ##### `root` {#spanda-ast-root}
 
@@ -1711,11 +2254,14 @@ Source: [crates/spanda-ast/src/lib.rs](../crates/spanda-ast/src/lib.rs#L1)
 
 **mod**
 
-- [`comm_decl`](../crates/spanda-ast/src/lib.rs#L3)
-- [`foundations`](../crates/spanda-ast/src/lib.rs#L4)
-- [`nodes`](../crates/spanda-ast/src/lib.rs#L5)
-- [`regex`](../crates/spanda-ast/src/lib.rs#L6)
-- [`robotics_decl`](../crates/spanda-ast/src/lib.rs#L7)
+- [`assurance_decl`](../crates/spanda-ast/src/lib.rs#L3)
+- [`comm_decl`](../crates/spanda-ast/src/lib.rs#L4)
+- [`fault_decl`](../crates/spanda-ast/src/lib.rs#L5)
+- [`foundations`](../crates/spanda-ast/src/lib.rs#L6)
+- [`nodes`](../crates/spanda-ast/src/lib.rs#L7)
+- [`policy_decl`](../crates/spanda-ast/src/lib.rs#L8)
+- [`regex`](../crates/spanda-ast/src/lib.rs#L9)
+- [`robotics_decl`](../crates/spanda-ast/src/lib.rs#L10)
 
 #### `spanda-regex-lang` {#crate-spanda-regex-lang}
 
@@ -1731,12 +2277,12 @@ Source: [crates/spanda-regex-lang/src/lib.rs](../crates/spanda-regex-lang/src/li
 
 **fn**
 
-- [`regex_capture`](../crates/spanda-regex-lang/src/lib.rs#L97)
-- [`regex_find`](../crates/spanda-regex-lang/src/lib.rs#L29)
+- [`regex_capture`](../crates/spanda-regex-lang/src/lib.rs#L102)
+- [`regex_find`](../crates/spanda-regex-lang/src/lib.rs#L30)
 - [`regex_matches`](../crates/spanda-regex-lang/src/lib.rs#L8)
-- [`regex_replace`](../crates/spanda-regex-lang/src/lib.rs#L50)
-- [`regex_split`](../crates/spanda-regex-lang/src/lib.rs#L76)
-- [`validate_regex_literal`](../crates/spanda-regex-lang/src/lib.rs#L134)
+- [`regex_replace`](../crates/spanda-regex-lang/src/lib.rs#L52)
+- [`regex_split`](../crates/spanda-regex-lang/src/lib.rs#L80)
+- [`validate_regex_literal`](../crates/spanda-regex-lang/src/lib.rs#L140)
 
 ### Interpreter and runtime {#group-interpreterandruntime}
 
@@ -1746,22 +2292,32 @@ Crate root: [`crates/spanda-interpreter`](../crates/spanda-interpreter/) · [REA
 
 **Modules**
 
+- [fleet_http](#spanda-interpreter-fleet-http)
 - [options](#spanda-interpreter-options)
+- [platform_events](#spanda-interpreter-platform-events)
 - [root](#spanda-interpreter-root)
 - [run](#spanda-interpreter-run)
 - [runtime](#spanda-interpreter-runtime)
 - [simulator](#spanda-interpreter-simulator)
 - [runtime/orchestrator](#spanda-interpreter-runtime-orchestrator)
 - [runtime/runtime_actuators](#spanda-interpreter-runtime-runtime-actuators)
+- [runtime/runtime_assurance](#spanda-interpreter-runtime-runtime-assurance)
 - [runtime/runtime_audit](#spanda-interpreter-runtime-runtime-audit)
 - [runtime/runtime_builtins](#spanda-interpreter-runtime-runtime-builtins)
 - [runtime/runtime_connectivity](#spanda-interpreter-runtime-runtime-connectivity)
+- [runtime/runtime_continuity](#spanda-interpreter-runtime-runtime-continuity)
+- [runtime/runtime_decl_extensions](#spanda-interpreter-runtime-runtime-decl-extensions)
 - [runtime/runtime_declarations](#spanda-interpreter-runtime-runtime-declarations)
 - [runtime/runtime_eval](#spanda-interpreter-runtime-runtime-eval)
 - [runtime/runtime_execute](#spanda-interpreter-runtime-runtime-execute)
+- [runtime/runtime_faults](#spanda-interpreter-runtime-runtime-faults)
+- [runtime/runtime_health](#spanda-interpreter-runtime-runtime-health)
 - [runtime/runtime_helpers](#spanda-interpreter-runtime-runtime-helpers)
+- [runtime/runtime_kill_switch](#spanda-interpreter-runtime-runtime-kill-switch)
 - [runtime/runtime_navigation](#spanda-interpreter-runtime-runtime-navigation)
+- [runtime/runtime_operational_policy](#spanda-interpreter-runtime-runtime-operational-policy)
 - [runtime/runtime_program](#spanda-interpreter-runtime-runtime-program)
+- [runtime/runtime_recovery](#spanda-interpreter-runtime-runtime-recovery)
 - [runtime/runtime_reliability](#spanda-interpreter-runtime-runtime-reliability)
 - [runtime/runtime_robot](#spanda-interpreter-runtime-runtime-robot)
 - [runtime/runtime_robotics](#spanda-interpreter-runtime-runtime-robotics)
@@ -1771,8 +2327,29 @@ Crate root: [`crates/spanda-interpreter`](../crates/spanda-interpreter/) · [REA
 - [runtime/runtime_sensors](#spanda-interpreter-runtime-runtime-sensors)
 - [runtime/runtime_setup](#spanda-interpreter-runtime-runtime-setup)
 - [runtime/runtime_spawn](#spanda-interpreter-runtime-runtime-spawn)
+- [runtime/runtime_tamper](#spanda-interpreter-runtime-runtime-tamper)
 - [runtime/runtime_triggers](#spanda-interpreter-runtime-runtime-triggers)
 - [runtime/runtime_twin](#spanda-interpreter-runtime-runtime-twin)
+- [runtime/runtime_world_model](#spanda-interpreter-runtime-runtime-world-model)
+
+##### `fleet_http` {#spanda-interpreter-fleet-http}
+
+Source: [crates/spanda-interpreter/src/fleet_http.rs](../crates/spanda-interpreter/src/fleet_http.rs#L1)
+
+**struct**
+
+- [`FleetContinuityRequest`](../crates/spanda-interpreter/src/fleet_http.rs#L39)
+- [`FleetContinuityResponse`](../crates/spanda-interpreter/src/fleet_http.rs#L60)
+- [`FleetRecoveryRequest`](../crates/spanda-interpreter/src/fleet_http.rs#L15)
+- [`FleetRecoveryResponse`](../crates/spanda-interpreter/src/fleet_http.rs#L28)
+- [`FleetTamperIngestRequest`](../crates/spanda-interpreter/src/fleet_http.rs#L91)
+- [`FleetTamperIngestResponse`](../crates/spanda-interpreter/src/fleet_http.rs#L101)
+
+**fn**
+
+- [`ingest_fleet_tamper_trace`](../crates/spanda-interpreter/src/fleet_http.rs#L108)
+- [`relay_continuity_via_mesh`](../crates/spanda-interpreter/src/fleet_http.rs#L80)
+- [`relay_recovery_via_mesh`](../crates/spanda-interpreter/src/fleet_http.rs#L70)
 
 ##### `options` {#spanda-interpreter-options}
 
@@ -1780,10 +2357,18 @@ Source: [crates/spanda-interpreter/src/options.rs](../crates/spanda-interpreter/
 
 **struct**
 
-- [`ObstacleConfig`](../crates/spanda-interpreter/src/options.rs#L78)
-- [`RunOptions`](../crates/spanda-interpreter/src/options.rs#L12)
-- [`RunResult`](../crates/spanda-interpreter/src/options.rs#L85)
-- [`TestRunResult`](../crates/spanda-interpreter/src/options.rs#L98)
+- [`ContinuityRunOptions`](../crates/spanda-interpreter/src/options.rs#L281)
+- [`ContinuityRunResult`](../crates/spanda-interpreter/src/options.rs#L300)
+- [`ObstacleConfig`](../crates/spanda-interpreter/src/options.rs#L226)
+- [`RecoveryRunOptions`](../crates/spanda-interpreter/src/options.rs#L254)
+- [`RecoveryRunResult`](../crates/spanda-interpreter/src/options.rs#L271)
+- [`RunOptions`](../crates/spanda-interpreter/src/options.rs#L19)
+- [`RunResult`](../crates/spanda-interpreter/src/options.rs#L233)
+- [`TestRunResult`](../crates/spanda-interpreter/src/options.rs#L246)
+
+**impl**
+
+- [`RunOptions`](../crates/spanda-interpreter/src/options.rs#L115)
 
 ##### `root` {#spanda-interpreter-root}
 
@@ -1791,20 +2376,20 @@ Source: [crates/spanda-interpreter/src/lib.rs](../crates/spanda-interpreter/src/
 
 **mod**
 
-- [`options`](../crates/spanda-interpreter/src/lib.rs#L3)
-- [`run`](../crates/spanda-interpreter/src/lib.rs#L4)
-- [`runtime`](../crates/spanda-interpreter/src/lib.rs#L5)
-- [`simulator`](../crates/spanda-interpreter/src/lib.rs#L6)
+- [`options`](../crates/spanda-interpreter/src/lib.rs#L5)
+- [`run`](../crates/spanda-interpreter/src/lib.rs#L6)
+- [`runtime`](../crates/spanda-interpreter/src/lib.rs#L7)
+- [`simulator`](../crates/spanda-interpreter/src/lib.rs#L8)
 
 **export**
 
-- [`spanda_error::SpandaError`](../crates/spanda-interpreter/src/lib.rs#L15)
-- [`spanda_runtime::RuntimeHost`](../crates/spanda-interpreter/src/lib.rs#L18)
-- [`spanda_runtime::telemetry::ExecutionMetrics`](../crates/spanda-interpreter/src/lib.rs#L17)
+- [`spanda_error::SpandaError`](../crates/spanda-interpreter/src/lib.rs#L21)
+- [`spanda_runtime::RuntimeHost`](../crates/spanda-interpreter/src/lib.rs#L25)
+- [`spanda_runtime::telemetry::ExecutionMetrics`](../crates/spanda-interpreter/src/lib.rs#L24)
 
 **type**
 
-- [`SimRobotBackend`](../crates/spanda-interpreter/src/lib.rs#L21)
+- [`SimRobotBackend`](../crates/spanda-interpreter/src/lib.rs#L28)
 
 ##### `run` {#spanda-interpreter-run}
 
@@ -1812,8 +2397,8 @@ Source: [crates/spanda-interpreter/src/run.rs](../crates/spanda-interpreter/src/
 
 **fn**
 
-- [`run_program`](../crates/spanda-interpreter/src/run.rs#L16)
-- [`run_tests_with_registry`](../crates/spanda-interpreter/src/run.rs#L133)
+- [`run_program`](../crates/spanda-interpreter/src/run.rs#L18)
+- [`run_tests_with_registry`](../crates/spanda-interpreter/src/run.rs#L199)
 
 ##### `runtime` {#spanda-interpreter-runtime}
 
@@ -1837,18 +2422,18 @@ Source: [crates/spanda-interpreter/src/simulator.rs](../crates/spanda-interprete
 **impl**
 
 - [`Simulator`](../crates/spanda-interpreter/src/simulator.rs#L85)
-- [`Simulator`](../crates/spanda-interpreter/src/simulator.rs#L252)
+- [`Simulator`](../crates/spanda-interpreter/src/simulator.rs#L257)
 - [`SimulatorConfig`](../crates/spanda-interpreter/src/simulator.rs#L21)
-- [`spanda_runtime`](../crates/spanda-interpreter/src/simulator.rs#L712)
+- [`spanda_runtime`](../crates/spanda-interpreter/src/simulator.rs#L729)
 
 **fn**
 
-- [`create_default_simulator`](../crates/spanda-interpreter/src/simulator.rs#L693)
-- [`get_action_log`](../crates/spanda-interpreter/src/simulator.rs#L177)
-- [`get_arm_position`](../crates/spanda-interpreter/src/simulator.rs#L141)
+- [`create_default_simulator`](../crates/spanda-interpreter/src/simulator.rs#L710)
+- [`get_action_log`](../crates/spanda-interpreter/src/simulator.rs#L180)
+- [`get_arm_position`](../crates/spanda-interpreter/src/simulator.rs#L142)
 - [`get_event_log`](../crates/spanda-interpreter/src/simulator.rs#L123)
-- [`get_published_topics`](../crates/spanda-interpreter/src/simulator.rs#L195)
-- [`get_service_log`](../crates/spanda-interpreter/src/simulator.rs#L159)
+- [`get_published_topics`](../crates/spanda-interpreter/src/simulator.rs#L199)
+- [`get_service_log`](../crates/spanda-interpreter/src/simulator.rs#L161)
 
 **method**
 
@@ -1860,56 +2445,57 @@ Source: [crates/spanda-interpreter/src/runtime/orchestrator.rs](../crates/spanda
 
 **export**
 
-- [`spanda_runtime::environment::Environment`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L54)
-- [`spanda_runtime::RuntimeError`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L55)
-- [`spanda_runtime::value::*`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L53)
+- [`spanda_runtime::environment::Environment`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L50)
+- [`spanda_runtime::RuntimeError`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L52)
+- [`spanda_runtime::value::*`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L51)
 
 **struct**
 
-- [`Interpreter`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L319)
-- [`InterpreterOptions`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L241)
+- [`Interpreter`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L391)
+- [`InterpreterOptions`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L269)
 
 **trait**
 
-- [`IntoSpandaError`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L59)
-- [`RobotBackend`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L108)
+- [`IntoSpandaError`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L56)
+- [`RobotBackend`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L139)
 
 **impl**
 
-- [`Interpreter`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L388)
-- [`InterpreterOptions`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L277)
-- [`RobotDecl`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L1497)
-- [`RuntimeError`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L63)
-- [`spanda_ast`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L1661)
-- [`spanda_ast`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L1688)
-- [`spanda_ast`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L1716)
-- [`TaskSchedule`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L1402)
+- [`Interpreter`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L489)
+- [`InterpreterOptions`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L339)
+- [`RuntimeError`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L60)
 
 **fn**
 
-- [`bind_call_args`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L856)
-- [`debug_execute_stmt`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L782)
-- [`env`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L724)
-- [`env_mut`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L743)
-- [`load_program_metadata`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L1107)
-- [`pose_from_state`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L69)
-- [`provider_registry`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L518)
-- [`resolve_sync_call`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L802)
-- [`restore_env`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L891)
-- [`robot_backend`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L705)
-- [`run`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L911)
-- [`run_tests`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L1078)
-- [`runtime_host`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L495)
-- [`setup_robot_for_debug`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L762)
-- [`take_mission_trace`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L576)
-- [`take_telemetry`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L536)
-- [`telemetry`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L499)
-- [`twin_replay_export`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L555)
-- [`velocity_from_state`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L87)
+- [`assurance`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L642)
+- [`bind_call_args`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L1233)
+- [`debug_execute_stmt`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L1133)
+- [`env`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L1042)
+- [`env_mut`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L1071)
+- [`fault_runtime`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L658)
+- [`load_program_metadata`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L1827)
+- [`pose_from_state`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L79)
+- [`provider_registry`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L721)
+- [`provider_runtime`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L654)
+- [`resolve_sync_call`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L1166)
+- [`restore_env`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L1284)
+- [`robot_backend`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L1013)
+- [`run`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L1315)
+- [`run_tests`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L1629)
+- [`runtime_host`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L662)
+- [`setup_robot_for_debug`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L1100)
+- [`shared_telemetry_sink`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L650)
+- [`sim_time_ms`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L782)
+- [`take_mission_trace`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L819)
+- [`take_telemetry`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L753)
+- [`telemetry`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L692)
+- [`telemetry_sink`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L646)
+- [`twin_replay_export`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L786)
+- [`velocity_from_state`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L109)
 
 **method**
 
-- [`Interpreter::new`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L389)
+- [`Interpreter::new`](../crates/spanda-interpreter/src/runtime/orchestrator.rs#L490)
 
 ##### `runtime/runtime_actuators` {#spanda-interpreter-runtime-runtime-actuators}
 
@@ -1918,6 +2504,14 @@ Source: [crates/spanda-interpreter/src/runtime/runtime_actuators.rs](../crates/s
 **impl**
 
 - [`Interpreter`](../crates/spanda-interpreter/src/runtime/runtime_actuators.rs#L13)
+
+##### `runtime/runtime_assurance` {#spanda-interpreter-runtime-runtime-assurance}
+
+Source: [crates/spanda-interpreter/src/runtime/runtime_assurance.rs](../crates/spanda-interpreter/src/runtime/runtime_assurance.rs#L1)
+
+**impl**
+
+- [`Interpreter`](../crates/spanda-interpreter/src/runtime/runtime_assurance.rs#L108)
 
 ##### `runtime/runtime_audit` {#spanda-interpreter-runtime-runtime-audit}
 
@@ -1943,6 +2537,35 @@ Source: [crates/spanda-interpreter/src/runtime/runtime_connectivity.rs](../crate
 
 - [`Interpreter`](../crates/spanda-interpreter/src/runtime/runtime_connectivity.rs#L9)
 
+##### `runtime/runtime_continuity` {#spanda-interpreter-runtime-runtime-continuity}
+
+Source: [crates/spanda-interpreter/src/runtime/runtime_continuity.rs](../crates/spanda-interpreter/src/runtime/runtime_continuity.rs#L1)
+
+**struct**
+
+- [`ContinuityExecutionSnapshot`](../crates/spanda-interpreter/src/runtime/runtime_continuity.rs#L441)
+
+**impl**
+
+- [`Interpreter`](../crates/spanda-interpreter/src/runtime/runtime_continuity.rs#L21)
+
+**fn**
+
+- [`continuity_context_from_request`](../crates/spanda-interpreter/src/runtime/runtime_continuity.rs#L495)
+- [`execute_continuity_on_program`](../crates/spanda-interpreter/src/runtime/runtime_continuity.rs#L448)
+
+##### `runtime/runtime_decl_extensions` {#spanda-interpreter-runtime-runtime-decl-extensions}
+
+Source: [crates/spanda-interpreter/src/runtime/runtime_decl_extensions.rs](../crates/spanda-interpreter/src/runtime/runtime_decl_extensions.rs#L1)
+
+**impl**
+
+- [`RobotDecl`](../crates/spanda-interpreter/src/runtime/runtime_decl_extensions.rs#L169)
+- [`spanda_ast`](../crates/spanda-interpreter/src/runtime/runtime_decl_extensions.rs#L334)
+- [`spanda_ast`](../crates/spanda-interpreter/src/runtime/runtime_decl_extensions.rs#L361)
+- [`spanda_ast`](../crates/spanda-interpreter/src/runtime/runtime_decl_extensions.rs#L389)
+- [`TaskSchedule`](../crates/spanda-interpreter/src/runtime/runtime_decl_extensions.rs#L73)
+
 ##### `runtime/runtime_declarations` {#spanda-interpreter-runtime-runtime-declarations}
 
 Source: [crates/spanda-interpreter/src/runtime/runtime_declarations.rs](../crates/spanda-interpreter/src/runtime/runtime_declarations.rs#L1)
@@ -1958,7 +2581,7 @@ Source: [crates/spanda-interpreter/src/runtime/runtime_eval.rs](../crates/spanda
 **impl**
 
 - [`Interpreter`](../crates/spanda-interpreter/src/runtime/runtime_eval.rs#L15)
-- [`PlanRunner`](../crates/spanda-interpreter/src/runtime/runtime_eval.rs#L680)
+- [`PlanRunner`](../crates/spanda-interpreter/src/runtime/runtime_eval.rs#L743)
 
 ##### `runtime/runtime_execute` {#spanda-interpreter-runtime-runtime-execute}
 
@@ -1968,6 +2591,22 @@ Source: [crates/spanda-interpreter/src/runtime/runtime_execute.rs](../crates/spa
 
 - [`Interpreter`](../crates/spanda-interpreter/src/runtime/runtime_execute.rs#L15)
 
+##### `runtime/runtime_faults` {#spanda-interpreter-runtime-runtime-faults}
+
+Source: [crates/spanda-interpreter/src/runtime/runtime_faults.rs](../crates/spanda-interpreter/src/runtime/runtime_faults.rs#L1)
+
+**impl**
+
+- [`Interpreter`](../crates/spanda-interpreter/src/runtime/runtime_faults.rs#L8)
+
+##### `runtime/runtime_health` {#spanda-interpreter-runtime-runtime-health}
+
+Source: [crates/spanda-interpreter/src/runtime/runtime_health.rs](../crates/spanda-interpreter/src/runtime/runtime_health.rs#L1)
+
+**impl**
+
+- [`Interpreter`](../crates/spanda-interpreter/src/runtime/runtime_health.rs#L10)
+
 ##### `runtime/runtime_helpers` {#spanda-interpreter-runtime-runtime-helpers}
 
 Source: [crates/spanda-interpreter/src/runtime/runtime_helpers.rs](../crates/spanda-interpreter/src/runtime/runtime_helpers.rs#L1)
@@ -1975,6 +2614,14 @@ Source: [crates/spanda-interpreter/src/runtime/runtime_helpers.rs](../crates/spa
 **impl**
 
 - [`Interpreter`](../crates/spanda-interpreter/src/runtime/runtime_helpers.rs#L9)
+
+##### `runtime/runtime_kill_switch` {#spanda-interpreter-runtime-runtime-kill-switch}
+
+Source: [crates/spanda-interpreter/src/runtime/runtime_kill_switch.rs](../crates/spanda-interpreter/src/runtime/runtime_kill_switch.rs#L1)
+
+**impl**
+
+- [`Interpreter`](../crates/spanda-interpreter/src/runtime/runtime_kill_switch.rs#L8)
 
 ##### `runtime/runtime_navigation` {#spanda-interpreter-runtime-runtime-navigation}
 
@@ -1984,6 +2631,14 @@ Source: [crates/spanda-interpreter/src/runtime/runtime_navigation.rs](../crates/
 
 - [`Interpreter`](../crates/spanda-interpreter/src/runtime/runtime_navigation.rs#L12)
 
+##### `runtime/runtime_operational_policy` {#spanda-interpreter-runtime-runtime-operational-policy}
+
+Source: [crates/spanda-interpreter/src/runtime/runtime_operational_policy.rs](../crates/spanda-interpreter/src/runtime/runtime_operational_policy.rs#L1)
+
+**impl**
+
+- [`Interpreter`](../crates/spanda-interpreter/src/runtime/runtime_operational_policy.rs#L7)
+
 ##### `runtime/runtime_program` {#spanda-interpreter-runtime-runtime-program}
 
 Source: [crates/spanda-interpreter/src/runtime/runtime_program.rs](../crates/spanda-interpreter/src/runtime/runtime_program.rs#L1)
@@ -1992,13 +2647,32 @@ Source: [crates/spanda-interpreter/src/runtime/runtime_program.rs](../crates/spa
 
 - [`Interpreter`](../crates/spanda-interpreter/src/runtime/runtime_program.rs#L13)
 
+##### `runtime/runtime_recovery` {#spanda-interpreter-runtime-runtime-recovery}
+
+Source: [crates/spanda-interpreter/src/runtime/runtime_recovery.rs](../crates/spanda-interpreter/src/runtime/runtime_recovery.rs#L1)
+
+**struct**
+
+- [`RecoveryExecutionSnapshot`](../crates/spanda-interpreter/src/runtime/runtime_recovery.rs#L917)
+
+**impl**
+
+- [`Interpreter`](../crates/spanda-interpreter/src/runtime/runtime_recovery.rs#L97)
+
+**fn**
+
+- [`execute_recovery_on_program`](../crates/spanda-interpreter/src/runtime/runtime_recovery.rs#L924)
+- [`prepare_recovery_execution`](../crates/spanda-interpreter/src/runtime/runtime_recovery.rs#L805)
+- [`recovery_execution_snapshot`](../crates/spanda-interpreter/src/runtime/runtime_recovery.rs#L880)
+- [`run_recovery_issue`](../crates/spanda-interpreter/src/runtime/runtime_recovery.rs#L858)
+
 ##### `runtime/runtime_reliability` {#spanda-interpreter-runtime-runtime-reliability}
 
 Source: [crates/spanda-interpreter/src/runtime/runtime_reliability.rs](../crates/spanda-interpreter/src/runtime/runtime_reliability.rs#L1)
 
 **impl**
 
-- [`Interpreter`](../crates/spanda-interpreter/src/runtime/runtime_reliability.rs#L16)
+- [`Interpreter`](../crates/spanda-interpreter/src/runtime/runtime_reliability.rs#L17)
 
 ##### `runtime/runtime_robot` {#spanda-interpreter-runtime-runtime-robot}
 
@@ -2014,7 +2688,7 @@ Source: [crates/spanda-interpreter/src/runtime/runtime_robotics.rs](../crates/sp
 
 **impl**
 
-- [`Interpreter`](../crates/spanda-interpreter/src/runtime/runtime_robotics.rs#L13)
+- [`Interpreter`](../crates/spanda-interpreter/src/runtime/runtime_robotics.rs#L14)
 
 ##### `runtime/runtime_safety` {#spanda-interpreter-runtime-runtime-safety}
 
@@ -2038,7 +2712,7 @@ Source: [crates/spanda-interpreter/src/runtime/runtime_security.rs](../crates/sp
 
 **impl**
 
-- [`Interpreter`](../crates/spanda-interpreter/src/runtime/runtime_security.rs#L8)
+- [`Interpreter`](../crates/spanda-interpreter/src/runtime/runtime_security.rs#L9)
 
 ##### `runtime/runtime_sensors` {#spanda-interpreter-runtime-runtime-sensors}
 
@@ -2046,7 +2720,7 @@ Source: [crates/spanda-interpreter/src/runtime/runtime_sensors.rs](../crates/spa
 
 **impl**
 
-- [`Interpreter`](../crates/spanda-interpreter/src/runtime/runtime_sensors.rs#L10)
+- [`Interpreter`](../crates/spanda-interpreter/src/runtime/runtime_sensors.rs#L13)
 
 ##### `runtime/runtime_setup` {#spanda-interpreter-runtime-runtime-setup}
 
@@ -2054,7 +2728,7 @@ Source: [crates/spanda-interpreter/src/runtime/runtime_setup.rs](../crates/spand
 
 **impl**
 
-- [`Interpreter`](../crates/spanda-interpreter/src/runtime/runtime_setup.rs#L29)
+- [`Interpreter`](../crates/spanda-interpreter/src/runtime/runtime_setup.rs#L32)
 
 ##### `runtime/runtime_spawn` {#spanda-interpreter-runtime-runtime-spawn}
 
@@ -2062,7 +2736,15 @@ Source: [crates/spanda-interpreter/src/runtime/runtime_spawn.rs](../crates/spand
 
 **impl**
 
-- [`Interpreter`](../crates/spanda-interpreter/src/runtime/runtime_spawn.rs#L8)
+- [`Interpreter`](../crates/spanda-interpreter/src/runtime/runtime_spawn.rs#L9)
+
+##### `runtime/runtime_tamper` {#spanda-interpreter-runtime-runtime-tamper}
+
+Source: [crates/spanda-interpreter/src/runtime/runtime_tamper.rs](../crates/spanda-interpreter/src/runtime/runtime_tamper.rs#L1)
+
+**impl**
+
+- [`Interpreter`](../crates/spanda-interpreter/src/runtime/runtime_tamper.rs#L11)
 
 ##### `runtime/runtime_triggers` {#spanda-interpreter-runtime-runtime-triggers}
 
@@ -2078,7 +2760,15 @@ Source: [crates/spanda-interpreter/src/runtime/runtime_twin.rs](../crates/spanda
 
 **impl**
 
-- [`Interpreter`](../crates/spanda-interpreter/src/runtime/runtime_twin.rs#L10)
+- [`Interpreter`](../crates/spanda-interpreter/src/runtime/runtime_twin.rs#L11)
+
+##### `runtime/runtime_world_model` {#spanda-interpreter-runtime-runtime-world-model}
+
+Source: [crates/spanda-interpreter/src/runtime/runtime_world_model.rs](../crates/spanda-interpreter/src/runtime/runtime_world_model.rs#L1)
+
+**impl**
+
+- [`Interpreter`](../crates/spanda-interpreter/src/runtime/runtime_world_model.rs#L8)
 
 #### `spanda-runtime` {#crate-spanda-runtime}
 
@@ -2086,30 +2776,83 @@ Crate root: [`crates/spanda-runtime`](../crates/spanda-runtime/) · [README](../
 
 **Modules**
 
+- [assurance_runtime](#spanda-runtime-assurance-runtime)
 - [classification](#spanda-runtime-classification)
+- [continuity_primitives](#spanda-runtime-continuity-primitives)
+- [continuity_types](#spanda-runtime-continuity-types)
+- [device_telemetry_sink](#spanda-runtime-device-telemetry-sink)
 - [environment](#spanda-runtime-environment)
 - [error](#spanda-runtime-error)
 - [events](#spanda-runtime-events)
+- [fault_primitives](#spanda-runtime-fault-primitives)
+- [fault_runtime](#spanda-runtime-fault-runtime)
+- [fault_types](#spanda-runtime-fault-types)
+- [fleet_tamper_runtime](#spanda-runtime-fleet-tamper-runtime)
+- [fleet_telemetry_runtime](#spanda-runtime-fleet-telemetry-runtime)
+- [fusion](#spanda-runtime-fusion)
 - [hal_config](#spanda-runtime-hal-config)
+- [health_primitives](#spanda-runtime-health-primitives)
+- [health_types](#spanda-runtime-health-types)
+- [hooks](#spanda-runtime-hooks)
 - [host](#spanda-runtime-host)
+- [operational_policy](#spanda-runtime-operational-policy)
+- [provider_runtime](#spanda-runtime-provider-runtime)
 - [provider_types](#spanda-runtime-provider-types)
 - [providers](#spanda-runtime-providers)
+- [readiness_runtime](#spanda-runtime-readiness-runtime)
+- [recovery_primitives](#spanda-runtime-recovery-primitives)
+- [recovery_types](#spanda-runtime-recovery-types)
 - [reliability_runtime](#spanda-runtime-reliability-runtime)
 - [replay](#spanda-runtime-replay)
 - [robot_state](#spanda-runtime-robot-state)
 - [robotics](#spanda-runtime-robotics)
 - [root](#spanda-runtime-root)
 - [scheduler](#spanda-runtime-scheduler)
+- [security_primitives](#spanda-runtime-security-primitives)
+- [security_runtime](#spanda-runtime-security-runtime)
+- [security_types](#spanda-runtime-security-types)
 - [serialize](#spanda-runtime-serialize)
 - [state_machine](#spanda-runtime-state-machine)
+- [tamper_policy](#spanda-runtime-tamper-policy)
 - [telemetry](#spanda-runtime-telemetry)
+- [telemetry_sink](#spanda-runtime-telemetry-sink)
 - [triggers](#spanda-runtime-triggers)
 - [twin](#spanda-runtime-twin)
 - [value](#spanda-runtime-value)
+- [wire_crypto](#spanda-runtime-wire-crypto)
+- [world_model](#spanda-runtime-world-model)
+- [providers/hri](#spanda-runtime-providers-hri)
+- [providers/iot](#spanda-runtime-providers-iot)
 - [providers/registry](#spanda-runtime-providers-registry)
 - [providers/traits](#spanda-runtime-providers-traits)
 - [providers/transport_types](#spanda-runtime-providers-transport-types)
 - [providers/types](#spanda-runtime-providers-types)
+
+##### `assurance_runtime` {#spanda-runtime-assurance-runtime}
+
+Source: [crates/spanda-runtime/src/assurance_runtime.rs](../crates/spanda-runtime/src/assurance_runtime.rs#L1)
+
+**struct**
+
+- [`BuiltinAssuranceRuntime`](../crates/spanda-runtime/src/assurance_runtime.rs#L133)
+
+**trait**
+
+- [`AssuranceRuntime`](../crates/spanda-runtime/src/assurance_runtime.rs#L28)
+
+**type**
+
+- [`SharedAssuranceRuntime`](../crates/spanda-runtime/src/assurance_runtime.rs#L464)
+
+**impl**
+
+- [`BuiltinAssuranceRuntime`](../crates/spanda-runtime/src/assurance_runtime.rs#L135)
+
+**fn**
+
+- [`default_assurance_runtime`](../crates/spanda-runtime/src/assurance_runtime.rs#L467)
+- [`platform_assurance_runtime`](../crates/spanda-runtime/src/assurance_runtime.rs#L455)
+- [`set_platform_assurance_runtime`](../crates/spanda-runtime/src/assurance_runtime.rs#L449)
 
 ##### `classification` {#spanda-runtime-classification}
 
@@ -2117,7 +2860,7 @@ Source: [crates/spanda-runtime/src/classification.rs](../crates/spanda-runtime/s
 
 **struct**
 
-- [`ModuleClassification`](../crates/spanda-runtime/src/classification.rs#L29)
+- [`ModuleClassification`](../crates/spanda-runtime/src/classification.rs#L28)
 
 **enum**
 
@@ -2125,8 +2868,72 @@ Source: [crates/spanda-runtime/src/classification.rs](../crates/spanda-runtime/s
 
 **fn**
 
-- [`module_classifications`](../crates/spanda-runtime/src/classification.rs#L37)
-- [`official_package_names`](../crates/spanda-runtime/src/classification.rs#L151)
+- [`module_classifications`](../crates/spanda-runtime/src/classification.rs#L36)
+- [`official_package_names`](../crates/spanda-runtime/src/classification.rs#L182)
+
+##### `continuity_primitives` {#spanda-runtime-continuity-primitives}
+
+Source: [crates/spanda-runtime/src/continuity_primitives.rs](../crates/spanda-runtime/src/continuity_primitives.rs#L1)
+
+**fn**
+
+- [`default_checkpoint_store_path`](../crates/spanda-runtime/src/continuity_primitives.rs#L115)
+- [`extract_continuity_policies`](../crates/spanda-runtime/src/continuity_primitives.rs#L10)
+- [`issue_to_continuity_trigger`](../crates/spanda-runtime/src/continuity_primitives.rs#L50)
+- [`load_checkpoint`](../crates/spanda-runtime/src/continuity_primitives.rs#L154)
+- [`load_checkpoint_store`](../crates/spanda-runtime/src/continuity_primitives.rs#L120)
+- [`parse_trigger`](../crates/spanda-runtime/src/continuity_primitives.rs#L163)
+- [`program_has_continuity_for_trigger`](../crates/spanda-runtime/src/continuity_primitives.rs#L89)
+- [`record_checkpoint`](../crates/spanda-runtime/src/continuity_primitives.rs#L142)
+- [`save_checkpoint_store`](../crates/spanda-runtime/src/continuity_primitives.rs#L128)
+
+##### `continuity_types` {#spanda-runtime-continuity-types}
+
+Source: [crates/spanda-runtime/src/continuity_types.rs](../crates/spanda-runtime/src/continuity_types.rs#L1)
+
+**struct**
+
+- [`ContinuityCheckpointStore`](../crates/spanda-runtime/src/continuity_types.rs#L166)
+- [`ContinuityContext`](../crates/spanda-runtime/src/continuity_types.rs#L107)
+- [`ContinuityEvidence`](../crates/spanda-runtime/src/continuity_types.rs#L155)
+- [`ContinuityPolicySpec`](../crates/spanda-runtime/src/continuity_types.rs#L133)
+- [`MissionCheckpoint`](../crates/spanda-runtime/src/continuity_types.rs#L75)
+- [`MissionExecutionState`](../crates/spanda-runtime/src/continuity_types.rs#L67)
+- [`MissionStateSnapshot`](../crates/spanda-runtime/src/continuity_types.rs#L87)
+- [`MissionStateTransfer`](../crates/spanda-runtime/src/continuity_types.rs#L97)
+- [`TakeoverReport`](../crates/spanda-runtime/src/continuity_types.rs#L140)
+
+**enum**
+
+- [`ContinuationDecision`](../crates/spanda-runtime/src/continuity_types.rs#L57)
+- [`ContinuityTrigger`](../crates/spanda-runtime/src/continuity_types.rs#L10)
+- [`SuccessionScope`](../crates/spanda-runtime/src/continuity_types.rs#L24)
+- [`TakeoverMode`](../crates/spanda-runtime/src/continuity_types.rs#L37)
+
+**impl**
+
+- [`ContinuityContext`](../crates/spanda-runtime/src/continuity_types.rs#L117)
+
+##### `device_telemetry_sink` {#spanda-runtime-device-telemetry-sink}
+
+Source: [crates/spanda-runtime/src/device_telemetry_sink.rs](../crates/spanda-runtime/src/device_telemetry_sink.rs#L1)
+
+**struct**
+
+- [`NoopDeviceTelemetrySink`](../crates/spanda-runtime/src/device_telemetry_sink.rs#L35)
+
+**trait**
+
+- [`DeviceTelemetrySink`](../crates/spanda-runtime/src/device_telemetry_sink.rs#L7)
+
+**impl**
+
+- [`NoopDeviceTelemetrySink`](../crates/spanda-runtime/src/device_telemetry_sink.rs#L37)
+
+**fn**
+
+- [`device_telemetry_sink`](../crates/spanda-runtime/src/device_telemetry_sink.rs#L79)
+- [`set_device_telemetry_sink`](../crates/spanda-runtime/src/device_telemetry_sink.rs#L74)
 
 ##### `environment` {#spanda-runtime-environment}
 
@@ -2139,16 +2946,16 @@ Source: [crates/spanda-runtime/src/environment.rs](../crates/spanda-runtime/src/
 **impl**
 
 - [`Environment`](../crates/spanda-runtime/src/environment.rs#L11)
-- [`Environment`](../crates/spanda-runtime/src/environment.rs#L158)
+- [`Environment`](../crates/spanda-runtime/src/environment.rs#L162)
 
 **fn**
 
-- [`clone_bindings`](../crates/spanda-runtime/src/environment.rs#L114)
-- [`define`](../crates/spanda-runtime/src/environment.rs#L33)
+- [`clone_bindings`](../crates/spanda-runtime/src/environment.rs#L118)
+- [`define`](../crates/spanda-runtime/src/environment.rs#L32)
 - [`get`](../crates/spanda-runtime/src/environment.rs#L54)
-- [`remove`](../crates/spanda-runtime/src/environment.rs#L74)
-- [`set`](../crates/spanda-runtime/src/environment.rs#L93)
-- [`snapshot_display`](../crates/spanda-runtime/src/environment.rs#L135)
+- [`remove`](../crates/spanda-runtime/src/environment.rs#L75)
+- [`set`](../crates/spanda-runtime/src/environment.rs#L96)
+- [`snapshot_display`](../crates/spanda-runtime/src/environment.rs#L139)
 
 **method**
 
@@ -2164,6 +2971,7 @@ Source: [crates/spanda-runtime/src/error.rs](../crates/spanda-runtime/src/error.
 
 **impl**
 
+- [`From`](../crates/spanda-runtime/src/error.rs#L43)
 - [`RuntimeError`](../crates/spanda-runtime/src/error.rs#L17)
 - [`std`](../crates/spanda-runtime/src/error.rs#L11)
 
@@ -2182,16 +2990,142 @@ Source: [crates/spanda-runtime/src/events.rs](../crates/spanda-runtime/src/event
 **impl**
 
 - [`EventBus`](../crates/spanda-runtime/src/events.rs#L41)
-- [`EventBus`](../crates/spanda-runtime/src/events.rs#L118)
+- [`EventBus`](../crates/spanda-runtime/src/events.rs#L106)
 
 **fn**
 
-- [`handler_body`](../crates/spanda-runtime/src/events.rs#L93)
-- [`register`](../crates/spanda-runtime/src/events.rs#L68)
+- [`handler_body`](../crates/spanda-runtime/src/events.rs#L84)
+- [`register`](../crates/spanda-runtime/src/events.rs#L62)
 
 **method**
 
 - [`EventBus::new`](../crates/spanda-runtime/src/events.rs#L42)
+
+##### `fault_primitives` {#spanda-runtime-fault-primitives}
+
+Source: [crates/spanda-runtime/src/fault_primitives.rs](../crates/spanda-runtime/src/fault_primitives.rs#L1)
+
+**fn**
+
+- [`empty_fault_scan_report`](../crates/spanda-runtime/src/fault_primitives.rs#L153)
+- [`faults_from_hardware_signals`](../crates/spanda-runtime/src/fault_primitives.rs#L10)
+- [`record_fault_in_trace`](../crates/spanda-runtime/src/fault_primitives.rs#L67)
+
+##### `fault_runtime` {#spanda-runtime-fault-runtime}
+
+Source: [crates/spanda-runtime/src/fault_runtime.rs](../crates/spanda-runtime/src/fault_runtime.rs#L1)
+
+**struct**
+
+- [`BuiltinFaultRuntime`](../crates/spanda-runtime/src/fault_runtime.rs#L41)
+
+**trait**
+
+- [`FaultRuntime`](../crates/spanda-runtime/src/fault_runtime.rs#L16)
+
+**type**
+
+- [`SharedFaultRuntime`](../crates/spanda-runtime/src/fault_runtime.rs#L73)
+
+**impl**
+
+- [`BuiltinFaultRuntime`](../crates/spanda-runtime/src/fault_runtime.rs#L43)
+
+**fn**
+
+- [`default_fault_runtime`](../crates/spanda-runtime/src/fault_runtime.rs#L76)
+
+##### `fault_types` {#spanda-runtime-fault-types}
+
+Source: [crates/spanda-runtime/src/fault_types.rs](../crates/spanda-runtime/src/fault_types.rs#L1)
+
+**struct**
+
+- [`FaultEvidence`](../crates/spanda-runtime/src/fault_types.rs#L93)
+- [`FaultScanOptions`](../crates/spanda-runtime/src/fault_types.rs#L116)
+- [`FaultScanReport`](../crates/spanda-runtime/src/fault_types.rs#L127)
+- [`FaultTimeline`](../crates/spanda-runtime/src/fault_types.rs#L105)
+- [`HeartbeatStatus`](../crates/spanda-runtime/src/fault_types.rs#L22)
+- [`ProcessHealth`](../crates/spanda-runtime/src/fault_types.rs#L33)
+- [`RuntimeFault`](../crates/spanda-runtime/src/fault_types.rs#L82)
+- [`RuntimeHealth`](../crates/spanda-runtime/src/fault_types.rs#L44)
+
+**enum**
+
+- [`RuntimeFaultKind`](../crates/spanda-runtime/src/fault_types.rs#L56)
+- [`RuntimeHealthStatus`](../crates/spanda-runtime/src/fault_types.rs#L9)
+
+**impl**
+
+- [`RuntimeFaultKind`](../crates/spanda-runtime/src/fault_types.rs#L165)
+- [`RuntimeHealthStatus`](../crates/spanda-runtime/src/fault_types.rs#L139)
+
+**fn**
+
+- [`severity_rank`](../crates/spanda-runtime/src/fault_types.rs#L152)
+
+**method**
+
+- [`RuntimeFaultKind::as_str`](../crates/spanda-runtime/src/fault_types.rs#L166)
+- [`RuntimeHealthStatus::as_str`](../crates/spanda-runtime/src/fault_types.rs#L140)
+
+##### `fleet_tamper_runtime` {#spanda-runtime-fleet-tamper-runtime}
+
+Source: [crates/spanda-runtime/src/fleet_tamper_runtime.rs](../crates/spanda-runtime/src/fleet_tamper_runtime.rs#L1)
+
+**struct**
+
+- [`NoopFleetTamperRuntime`](../crates/spanda-runtime/src/fleet_tamper_runtime.rs#L46)
+
+**trait**
+
+- [`FleetTamperRuntime`](../crates/spanda-runtime/src/fleet_tamper_runtime.rs#L7)
+
+**impl**
+
+- [`NoopFleetTamperRuntime`](../crates/spanda-runtime/src/fleet_tamper_runtime.rs#L48)
+
+**fn**
+
+- [`fleet_tamper_runtime`](../crates/spanda-runtime/src/fleet_tamper_runtime.rs#L75)
+- [`set_fleet_tamper_runtime`](../crates/spanda-runtime/src/fleet_tamper_runtime.rs#L69)
+
+##### `fleet_telemetry_runtime` {#spanda-runtime-fleet-telemetry-runtime}
+
+Source: [crates/spanda-runtime/src/fleet_telemetry_runtime.rs](../crates/spanda-runtime/src/fleet_telemetry_runtime.rs#L1)
+
+**struct**
+
+- [`NoopFleetTelemetryRuntime`](../crates/spanda-runtime/src/fleet_telemetry_runtime.rs#L26)
+
+**trait**
+
+- [`FleetTelemetryRuntime`](../crates/spanda-runtime/src/fleet_telemetry_runtime.rs#L7)
+
+**impl**
+
+- [`NoopFleetTelemetryRuntime`](../crates/spanda-runtime/src/fleet_telemetry_runtime.rs#L28)
+
+**fn**
+
+- [`fleet_telemetry_runtime`](../crates/spanda-runtime/src/fleet_telemetry_runtime.rs#L44)
+- [`set_fleet_telemetry_runtime`](../crates/spanda-runtime/src/fleet_telemetry_runtime.rs#L38)
+
+##### `fusion` {#spanda-runtime-fusion}
+
+Source: [crates/spanda-runtime/src/fusion.rs](../crates/spanda-runtime/src/fusion.rs#L1)
+
+**struct**
+
+- [`FusionPreview`](../crates/spanda-runtime/src/fusion.rs#L84)
+
+**fn**
+
+- [`parse_fusion_input`](../crates/spanda-runtime/src/fusion.rs#L7)
+- [`preview_fusion_inputs`](../crates/spanda-runtime/src/fusion.rs#L122)
+- [`sensor_type_index`](../crates/spanda-runtime/src/fusion.rs#L91)
+- [`weight_for_sensor_type`](../crates/spanda-runtime/src/fusion.rs#L30)
+- [`weighted_confidence`](../crates/spanda-runtime/src/fusion.rs#L58)
 
 ##### `hal_config` {#spanda-runtime-hal-config}
 
@@ -2200,6 +3134,50 @@ Source: [crates/spanda-runtime/src/hal_config.rs](../crates/spanda-runtime/src/h
 **enum**
 
 - [`HalMemberConfig`](../crates/spanda-runtime/src/hal_config.rs#L7)
+
+##### `health_primitives` {#spanda-runtime-health-primitives}
+
+Source: [crates/spanda-runtime/src/health_primitives.rs](../crates/spanda-runtime/src/health_primitives.rs#L1)
+
+**fn**
+
+- [`apply_fleet_health_checks`](../crates/spanda-runtime/src/health_primitives.rs#L177)
+- [`evaluate_health_checks`](../crates/spanda-runtime/src/health_primitives.rs#L8)
+- [`evaluate_runtime_health`](../crates/spanda-runtime/src/health_primitives.rs#L119)
+
+##### `health_types` {#spanda-runtime-health-types}
+
+Source: [crates/spanda-runtime/src/health_types.rs](../crates/spanda-runtime/src/health_types.rs#L1)
+
+**struct**
+
+- [`HealthCheckResult`](../crates/spanda-runtime/src/health_types.rs#L21)
+- [`HealthReport`](../crates/spanda-runtime/src/health_types.rs#L34)
+- [`HealthTraceRow`](../crates/spanda-runtime/src/health_types.rs#L42)
+
+**enum**
+
+- [`HealthStatus`](../crates/spanda-runtime/src/health_types.rs#L8)
+
+##### `hooks` {#spanda-runtime-hooks}
+
+Source: [crates/spanda-runtime/src/hooks.rs](../crates/spanda-runtime/src/hooks.rs#L1)
+
+**struct**
+
+- [`NoopRuntimeHooks`](../crates/spanda-runtime/src/hooks.rs#L17)
+
+**trait**
+
+- [`RuntimeHooks`](../crates/spanda-runtime/src/hooks.rs#L7)
+
+**type**
+
+- [`SharedRuntimeHooks`](../crates/spanda-runtime/src/hooks.rs#L22)
+
+**impl**
+
+- [`NoopRuntimeHooks`](../crates/spanda-runtime/src/hooks.rs#L19)
 
 ##### `host` {#spanda-runtime-host}
 
@@ -2211,8 +3189,47 @@ Source: [crates/spanda-runtime/src/host.rs](../crates/spanda-runtime/src/host.rs
 
 **fn**
 
-- [`imports_enable_navigation`](../crates/spanda-runtime/src/host.rs#L109)
-- [`imports_enable_slam`](../crates/spanda-runtime/src/host.rs#L104)
+- [`imports_enable_navigation`](../crates/spanda-runtime/src/host.rs#L339)
+- [`imports_enable_slam`](../crates/spanda-runtime/src/host.rs#L317)
+
+##### `operational_policy` {#spanda-runtime-operational-policy}
+
+Source: [crates/spanda-runtime/src/operational_policy.rs](../crates/spanda-runtime/src/operational_policy.rs#L1)
+
+**struct**
+
+- [`RuntimePolicyMonitor`](../crates/spanda-runtime/src/operational_policy.rs#L18)
+- [`RuntimePolicyViolation`](../crates/spanda-runtime/src/operational_policy.rs#L10)
+
+**fn**
+
+- [`build_runtime_policy_monitor`](../crates/spanda-runtime/src/operational_policy.rs#L27)
+- [`check_runtime_policy_motion`](../crates/spanda-runtime/src/operational_policy.rs#L61)
+
+##### `provider_runtime` {#spanda-runtime-provider-runtime}
+
+Source: [crates/spanda-runtime/src/provider_runtime.rs](../crates/spanda-runtime/src/provider_runtime.rs#L1)
+
+**struct**
+
+- [`BuiltinProviderRuntime`](../crates/spanda-runtime/src/provider_runtime.rs#L38)
+- [`ProviderDispatchContext`](../crates/spanda-runtime/src/provider_runtime.rs#L10)
+
+**trait**
+
+- [`ProviderRuntime`](../crates/spanda-runtime/src/provider_runtime.rs#L17)
+
+**type**
+
+- [`SharedProviderRuntime`](../crates/spanda-runtime/src/provider_runtime.rs#L67)
+
+**impl**
+
+- [`BuiltinProviderRuntime`](../crates/spanda-runtime/src/provider_runtime.rs#L40)
+
+**fn**
+
+- [`default_provider_runtime`](../crates/spanda-runtime/src/provider_runtime.rs#L70)
 
 ##### `provider_types` {#spanda-runtime-provider-types}
 
@@ -2220,38 +3237,38 @@ Source: [crates/spanda-runtime/src/provider_types.rs](../crates/spanda-runtime/s
 
 **struct**
 
-- [`ProviderCapability`](../crates/spanda-runtime/src/provider_types.rs#L40)
-- [`ProviderCapabilitySet`](../crates/spanda-runtime/src/provider_types.rs#L87)
-- [`ProviderError`](../crates/spanda-runtime/src/provider_types.rs#L69)
+- [`ProviderCapability`](../crates/spanda-runtime/src/provider_types.rs#L42)
+- [`ProviderCapabilitySet`](../crates/spanda-runtime/src/provider_types.rs#L121)
+- [`ProviderError`](../crates/spanda-runtime/src/provider_types.rs#L86)
 - [`ProviderId`](../crates/spanda-runtime/src/provider_types.rs#L8)
-- [`ProviderMetadata`](../crates/spanda-runtime/src/provider_types.rs#L59)
+- [`ProviderMetadata`](../crates/spanda-runtime/src/provider_types.rs#L76)
 
 **enum**
 
-- [`ProviderSafetyLevel`](../crates/spanda-runtime/src/provider_types.rs#L51)
+- [`ProviderSafetyLevel`](../crates/spanda-runtime/src/provider_types.rs#L68)
 
 **type**
 
-- [`ProviderResult`](../crates/spanda-runtime/src/provider_types.rs#L83)
+- [`ProviderResult`](../crates/spanda-runtime/src/provider_types.rs#L117)
 
 **impl**
 
-- [`ProviderCapability`](../crates/spanda-runtime/src/provider_types.rs#L42)
-- [`ProviderCapabilitySet`](../crates/spanda-runtime/src/provider_types.rs#L91)
-- [`ProviderError`](../crates/spanda-runtime/src/provider_types.rs#L74)
+- [`ProviderCapability`](../crates/spanda-runtime/src/provider_types.rs#L44)
+- [`ProviderCapabilitySet`](../crates/spanda-runtime/src/provider_types.rs#L125)
+- [`ProviderError`](../crates/spanda-runtime/src/provider_types.rs#L91)
 - [`ProviderId`](../crates/spanda-runtime/src/provider_types.rs#L13)
 
 **fn**
 
-- [`contains`](../crates/spanda-runtime/src/provider_types.rs#L102)
-- [`insert`](../crates/spanda-runtime/src/provider_types.rs#L98)
-- [`iter`](../crates/spanda-runtime/src/provider_types.rs#L106)
+- [`contains`](../crates/spanda-runtime/src/provider_types.rs#L166)
+- [`insert`](../crates/spanda-runtime/src/provider_types.rs#L146)
+- [`iter`](../crates/spanda-runtime/src/provider_types.rs#L187)
 
 **method**
 
-- [`ProviderCapability::new`](../crates/spanda-runtime/src/provider_types.rs#L43)
-- [`ProviderCapabilitySet::new`](../crates/spanda-runtime/src/provider_types.rs#L92)
-- [`ProviderError::new`](../crates/spanda-runtime/src/provider_types.rs#L75)
+- [`ProviderCapability::new`](../crates/spanda-runtime/src/provider_types.rs#L45)
+- [`ProviderCapabilitySet::new`](../crates/spanda-runtime/src/provider_types.rs#L126)
+- [`ProviderError::new`](../crates/spanda-runtime/src/provider_types.rs#L92)
 - [`ProviderId::new`](../crates/spanda-runtime/src/provider_types.rs#L14)
 
 ##### `providers` {#spanda-runtime-providers}
@@ -2260,10 +3277,81 @@ Source: [crates/spanda-runtime/src/providers/mod.rs](../crates/spanda-runtime/sr
 
 **mod**
 
-- [`registry`](../crates/spanda-runtime/src/providers/mod.rs#L3)
-- [`traits`](../crates/spanda-runtime/src/providers/mod.rs#L4)
-- [`transport_types`](../crates/spanda-runtime/src/providers/mod.rs#L5)
-- [`types`](../crates/spanda-runtime/src/providers/mod.rs#L6)
+- [`hri`](../crates/spanda-runtime/src/providers/mod.rs#L3)
+- [`iot`](../crates/spanda-runtime/src/providers/mod.rs#L4)
+- [`registry`](../crates/spanda-runtime/src/providers/mod.rs#L5)
+- [`traits`](../crates/spanda-runtime/src/providers/mod.rs#L6)
+- [`transport_types`](../crates/spanda-runtime/src/providers/mod.rs#L7)
+- [`types`](../crates/spanda-runtime/src/providers/mod.rs#L8)
+
+##### `readiness_runtime` {#spanda-runtime-readiness-runtime}
+
+Source: [crates/spanda-runtime/src/readiness_runtime.rs](../crates/spanda-runtime/src/readiness_runtime.rs#L1)
+
+**struct**
+
+- [`NoopReadinessRuntime`](../crates/spanda-runtime/src/readiness_runtime.rs#L34)
+
+**trait**
+
+- [`ReadinessRuntime`](../crates/spanda-runtime/src/readiness_runtime.rs#L6)
+
+**impl**
+
+- [`NoopReadinessRuntime`](../crates/spanda-runtime/src/readiness_runtime.rs#L36)
+
+**fn**
+
+- [`readiness_runtime`](../crates/spanda-runtime/src/readiness_runtime.rs#L58)
+- [`set_readiness_runtime`](../crates/spanda-runtime/src/readiness_runtime.rs#L52)
+
+##### `recovery_primitives` {#spanda-runtime-recovery-primitives}
+
+Source: [crates/spanda-runtime/src/recovery_primitives.rs](../crates/spanda-runtime/src/recovery_primitives.rs#L1)
+
+**fn**
+
+- [`classify_failure`](../crates/spanda-runtime/src/recovery_primitives.rs#L11)
+- [`default_knowledge_store_path`](../crates/spanda-runtime/src/recovery_primitives.rs#L188)
+- [`extract_recovery_policies`](../crates/spanda-runtime/src/recovery_primitives.rs#L62)
+- [`issue_to_recovery_issue`](../crates/spanda-runtime/src/recovery_primitives.rs#L112)
+- [`load_recovery_knowledge_store`](../crates/spanda-runtime/src/recovery_primitives.rs#L207)
+- [`merge_recovery_knowledge`](../crates/spanda-runtime/src/recovery_primitives.rs#L297)
+- [`program_has_recovery_for_issue`](../crates/spanda-runtime/src/recovery_primitives.rs#L162)
+- [`record_recovery_outcome`](../crates/spanda-runtime/src/recovery_primitives.rs#L255)
+- [`save_recovery_knowledge_store`](../crates/spanda-runtime/src/recovery_primitives.rs#L229)
+
+##### `recovery_types` {#spanda-runtime-recovery-types}
+
+Source: [crates/spanda-runtime/src/recovery_types.rs](../crates/spanda-runtime/src/recovery_types.rs#L1)
+
+**struct**
+
+- [`FleetRecoveryPlan`](../crates/spanda-runtime/src/recovery_types.rs#L211)
+- [`PlannedRecoveryAction`](../crates/spanda-runtime/src/recovery_types.rs#L103)
+- [`RecoveryAssuranceMetrics`](../crates/spanda-runtime/src/recovery_types.rs#L235)
+- [`RecoveryAuditRecord`](../crates/spanda-runtime/src/recovery_types.rs#L177)
+- [`RecoveryContext`](../crates/spanda-runtime/src/recovery_types.rs#L259)
+- [`RecoveryEvidence`](../crates/spanda-runtime/src/recovery_types.rs#L164)
+- [`RecoveryKnowledgeBase`](../crates/spanda-runtime/src/recovery_types.rs#L229)
+- [`RecoveryKnowledgeEntry`](../crates/spanda-runtime/src/recovery_types.rs#L220)
+- [`RecoveryPlan`](../crates/spanda-runtime/src/recovery_types.rs#L114)
+- [`RecoveryPolicySpec`](../crates/spanda-runtime/src/recovery_types.rs#L127)
+- [`RecoveryReadiness`](../crates/spanda-runtime/src/recovery_types.rs#L202)
+- [`RecoveryReport`](../crates/spanda-runtime/src/recovery_types.rs#L244)
+- [`RecoveryResult`](../crates/spanda-runtime/src/recovery_types.rs#L153)
+- [`RecoveryTraceChain`](../crates/spanda-runtime/src/recovery_types.rs#L190)
+- [`SafeRecoveryAction`](../crates/spanda-runtime/src/recovery_types.rs#L134)
+- [`ValidationGateResult`](../crates/spanda-runtime/src/recovery_types.rs#L145)
+
+**enum**
+
+- [`FailureClassification`](../crates/spanda-runtime/src/recovery_types.rs#L38)
+- [`OperationalMode`](../crates/spanda-runtime/src/recovery_types.rs#L93)
+- [`RecoveryLevel`](../crates/spanda-runtime/src/recovery_types.rs#L18)
+- [`RecoveryStatus`](../crates/spanda-runtime/src/recovery_types.rs#L8)
+- [`RecoveryStrategy`](../crates/spanda-runtime/src/recovery_types.rs#L55)
+- [`SelfCorrectionAction`](../crates/spanda-runtime/src/recovery_types.rs#L76)
 
 ##### `reliability_runtime` {#spanda-runtime-reliability-runtime}
 
@@ -2305,14 +3393,14 @@ Source: [crates/spanda-runtime/src/replay.rs](../crates/spanda-runtime/src/repla
 **struct**
 
 - [`MissionTrace`](../crates/spanda-runtime/src/replay.rs#L32)
-- [`PlaybackReport`](../crates/spanda-runtime/src/replay.rs#L298)
+- [`PlaybackReport`](../crates/spanda-runtime/src/replay.rs#L324)
 - [`ReplayStateSnapshot`](../crates/spanda-runtime/src/replay.rs#L11)
 - [`TraceFrame`](../crates/spanda-runtime/src/replay.rs#L21)
-- [`TraceVerification`](../crates/spanda-runtime/src/replay.rs#L232)
+- [`TraceVerification`](../crates/spanda-runtime/src/replay.rs#L256)
 
 **trait**
 
-- [`ReplayStateTarget`](../crates/spanda-runtime/src/replay.rs#L292)
+- [`ReplayStateTarget`](../crates/spanda-runtime/src/replay.rs#L318)
 
 **impl**
 
@@ -2320,14 +3408,14 @@ Source: [crates/spanda-runtime/src/replay.rs](../crates/spanda-runtime/src/repla
 
 **fn**
 
-- [`frames_from`](../crates/spanda-runtime/src/replay.rs#L166)
-- [`load`](../crates/spanda-runtime/src/replay.rs#L146)
-- [`parse_replay_offset`](../crates/spanda-runtime/src/replay.rs#L191)
-- [`playback_frames`](../crates/spanda-runtime/src/replay.rs#L304)
+- [`frames_from`](../crates/spanda-runtime/src/replay.rs#L180)
+- [`load`](../crates/spanda-runtime/src/replay.rs#L158)
+- [`parse_replay_offset`](../crates/spanda-runtime/src/replay.rs#L207)
+- [`playback_frames`](../crates/spanda-runtime/src/replay.rs#L330)
 - [`record`](../crates/spanda-runtime/src/replay.rs#L65)
-- [`record_with_state`](../crates/spanda-runtime/src/replay.rs#L91)
-- [`save`](../crates/spanda-runtime/src/replay.rs#L126)
-- [`verify_traces`](../crates/spanda-runtime/src/replay.rs#L238)
+- [`record_with_state`](../crates/spanda-runtime/src/replay.rs#L94)
+- [`save`](../crates/spanda-runtime/src/replay.rs#L134)
+- [`verify_traces`](../crates/spanda-runtime/src/replay.rs#L262)
 
 **method**
 
@@ -2349,9 +3437,9 @@ Source: [crates/spanda-runtime/src/robotics.rs](../crates/spanda-runtime/src/rob
 
 **struct**
 
-- [`FleetRegistry`](../crates/spanda-runtime/src/robotics.rs#L103)
-- [`MissionRuntime`](../crates/spanda-runtime/src/robotics.rs#L31)
-- [`ProgramSafetyZoneRegistry`](../crates/spanda-runtime/src/robotics.rs#L123)
+- [`FleetRegistry`](../crates/spanda-runtime/src/robotics.rs#L248)
+- [`MissionRuntime`](../crates/spanda-runtime/src/robotics.rs#L45)
+- [`ProgramSafetyZoneRegistry`](../crates/spanda-runtime/src/robotics.rs#L318)
 
 **enum**
 
@@ -2359,31 +3447,33 @@ Source: [crates/spanda-runtime/src/robotics.rs](../crates/spanda-runtime/src/rob
 
 **impl**
 
-- [`FleetRegistry`](../crates/spanda-runtime/src/robotics.rs#L107)
-- [`MissionRuntime`](../crates/spanda-runtime/src/robotics.rs#L39)
+- [`FleetRegistry`](../crates/spanda-runtime/src/robotics.rs#L252)
+- [`MissionRuntime`](../crates/spanda-runtime/src/robotics.rs#L53)
 - [`MissionState`](../crates/spanda-runtime/src/robotics.rs#L17)
-- [`ProgramSafetyZoneRegistry`](../crates/spanda-runtime/src/robotics.rs#L127)
+- [`ProgramSafetyZoneRegistry`](../crates/spanda-runtime/src/robotics.rs#L322)
 
 **fn**
 
-- [`advance`](../crates/spanda-runtime/src/robotics.rs#L68)
-- [`complete`](../crates/spanda-runtime/src/robotics.rs#L84)
-- [`current_step`](../crates/spanda-runtime/src/robotics.rs#L93)
-- [`fail`](../crates/spanda-runtime/src/robotics.rs#L89)
-- [`max_speed_for`](../crates/spanda-runtime/src/robotics.rs#L132)
-- [`members`](../crates/spanda-runtime/src/robotics.rs#L112)
-- [`names`](../crates/spanda-runtime/src/robotics.rs#L116)
-- [`pause`](../crates/spanda-runtime/src/robotics.rs#L56)
-- [`resume`](../crates/spanda-runtime/src/robotics.rs#L62)
-- [`speed_caps`](../crates/spanda-runtime/src/robotics.rs#L136)
-- [`start`](../crates/spanda-runtime/src/robotics.rs#L50)
+- [`advance`](../crates/spanda-runtime/src/robotics.rs#L155)
+- [`complete`](../crates/spanda-runtime/src/robotics.rs#L186)
+- [`current_step`](../crates/spanda-runtime/src/robotics.rs#L223)
+- [`fail`](../crates/spanda-runtime/src/robotics.rs#L205)
+- [`max_speed_for`](../crates/spanda-runtime/src/robotics.rs#L345)
+- [`members`](../crates/spanda-runtime/src/robotics.rs#L275)
+- [`names`](../crates/spanda-runtime/src/robotics.rs#L296)
+- [`pause`](../crates/spanda-runtime/src/robotics.rs#L103)
+- [`restart`](../crates/spanda-runtime/src/robotics.rs#L143)
+- [`restart_current_step`](../crates/spanda-runtime/src/robotics.rs#L148)
+- [`resume`](../crates/spanda-runtime/src/robotics.rs#L123)
+- [`speed_caps`](../crates/spanda-runtime/src/robotics.rs#L366)
+- [`start`](../crates/spanda-runtime/src/robotics.rs#L83)
 
 **method**
 
-- [`FleetRegistry::register`](../crates/spanda-runtime/src/robotics.rs#L108)
-- [`MissionRuntime::new`](../crates/spanda-runtime/src/robotics.rs#L40)
+- [`FleetRegistry::register`](../crates/spanda-runtime/src/robotics.rs#L253)
+- [`MissionRuntime::new`](../crates/spanda-runtime/src/robotics.rs#L54)
 - [`MissionState::as_str`](../crates/spanda-runtime/src/robotics.rs#L18)
-- [`ProgramSafetyZoneRegistry::register`](../crates/spanda-runtime/src/robotics.rs#L128)
+- [`ProgramSafetyZoneRegistry::register`](../crates/spanda-runtime/src/robotics.rs#L323)
 
 ##### `root` {#spanda-runtime-root}
 
@@ -2391,34 +3481,61 @@ Source: [crates/spanda-runtime/src/lib.rs](../crates/spanda-runtime/src/lib.rs#L
 
 **mod**
 
-- [`classification`](../crates/spanda-runtime/src/lib.rs#L3)
-- [`environment`](../crates/spanda-runtime/src/lib.rs#L4)
-- [`error`](../crates/spanda-runtime/src/lib.rs#L5)
-- [`events`](../crates/spanda-runtime/src/lib.rs#L6)
-- [`hal_config`](../crates/spanda-runtime/src/lib.rs#L7)
-- [`host`](../crates/spanda-runtime/src/lib.rs#L8)
-- [`provider_types`](../crates/spanda-runtime/src/lib.rs#L9)
-- [`providers`](../crates/spanda-runtime/src/lib.rs#L10)
-- [`reliability_runtime`](../crates/spanda-runtime/src/lib.rs#L11)
-- [`replay`](../crates/spanda-runtime/src/lib.rs#L12)
-- [`robot_state`](../crates/spanda-runtime/src/lib.rs#L13)
-- [`robotics`](../crates/spanda-runtime/src/lib.rs#L14)
-- [`scheduler`](../crates/spanda-runtime/src/lib.rs#L15)
-- [`serialize`](../crates/spanda-runtime/src/lib.rs#L16)
-- [`state_machine`](../crates/spanda-runtime/src/lib.rs#L17)
-- [`telemetry`](../crates/spanda-runtime/src/lib.rs#L18)
-- [`triggers`](../crates/spanda-runtime/src/lib.rs#L19)
-- [`twin`](../crates/spanda-runtime/src/lib.rs#L20)
-- [`value`](../crates/spanda-runtime/src/lib.rs#L21)
+- [`assurance_runtime`](../crates/spanda-runtime/src/lib.rs#L3)
+- [`classification`](../crates/spanda-runtime/src/lib.rs#L7)
+- [`continuity_primitives`](../crates/spanda-runtime/src/lib.rs#L20)
+- [`continuity_types`](../crates/spanda-runtime/src/lib.rs#L21)
+- [`device_telemetry_sink`](../crates/spanda-runtime/src/lib.rs#L17)
+- [`environment`](../crates/spanda-runtime/src/lib.rs#L22)
+- [`error`](../crates/spanda-runtime/src/lib.rs#L23)
+- [`events`](../crates/spanda-runtime/src/lib.rs#L24)
+- [`fault_primitives`](../crates/spanda-runtime/src/lib.rs#L8)
+- [`fault_runtime`](../crates/spanda-runtime/src/lib.rs#L9)
+- [`fault_types`](../crates/spanda-runtime/src/lib.rs#L10)
+- [`fleet_tamper_runtime`](../crates/spanda-runtime/src/lib.rs#L5)
+- [`fleet_telemetry_runtime`](../crates/spanda-runtime/src/lib.rs#L6)
+- [`fusion`](../crates/spanda-runtime/src/lib.rs#L25)
+- [`hal_config`](../crates/spanda-runtime/src/lib.rs#L26)
+- [`health_primitives`](../crates/spanda-runtime/src/lib.rs#L11)
+- [`health_types`](../crates/spanda-runtime/src/lib.rs#L12)
+- [`hooks`](../crates/spanda-runtime/src/lib.rs#L27)
+- [`host`](../crates/spanda-runtime/src/lib.rs#L28)
+- [`operational_policy`](../crates/spanda-runtime/src/lib.rs#L29)
+- [`provider_runtime`](../crates/spanda-runtime/src/lib.rs#L13)
+- [`provider_types`](../crates/spanda-runtime/src/lib.rs#L30)
+- [`providers`](../crates/spanda-runtime/src/lib.rs#L31)
+- [`readiness_runtime`](../crates/spanda-runtime/src/lib.rs#L4)
+- [`recovery_primitives`](../crates/spanda-runtime/src/lib.rs#L33)
+- [`recovery_types`](../crates/spanda-runtime/src/lib.rs#L34)
+- [`reliability_runtime`](../crates/spanda-runtime/src/lib.rs#L32)
+- [`replay`](../crates/spanda-runtime/src/lib.rs#L35)
+- [`robot_state`](../crates/spanda-runtime/src/lib.rs#L36)
+- [`robotics`](../crates/spanda-runtime/src/lib.rs#L37)
+- [`scheduler`](../crates/spanda-runtime/src/lib.rs#L38)
+- [`security_primitives`](../crates/spanda-runtime/src/lib.rs#L14)
+- [`security_runtime`](../crates/spanda-runtime/src/lib.rs#L15)
+- [`security_types`](../crates/spanda-runtime/src/lib.rs#L16)
+- [`serialize`](../crates/spanda-runtime/src/lib.rs#L39)
+- [`state_machine`](../crates/spanda-runtime/src/lib.rs#L40)
+- [`tamper_policy`](../crates/spanda-runtime/src/lib.rs#L42)
+- [`telemetry`](../crates/spanda-runtime/src/lib.rs#L41)
+- [`telemetry_sink`](../crates/spanda-runtime/src/lib.rs#L18)
+- [`triggers`](../crates/spanda-runtime/src/lib.rs#L43)
+- [`twin`](../crates/spanda-runtime/src/lib.rs#L44)
+- [`value`](../crates/spanda-runtime/src/lib.rs#L45)
+- [`wire_crypto`](../crates/spanda-runtime/src/lib.rs#L19)
+- [`world_model`](../crates/spanda-runtime/src/lib.rs#L46)
 
 **export**
 
-- [`environment::Environment`](../crates/spanda-runtime/src/lib.rs#L26)
-- [`error::RuntimeError`](../crates/spanda-runtime/src/lib.rs#L27)
-- [`events::EventBus`](../crates/spanda-runtime/src/lib.rs#L28)
-- [`hal_config::HalMemberConfig`](../crates/spanda-runtime/src/lib.rs#L30)
-- [`state_machine::StateMachineRuntime`](../crates/spanda-runtime/src/lib.rs#L57)
-- [`twin::TwinRuntime`](../crates/spanda-runtime/src/lib.rs#L66)
+- [`environment::Environment`](../crates/spanda-runtime/src/lib.rs#L128)
+- [`error::RuntimeError`](../crates/spanda-runtime/src/lib.rs#L129)
+- [`events::EventBus`](../crates/spanda-runtime/src/lib.rs#L130)
+- [`hal_config::HalMemberConfig`](../crates/spanda-runtime/src/lib.rs#L135)
+- [`state_machine::StateMachineRuntime`](../crates/spanda-runtime/src/lib.rs#L164)
+- [`twin::TwinRuntime`](../crates/spanda-runtime/src/lib.rs#L177)
+- [`wire_crypto::WireCryptoSession`](../crates/spanda-runtime/src/lib.rs#L102)
+- [`world_model::WorldModelRuntime`](../crates/spanda-runtime/src/lib.rs#L183)
 
 ##### `scheduler` {#spanda-runtime-scheduler}
 
@@ -2430,17 +3547,96 @@ Source: [crates/spanda-runtime/src/scheduler.rs](../crates/spanda-runtime/src/sc
 
 **impl**
 
-- [`SchedulerClock`](../crates/spanda-runtime/src/scheduler.rs#L16)
+- [`SchedulerClock`](../crates/spanda-runtime/src/scheduler.rs#L17)
 
 **fn**
 
-- [`advance_wall_tick`](../crates/spanda-runtime/src/scheduler.rs#L82)
-- [`elapsed_ms`](../crates/spanda-runtime/src/scheduler.rs#L62)
-- [`sleep_until`](../crates/spanda-runtime/src/scheduler.rs#L40)
+- [`advance_wall_tick`](../crates/spanda-runtime/src/scheduler.rs#L85)
+- [`elapsed_ms`](../crates/spanda-runtime/src/scheduler.rs#L63)
+- [`sleep_until`](../crates/spanda-runtime/src/scheduler.rs#L41)
 
 **method**
 
-- [`SchedulerClock::as_str`](../crates/spanda-runtime/src/scheduler.rs#L17)
+- [`SchedulerClock::as_str`](../crates/spanda-runtime/src/scheduler.rs#L18)
+
+##### `security_primitives` {#spanda-runtime-security-primitives}
+
+Source: [crates/spanda-runtime/src/security_primitives.rs](../crates/spanda-runtime/src/security_primitives.rs#L1)
+
+**fn**
+
+- [`boundary_for_transport_name`](../crates/spanda-runtime/src/security_primitives.rs#L62)
+- [`bus_security_from_fields`](../crates/spanda-runtime/src/security_primitives.rs#L9)
+- [`effective_bus_security`](../crates/spanda-runtime/src/security_primitives.rs#L35)
+- [`resolve_broker_url`](../crates/spanda-runtime/src/security_primitives.rs#L84)
+- [`validate_bus_security`](../crates/spanda-runtime/src/security_primitives.rs#L71)
+
+##### `security_runtime` {#spanda-runtime-security-runtime}
+
+Source: [crates/spanda-runtime/src/security_runtime.rs](../crates/spanda-runtime/src/security_runtime.rs#L1)
+
+**struct**
+
+- [`BuiltinSecurityRuntime`](../crates/spanda-runtime/src/security_runtime.rs#L101)
+
+**trait**
+
+- [`SecurityRuntime`](../crates/spanda-runtime/src/security_runtime.rs#L11)
+
+**type**
+
+- [`SecurityRuntimeFactory`](../crates/spanda-runtime/src/security_runtime.rs#L305)
+
+**impl**
+
+- [`BuiltinSecurityRuntime`](../crates/spanda-runtime/src/security_runtime.rs#L117)
+- [`BuiltinSecurityRuntime`](../crates/spanda-runtime/src/security_runtime.rs#L283)
+
+**fn**
+
+- [`default_security_runtime`](../crates/spanda-runtime/src/security_runtime.rs#L308)
+- [`default_security_runtime_factory`](../crates/spanda-runtime/src/security_runtime.rs#L313)
+
+##### `security_types` {#spanda-runtime-security-types}
+
+Source: [crates/spanda-runtime/src/security_types.rs](../crates/spanda-runtime/src/security_types.rs#L1)
+
+**struct**
+
+- [`BusTransportSecurity`](../crates/spanda-runtime/src/security_types.rs#L195)
+- [`CommTransportSetup`](../crates/spanda-runtime/src/security_types.rs#L206)
+- [`RobotIdentity`](../crates/spanda-runtime/src/security_types.rs#L172)
+- [`SecretHandle`](../crates/spanda-runtime/src/security_types.rs#L165)
+- [`SecureCommPolicy`](../crates/spanda-runtime/src/security_types.rs#L111)
+- [`SecurePolicy`](../crates/spanda-runtime/src/security_types.rs#L119)
+
+**enum**
+
+- [`AuthenticationMode`](../crates/spanda-runtime/src/security_types.rs#L68)
+- [`EncryptionMode`](../crates/spanda-runtime/src/security_types.rs#L45)
+- [`IntegrityMode`](../crates/spanda-runtime/src/security_types.rs#L91)
+- [`SecretSource`](../crates/spanda-runtime/src/security_types.rs#L157)
+- [`TrustBoundaryKind`](../crates/spanda-runtime/src/security_types.rs#L133)
+- [`TrustLevel`](../crates/spanda-runtime/src/security_types.rs#L9)
+
+**impl**
+
+- [`AuthenticationMode`](../crates/spanda-runtime/src/security_types.rs#L75)
+- [`EncryptionMode`](../crates/spanda-runtime/src/security_types.rs#L52)
+- [`IntegrityMode`](../crates/spanda-runtime/src/security_types.rs#L97)
+- [`RobotIdentity`](../crates/spanda-runtime/src/security_types.rs#L178)
+- [`TrustBoundaryKind`](../crates/spanda-runtime/src/security_types.rs#L140)
+- [`TrustLevel`](../crates/spanda-runtime/src/security_types.rs#L17)
+- [`TrustLevel`](../crates/spanda-runtime/src/security_types.rs#L28)
+
+**fn**
+
+- [`with_trust`](../crates/spanda-runtime/src/security_types.rs#L187)
+
+**method**
+
+- [`RobotIdentity::new`](../crates/spanda-runtime/src/security_types.rs#L179)
+- [`TrustLevel::as_str`](../crates/spanda-runtime/src/security_types.rs#L18)
 
 ##### `serialize` {#spanda-runtime-serialize}
 
@@ -2448,9 +3644,9 @@ Source: [crates/spanda-runtime/src/serialize.rs](../crates/spanda-runtime/src/se
 
 **fn**
 
-- [`deserialize_value`](../crates/spanda-runtime/src/serialize.rs#L53)
-- [`runtime_from_json_string`](../crates/spanda-runtime/src/serialize.rs#L117)
-- [`runtime_to_json_string`](../crates/spanda-runtime/src/serialize.rs#L111)
+- [`deserialize_value`](../crates/spanda-runtime/src/serialize.rs#L50)
+- [`runtime_from_json_string`](../crates/spanda-runtime/src/serialize.rs#L125)
+- [`runtime_to_json_string`](../crates/spanda-runtime/src/serialize.rs#L104)
 - [`serialize_value`](../crates/spanda-runtime/src/serialize.rs#L10)
 
 ##### `state_machine` {#spanda-runtime-state-machine}
@@ -2467,11 +3663,29 @@ Source: [crates/spanda-runtime/src/state_machine.rs](../crates/spanda-runtime/sr
 
 **fn**
 
-- [`try_enter`](../crates/spanda-runtime/src/state_machine.rs#L79)
+- [`try_enter`](../crates/spanda-runtime/src/state_machine.rs#L71)
 
 **method**
 
 - [`StateMachineRuntime::new`](../crates/spanda-runtime/src/state_machine.rs#L43)
+
+##### `tamper_policy` {#spanda-runtime-tamper-policy}
+
+Source: [crates/spanda-runtime/src/tamper_policy.rs](../crates/spanda-runtime/src/tamper_policy.rs#L1)
+
+**struct**
+
+- [`TamperPolicySpec`](../crates/spanda-runtime/src/tamper_policy.rs#L20)
+
+**enum**
+
+- [`TamperSeverity`](../crates/spanda-runtime/src/tamper_policy.rs#L10)
+
+**fn**
+
+- [`actions_for_tamper_event`](../crates/spanda-runtime/src/tamper_policy.rs#L68)
+- [`extract_tamper_policies`](../crates/spanda-runtime/src/tamper_policy.rs#L36)
+- [`tamper_policy_coverage`](../crates/spanda-runtime/src/tamper_policy.rs#L85)
 
 ##### `telemetry` {#spanda-runtime-telemetry}
 
@@ -2481,7 +3695,8 @@ Source: [crates/spanda-runtime/src/telemetry.rs](../crates/spanda-runtime/src/te
 
 - [`ExecutionMetrics`](../crates/spanda-runtime/src/telemetry.rs#L31)
 - [`PipelineMetrics`](../crates/spanda-runtime/src/telemetry.rs#L51)
-- [`RuntimeTelemetry`](../crates/spanda-runtime/src/telemetry.rs#L75)
+- [`ProviderMetrics`](../crates/spanda-runtime/src/telemetry.rs#L75)
+- [`RuntimeTelemetry`](../crates/spanda-runtime/src/telemetry.rs#L85)
 - [`SchedulerMetrics`](../crates/spanda-runtime/src/telemetry.rs#L23)
 - [`TaskMetrics`](../crates/spanda-runtime/src/telemetry.rs#L8)
 - [`TopicMetrics`](../crates/spanda-runtime/src/telemetry.rs#L68)
@@ -2490,36 +3705,61 @@ Source: [crates/spanda-runtime/src/telemetry.rs](../crates/spanda-runtime/src/te
 
 **impl**
 
-- [`RuntimeTelemetry`](../crates/spanda-runtime/src/telemetry.rs#L86)
+- [`RuntimeTelemetry`](../crates/spanda-runtime/src/telemetry.rs#L97)
 
 **fn**
 
-- [`pipeline_mut`](../crates/spanda-runtime/src/telemetry.rs#L546)
-- [`record_budget_violation`](../crates/spanda-runtime/src/telemetry.rs#L178)
-- [`record_emergency_stop`](../crates/spanda-runtime/src/telemetry.rs#L327)
-- [`record_fire_and_forget_spawn`](../crates/spanda-runtime/src/telemetry.rs#L365)
-- [`record_join`](../crates/spanda-runtime/src/telemetry.rs#L384)
-- [`record_missed_deadline`](../crates/spanda-runtime/src/telemetry.rs#L264)
-- [`record_parallel_block`](../crates/spanda-runtime/src/telemetry.rs#L403)
-- [`record_pipeline_execution`](../crates/spanda-runtime/src/telemetry.rs#L556)
-- [`record_replay_frames`](../crates/spanda-runtime/src/telemetry.rs#L422)
-- [`record_scheduler_start`](../crates/spanda-runtime/src/telemetry.rs#L286)
-- [`record_scheduler_tick`](../crates/spanda-runtime/src/telemetry.rs#L308)
-- [`record_spawn`](../crates/spanda-runtime/src/telemetry.rs#L346)
-- [`record_task_duration`](../crates/spanda-runtime/src/telemetry.rs#L143)
-- [`record_task_jitter`](../crates/spanda-runtime/src/telemetry.rs#L205)
-- [`record_task_skip`](../crates/spanda-runtime/src/telemetry.rs#L242)
-- [`record_task_tick`](../crates/spanda-runtime/src/telemetry.rs#L121)
-- [`record_topic_deadline_miss`](../crates/spanda-runtime/src/telemetry.rs#L589)
-- [`record_trigger_execution`](../crates/spanda-runtime/src/telemetry.rs#L476)
-- [`record_trigger_missed_deadline`](../crates/spanda-runtime/src/telemetry.rs#L519)
-- [`record_watchdog_timeout`](../crates/spanda-runtime/src/telemetry.rs#L583)
-- [`trigger_mut`](../crates/spanda-runtime/src/telemetry.rs#L442)
-- [`watchdog_mut`](../crates/spanda-runtime/src/telemetry.rs#L574)
+- [`pipeline_mut`](../crates/spanda-runtime/src/telemetry.rs#L579)
+- [`record_budget_violation`](../crates/spanda-runtime/src/telemetry.rs#L197)
+- [`record_emergency_stop`](../crates/spanda-runtime/src/telemetry.rs#L356)
+- [`record_fire_and_forget_spawn`](../crates/spanda-runtime/src/telemetry.rs#L392)
+- [`record_join`](../crates/spanda-runtime/src/telemetry.rs#L410)
+- [`record_missed_deadline`](../crates/spanda-runtime/src/telemetry.rs#L291)
+- [`record_parallel_block`](../crates/spanda-runtime/src/telemetry.rs#L428)
+- [`record_pipeline_execution`](../crates/spanda-runtime/src/telemetry.rs#L608)
+- [`record_provider_call`](../crates/spanda-runtime/src/telemetry.rs#L731)
+- [`record_replay_frames`](../crates/spanda-runtime/src/telemetry.rs#L446)
+- [`record_scheduler_start`](../crates/spanda-runtime/src/telemetry.rs#L315)
+- [`record_scheduler_tick`](../crates/spanda-runtime/src/telemetry.rs#L338)
+- [`record_spawn`](../crates/spanda-runtime/src/telemetry.rs#L374)
+- [`record_task_duration`](../crates/spanda-runtime/src/telemetry.rs#L159)
+- [`record_task_jitter`](../crates/spanda-runtime/src/telemetry.rs#L226)
+- [`record_task_skip`](../crates/spanda-runtime/src/telemetry.rs#L267)
+- [`record_task_tick`](../crates/spanda-runtime/src/telemetry.rs#L135)
+- [`record_topic_deadline_miss`](../crates/spanda-runtime/src/telemetry.rs#L698)
+- [`record_trigger_execution`](../crates/spanda-runtime/src/telemetry.rs#L503)
+- [`record_trigger_missed_deadline`](../crates/spanda-runtime/src/telemetry.rs#L550)
+- [`record_watchdog_timeout`](../crates/spanda-runtime/src/telemetry.rs#L674)
+- [`trigger_mut`](../crates/spanda-runtime/src/telemetry.rs#L466)
+- [`watchdog_mut`](../crates/spanda-runtime/src/telemetry.rs#L648)
 
 **method**
 
-- [`RuntimeTelemetry::task_mut`](../crates/spanda-runtime/src/telemetry.rs#L87)
+- [`RuntimeTelemetry::task_mut`](../crates/spanda-runtime/src/telemetry.rs#L98)
+
+##### `telemetry_sink` {#spanda-runtime-telemetry-sink}
+
+Source: [crates/spanda-runtime/src/telemetry_sink.rs](../crates/spanda-runtime/src/telemetry_sink.rs#L1)
+
+**struct**
+
+- [`NoopTelemetrySink`](../crates/spanda-runtime/src/telemetry_sink.rs#L60)
+
+**trait**
+
+- [`TelemetrySink`](../crates/spanda-runtime/src/telemetry_sink.rs#L9)
+
+**type**
+
+- [`SharedTelemetrySink`](../crates/spanda-runtime/src/telemetry_sink.rs#L117)
+
+**impl**
+
+- [`NoopTelemetrySink`](../crates/spanda-runtime/src/telemetry_sink.rs#L62)
+
+**fn**
+
+- [`default_telemetry_sink`](../crates/spanda-runtime/src/telemetry_sink.rs#L120)
 
 ##### `triggers` {#spanda-runtime-triggers}
 
@@ -2527,14 +3767,14 @@ Source: [crates/spanda-runtime/src/triggers.rs](../crates/spanda-runtime/src/tri
 
 **struct**
 
-- [`ConditionTriggerState`](../crates/spanda-runtime/src/triggers.rs#L583)
+- [`ConditionTriggerState`](../crates/spanda-runtime/src/triggers.rs#L684)
 - [`RegisteredTrigger`](../crates/spanda-runtime/src/triggers.rs#L15)
 - [`TriggerRegistry`](../crates/spanda-runtime/src/triggers.rs#L28)
-- [`TriggerTimerSchedule`](../crates/spanda-runtime/src/triggers.rs#L546)
+- [`TriggerTimerSchedule`](../crates/spanda-runtime/src/triggers.rs#L647)
 
 **enum**
 
-- [`SystemTriggerCategory`](../crates/spanda-runtime/src/triggers.rs#L466)
+- [`SystemTriggerCategory`](../crates/spanda-runtime/src/triggers.rs#L565)
 
 **const**
 
@@ -2542,38 +3782,39 @@ Source: [crates/spanda-runtime/src/triggers.rs](../crates/spanda-runtime/src/tri
 
 **impl**
 
-- [`ConditionTriggerState`](../crates/spanda-runtime/src/triggers.rs#L587)
+- [`ConditionTriggerState`](../crates/spanda-runtime/src/triggers.rs#L688)
 - [`TriggerRegistry`](../crates/spanda-runtime/src/triggers.rs#L34)
-- [`TriggerTimerSchedule`](../crates/spanda-runtime/src/triggers.rs#L552)
+- [`TriggerTimerSchedule`](../crates/spanda-runtime/src/triggers.rs#L653)
 
 **fn**
 
-- [`all`](../crates/spanda-runtime/src/triggers.rs#L146)
-- [`condition_handlers`](../crates/spanda-runtime/src/triggers.rs#L289)
-- [`event_handler_body`](../crates/spanda-runtime/src/triggers.rs#L185)
-- [`get`](../crates/spanda-runtime/src/triggers.rs#L165)
-- [`handler_count`](../crates/spanda-runtime/src/triggers.rs#L128)
-- [`handlers_for_category`](../crates/spanda-runtime/src/triggers.rs#L367)
-- [`handlers_for_connectivity`](../crates/spanda-runtime/src/triggers.rs#L404)
-- [`handlers_for_event`](../crates/spanda-runtime/src/triggers.rs#L208)
-- [`handlers_for_geofence`](../crates/spanda-runtime/src/triggers.rs#L417)
-- [`handlers_for_message`](../crates/spanda-runtime/src/triggers.rs#L231)
-- [`handlers_for_sensor_event`](../crates/spanda-runtime/src/triggers.rs#L430)
-- [`handlers_for_state_entered`](../crates/spanda-runtime/src/triggers.rs#L311)
-- [`handlers_for_state_exited`](../crates/spanda-runtime/src/triggers.rs#L339)
-- [`is_level_active`](../crates/spanda-runtime/src/triggers.rs#L618)
-- [`priority_rank`](../crates/spanda-runtime/src/triggers.rs#L474)
-- [`register`](../crates/spanda-runtime/src/triggers.rs#L54)
-- [`register_legacy_event`](../crates/spanda-runtime/src/triggers.rs#L97)
-- [`sorted_by_priority`](../crates/spanda-runtime/src/triggers.rs#L443)
-- [`timer_handlers`](../crates/spanda-runtime/src/triggers.rs#L267)
-- [`trigger_display_name`](../crates/spanda-runtime/src/triggers.rs#L498)
+- [`all`](../crates/spanda-runtime/src/triggers.rs#L150)
+- [`condition_handlers`](../crates/spanda-runtime/src/triggers.rs#L298)
+- [`event_handler_body`](../crates/spanda-runtime/src/triggers.rs#L190)
+- [`get`](../crates/spanda-runtime/src/triggers.rs#L169)
+- [`handler_count`](../crates/spanda-runtime/src/triggers.rs#L131)
+- [`handlers_for_category`](../crates/spanda-runtime/src/triggers.rs#L378)
+- [`handlers_for_connectivity`](../crates/spanda-runtime/src/triggers.rs#L417)
+- [`handlers_for_event`](../crates/spanda-runtime/src/triggers.rs#L214)
+- [`handlers_for_geofence`](../crates/spanda-runtime/src/triggers.rs#L449)
+- [`handlers_for_kill_switch`](../crates/spanda-runtime/src/triggers.rs#L481)
+- [`handlers_for_message`](../crates/spanda-runtime/src/triggers.rs#L238)
+- [`handlers_for_sensor_event`](../crates/spanda-runtime/src/triggers.rs#L510)
+- [`handlers_for_state_entered`](../crates/spanda-runtime/src/triggers.rs#L320)
+- [`handlers_for_state_exited`](../crates/spanda-runtime/src/triggers.rs#L349)
+- [`is_level_active`](../crates/spanda-runtime/src/triggers.rs#L721)
+- [`priority_rank`](../crates/spanda-runtime/src/triggers.rs#L573)
+- [`register`](../crates/spanda-runtime/src/triggers.rs#L53)
+- [`register_legacy_event`](../crates/spanda-runtime/src/triggers.rs#L98)
+- [`sorted_by_priority`](../crates/spanda-runtime/src/triggers.rs#L542)
+- [`timer_handlers`](../crates/spanda-runtime/src/triggers.rs#L276)
+- [`trigger_display_name`](../crates/spanda-runtime/src/triggers.rs#L597)
 
 **method**
 
-- [`ConditionTriggerState::should_fire`](../crates/spanda-runtime/src/triggers.rs#L588)
+- [`ConditionTriggerState::should_fire`](../crates/spanda-runtime/src/triggers.rs#L689)
 - [`TriggerRegistry::new`](../crates/spanda-runtime/src/triggers.rs#L35)
-- [`TriggerTimerSchedule::from_handler`](../crates/spanda-runtime/src/triggers.rs#L553)
+- [`TriggerTimerSchedule::from_handler`](../crates/spanda-runtime/src/triggers.rs#L654)
 
 ##### `twin` {#spanda-runtime-twin}
 
@@ -2586,22 +3827,22 @@ Source: [crates/spanda-runtime/src/twin.rs](../crates/spanda-runtime/src/twin.rs
 **impl**
 
 - [`TwinRuntime`](../crates/spanda-runtime/src/twin.rs#L18)
-- [`TwinRuntime`](../crates/spanda-runtime/src/twin.rs#L328)
+- [`TwinRuntime`](../crates/spanda-runtime/src/twin.rs#L374)
 
 **fn**
 
-- [`commit_frame`](../crates/spanda-runtime/src/twin.rs#L113)
-- [`detect_divergence`](../crates/spanda-runtime/src/twin.rs#L201)
-- [`live_mirrored_fields`](../crates/spanda-runtime/src/twin.rs#L235)
-- [`replay_field`](../crates/spanda-runtime/src/twin.rs#L176)
-- [`replay_frame_count`](../crates/spanda-runtime/src/twin.rs#L134)
-- [`shadow_field`](../crates/spanda-runtime/src/twin.rs#L152)
-- [`snapshot`](../crates/spanda-runtime/src/twin.rs#L90)
-- [`with_sync`](../crates/spanda-runtime/src/twin.rs#L49)
+- [`commit_frame`](../crates/spanda-runtime/src/twin.rs#L121)
+- [`detect_divergence`](../crates/spanda-runtime/src/twin.rs#L212)
+- [`live_mirrored_fields`](../crates/spanda-runtime/src/twin.rs#L248)
+- [`replay_field`](../crates/spanda-runtime/src/twin.rs#L185)
+- [`replay_frame_count`](../crates/spanda-runtime/src/twin.rs#L141)
+- [`shadow_field`](../crates/spanda-runtime/src/twin.rs#L160)
+- [`snapshot`](../crates/spanda-runtime/src/twin.rs#L97)
+- [`with_sync`](../crates/spanda-runtime/src/twin.rs#L51)
 
 **method**
 
-- [`TwinRuntime::export_replay_json`](../crates/spanda-runtime/src/twin.rs#L329)
+- [`TwinRuntime::export_replay_json`](../crates/spanda-runtime/src/twin.rs#L375)
 - [`TwinRuntime::new`](../crates/spanda-runtime/src/twin.rs#L19)
 
 ##### `value` {#spanda-runtime-value}
@@ -2614,34 +3855,112 @@ Source: [crates/spanda-runtime/src/value.rs](../crates/spanda-runtime/src/value.
 
 **enum**
 
-- [`MotionCommand`](../crates/spanda-runtime/src/value.rs#L327)
+- [`MotionCommand`](../crates/spanda-runtime/src/value.rs#L336)
 - [`RuntimeValue`](../crates/spanda-runtime/src/value.rs#L42)
 
 **impl**
 
 - [`PoseValue`](../crates/spanda-runtime/src/value.rs#L16)
-- [`RuntimeValue`](../crates/spanda-runtime/src/value.rs#L199)
+- [`RuntimeValue`](../crates/spanda-runtime/src/value.rs#L204)
 
 **fn**
 
-- [`as_number`](../crates/spanda-runtime/src/value.rs#L283)
-- [`as_string`](../crates/spanda-runtime/src/value.rs#L304)
-- [`format_runtime_value`](../crates/spanda-runtime/src/value.rs#L363)
-- [`get_number`](../crates/spanda-runtime/src/value.rs#L551)
-- [`get_pose_fields`](../crates/spanda-runtime/src/value.rs#L483)
-- [`get_string`](../crates/spanda-runtime/src/value.rs#L570)
-- [`get_trajectory_waypoints`](../crates/spanda-runtime/src/value.rs#L530)
-- [`get_velocity_fields`](../crates/spanda-runtime/src/value.rs#L509)
-- [`object`](../crates/spanda-runtime/src/value.rs#L241)
-- [`runtime_pose`](../crates/spanda-runtime/src/value.rs#L423)
-- [`runtime_trajectory`](../crates/spanda-runtime/src/value.rs#L465)
-- [`runtime_velocity`](../crates/spanda-runtime/src/value.rs#L445)
-- [`scan`](../crates/spanda-runtime/src/value.rs#L264)
-- [`string`](../crates/spanda-runtime/src/value.rs#L220)
+- [`as_number`](../crates/spanda-runtime/src/value.rs#L290)
+- [`as_string`](../crates/spanda-runtime/src/value.rs#L312)
+- [`format_runtime_value`](../crates/spanda-runtime/src/value.rs#L372)
+- [`get_number`](../crates/spanda-runtime/src/value.rs#L567)
+- [`get_pose_fields`](../crates/spanda-runtime/src/value.rs#L496)
+- [`get_string`](../crates/spanda-runtime/src/value.rs#L588)
+- [`get_trajectory_waypoints`](../crates/spanda-runtime/src/value.rs#L545)
+- [`get_velocity_fields`](../crates/spanda-runtime/src/value.rs#L523)
+- [`object`](../crates/spanda-runtime/src/value.rs#L247)
+- [`runtime_pose`](../crates/spanda-runtime/src/value.rs#L432)
+- [`runtime_trajectory`](../crates/spanda-runtime/src/value.rs#L478)
+- [`runtime_velocity`](../crates/spanda-runtime/src/value.rs#L457)
+- [`scan`](../crates/spanda-runtime/src/value.rs#L271)
+- [`string`](../crates/spanda-runtime/src/value.rs#L226)
 
 **method**
 
-- [`RuntimeValue::number`](../crates/spanda-runtime/src/value.rs#L200)
+- [`RuntimeValue::number`](../crates/spanda-runtime/src/value.rs#L205)
+
+##### `wire_crypto` {#spanda-runtime-wire-crypto}
+
+Source: [crates/spanda-runtime/src/wire_crypto.rs](../crates/spanda-runtime/src/wire_crypto.rs#L1)
+
+**struct**
+
+- [`WireCryptoSession`](../crates/spanda-runtime/src/wire_crypto.rs#L9)
+
+**impl**
+
+- [`WireCryptoSession`](../crates/spanda-runtime/src/wire_crypto.rs#L14)
+
+**fn**
+
+- [`decrypt`](../crates/spanda-runtime/src/wire_crypto.rs#L43)
+- [`encrypt`](../crates/spanda-runtime/src/wire_crypto.rs#L27)
+
+**method**
+
+- [`WireCryptoSession::from_material`](../crates/spanda-runtime/src/wire_crypto.rs#L16)
+
+##### `world_model` {#spanda-runtime-world-model}
+
+Source: [crates/spanda-runtime/src/world_model.rs](../crates/spanda-runtime/src/world_model.rs#L1)
+
+**struct**
+
+- [`WorldModelRuntime`](../crates/spanda-runtime/src/world_model.rs#L11)
+
+**impl**
+
+- [`WorldModelRuntime`](../crates/spanda-runtime/src/world_model.rs#L16)
+
+**fn**
+
+- [`belief_confidence`](../crates/spanda-runtime/src/world_model.rs#L65)
+- [`export_json`](../crates/spanda-runtime/src/world_model.rs#L85)
+- [`update`](../crates/spanda-runtime/src/world_model.rs#L37)
+
+**method**
+
+- [`WorldModelRuntime::new`](../crates/spanda-runtime/src/world_model.rs#L18)
+
+##### `providers/hri` {#spanda-runtime-providers-hri}
+
+Source: [crates/spanda-runtime/src/providers/hri.rs](../crates/spanda-runtime/src/providers/hri.rs#L1)
+
+**struct**
+
+- [`SpatialSessionInfo`](../crates/spanda-runtime/src/providers/hri.rs#L8)
+
+**trait**
+
+- [`HriInputProvider`](../crates/spanda-runtime/src/providers/hri.rs#L31)
+- [`OverlayProvider`](../crates/spanda-runtime/src/providers/hri.rs#L37)
+- [`SpatialSessionProvider`](../crates/spanda-runtime/src/providers/hri.rs#L15)
+- [`WearableTelemetryProvider`](../crates/spanda-runtime/src/providers/hri.rs#L24)
+
+##### `providers/iot` {#spanda-runtime-providers-iot}
+
+Source: [crates/spanda-runtime/src/providers/iot.rs](../crates/spanda-runtime/src/providers/iot.rs#L1)
+
+**struct**
+
+- [`ActuatorCommand`](../crates/spanda-runtime/src/providers/iot.rs#L48)
+- [`Command`](../crates/spanda-runtime/src/providers/iot.rs#L33)
+- [`DeviceShadow`](../crates/spanda-runtime/src/providers/iot.rs#L16)
+- [`IoTDevice`](../crates/spanda-runtime/src/providers/iot.rs#L8)
+- [`SensorReading`](../crates/spanda-runtime/src/providers/iot.rs#L41)
+- [`Telemetry`](../crates/spanda-runtime/src/providers/iot.rs#L24)
+
+**trait**
+
+- [`CommandProvider`](../crates/spanda-runtime/src/providers/iot.rs#L67)
+- [`DeviceShadowProvider`](../crates/spanda-runtime/src/providers/iot.rs#L72)
+- [`IoTDeviceProvider`](../crates/spanda-runtime/src/providers/iot.rs#L55)
+- [`TelemetryProvider`](../crates/spanda-runtime/src/providers/iot.rs#L61)
 
 ##### `providers/registry` {#spanda-runtime-providers-registry}
 
@@ -2649,46 +3968,66 @@ Source: [crates/spanda-runtime/src/providers/registry.rs](../crates/spanda-runti
 
 **struct**
 
-- [`ProviderRegistry`](../crates/spanda-runtime/src/providers/registry.rs#L15)
+- [`ProviderRegistry`](../crates/spanda-runtime/src/providers/registry.rs#L18)
 
 **impl**
 
-- [`ProviderRegistry`](../crates/spanda-runtime/src/providers/registry.rs#L45)
+- [`ProviderRegistry`](../crates/spanda-runtime/src/providers/registry.rs#L92)
 
 **fn**
 
-- [`grant_capability`](../crates/spanda-runtime/src/providers/registry.rs#L50)
-- [`has_capability`](../crates/spanda-runtime/src/providers/registry.rs#L54)
-- [`has_official_package`](../crates/spanda-runtime/src/providers/registry.rs#L66)
-- [`list_fleet`](../crates/spanda-runtime/src/providers/registry.rs#L164)
-- [`list_positioning`](../crates/spanda-runtime/src/providers/registry.rs#L157)
-- [`list_transports`](../crates/spanda-runtime/src/providers/registry.rs#L150)
-- [`official_packages`](../crates/spanda-runtime/src/providers/registry.rs#L62)
-- [`register_actuator`](../crates/spanda-runtime/src/providers/registry.rs#L75)
-- [`register_cloud`](../crates/spanda-runtime/src/providers/registry.rs#L135)
-- [`register_connectivity`](../crates/spanda-runtime/src/providers/registry.rs#L80)
-- [`register_crypto`](../crates/spanda-runtime/src/providers/registry.rs#L95)
-- [`register_fleet`](../crates/spanda-runtime/src/providers/registry.rs#L115)
-- [`register_hal`](../crates/spanda-runtime/src/providers/registry.rs#L145)
-- [`register_ledger`](../crates/spanda-runtime/src/providers/registry.rs#L130)
-- [`register_maintenance`](../crates/spanda-runtime/src/providers/registry.rs#L125)
-- [`register_navigation`](../crates/spanda-runtime/src/providers/registry.rs#L100)
-- [`register_positioning`](../crates/spanda-runtime/src/providers/registry.rs#L85)
-- [`register_ros`](../crates/spanda-runtime/src/providers/registry.rs#L140)
-- [`register_sensor`](../crates/spanda-runtime/src/providers/registry.rs#L70)
-- [`register_simulation`](../crates/spanda-runtime/src/providers/registry.rs#L120)
-- [`register_slam`](../crates/spanda-runtime/src/providers/registry.rs#L105)
-- [`register_transport`](../crates/spanda-runtime/src/providers/registry.rs#L90)
-- [`register_vision`](../crates/spanda-runtime/src/providers/registry.rs#L110)
-- [`set_official_packages`](../crates/spanda-runtime/src/providers/registry.rs#L58)
-- [`transport_count`](../crates/spanda-runtime/src/providers/registry.rs#L171)
-- [`transport_registry_key`](../crates/spanda-runtime/src/providers/registry.rs#L41)
-- [`with_transport`](../crates/spanda-runtime/src/providers/registry.rs#L175)
-- [`with_transport_for_kind`](../crates/spanda-runtime/src/providers/registry.rs#L182)
+- [`connectivity_count`](../crates/spanda-runtime/src/providers/registry.rs#L1292)
+- [`fleet_count`](../crates/spanda-runtime/src/providers/registry.rs#L1352)
+- [`grant_capability`](../crates/spanda-runtime/src/providers/registry.rs#L110)
+- [`has_capability`](../crates/spanda-runtime/src/providers/registry.rs#L142)
+- [`has_official_package`](../crates/spanda-runtime/src/providers/registry.rs#L238)
+- [`list_fleet`](../crates/spanda-runtime/src/providers/registry.rs#L866)
+- [`list_positioning`](../crates/spanda-runtime/src/providers/registry.rs#L833)
+- [`list_transports`](../crates/spanda-runtime/src/providers/registry.rs#L800)
+- [`navigation_count`](../crates/spanda-runtime/src/providers/registry.rs#L1322)
+- [`official_packages`](../crates/spanda-runtime/src/providers/registry.rs#L208)
+- [`positioning_count`](../crates/spanda-runtime/src/providers/registry.rs#L1262)
+- [`register_actuator`](../crates/spanda-runtime/src/providers/registry.rs#L305)
+- [`register_cloud`](../crates/spanda-runtime/src/providers/registry.rs#L701)
+- [`register_connectivity`](../crates/spanda-runtime/src/providers/registry.rs#L338)
+- [`register_crypto`](../crates/spanda-runtime/src/providers/registry.rs#L437)
+- [`register_fleet`](../crates/spanda-runtime/src/providers/registry.rs#L569)
+- [`register_hal`](../crates/spanda-runtime/src/providers/registry.rs#L767)
+- [`register_hri_input`](../crates/spanda-runtime/src/providers/registry.rs#L1488)
+- [`register_ledger`](../crates/spanda-runtime/src/providers/registry.rs#L668)
+- [`register_maintenance`](../crates/spanda-runtime/src/providers/registry.rs#L635)
+- [`register_navigation`](../crates/spanda-runtime/src/providers/registry.rs#L470)
+- [`register_overlay`](../crates/spanda-runtime/src/providers/registry.rs#L1493)
+- [`register_positioning`](../crates/spanda-runtime/src/providers/registry.rs#L371)
+- [`register_ros`](../crates/spanda-runtime/src/providers/registry.rs#L734)
+- [`register_sensor`](../crates/spanda-runtime/src/providers/registry.rs#L272)
+- [`register_simulation`](../crates/spanda-runtime/src/providers/registry.rs#L602)
+- [`register_slam`](../crates/spanda-runtime/src/providers/registry.rs#L503)
+- [`register_spatial_session`](../crates/spanda-runtime/src/providers/registry.rs#L1469)
+- [`register_transport`](../crates/spanda-runtime/src/providers/registry.rs#L404)
+- [`register_vision`](../crates/spanda-runtime/src/providers/registry.rs#L536)
+- [`register_wearable_telemetry`](../crates/spanda-runtime/src/providers/registry.rs#L1464)
+- [`set_official_packages`](../crates/spanda-runtime/src/providers/registry.rs#L176)
+- [`transport_count`](../crates/spanda-runtime/src/providers/registry.rs#L899)
+- [`transport_registry_key`](../crates/spanda-runtime/src/providers/registry.rs#L74)
+- [`with_connectivity`](../crates/spanda-runtime/src/providers/registry.rs#L1057)
+- [`with_fleet`](../crates/spanda-runtime/src/providers/registry.rs#L1139)
+- [`with_hri_input`](../crates/spanda-runtime/src/providers/registry.rs#L1498)
+- [`with_ledger`](../crates/spanda-runtime/src/providers/registry.rs#L1423)
+- [`with_navigation`](../crates/spanda-runtime/src/providers/registry.rs#L1098)
+- [`with_overlay`](../crates/spanda-runtime/src/providers/registry.rs#L1505)
+- [`with_positioning`](../crates/spanda-runtime/src/providers/registry.rs#L1016)
+- [`with_simulation`](../crates/spanda-runtime/src/providers/registry.rs#L1382)
+- [`with_slam`](../crates/spanda-runtime/src/providers/registry.rs#L1180)
+- [`with_spatial_session`](../crates/spanda-runtime/src/providers/registry.rs#L1481)
+- [`with_transport`](../crates/spanda-runtime/src/providers/registry.rs#L929)
+- [`with_transport_for_kind`](../crates/spanda-runtime/src/providers/registry.rs#L970)
+- [`with_vision`](../crates/spanda-runtime/src/providers/registry.rs#L1221)
+- [`with_wearable_telemetry`](../crates/spanda-runtime/src/providers/registry.rs#L1474)
 
 **method**
 
-- [`ProviderRegistry::new`](../crates/spanda-runtime/src/providers/registry.rs#L46)
+- [`ProviderRegistry::new`](../crates/spanda-runtime/src/providers/registry.rs#L93)
 
 ##### `providers/traits` {#spanda-runtime-providers-traits}
 
@@ -2749,8 +4088,8 @@ Source: [crates/spanda-runtime-host/src/nav2_adapter.rs](../crates/spanda-runtim
 **fn**
 
 - [`nav2_import_paths`](../crates/spanda-runtime-host/src/nav2_adapter.rs#L8)
-- [`program_uses_nav2`](../crates/spanda-runtime-host/src/nav2_adapter.rs#L13)
-- [`try_publish_nav2_cmd_vel`](../crates/spanda-runtime-host/src/nav2_adapter.rs#L21)
+- [`program_uses_nav2`](../crates/spanda-runtime-host/src/nav2_adapter.rs#L27)
+- [`try_publish_nav2_cmd_vel`](../crates/spanda-runtime-host/src/nav2_adapter.rs#L50)
 
 ##### `robotics_validation` {#spanda-runtime-host-robotics-validation}
 
@@ -2758,10 +4097,10 @@ Source: [crates/spanda-runtime-host/src/robotics_validation.rs](../crates/spanda
 
 **fn**
 
-- [`validate_certification_standard`](../crates/spanda-runtime-host/src/robotics_validation.rs#L54)
+- [`validate_certification_standard`](../crates/spanda-runtime-host/src/robotics_validation.rs#L111)
 - [`validate_fleet_members`](../crates/spanda-runtime-host/src/robotics_validation.rs#L6)
-- [`validate_mission_decl`](../crates/spanda-runtime-host/src/robotics_validation.rs#L36)
-- [`validate_swarm_fleet`](../crates/spanda-runtime-host/src/robotics_validation.rs#L22)
+- [`validate_mission_decl`](../crates/spanda-runtime-host/src/robotics_validation.rs#L74)
+- [`validate_swarm_fleet`](../crates/spanda-runtime-host/src/robotics_validation.rs#L41)
 
 ##### `root` {#spanda-runtime-host-root}
 
@@ -2784,7 +4123,7 @@ Source: [crates/spanda-runtime-host/src/lib.rs](../crates/spanda-runtime-host/sr
 
 **fn**
 
-- [`core_runtime_host`](../crates/spanda-runtime-host/src/lib.rs#L105)
+- [`core_runtime_host`](../crates/spanda-runtime-host/src/lib.rs#L352)
 
 ##### `slam_adapter` {#spanda-runtime-host-slam-adapter}
 
@@ -2792,7 +4131,7 @@ Source: [crates/spanda-runtime-host/src/slam_adapter.rs](../crates/spanda-runtim
 
 **fn**
 
-- [`program_uses_slam`](../crates/spanda-runtime-host/src/slam_adapter.rs#L11)
+- [`program_uses_slam`](../crates/spanda-runtime-host/src/slam_adapter.rs#L29)
 - [`slam_import_paths`](../crates/spanda-runtime-host/src/slam_adapter.rs#L6)
 
 ##### `type_check_host` {#spanda-runtime-host-type-check-host}
@@ -2801,15 +4140,15 @@ Source: [crates/spanda-runtime-host/src/type_check_host.rs](../crates/spanda-run
 
 **struct**
 
-- [`CoreTypeCheckHost`](../crates/spanda-runtime-host/src/type_check_host.rs#L20)
+- [`CoreTypeCheckHost`](../crates/spanda-runtime-host/src/type_check_host.rs#L21)
 
 **impl**
 
-- [`CoreTypeCheckHost`](../crates/spanda-runtime-host/src/type_check_host.rs#L22)
+- [`CoreTypeCheckHost`](../crates/spanda-runtime-host/src/type_check_host.rs#L23)
 
 **fn**
 
-- [`core_type_check_host`](../crates/spanda-runtime-host/src/type_check_host.rs#L120)
+- [`core_type_check_host`](../crates/spanda-runtime-host/src/type_check_host.rs#L395)
 
 #### `spanda-comm` {#crate-spanda-comm}
 
@@ -2817,54 +4156,90 @@ Crate root: [`crates/spanda-comm`](../crates/spanda-comm/)
 
 **Modules**
 
+- [comm_bus_host](#spanda-comm-comm-bus-host)
 - [root](#spanda-comm-root)
+
+##### `comm_bus_host` {#spanda-comm-comm-bus-host}
+
+Source: [crates/spanda-comm/src/comm_bus_host.rs](../crates/spanda-comm/src/comm_bus_host.rs#L1)
+
+**struct**
+
+- [`SimCommBusHost`](../crates/spanda-comm/src/comm_bus_host.rs#L40)
+
+**trait**
+
+- [`CommBusHost`](../crates/spanda-comm/src/comm_bus_host.rs#L11)
+
+**type**
+
+- [`CommBusFactory`](../crates/spanda-comm/src/comm_bus_host.rs#L172)
+
+**impl**
+
+- [`SimCommBusHost`](../crates/spanda-comm/src/comm_bus_host.rs#L44)
+- [`SimCommBusHost`](../crates/spanda-comm/src/comm_bus_host.rs#L52)
+- [`SimCommBusHost`](../crates/spanda-comm/src/comm_bus_host.rs#L129)
+
+**fn**
+
+- [`default_comm_bus_factory`](../crates/spanda-comm/src/comm_bus_host.rs#L175)
+- [`default_comm_bus_factory_fn`](../crates/spanda-comm/src/comm_bus_host.rs#L182)
+
+**method**
+
+- [`SimCommBusHost::new`](../crates/spanda-comm/src/comm_bus_host.rs#L45)
 
 ##### `root` {#spanda-comm-root}
 
 Source: [crates/spanda-comm/src/lib.rs](../crates/spanda-comm/src/lib.rs#L1)
 
+**mod**
+
+- [`comm_bus_host`](../crates/spanda-comm/src/lib.rs#L4)
+
 **export**
 
-- [`spanda_ast::comm_decl::*`](../crates/spanda-comm/src/lib.rs#L4)
+- [`spanda_ast::comm_decl::*`](../crates/spanda-comm/src/lib.rs#L11)
 
 **struct**
 
-- [`CommEnvelope`](../crates/spanda-comm/src/lib.rs#L15)
-- [`InMemoryCommBus`](../crates/spanda-comm/src/lib.rs#L93)
-- [`PublishedCommMessage`](../crates/spanda-comm/src/lib.rs#L21)
-- [`SimNetworkConfig`](../crates/spanda-comm/src/lib.rs#L30)
+- [`CommEnvelope`](../crates/spanda-comm/src/lib.rs#L22)
+- [`InMemoryCommBus`](../crates/spanda-comm/src/lib.rs#L100)
+- [`PublishedCommMessage`](../crates/spanda-comm/src/lib.rs#L28)
+- [`SimNetworkConfig`](../crates/spanda-comm/src/lib.rs#L37)
 
 **enum**
 
-- [`CommSafetyStage`](../crates/spanda-comm/src/lib.rs#L645)
+- [`CommSafetyStage`](../crates/spanda-comm/src/lib.rs#L674)
 
 **trait**
 
-- [`CommBus`](../crates/spanda-comm/src/lib.rs#L58)
+- [`CommBus`](../crates/spanda-comm/src/lib.rs#L65)
 
 **impl**
 
-- [`InMemoryCommBus`](../crates/spanda-comm/src/lib.rs#L104)
-- [`InMemoryCommBus`](../crates/spanda-comm/src/lib.rs#L295)
-- [`SimNetworkConfig`](../crates/spanda-comm/src/lib.rs#L35)
+- [`InMemoryCommBus`](../crates/spanda-comm/src/lib.rs#L111)
+- [`InMemoryCommBus`](../crates/spanda-comm/src/lib.rs#L307)
+- [`SimNetworkConfig`](../crates/spanda-comm/src/lib.rs#L42)
 
 **fn**
 
-- [`active_faults`](../crates/spanda-comm/src/lib.rs#L189)
-- [`default_message_size`](../crates/spanda-comm/src/lib.rs#L721)
-- [`estimate_topic_bandwidth_mbps`](../crates/spanda-comm/src/lib.rs#L701)
-- [`publish_peer`](../crates/spanda-comm/src/lib.rs#L256)
-- [`push_inbound`](../crates/spanda-comm/src/lib.rs#L227)
-- [`qos_to_spanda_type`](../crates/spanda-comm/src/lib.rs#L745)
-- [`register_agent`](../crates/spanda-comm/src/lib.rs#L149)
-- [`register_device`](../crates/spanda-comm/src/lib.rs#L169)
-- [`register_robot`](../crates/spanda-comm/src/lib.rs#L129)
-- [`subscription_paths`](../crates/spanda-comm/src/lib.rs#L208)
-- [`validate_comm_safety_chain`](../crates/spanda-comm/src/lib.rs#L652)
+- [`active_faults`](../crates/spanda-comm/src/lib.rs#L195)
+- [`default_message_size`](../crates/spanda-comm/src/lib.rs#L752)
+- [`estimate_topic_bandwidth_mbps`](../crates/spanda-comm/src/lib.rs#L731)
+- [`publish_peer`](../crates/spanda-comm/src/lib.rs#L264)
+- [`push_inbound`](../crates/spanda-comm/src/lib.rs#L233)
+- [`qos_to_spanda_type`](../crates/spanda-comm/src/lib.rs#L776)
+- [`register_agent`](../crates/spanda-comm/src/lib.rs#L155)
+- [`register_device`](../crates/spanda-comm/src/lib.rs#L175)
+- [`register_robot`](../crates/spanda-comm/src/lib.rs#L135)
+- [`subscription_paths`](../crates/spanda-comm/src/lib.rs#L214)
+- [`validate_comm_safety_chain`](../crates/spanda-comm/src/lib.rs#L681)
 
 **method**
 
-- [`InMemoryCommBus::new`](../crates/spanda-comm/src/lib.rs#L105)
+- [`InMemoryCommBus::new`](../crates/spanda-comm/src/lib.rs#L112)
 
 #### `spanda-safety` {#crate-spanda-safety}
 
@@ -2880,8 +4255,8 @@ Source: [crates/spanda-safety/src/lib.rs](../crates/spanda-safety/src/lib.rs#L1)
 
 **struct**
 
-- [`Pose2d`](../crates/spanda-safety/src/lib.rs#L358)
-- [`Pose3d`](../crates/spanda-safety/src/lib.rs#L364)
+- [`Pose2d`](../crates/spanda-safety/src/lib.rs#L480)
+- [`Pose3d`](../crates/spanda-safety/src/lib.rs#L486)
 - [`SafetyConfig`](../crates/spanda-safety/src/lib.rs#L33)
 - [`SafetyEvaluation`](../crates/spanda-safety/src/lib.rs#L25)
 - [`SafetyMonitor`](../crates/spanda-safety/src/lib.rs#L52)
@@ -2903,19 +4278,20 @@ Source: [crates/spanda-safety/src/lib.rs](../crates/spanda-safety/src/lib.rs#L1)
 
 **fn**
 
-- [`apply_emergency_stop`](../crates/spanda-safety/src/lib.rs#L403)
-- [`clamp_speed`](../crates/spanda-safety/src/lib.rs#L255)
-- [`clamp_speed_at_pose`](../crates/spanda-safety/src/lib.rs#L222)
-- [`create_safety_config_from_robot`](../crates/spanda-safety/src/lib.rs#L371)
-- [`effective_max_speed`](../crates/spanda-safety/src/lib.rs#L209)
+- [`apply_emergency_stop`](../crates/spanda-safety/src/lib.rs#L528)
+- [`apply_speed_cap`](../crates/spanda-safety/src/lib.rs#L398)
+- [`clamp_speed`](../crates/spanda-safety/src/lib.rs#L326)
+- [`clamp_speed_at_pose`](../crates/spanda-safety/src/lib.rs#L258)
+- [`create_safety_config_from_robot`](../crates/spanda-safety/src/lib.rs#L493)
+- [`effective_max_speed`](../crates/spanda-safety/src/lib.rs#L217)
 - [`evaluate_before_motion`](../crates/spanda-safety/src/lib.rs#L80)
-- [`interpolate_poses`](../crates/spanda-safety/src/lib.rs#L429)
-- [`is_emergency_stop`](../crates/spanda-safety/src/lib.rs#L260)
-- [`is_in_zone`](../crates/spanda-safety/src/lib.rs#L232)
-- [`peek_before_motion`](../crates/spanda-safety/src/lib.rs#L107)
-- [`reset`](../crates/spanda-safety/src/lib.rs#L298)
-- [`set_emergency_stop`](../crates/spanda-safety/src/lib.rs#L278)
-- [`validate_action_proposal`](../crates/spanda-safety/src/lib.rs#L167)
+- [`interpolate_poses`](../crates/spanda-safety/src/lib.rs#L554)
+- [`is_emergency_stop`](../crates/spanda-safety/src/lib.rs#L359)
+- [`is_in_zone`](../crates/spanda-safety/src/lib.rs#L300)
+- [`peek_before_motion`](../crates/spanda-safety/src/lib.rs#L109)
+- [`reset`](../crates/spanda-safety/src/lib.rs#L418)
+- [`set_emergency_stop`](../crates/spanda-safety/src/lib.rs#L378)
+- [`validate_action_proposal`](../crates/spanda-safety/src/lib.rs#L171)
 
 **method**
 
@@ -2955,16 +4331,16 @@ Source: [crates/spanda-hal/src/hal.rs](../crates/spanda-hal/src/hal.rs#L1)
 **impl**
 
 - [`SimHalBackend`](../crates/spanda-hal/src/hal.rs#L39)
-- [`SimHalBackend`](../crates/spanda-hal/src/hal.rs#L135)
-- [`SimHalBackend`](../crates/spanda-hal/src/hal.rs#L155)
+- [`SimHalBackend`](../crates/spanda-hal/src/hal.rs#L137)
+- [`SimHalBackend`](../crates/spanda-hal/src/hal.rs#L157)
 
 **fn**
 
-- [`create_sim_hal`](../crates/spanda-hal/src/hal.rs#L437)
-- [`hal_member_from_decl`](../crates/spanda-hal/src/hal.rs#L456)
-- [`seed_imu_registers`](../crates/spanda-hal/src/hal.rs#L108)
+- [`create_sim_hal`](../crates/spanda-hal/src/hal.rs#L453)
+- [`hal_member_from_decl`](../crates/spanda-hal/src/hal.rs#L471)
+- [`seed_imu_registers`](../crates/spanda-hal/src/hal.rs#L109)
 - [`set_adc_value`](../crates/spanda-hal/src/hal.rs#L87)
-- [`simulate_uart_data`](../crates/spanda-hal/src/hal.rs#L66)
+- [`simulate_uart_data`](../crates/spanda-hal/src/hal.rs#L65)
 
 **method**
 
@@ -2984,16 +4360,19 @@ Source: [crates/spanda-hal/src/hardware_monitor.rs](../crates/spanda-hal/src/har
 
 **fn**
 
-- [`actuator_event_for_type`](../crates/spanda-hal/src/hardware_monitor.rs#L115)
-- [`clear_event`](../crates/spanda-hal/src/hardware_monitor.rs#L307)
-- [`evaluate_injected_faults`](../crates/spanda-hal/src/hardware_monitor.rs#L239)
-- [`has_injected_faults`](../crates/spanda-hal/src/hardware_monitor.rs#L62)
-- [`inject_fault`](../crates/spanda-hal/src/hardware_monitor.rs#L81)
-- [`injected_faults`](../crates/spanda-hal/src/hardware_monitor.rs#L85)
-- [`poll_new_events`](../crates/spanda-hal/src/hardware_monitor.rs#L278)
-- [`record_sensor_reading`](../crates/spanda-hal/src/hardware_monitor.rs#L182)
-- [`register_actuator`](../crates/spanda-hal/src/hardware_monitor.rs#L41)
-- [`sensor_event_for_type`](../crates/spanda-hal/src/hardware_monitor.rs#L89)
+- [`actuator_event_for_type`](../crates/spanda-hal/src/hardware_monitor.rs#L148)
+- [`clear_event`](../crates/spanda-hal/src/hardware_monitor.rs#L343)
+- [`evaluate_injected_faults`](../crates/spanda-hal/src/hardware_monitor.rs#L276)
+- [`has_injected_faults`](../crates/spanda-hal/src/hardware_monitor.rs#L64)
+- [`inject_fault`](../crates/spanda-hal/src/hardware_monitor.rs#L83)
+- [`injected_faults`](../crates/spanda-hal/src/hardware_monitor.rs#L103)
+- [`overall_health_label`](../crates/spanda-hal/src/hardware_monitor.rs#L364)
+- [`poll_new_events`](../crates/spanda-hal/src/hardware_monitor.rs#L314)
+- [`record_sensor_reading`](../crates/spanda-hal/src/hardware_monitor.rs#L217)
+- [`register_actuator`](../crates/spanda-hal/src/hardware_monitor.rs#L42)
+- [`runtime_events`](../crates/spanda-hal/src/hardware_monitor.rs#L417)
+- [`runtime_faults`](../crates/spanda-hal/src/hardware_monitor.rs#L398)
+- [`sensor_event_for_type`](../crates/spanda-hal/src/hardware_monitor.rs#L122)
 
 **method**
 
@@ -3011,7 +4390,7 @@ Source: [crates/spanda-hal/src/lib.rs](../crates/spanda-hal/src/lib.rs#L1)
 
 **export**
 
-- [`hardware_monitor::HardwareMonitor`](../crates/spanda-hal/src/lib.rs#L10)
+- [`hardware_monitor::HardwareMonitor`](../crates/spanda-hal/src/lib.rs#L8)
 
 ##### `soc` {#spanda-hal-soc}
 
@@ -3028,9 +4407,9 @@ Source: [crates/spanda-hal/src/soc.rs](../crates/spanda-hal/src/soc.rs#L1)
 
 **fn**
 
-- [`get_soc_profile`](../crates/spanda-hal/src/soc.rs#L288)
+- [`get_soc_profile`](../crates/spanda-hal/src/soc.rs#L287)
 - [`list_soc_profiles`](../crates/spanda-hal/src/soc.rs#L306)
-- [`validate_hal_against_soc`](../crates/spanda-hal/src/soc.rs#L325)
+- [`validate_hal_against_soc`](../crates/spanda-hal/src/soc.rs#L324)
 
 #### `spanda-concurrency` {#crate-spanda-concurrency}
 
@@ -3061,20 +4440,20 @@ Source: [crates/spanda-concurrency/src/lib.rs](../crates/spanda-concurrency/src/
 
 **fn**
 
-- [`agent_inbox_len`](../crates/spanda-concurrency/src/lib.rs#L207)
-- [`bind_channel_type`](../crates/spanda-concurrency/src/lib.rs#L473)
-- [`create_channel`](../crates/spanda-concurrency/src/lib.rs#L230)
-- [`create_task_handle`](../crates/spanda-concurrency/src/lib.rs#L328)
-- [`drain_fire_and_forget_queue`](../crates/spanda-concurrency/src/lib.rs#L454)
-- [`handle`](../crates/spanda-concurrency/src/lib.rs#L389)
-- [`handle_mut`](../crates/spanda-concurrency/src/lib.rs#L409)
-- [`queue_fire_and_forget`](../crates/spanda-concurrency/src/lib.rs#L363)
-- [`register_agent_route`](../crates/spanda-concurrency/src/lib.rs#L87)
-- [`send`](../crates/spanda-concurrency/src/lib.rs#L253)
-- [`send_agent`](../crates/spanda-concurrency/src/lib.rs#L113)
-- [`set_handle_result`](../crates/spanda-concurrency/src/lib.rs#L429)
-- [`try_recv`](../crates/spanda-concurrency/src/lib.rs#L299)
-- [`try_recv_agent`](../crates/spanda-concurrency/src/lib.rs#L184)
+- [`agent_inbox_len`](../crates/spanda-concurrency/src/lib.rs#L212)
+- [`bind_channel_type`](../crates/spanda-concurrency/src/lib.rs#L498)
+- [`create_channel`](../crates/spanda-concurrency/src/lib.rs#L236)
+- [`create_task_handle`](../crates/spanda-concurrency/src/lib.rs#L348)
+- [`drain_fire_and_forget_queue`](../crates/spanda-concurrency/src/lib.rs#L479)
+- [`handle`](../crates/spanda-concurrency/src/lib.rs#L412)
+- [`handle_mut`](../crates/spanda-concurrency/src/lib.rs#L433)
+- [`queue_fire_and_forget`](../crates/spanda-concurrency/src/lib.rs#L385)
+- [`register_agent_route`](../crates/spanda-concurrency/src/lib.rs#L86)
+- [`send`](../crates/spanda-concurrency/src/lib.rs#L259)
+- [`send_agent`](../crates/spanda-concurrency/src/lib.rs#L114)
+- [`set_handle_result`](../crates/spanda-concurrency/src/lib.rs#L454)
+- [`try_recv`](../crates/spanda-concurrency/src/lib.rs#L312)
+- [`try_recv_agent`](../crates/spanda-concurrency/src/lib.rs#L187)
 
 **method**
 
@@ -3110,11 +4489,11 @@ Source: [crates/spanda-debug/src/lib.rs](../crates/spanda-debug/src/lib.rs#L1)
 
 **fn**
 
-- [`command`](../crates/spanda-debug/src/lib.rs#L160)
+- [`command`](../crates/spanda-debug/src/lib.rs#L163)
 - [`pauses`](../crates/spanda-debug/src/lib.rs#L86)
-- [`record_pause`](../crates/spanda-debug/src/lib.rs#L129)
+- [`record_pause`](../crates/spanda-debug/src/lib.rs#L130)
 - [`should_pause`](../crates/spanda-debug/src/lib.rs#L105)
-- [`stmt_line`](../crates/spanda-debug/src/lib.rs#L183)
+- [`stmt_line`](../crates/spanda-debug/src/lib.rs#L186)
 
 **method**
 
@@ -3127,86 +4506,114 @@ Crate root: [`crates/spanda-ai`](../crates/spanda-ai/)
 
 **Modules**
 
+- [live](#spanda-ai-live)
 - [root](#spanda-ai-root)
+
+##### `live` {#spanda-ai-live}
+
+Source: [crates/spanda-ai/src/live.rs](../crates/spanda-ai/src/live.rs#L1)
+
+**struct**
+
+- [`AnthropicProvider`](../crates/spanda-ai/src/live.rs#L173)
+- [`OnnxProvider`](../crates/spanda-ai/src/live.rs#L244)
+- [`OpenAiProvider`](../crates/spanda-ai/src/live.rs#L102)
+
+**impl**
+
+- [`AnthropicProvider`](../crates/spanda-ai/src/live.rs#L175)
+- [`OnnxProvider`](../crates/spanda-ai/src/live.rs#L246)
+- [`OpenAiProvider`](../crates/spanda-ai/src/live.rs#L104)
+
+**fn**
+
+- [`live_ai_enabled`](../crates/spanda-ai/src/live.rs#L12)
+- [`live_anthropic_enabled`](../crates/spanda-ai/src/live.rs#L34)
+- [`live_onnx_enabled`](../crates/spanda-ai/src/live.rs#L56)
+- [`resolve_ai_provider`](../crates/spanda-ai/src/live.rs#L78)
 
 ##### `root` {#spanda-ai-root}
 
 Source: [crates/spanda-ai/src/lib.rs](../crates/spanda-ai/src/lib.rs#L1)
 
+**mod**
+
+- [`live`](../crates/spanda-ai/src/lib.rs#L3)
+
 **struct**
 
-- [`ActionProposalFields`](../crates/spanda-ai/src/lib.rs#L1432)
-- [`AgentRuntime`](../crates/spanda-ai/src/lib.rs#L987)
-- [`AiLibModule`](../crates/spanda-ai/src/lib.rs#L41)
-- [`AiModel`](../crates/spanda-ai/src/lib.rs#L730)
-- [`AiModelConfig`](../crates/spanda-ai/src/lib.rs#L723)
-- [`CompletionRequest`](../crates/spanda-ai/src/lib.rs#L193)
-- [`DetectionRequest`](../crates/spanda-ai/src/lib.rs#L203)
-- [`EmbedRequest`](../crates/spanda-ai/src/lib.rs#L210)
-- [`MemoryStore`](../crates/spanda-ai/src/lib.rs#L1115)
-- [`MockAiProvider`](../crates/spanda-ai/src/lib.rs#L284)
+- [`ActionProposalFields`](../crates/spanda-ai/src/lib.rs#L1461)
+- [`AgentRuntime`](../crates/spanda-ai/src/lib.rs#L1006)
+- [`AiLibModule`](../crates/spanda-ai/src/lib.rs#L43)
+- [`AiModel`](../crates/spanda-ai/src/lib.rs#L738)
+- [`AiModelConfig`](../crates/spanda-ai/src/lib.rs#L731)
+- [`CompletionRequest`](../crates/spanda-ai/src/lib.rs#L191)
+- [`DetectionRequest`](../crates/spanda-ai/src/lib.rs#L201)
+- [`EmbedRequest`](../crates/spanda-ai/src/lib.rs#L208)
+- [`MemoryStore`](../crates/spanda-ai/src/lib.rs#L1136)
+- [`MockAiProvider`](../crates/spanda-ai/src/lib.rs#L285)
 
 **enum**
 
-- [`AiMemoryKind`](../crates/spanda-ai/src/lib.rs#L1085)
-- [`AiRuntimeKind`](../crates/spanda-ai/src/lib.rs#L8)
+- [`AiMemoryKind`](../crates/spanda-ai/src/lib.rs#L1106)
+- [`AiRuntimeKind`](../crates/spanda-ai/src/lib.rs#L10)
 
 **trait**
 
-- [`AiProvider`](../crates/spanda-ai/src/lib.rs#L216)
-- [`PlanExecutor`](../crates/spanda-ai/src/lib.rs#L1054)
+- [`AiProvider`](../crates/spanda-ai/src/lib.rs#L214)
+- [`PlanExecutor`](../crates/spanda-ai/src/lib.rs#L1074)
 
 **const**
 
-- [`AI_CONFIDENCE_LOW_THRESHOLD`](../crates/spanda-ai/src/lib.rs#L1411)
+- [`AI_CONFIDENCE_LOW_THRESHOLD`](../crates/spanda-ai/src/lib.rs#L1439)
 
 **impl**
 
-- [`AiModel`](../crates/spanda-ai/src/lib.rs#L737)
-- [`AiRuntimeKind`](../crates/spanda-ai/src/lib.rs#L15)
-- [`From`](../crates/spanda-ai/src/lib.rs#L1090)
-- [`MemoryStore`](../crates/spanda-ai/src/lib.rs#L1129)
-- [`MockAiProvider`](../crates/spanda-ai/src/lib.rs#L286)
+- [`AiModel`](../crates/spanda-ai/src/lib.rs#L745)
+- [`AiRuntimeKind`](../crates/spanda-ai/src/lib.rs#L17)
+- [`From`](../crates/spanda-ai/src/lib.rs#L1111)
+- [`MemoryStore`](../crates/spanda-ai/src/lib.rs#L1150)
+- [`MockAiProvider`](../crates/spanda-ai/src/lib.rs#L287)
 
 **fn**
 
-- [`agent_tool_names`](../crates/spanda-ai/src/lib.rs#L1012)
-- [`agent_uses_models`](../crates/spanda-ai/src/lib.rs#L1033)
-- [`ai_lib_registry`](../crates/spanda-ai/src/lib.rs#L116)
+- [`agent_tool_names`](../crates/spanda-ai/src/lib.rs#L1032)
+- [`agent_uses_models`](../crates/spanda-ai/src/lib.rs#L1053)
+- [`ai_lib_registry`](../crates/spanda-ai/src/lib.rs#L117)
 - [`ai_lib_registry_export`](../crates/spanda-ai/src/lib.rs#L154)
-- [`build_prompt`](../crates/spanda-ai/src/lib.rs#L566)
-- [`clear`](../crates/spanda-ai/src/lib.rs#L1243)
-- [`create_agent_runtime`](../crates/spanda-ai/src/lib.rs#L992)
-- [`create_ai_model`](../crates/spanda-ai/src/lib.rs#L967)
-- [`detect`](../crates/spanda-ai/src/lib.rs#L833)
-- [`execute_agent_plan`](../crates/spanda-ai/src/lib.rs#L1058)
-- [`is_action_proposal`](../crates/spanda-ai/src/lib.rs#L1346)
-- [`is_safe_action`](../crates/spanda-ai/src/lib.rs#L1413)
-- [`list_ai_libraries`](../crates/spanda-ai/src/lib.rs#L173)
-- [`mock_analyze_frame`](../crates/spanda-ai/src/lib.rs#L496)
-- [`mock_camera_frame`](../crates/spanda-ai/src/lib.rs#L534)
-- [`mock_summarize`](../crates/spanda-ai/src/lib.rs#L460)
-- [`proposal_confidence`](../crates/spanda-ai/src/lib.rs#L1365)
-- [`proposal_from_value`](../crates/spanda-ai/src/lib.rs#L1438)
-- [`reason`](../crates/spanda-ai/src/lib.rs#L767)
-- [`recall`](../crates/spanda-ai/src/lib.rs#L1191)
-- [`recent`](../crates/spanda-ai/src/lib.rs#L1215)
-- [`remember`](../crates/spanda-ai/src/lib.rs#L1158)
+- [`build_prompt`](../crates/spanda-ai/src/lib.rs#L571)
+- [`clear`](../crates/spanda-ai/src/lib.rs#L1268)
+- [`create_agent_runtime`](../crates/spanda-ai/src/lib.rs#L1011)
+- [`create_ai_model`](../crates/spanda-ai/src/lib.rs#L986)
+- [`detect`](../crates/spanda-ai/src/lib.rs#L847)
+- [`execute_agent_plan`](../crates/spanda-ai/src/lib.rs#L1078)
+- [`is_action_proposal`](../crates/spanda-ai/src/lib.rs#L1373)
+- [`is_safe_action`](../crates/spanda-ai/src/lib.rs#L1441)
+- [`list_ai_libraries`](../crates/spanda-ai/src/lib.rs#L172)
+- [`mock_analyze_frame`](../crates/spanda-ai/src/lib.rs#L501)
+- [`mock_camera_frame`](../crates/spanda-ai/src/lib.rs#L540)
+- [`mock_summarize`](../crates/spanda-ai/src/lib.rs#L464)
+- [`proposal_confidence`](../crates/spanda-ai/src/lib.rs#L1393)
+- [`proposal_from_value`](../crates/spanda-ai/src/lib.rs#L1467)
+- [`reason`](../crates/spanda-ai/src/lib.rs#L777)
+- [`recall`](../crates/spanda-ai/src/lib.rs#L1214)
+- [`recent`](../crates/spanda-ai/src/lib.rs#L1239)
+- [`remember`](../crates/spanda-ai/src/lib.rs#L1180)
 - [`resolve_ai_import`](../crates/spanda-ai/src/lib.rs#L135)
-- [`runtime_action_proposal`](../crates/spanda-ai/src/lib.rs#L1316)
-- [`runtime_safe_action`](../crates/spanda-ai/src/lib.rs#L1296)
-- [`safe_action_from_proposal`](../crates/spanda-ai/src/lib.rs#L1489)
-- [`summarize`](../crates/spanda-ai/src/lib.rs#L807)
-- [`summary_for_prompt`](../crates/spanda-ai/src/lib.rs#L1262)
-- [`to_runtime_value`](../crates/spanda-ai/src/lib.rs#L863)
-- [`wrap_completion`](../crates/spanda-ai/src/lib.rs#L1509)
-- [`wrap_detection`](../crates/spanda-ai/src/lib.rs#L1532)
+- [`runtime_action_proposal`](../crates/spanda-ai/src/lib.rs#L1341)
+- [`runtime_safe_action`](../crates/spanda-ai/src/lib.rs#L1320)
+- [`safe_action_from_proposal`](../crates/spanda-ai/src/lib.rs#L1518)
+- [`summarize`](../crates/spanda-ai/src/lib.rs#L820)
+- [`summary_for_prompt`](../crates/spanda-ai/src/lib.rs#L1286)
+- [`to_runtime_value`](../crates/spanda-ai/src/lib.rs#L878)
+- [`wrap_completion`](../crates/spanda-ai/src/lib.rs#L1539)
+- [`wrap_detection`](../crates/spanda-ai/src/lib.rs#L1563)
 
 **method**
 
-- [`AiModel::new`](../crates/spanda-ai/src/lib.rs#L738)
-- [`AiRuntimeKind::as_str`](../crates/spanda-ai/src/lib.rs#L16)
-- [`MemoryStore::new`](../crates/spanda-ai/src/lib.rs#L1130)
+- [`AiModel::new`](../crates/spanda-ai/src/lib.rs#L746)
+- [`AiRuntimeKind::as_str`](../crates/spanda-ai/src/lib.rs#L18)
+- [`MemoryStore::new`](../crates/spanda-ai/src/lib.rs#L1151)
 
 ### Hardware, certify, fleet, OTA {#group-hardwarecertifyfleetota}
 
@@ -3229,42 +4636,20 @@ Source: [crates/spanda-hardware/src/adapter_verify.rs](../crates/spanda-hardware
 
 **fn**
 
-- [`verify_framework_imports`](../crates/spanda-hardware/src/adapter_verify.rs#L38)
-
-##### `compat` {#spanda-hardware-compat}
-
-Source: [crates/spanda-hardware/src/compat.rs](../crates/spanda-hardware/src/compat.rs#L1)
-
-**struct**
-
-- [`CompatItem`](../crates/spanda-hardware/src/compat.rs#L14)
-
-**enum**
-
-- [`CompatSeverity`](../crates/spanda-hardware/src/compat.rs#L7)
-
-##### `connectivity_validate` {#spanda-hardware-connectivity-validate}
-
-Source: [crates/spanda-hardware/src/connectivity_validate.rs](../crates/spanda-hardware/src/connectivity_validate.rs#L1)
-
-**fn**
-
-- [`validate_connectivity_policy`](../crates/spanda-hardware/src/connectivity_validate.rs#L219)
-- [`validate_geofence`](../crates/spanda-hardware/src/connectivity_validate.rs#L174)
-- [`verify_requires_connectivity`](../crates/spanda-hardware/src/connectivity_validate.rs#L42)
+- [`verify_framework_imports`](../crates/spanda-hardware/src/adapter_verify.rs#L59)
 
 ##### `profiles` {#spanda-hardware-profiles}
 
 Source: [crates/spanda-hardware/src/profiles.rs](../crates/spanda-hardware/src/profiles.rs#L1)
 
-**struct**
+**export**
 
-- [`HardwareProfile`](../crates/spanda-hardware/src/profiles.rs#L6)
+- [`spanda_connectivity::HardwareProfile`](../crates/spanda-hardware/src/profiles.rs#L7)
 
 **fn**
 
-- [`builtin_profiles`](../crates/spanda-hardware/src/profiles.rs#L24)
-- [`list_hardware_profiles`](../crates/spanda-hardware/src/profiles.rs#L190)
+- [`builtin_profiles`](../crates/spanda-hardware/src/profiles.rs#L9)
+- [`list_hardware_profiles`](../crates/spanda-hardware/src/profiles.rs#L188)
 
 ##### `root` {#spanda-hardware-root}
 
@@ -3295,8 +4680,8 @@ Source: [crates/spanda-hardware/src/verify.rs](../crates/spanda-hardware/src/ver
 
 - [`build_profile_registry`](../crates/spanda-hardware/src/verify.rs#L124)
 - [`hardware_profile_from_decl`](../crates/spanda-hardware/src/verify.rs#L72)
-- [`verify_program_compatibility`](../crates/spanda-hardware/src/verify.rs#L1689)
-- [`verify_program_compatibility_legacy`](../crates/spanda-hardware/src/verify.rs#L1888)
+- [`verify_program_compatibility`](../crates/spanda-hardware/src/verify.rs#L1775)
+- [`verify_program_compatibility_legacy`](../crates/spanda-hardware/src/verify.rs#L1978)
 
 **method**
 
@@ -3308,10 +4693,19 @@ Crate root: [`crates/spanda-certify`](../crates/spanda-certify/)
 
 **Modules**
 
+- [artifact](#spanda-certify-artifact)
 - [prover](#spanda-certify-prover)
 - [root](#spanda-certify-root)
 - [runtime](#spanda-certify-runtime)
 - [verify](#spanda-certify-verify)
+
+##### `artifact` {#spanda-certify-artifact}
+
+Source: [crates/spanda-certify/src/artifact.rs](../crates/spanda-certify/src/artifact.rs#L1)
+
+**fn**
+
+- [`hash_program_artifact`](../crates/spanda-certify/src/artifact.rs#L9)
 
 ##### `prover` {#spanda-certify-prover}
 
@@ -3327,7 +4721,7 @@ Source: [crates/spanda-certify/src/prover.rs](../crates/spanda-certify/src/prove
 **fn**
 
 - [`build_certification_proof`](../crates/spanda-certify/src/prover.rs#L45)
-- [`build_certification_proof_summary`](../crates/spanda-certify/src/prover.rs#L140)
+- [`build_certification_proof_summary`](../crates/spanda-certify/src/prover.rs#L141)
 
 ##### `root` {#spanda-certify-root}
 
@@ -3335,13 +4729,15 @@ Source: [crates/spanda-certify/src/lib.rs](../crates/spanda-certify/src/lib.rs#L
 
 **mod**
 
-- [`prover`](../crates/spanda-certify/src/lib.rs#L3)
-- [`runtime`](../crates/spanda-certify/src/lib.rs#L4)
-- [`verify`](../crates/spanda-certify/src/lib.rs#L5)
+- [`artifact`](../crates/spanda-certify/src/lib.rs#L3)
+- [`prover`](../crates/spanda-certify/src/lib.rs#L4)
+- [`runtime`](../crates/spanda-certify/src/lib.rs#L5)
+- [`verify`](../crates/spanda-certify/src/lib.rs#L6)
 
 **export**
 
-- [`verify::verify_certification_proof`](../crates/spanda-certify/src/lib.rs#L12)
+- [`artifact::hash_program_artifact`](../crates/spanda-certify/src/lib.rs#L8)
+- [`verify::verify_certification_proof`](../crates/spanda-certify/src/lib.rs#L15)
 
 ##### `runtime` {#spanda-certify-runtime}
 
@@ -3349,7 +4745,7 @@ Source: [crates/spanda-certify/src/runtime.rs](../crates/spanda-certify/src/runt
 
 **fn**
 
-- [`certification_runtime_enabled_from_env`](../crates/spanda-certify/src/runtime.rs#L43)
+- [`certification_runtime_enabled_from_env`](../crates/spanda-certify/src/runtime.rs#L45)
 - [`enforce_certification_runtime`](../crates/spanda-certify/src/runtime.rs#L9)
 
 ##### `verify` {#spanda-certify-verify}
@@ -3358,7 +4754,7 @@ Source: [crates/spanda-certify/src/verify.rs](../crates/spanda-certify/src/verif
 
 **fn**
 
-- [`verify_certification_proof`](../crates/spanda-certify/src/verify.rs#L43)
+- [`verify_certification_proof`](../crates/spanda-certify/src/verify.rs#L106)
 
 #### `spanda-fleet` {#crate-spanda-fleet}
 
@@ -3367,11 +4763,18 @@ Crate root: [`crates/spanda-fleet`](../crates/spanda-fleet/) · [README](../crat
 **Modules**
 
 - [agent](#spanda-fleet-agent)
+- [continuity_agent](#spanda-fleet-continuity-agent)
+- [continuity_mesh](#spanda-fleet-continuity-mesh)
 - [mesh](#spanda-fleet-mesh)
 - [orchestrator](#spanda-fleet-orchestrator)
+- [recovery_agent](#spanda-fleet-recovery-agent)
+- [recovery_mesh](#spanda-fleet-recovery-mesh)
 - [remote](#spanda-fleet-remote)
 - [root](#spanda-fleet-root)
+- [swarm_continuity](#spanda-fleet-swarm-continuity)
 - [swarm_coordinator](#spanda-fleet-swarm-coordinator)
+- [tamper_mesh](#spanda-fleet-tamper-mesh)
+- [telemetry_mesh](#spanda-fleet-telemetry-mesh)
 - [types](#spanda-fleet-types)
 
 ##### `agent` {#spanda-fleet-agent}
@@ -3380,17 +4783,39 @@ Source: [crates/spanda-fleet/src/agent.rs](../crates/spanda-fleet/src/agent.rs#L
 
 **struct**
 
-- [`FleetAgentState`](../crates/spanda-fleet/src/agent.rs#L22)
+- [`FleetAgentState`](../crates/spanda-fleet/src/agent.rs#L21)
 
 **fn**
 
-- [`default_fleet_agent_state_path`](../crates/spanda-fleet/src/agent.rs#L30)
-- [`fleet_entry_for_port`](../crates/spanda-fleet/src/agent.rs#L263)
-- [`handle_fleet_agent_request`](../crates/spanda-fleet/src/agent.rs#L60)
-- [`load_fleet_agent_state`](../crates/spanda-fleet/src/agent.rs#L34)
-- [`run_fleet_agent_server`](../crates/spanda-fleet/src/agent.rs#L201)
-- [`save_fleet_agent_state`](../crates/spanda-fleet/src/agent.rs#L44)
-- [`spawn_test_fleet_agent`](../crates/spanda-fleet/src/agent.rs#L237)
+- [`default_fleet_agent_state_path`](../crates/spanda-fleet/src/agent.rs#L79)
+- [`fleet_agent_state_path_for`](../crates/spanda-fleet/src/agent.rs#L97)
+- [`fleet_entry_for_port`](../crates/spanda-fleet/src/agent.rs#L838)
+- [`handle_fleet_agent_request`](../crates/spanda-fleet/src/agent.rs#L355)
+- [`load_fleet_agent_state`](../crates/spanda-fleet/src/agent.rs#L127)
+- [`run_fleet_agent_server`](../crates/spanda-fleet/src/agent.rs#L724)
+- [`save_fleet_agent_state`](../crates/spanda-fleet/src/agent.rs#L152)
+- [`spawn_test_fleet_agent`](../crates/spanda-fleet/src/agent.rs#L799)
+
+##### `continuity_agent` {#spanda-fleet-continuity-agent}
+
+Source: [crates/spanda-fleet/src/continuity_agent.rs](../crates/spanda-fleet/src/continuity_agent.rs#L1)
+
+**fn**
+
+- [`execute_assurance_continuity_on_agent`](../crates/spanda-fleet/src/continuity_agent.rs#L87)
+- [`execute_interpreter_continuity_on_agent`](../crates/spanda-fleet/src/continuity_agent.rs#L57)
+- [`handle_fleet_takeover_command`](../crates/spanda-fleet/src/continuity_agent.rs#L108)
+
+##### `continuity_mesh` {#spanda-fleet-continuity-mesh}
+
+Source: [crates/spanda-fleet/src/continuity_mesh.rs](../crates/spanda-fleet/src/continuity_mesh.rs#L1)
+
+**fn**
+
+- [`continuity_deliveries_for_request`](../crates/spanda-fleet/src/continuity_mesh.rs#L12)
+- [`handle_fleet_continuity_post`](../crates/spanda-fleet/src/continuity_mesh.rs#L72)
+- [`registered_continuity_members`](../crates/spanda-fleet/src/continuity_mesh.rs#L90)
+- [`relay_fleet_continuity`](../crates/spanda-fleet/src/continuity_mesh.rs#L38)
 
 ##### `mesh` {#spanda-fleet-mesh}
 
@@ -3398,22 +4823,22 @@ Source: [crates/spanda-fleet/src/mesh.rs](../crates/spanda-fleet/src/mesh.rs#L1)
 
 **struct**
 
-- [`FleetMeshState`](../crates/spanda-fleet/src/mesh.rs#L37)
-- [`MeshRelayRequest`](../crates/spanda-fleet/src/mesh.rs#L19)
-- [`MeshRelayResponse`](../crates/spanda-fleet/src/mesh.rs#L24)
+- [`FleetMeshState`](../crates/spanda-fleet/src/mesh.rs#L56)
+- [`MeshRelayRequest`](../crates/spanda-fleet/src/mesh.rs#L24)
+- [`MeshRelayResponse`](../crates/spanda-fleet/src/mesh.rs#L29)
 
 **enum**
 
-- [`MeshRegistryBacking`](../crates/spanda-fleet/src/mesh.rs#L45)
+- [`MeshRegistryBacking`](../crates/spanda-fleet/src/mesh.rs#L76)
 
 **fn**
 
-- [`default_fleet_mesh_state_path`](../crates/spanda-fleet/src/mesh.rs#L32)
-- [`handle_fleet_mesh_request`](../crates/spanda-fleet/src/mesh.rs#L65)
-- [`mesh_registry_path`](../crates/spanda-fleet/src/mesh.rs#L234)
-- [`relay_deliveries_via_mesh`](../crates/spanda-fleet/src/mesh.rs#L209)
-- [`run_fleet_mesh_coordinator`](../crates/spanda-fleet/src/mesh.rs#L169)
-- [`spawn_test_fleet_mesh`](../crates/spanda-fleet/src/mesh.rs#L240)
+- [`default_fleet_mesh_state_path`](../crates/spanda-fleet/src/mesh.rs#L37)
+- [`handle_fleet_mesh_request`](../crates/spanda-fleet/src/mesh.rs#L194)
+- [`mesh_registry_path`](../crates/spanda-fleet/src/mesh.rs#L632)
+- [`relay_deliveries_via_mesh`](../crates/spanda-fleet/src/mesh.rs#L575)
+- [`run_fleet_mesh_coordinator`](../crates/spanda-fleet/src/mesh.rs#L499)
+- [`spawn_test_fleet_mesh`](../crates/spanda-fleet/src/mesh.rs#L652)
 
 ##### `orchestrator` {#spanda-fleet-orchestrator}
 
@@ -3425,9 +4850,9 @@ Source: [crates/spanda-fleet/src/orchestrator.rs](../crates/spanda-fleet/src/orc
 
 **struct**
 
-- [`FleetMemberState`](../crates/spanda-fleet/src/orchestrator.rs#L47)
-- [`FleetOrchestrationReport`](../crates/spanda-fleet/src/orchestrator.rs#L59)
-- [`FleetOrchestrationResult`](../crates/spanda-fleet/src/orchestrator.rs#L76)
+- [`FleetMemberState`](../crates/spanda-fleet/src/orchestrator.rs#L128)
+- [`FleetOrchestrationReport`](../crates/spanda-fleet/src/orchestrator.rs#L140)
+- [`FleetOrchestrationResult`](../crates/spanda-fleet/src/orchestrator.rs#L157)
 - [`FleetPeerMesh`](../crates/spanda-fleet/src/orchestrator.rs#L18)
 
 **impl**
@@ -3436,18 +4861,39 @@ Source: [crates/spanda-fleet/src/orchestrator.rs](../crates/spanda-fleet/src/orc
 
 **fn**
 
-- [`deliver_peer_steps`](../crates/spanda-fleet/src/orchestrator.rs#L115)
-- [`fleet_registry_from_program`](../crates/spanda-fleet/src/orchestrator.rs#L142)
-- [`orchestrate_fleets`](../crates/spanda-fleet/src/orchestrator.rs#L153)
-- [`orchestrate_fleets_mesh`](../crates/spanda-fleet/src/orchestrator.rs#L304)
-- [`orchestrate_fleets_remote`](../crates/spanda-fleet/src/orchestrator.rs#L265)
-- [`peer_handoffs`](../crates/spanda-fleet/src/orchestrator.rs#L102)
-- [`publish_peer`](../crates/spanda-fleet/src/orchestrator.rs#L31)
-- [`register_robot`](../crates/spanda-fleet/src/orchestrator.rs#L27)
+- [`deliver_peer_steps`](../crates/spanda-fleet/src/orchestrator.rs#L230)
+- [`fleet_registry_from_program`](../crates/spanda-fleet/src/orchestrator.rs#L278)
+- [`orchestrate_fleets`](../crates/spanda-fleet/src/orchestrator.rs#L304)
+- [`orchestrate_fleets_mesh`](../crates/spanda-fleet/src/orchestrator.rs#L458)
+- [`orchestrate_fleets_remote`](../crates/spanda-fleet/src/orchestrator.rs#L416)
+- [`peer_handoffs`](../crates/spanda-fleet/src/orchestrator.rs#L198)
+- [`publish_peer`](../crates/spanda-fleet/src/orchestrator.rs#L72)
+- [`register_robot`](../crates/spanda-fleet/src/orchestrator.rs#L41)
 
 **method**
 
 - [`FleetPeerMesh::new`](../crates/spanda-fleet/src/orchestrator.rs#L23)
+
+##### `recovery_agent` {#spanda-fleet-recovery-agent}
+
+Source: [crates/spanda-fleet/src/recovery_agent.rs](../crates/spanda-fleet/src/recovery_agent.rs#L1)
+
+**fn**
+
+- [`execute_assurance_recovery_on_agent`](../crates/spanda-fleet/src/recovery_agent.rs#L238)
+- [`execute_interpreter_recovery_on_agent`](../crates/spanda-fleet/src/recovery_agent.rs#L188)
+- [`handle_fleet_recovery_command`](../crates/spanda-fleet/src/recovery_agent.rs#L307)
+
+##### `recovery_mesh` {#spanda-fleet-recovery-mesh}
+
+Source: [crates/spanda-fleet/src/recovery_mesh.rs](../crates/spanda-fleet/src/recovery_mesh.rs#L1)
+
+**fn**
+
+- [`handle_fleet_recovery_post`](../crates/spanda-fleet/src/recovery_mesh.rs#L112)
+- [`recovery_deliveries_for_request`](../crates/spanda-fleet/src/recovery_mesh.rs#L12)
+- [`registered_recovery_members`](../crates/spanda-fleet/src/recovery_mesh.rs#L145)
+- [`relay_fleet_recovery`](../crates/spanda-fleet/src/recovery_mesh.rs#L48)
 
 ##### `remote` {#spanda-fleet-remote}
 
@@ -3457,20 +4903,24 @@ Source: [crates/spanda-fleet/src/remote.rs](../crates/spanda-fleet/src/remote.rs
 
 - [`FleetAgentEntry`](../crates/spanda-fleet/src/remote.rs#L11)
 - [`FleetAgentRegistry`](../crates/spanda-fleet/src/remote.rs#L19)
+- [`FleetAgentStatusResponse`](../crates/spanda-fleet/src/remote.rs#L429)
 - [`PeerRelayRequest`](../crates/spanda-fleet/src/remote.rs#L24)
 - [`PeerRelayResponse`](../crates/spanda-fleet/src/remote.rs#L32)
 
 **fn**
 
-- [`agent_health`](../crates/spanda-fleet/src/remote.rs#L110)
+- [`agent_health`](../crates/spanda-fleet/src/remote.rs#L211)
+- [`agent_readiness`](../crates/spanda-fleet/src/remote.rs#L248)
+- [`agent_upload_program`](../crates/spanda-fleet/src/remote.rs#L289)
 - [`default_fleet_agents_path`](../crates/spanda-fleet/src/remote.rs#L41)
-- [`load_fleet_agent_registry`](../crates/spanda-fleet/src/remote.rs#L45)
-- [`lookup_fleet_agent`](../crates/spanda-fleet/src/remote.rs#L82)
-- [`register_fleet_agent`](../crates/spanda-fleet/src/remote.rs#L63)
-- [`registry_by_robot`](../crates/spanda-fleet/src/remote.rs#L153)
-- [`relay_peer_deliveries`](../crates/spanda-fleet/src/remote.rs#L133)
-- [`relay_peer_delivery`](../crates/spanda-fleet/src/remote.rs#L117)
-- [`save_fleet_agent_registry`](../crates/spanda-fleet/src/remote.rs#L55)
+- [`fleet_agent_status`](../crates/spanda-fleet/src/remote.rs#L445)
+- [`load_fleet_agent_registry`](../crates/spanda-fleet/src/remote.rs#L59)
+- [`lookup_fleet_agent`](../crates/spanda-fleet/src/remote.rs#L151)
+- [`register_fleet_agent`](../crates/spanda-fleet/src/remote.rs#L109)
+- [`registry_by_robot`](../crates/spanda-fleet/src/remote.rs#L403)
+- [`relay_peer_deliveries`](../crates/spanda-fleet/src/remote.rs#L355)
+- [`relay_peer_delivery`](../crates/spanda-fleet/src/remote.rs#L322)
+- [`save_fleet_agent_registry`](../crates/spanda-fleet/src/remote.rs#L84)
 
 ##### `root` {#spanda-fleet-root}
 
@@ -3479,19 +4929,45 @@ Source: [crates/spanda-fleet/src/lib.rs](../crates/spanda-fleet/src/lib.rs#L1)
 **mod**
 
 - [`agent`](../crates/spanda-fleet/src/lib.rs#L3)
-- [`mesh`](../crates/spanda-fleet/src/lib.rs#L4)
-- [`orchestrator`](../crates/spanda-fleet/src/lib.rs#L5)
-- [`remote`](../crates/spanda-fleet/src/lib.rs#L6)
-- [`swarm_coordinator`](../crates/spanda-fleet/src/lib.rs#L7)
+- [`continuity_agent`](../crates/spanda-fleet/src/lib.rs#L4)
+- [`continuity_mesh`](../crates/spanda-fleet/src/lib.rs#L5)
+- [`mesh`](../crates/spanda-fleet/src/lib.rs#L6)
+- [`orchestrator`](../crates/spanda-fleet/src/lib.rs#L7)
+- [`recovery_agent`](../crates/spanda-fleet/src/lib.rs#L8)
+- [`recovery_mesh`](../crates/spanda-fleet/src/lib.rs#L9)
+- [`remote`](../crates/spanda-fleet/src/lib.rs#L10)
+- [`swarm_continuity`](../crates/spanda-fleet/src/lib.rs#L11)
+- [`swarm_coordinator`](../crates/spanda-fleet/src/lib.rs#L12)
+- [`tamper_mesh`](../crates/spanda-fleet/src/lib.rs#L13)
+- [`telemetry_mesh`](../crates/spanda-fleet/src/lib.rs#L14)
 
 **export**
 
-- [`agent::*`](../crates/spanda-fleet/src/lib.rs#L10)
-- [`mesh::*`](../crates/spanda-fleet/src/lib.rs#L11)
-- [`orchestrator::*`](../crates/spanda-fleet/src/lib.rs#L12)
-- [`remote::*`](../crates/spanda-fleet/src/lib.rs#L13)
-- [`swarm_coordinator::*`](../crates/spanda-fleet/src/lib.rs#L14)
-- [`types::PeerDelivery`](../crates/spanda-fleet/src/lib.rs#L15)
+- [`agent::*`](../crates/spanda-fleet/src/lib.rs#L17)
+- [`continuity_mesh::*`](../crates/spanda-fleet/src/lib.rs#L18)
+- [`mesh::*`](../crates/spanda-fleet/src/lib.rs#L19)
+- [`orchestrator::*`](../crates/spanda-fleet/src/lib.rs#L20)
+- [`recovery_mesh::*`](../crates/spanda-fleet/src/lib.rs#L21)
+- [`remote::*`](../crates/spanda-fleet/src/lib.rs#L22)
+- [`swarm_continuity::*`](../crates/spanda-fleet/src/lib.rs#L23)
+- [`swarm_coordinator::*`](../crates/spanda-fleet/src/lib.rs#L24)
+- [`tamper_mesh::*`](../crates/spanda-fleet/src/lib.rs#L25)
+- [`telemetry_mesh::*`](../crates/spanda-fleet/src/lib.rs#L26)
+- [`types::PeerDelivery`](../crates/spanda-fleet/src/lib.rs#L27)
+
+##### `swarm_continuity` {#spanda-fleet-swarm-continuity}
+
+Source: [crates/spanda-fleet/src/swarm_continuity.rs](../crates/spanda-fleet/src/swarm_continuity.rs#L1)
+
+**struct**
+
+- [`SwarmContinuityHandoff`](../crates/spanda-fleet/src/swarm_continuity.rs#L13)
+
+**fn**
+
+- [`attach_swarm_continuity_handoff`](../crates/spanda-fleet/src/swarm_continuity.rs#L58)
+- [`continuity_request_from_handoff`](../crates/spanda-fleet/src/swarm_continuity.rs#L86)
+- [`plan_swarm_member_continuity`](../crates/spanda-fleet/src/swarm_continuity.rs#L25)
 
 ##### `swarm_coordinator` {#spanda-fleet-swarm-coordinator}
 
@@ -3500,16 +4976,43 @@ Source: [crates/spanda-fleet/src/swarm_coordinator.rs](../crates/spanda-fleet/sr
 **struct**
 
 - [`SwarmCoordinationReport`](../crates/spanda-fleet/src/swarm_coordinator.rs#L23)
-- [`SwarmCoordinationResult`](../crates/spanda-fleet/src/swarm_coordinator.rs#L42)
+- [`SwarmCoordinationResult`](../crates/spanda-fleet/src/swarm_coordinator.rs#L44)
 - [`SwarmState`](../crates/spanda-fleet/src/swarm_coordinator.rs#L17)
 
 **fn**
 
-- [`coordinate_swarms`](../crates/spanda-fleet/src/swarm_coordinator.rs#L321)
-- [`coordinate_swarms_mesh`](../crates/spanda-fleet/src/swarm_coordinator.rs#L267)
-- [`default_swarm_state_path`](../crates/spanda-fleet/src/swarm_coordinator.rs#L48)
-- [`load_swarm_state`](../crates/spanda-fleet/src/swarm_coordinator.rs#L52)
-- [`save_swarm_state`](../crates/spanda-fleet/src/swarm_coordinator.rs#L62)
+- [`coordinate_swarms`](../crates/spanda-fleet/src/swarm_coordinator.rs#L480)
+- [`coordinate_swarms_mesh`](../crates/spanda-fleet/src/swarm_coordinator.rs#L422)
+- [`default_swarm_state_path`](../crates/spanda-fleet/src/swarm_coordinator.rs#L50)
+- [`load_swarm_state`](../crates/spanda-fleet/src/swarm_coordinator.rs#L68)
+- [`save_swarm_state`](../crates/spanda-fleet/src/swarm_coordinator.rs#L93)
+
+##### `tamper_mesh` {#spanda-fleet-tamper-mesh}
+
+Source: [crates/spanda-fleet/src/tamper_mesh.rs](../crates/spanda-fleet/src/tamper_mesh.rs#L1)
+
+**fn**
+
+- [`correlate_mesh_tamper_shards`](../crates/spanda-fleet/src/tamper_mesh.rs#L54)
+- [`fetch_live_fleet_tamper_report`](../crates/spanda-fleet/src/tamper_mesh.rs#L68)
+- [`handle_fleet_tamper_get`](../crates/spanda-fleet/src/tamper_mesh.rs#L42)
+- [`handle_fleet_tamper_ingest_post`](../crates/spanda-fleet/src/tamper_mesh.rs#L8)
+
+##### `telemetry_mesh` {#spanda-fleet-telemetry-mesh}
+
+Source: [crates/spanda-fleet/src/telemetry_mesh.rs](../crates/spanda-fleet/src/telemetry_mesh.rs#L1)
+
+**struct**
+
+- [`FleetTelemetryIngestRequest`](../crates/spanda-fleet/src/telemetry_mesh.rs#L10)
+- [`FleetTelemetryIngestResponse`](../crates/spanda-fleet/src/telemetry_mesh.rs#L17)
+
+**fn**
+
+- [`fetch_fleet_telemetry`](../crates/spanda-fleet/src/telemetry_mesh.rs#L68)
+- [`handle_fleet_telemetry_get`](../crates/spanda-fleet/src/telemetry_mesh.rs#L54)
+- [`handle_fleet_telemetry_ingest_post`](../crates/spanda-fleet/src/telemetry_mesh.rs#L23)
+- [`ingest_fleet_telemetry`](../crates/spanda-fleet/src/telemetry_mesh.rs#L85)
 
 ##### `types` {#spanda-fleet-types}
 
@@ -3527,6 +5030,7 @@ Crate root: [`crates/spanda-ota`](../crates/spanda-ota/) · [README](../crates/s
 
 - [agent](#spanda-ota-agent)
 - [bundle](#spanda-ota-bundle)
+- [deploy_plan](#spanda-ota-deploy-plan)
 - [plan](#spanda-ota-plan)
 - [remote](#spanda-ota-remote)
 - [root](#spanda-ota-root)
@@ -3539,19 +5043,20 @@ Source: [crates/spanda-ota/src/agent.rs](../crates/spanda-ota/src/agent.rs#L1)
 
 **struct**
 
-- [`AgentState`](../crates/spanda-ota/src/agent.rs#L19)
-- [`DeployAgentServerOptions`](../crates/spanda-ota/src/agent.rs#L274)
+- [`AgentState`](../crates/spanda-ota/src/agent.rs#L18)
+- [`DeployAgentServerOptions`](../crates/spanda-ota/src/agent.rs#L607)
 
 **fn**
 
-- [`agent_entry_for_port`](../crates/spanda-ota/src/agent.rs#L381)
-- [`default_agent_state_path`](../crates/spanda-ota/src/agent.rs#L65)
-- [`handle_agent_request`](../crates/spanda-ota/src/agent.rs#L95)
-- [`load_agent_state`](../crates/spanda-ota/src/agent.rs#L69)
-- [`run_deploy_agent_server`](../crates/spanda-ota/src/agent.rs#L286)
-- [`save_agent_state`](../crates/spanda-ota/src/agent.rs#L79)
-- [`spawn_test_agent`](../crates/spanda-ota/src/agent.rs#L343)
-- [`spawn_test_agent_with_options`](../crates/spanda-ota/src/agent.rs#L350)
+- [`agent_entry_for_port`](../crates/spanda-ota/src/agent.rs#L768)
+- [`agent_state_path_for`](../crates/spanda-ota/src/agent.rs#L100)
+- [`default_agent_state_path`](../crates/spanda-ota/src/agent.rs#L82)
+- [`handle_agent_request`](../crates/spanda-ota/src/agent.rs#L312)
+- [`load_agent_state`](../crates/spanda-ota/src/agent.rs#L130)
+- [`run_deploy_agent_server`](../crates/spanda-ota/src/agent.rs#L619)
+- [`save_agent_state`](../crates/spanda-ota/src/agent.rs#L155)
+- [`spawn_test_agent`](../crates/spanda-ota/src/agent.rs#L681)
+- [`spawn_test_agent_with_options`](../crates/spanda-ota/src/agent.rs#L705)
 
 ##### `bundle` {#spanda-ota-bundle}
 
@@ -3564,15 +5069,23 @@ Source: [crates/spanda-ota/src/bundle.rs](../crates/spanda-ota/src/bundle.rs#L1)
 **impl**
 
 - [`From`](../crates/spanda-ota/src/bundle.rs#L32)
-- [`From`](../crates/spanda-ota/src/bundle.rs#L44)
+- [`From`](../crates/spanda-ota/src/bundle.rs#L59)
 
 **fn**
 
-- [`build_deploy_bundle`](../crates/spanda-ota/src/bundle.rs#L57)
-- [`bundle_canonical_json`](../crates/spanda-ota/src/bundle.rs#L84)
-- [`sign_deploy_bundle`](../crates/spanda-ota/src/bundle.rs#L91)
-- [`verify_deploy_bundle`](../crates/spanda-ota/src/bundle.rs#L114)
-- [`verify_rollout_artifact`](../crates/spanda-ota/src/bundle.rs#L140)
+- [`build_deploy_bundle`](../crates/spanda-ota/src/bundle.rs#L87)
+- [`bundle_canonical_json`](../crates/spanda-ota/src/bundle.rs#L115)
+- [`sign_deploy_bundle`](../crates/spanda-ota/src/bundle.rs#L134)
+- [`verify_deploy_bundle`](../crates/spanda-ota/src/bundle.rs#L162)
+- [`verify_rollout_artifact`](../crates/spanda-ota/src/bundle.rs#L190)
+
+##### `deploy_plan` {#spanda-ota-deploy-plan}
+
+Source: [crates/spanda-ota/src/deploy_plan.rs](../crates/spanda-ota/src/deploy_plan.rs#L1)
+
+**fn**
+
+- [`build_deploy_plan`](../crates/spanda-ota/src/deploy_plan.rs#L11)
 
 ##### `plan` {#spanda-ota-plan}
 
@@ -3588,26 +5101,29 @@ Source: [crates/spanda-ota/src/remote.rs](../crates/spanda-ota/src/remote.rs#L1)
 
 **struct**
 
-- [`AgentRolloutResponse`](../crates/spanda-ota/src/remote.rs#L54)
+- [`AgentRolloutResponse`](../crates/spanda-ota/src/remote.rs#L78)
 - [`AgentStatusResponse`](../crates/spanda-ota/src/remote.rs#L29)
 - [`DeployAgentEntry`](../crates/spanda-ota/src/remote.rs#L16)
 - [`DeployAgentRegistry`](../crates/spanda-ota/src/remote.rs#L24)
 
 **fn**
 
-- [`agent_health`](../crates/spanda-ota/src/remote.rs#L121)
-- [`agent_rollback`](../crates/spanda-ota/src/remote.rs#L156)
-- [`agent_rollout`](../crates/spanda-ota/src/remote.rs#L134)
-- [`agent_status`](../crates/spanda-ota/src/remote.rs#L128)
-- [`default_agents_path`](../crates/spanda-ota/src/remote.rs#L63)
-- [`execute_remote_rollback`](../crates/spanda-ota/src/remote.rs#L226)
-- [`execute_remote_rollout`](../crates/spanda-ota/src/remote.rs#L166)
-- [`load_agent_registry`](../crates/spanda-ota/src/remote.rs#L67)
-- [`lookup_agent`](../crates/spanda-ota/src/remote.rs#L99)
-- [`missing_remote_targets`](../crates/spanda-ota/src/remote.rs#L274)
-- [`register_agent`](../crates/spanda-ota/src/remote.rs#L85)
-- [`registry_by_target`](../crates/spanda-ota/src/remote.rs#L288)
-- [`save_agent_registry`](../crates/spanda-ota/src/remote.rs#L77)
+- [`agent_health`](../crates/spanda-ota/src/remote.rs#L268)
+- [`agent_readiness`](../crates/spanda-ota/src/remote.rs#L306)
+- [`agent_rollback`](../crates/spanda-ota/src/remote.rs#L444)
+- [`agent_rollout`](../crates/spanda-ota/src/remote.rs#L400)
+- [`agent_status`](../crates/spanda-ota/src/remote.rs#L379)
+- [`agent_upload_program`](../crates/spanda-ota/src/remote.rs#L346)
+- [`agents_registry_path`](../crates/spanda-ota/src/remote.rs#L106)
+- [`default_agents_path`](../crates/spanda-ota/src/remote.rs#L87)
+- [`execute_remote_rollback`](../crates/spanda-ota/src/remote.rs#L617)
+- [`execute_remote_rollout`](../crates/spanda-ota/src/remote.rs#L518)
+- [`load_agent_registry`](../crates/spanda-ota/src/remote.rs#L112)
+- [`lookup_agent`](../crates/spanda-ota/src/remote.rs#L214)
+- [`missing_remote_targets`](../crates/spanda-ota/src/remote.rs#L679)
+- [`register_agent`](../crates/spanda-ota/src/remote.rs#L162)
+- [`registry_by_target`](../crates/spanda-ota/src/remote.rs#L707)
+- [`save_agent_registry`](../crates/spanda-ota/src/remote.rs#L137)
 
 ##### `root` {#spanda-ota-root}
 
@@ -3617,19 +5133,21 @@ Source: [crates/spanda-ota/src/lib.rs](../crates/spanda-ota/src/lib.rs#L1)
 
 - [`agent`](../crates/spanda-ota/src/lib.rs#L3)
 - [`bundle`](../crates/spanda-ota/src/lib.rs#L4)
-- [`plan`](../crates/spanda-ota/src/lib.rs#L5)
-- [`remote`](../crates/spanda-ota/src/lib.rs#L6)
-- [`service`](../crates/spanda-ota/src/lib.rs#L7)
-- [`types`](../crates/spanda-ota/src/lib.rs#L8)
+- [`deploy_plan`](../crates/spanda-ota/src/lib.rs#L5)
+- [`plan`](../crates/spanda-ota/src/lib.rs#L6)
+- [`remote`](../crates/spanda-ota/src/lib.rs#L7)
+- [`service`](../crates/spanda-ota/src/lib.rs#L8)
+- [`types`](../crates/spanda-ota/src/lib.rs#L9)
 
 **export**
 
-- [`agent::*`](../crates/spanda-ota/src/lib.rs#L10)
-- [`bundle::*`](../crates/spanda-ota/src/lib.rs#L11)
-- [`plan::build_deploy_plan_from_program`](../crates/spanda-ota/src/lib.rs#L12)
-- [`remote::*`](../crates/spanda-ota/src/lib.rs#L13)
-- [`service::*`](../crates/spanda-ota/src/lib.rs#L14)
-- [`types::*`](../crates/spanda-ota/src/lib.rs#L15)
+- [`agent::*`](../crates/spanda-ota/src/lib.rs#L11)
+- [`bundle::*`](../crates/spanda-ota/src/lib.rs#L12)
+- [`deploy_plan::build_deploy_plan`](../crates/spanda-ota/src/lib.rs#L13)
+- [`plan::build_deploy_plan_from_program`](../crates/spanda-ota/src/lib.rs#L14)
+- [`remote::*`](../crates/spanda-ota/src/lib.rs#L15)
+- [`service::*`](../crates/spanda-ota/src/lib.rs#L16)
+- [`types::*`](../crates/spanda-ota/src/lib.rs#L17)
 
 ##### `service` {#spanda-ota-service}
 
@@ -3637,14 +5155,14 @@ Source: [crates/spanda-ota/src/service.rs](../crates/spanda-ota/src/service.rs#L
 
 **fn**
 
-- [`apply_rollout`](../crates/spanda-ota/src/service.rs#L181)
-- [`default_state_path`](../crates/spanda-ota/src/service.rs#L248)
-- [`deploy_target_key`](../crates/spanda-ota/src/service.rs#L47)
-- [`hash_program_artifact`](../crates/spanda-ota/src/service.rs#L52)
-- [`load_deploy_state`](../crates/spanda-ota/src/service.rs#L253)
-- [`plan_rollout`](../crates/spanda-ota/src/service.rs#L77)
-- [`rollback_targets`](../crates/spanda-ota/src/service.rs#L202)
-- [`save_deploy_state`](../crates/spanda-ota/src/service.rs#L264)
+- [`apply_rollout`](../crates/spanda-ota/src/service.rs#L250)
+- [`default_state_path`](../crates/spanda-ota/src/service.rs#L344)
+- [`deploy_target_key`](../crates/spanda-ota/src/service.rs#L66)
+- [`hash_program_artifact`](../crates/spanda-ota/src/service.rs#L88)
+- [`load_deploy_state`](../crates/spanda-ota/src/service.rs#L363)
+- [`plan_rollout`](../crates/spanda-ota/src/service.rs#L114)
+- [`rollback_targets`](../crates/spanda-ota/src/service.rs#L282)
+- [`save_deploy_state`](../crates/spanda-ota/src/service.rs#L389)
 - [`validate_rollout_certification`](../crates/spanda-ota/src/service.rs#L8)
 
 ##### `types` {#spanda-ota-types}
@@ -3653,22 +5171,22 @@ Source: [crates/spanda-ota/src/types.rs](../crates/spanda-ota/src/types.rs#L1)
 
 **struct**
 
-- [`CertificationProofSummary`](../crates/spanda-ota/src/types.rs#L37)
-- [`DeployAssignment`](../crates/spanda-ota/src/types.rs#L17)
-- [`DeployPlan`](../crates/spanda-ota/src/types.rs#L24)
-- [`DeployState`](../crates/spanda-ota/src/types.rs#L78)
-- [`RolloutOptions`](../crates/spanda-ota/src/types.rs#L86)
-- [`RolloutResult`](../crates/spanda-ota/src/types.rs#L68)
-- [`RolloutStep`](../crates/spanda-ota/src/types.rs#L58)
+- [`CertificationProofSummary`](../crates/spanda-ota/src/types.rs#L38)
+- [`DeployAssignment`](../crates/spanda-ota/src/types.rs#L18)
+- [`DeployPlan`](../crates/spanda-ota/src/types.rs#L25)
+- [`DeployState`](../crates/spanda-ota/src/types.rs#L79)
+- [`RolloutOptions`](../crates/spanda-ota/src/types.rs#L87)
+- [`RolloutResult`](../crates/spanda-ota/src/types.rs#L69)
+- [`RolloutStep`](../crates/spanda-ota/src/types.rs#L59)
 
 **enum**
 
-- [`RolloutStepStatus`](../crates/spanda-ota/src/types.rs#L48)
+- [`RolloutStepStatus`](../crates/spanda-ota/src/types.rs#L49)
 - [`RolloutStrategy`](../crates/spanda-ota/src/types.rs#L9)
 
 **impl**
 
-- [`RolloutOptions`](../crates/spanda-ota/src/types.rs#L96)
+- [`RolloutOptions`](../crates/spanda-ota/src/types.rs#L103)
 
 #### `spanda-deploy-http` {#crate-spanda-deploy-http}
 
@@ -3676,32 +5194,83 @@ Crate root: [`crates/spanda-deploy-http`](../crates/spanda-deploy-http/) · [REA
 
 **Modules**
 
+- [fleet_continuity](#spanda-deploy-http-fleet-continuity)
+- [fleet_recovery](#spanda-deploy-http-fleet-recovery)
+- [fleet_tamper](#spanda-deploy-http-fleet-tamper)
 - [root](#spanda-deploy-http-root)
+
+##### `fleet_continuity` {#spanda-deploy-http-fleet-continuity}
+
+Source: [crates/spanda-deploy-http/src/fleet_continuity.rs](../crates/spanda-deploy-http/src/fleet_continuity.rs#L1)
+
+**struct**
+
+- [`FleetContinuityRequest`](../crates/spanda-deploy-http/src/fleet_continuity.rs#L8)
+- [`FleetContinuityResponse`](../crates/spanda-deploy-http/src/fleet_continuity.rs#L28)
+
+**fn**
+
+- [`relay_continuity_via_mesh`](../crates/spanda-deploy-http/src/fleet_continuity.rs#L37)
+
+##### `fleet_recovery` {#spanda-deploy-http-fleet-recovery}
+
+Source: [crates/spanda-deploy-http/src/fleet_recovery.rs](../crates/spanda-deploy-http/src/fleet_recovery.rs#L1)
+
+**struct**
+
+- [`FleetRecoveryRequest`](../crates/spanda-deploy-http/src/fleet_recovery.rs#L8)
+- [`FleetRecoveryResponse`](../crates/spanda-deploy-http/src/fleet_recovery.rs#L20)
+
+**fn**
+
+- [`relay_recovery_via_mesh`](../crates/spanda-deploy-http/src/fleet_recovery.rs#L29)
+
+##### `fleet_tamper` {#spanda-deploy-http-fleet-tamper}
+
+Source: [crates/spanda-deploy-http/src/fleet_tamper.rs](../crates/spanda-deploy-http/src/fleet_tamper.rs#L1)
+
+**struct**
+
+- [`FleetTamperIngestRequest`](../crates/spanda-deploy-http/src/fleet_tamper.rs#L8)
+- [`FleetTamperIngestResponse`](../crates/spanda-deploy-http/src/fleet_tamper.rs#L17)
+
+**fn**
+
+- [`fetch_fleet_tamper_report`](../crates/spanda-deploy-http/src/fleet_tamper.rs#L73)
+- [`ingest_fleet_tamper_trace`](../crates/spanda-deploy-http/src/fleet_tamper.rs#L41)
 
 ##### `root` {#spanda-deploy-http-root}
 
 Source: [crates/spanda-deploy-http/src/lib.rs](../crates/spanda-deploy-http/src/lib.rs#L1)
 
+**mod**
+
+- [`fleet_continuity`](../crates/spanda-deploy-http/src/lib.rs#L3)
+- [`fleet_recovery`](../crates/spanda-deploy-http/src/lib.rs#L4)
+- [`fleet_tamper`](../crates/spanda-deploy-http/src/lib.rs#L5)
+
 **struct**
 
-- [`DeployAgentTls`](../crates/spanda-deploy-http/src/lib.rs#L36)
-- [`HttpRequest`](../crates/spanda-deploy-http/src/lib.rs#L22)
-- [`HttpResponse`](../crates/spanda-deploy-http/src/lib.rs#L30)
-- [`ParsedUrl`](../crates/spanda-deploy-http/src/lib.rs#L13)
+- [`DeployAgentTls`](../crates/spanda-deploy-http/src/lib.rs#L43)
+- [`HttpRequest`](../crates/spanda-deploy-http/src/lib.rs#L29)
+- [`HttpResponse`](../crates/spanda-deploy-http/src/lib.rs#L37)
+- [`ParsedUrl`](../crates/spanda-deploy-http/src/lib.rs#L20)
 
 **fn**
 
-- [`build_deploy_client_config`](../crates/spanda-deploy-http/src/lib.rs#L91)
-- [`build_deploy_server_config`](../crates/spanda-deploy-http/src/lib.rs#L102)
-- [`http_request`](../crates/spanda-deploy-http/src/lib.rs#L114)
-- [`http_response`](../crates/spanda-deploy-http/src/lib.rs#L219)
-- [`parse_http_request`](../crates/spanda-deploy-http/src/lib.rs#L189)
-- [`parse_http_response`](../crates/spanda-deploy-http/src/lib.rs#L171)
-- [`parse_http_url`](../crates/spanda-deploy-http/src/lib.rs#L41)
-- [`read_plain_request`](../crates/spanda-deploy-http/src/lib.rs#L244)
-- [`serve_once`](../crates/spanda-deploy-http/src/lib.rs#L226)
-- [`serve_tls_connection`](../crates/spanda-deploy-http/src/lib.rs#L259)
-- [`write_plain_response`](../crates/spanda-deploy-http/src/lib.rs#L252)
+- [`bind_requires_agent_token`](../crates/spanda-deploy-http/src/lib.rs#L603)
+- [`build_deploy_client_config`](../crates/spanda-deploy-http/src/lib.rs#L151)
+- [`build_deploy_server_config`](../crates/spanda-deploy-http/src/lib.rs#L184)
+- [`ensure_agent_auth`](../crates/spanda-deploy-http/src/lib.rs#L623)
+- [`http_request`](../crates/spanda-deploy-http/src/lib.rs#L220)
+- [`http_response`](../crates/spanda-deploy-http/src/lib.rs#L431)
+- [`parse_http_request`](../crates/spanda-deploy-http/src/lib.rs#L375)
+- [`parse_http_response`](../crates/spanda-deploy-http/src/lib.rs#L330)
+- [`parse_http_url`](../crates/spanda-deploy-http/src/lib.rs#L48)
+- [`read_plain_request`](../crates/spanda-deploy-http/src/lib.rs#L500)
+- [`serve_once`](../crates/spanda-deploy-http/src/lib.rs#L455)
+- [`serve_tls_connection`](../crates/spanda-deploy-http/src/lib.rs#L551)
+- [`write_plain_response`](../crates/spanda-deploy-http/src/lib.rs#L524)
 
 ### Transport and connectivity {#group-transportandconnectivity}
 
@@ -3723,29 +5292,29 @@ Source: [crates/spanda-transport/src/adapter.rs](../crates/spanda-transport/src/
 
 **struct**
 
-- [`AdapterMessage`](../crates/spanda-transport/src/adapter.rs#L52)
-- [`StubTransportState`](../crates/spanda-transport/src/adapter.rs#L79)
-- [`TransportConfig`](../crates/spanda-transport/src/adapter.rs#L40)
+- [`AdapterMessage`](../crates/spanda-transport/src/adapter.rs#L53)
+- [`StubTransportState`](../crates/spanda-transport/src/adapter.rs#L80)
+- [`TransportConfig`](../crates/spanda-transport/src/adapter.rs#L41)
 
 **trait**
 
-- [`TransportAdapter`](../crates/spanda-transport/src/adapter.rs#L59)
+- [`TransportAdapter`](../crates/spanda-transport/src/adapter.rs#L60)
 
 **impl**
 
-- [`StubTransportState`](../crates/spanda-transport/src/adapter.rs#L86)
+- [`StubTransportState`](../crates/spanda-transport/src/adapter.rs#L87)
 
 **fn**
 
-- [`action_result`](../crates/spanda-transport/src/adapter.rs#L182)
-- [`payload_string_for_service`](../crates/spanda-transport/src/adapter.rs#L9)
-- [`receive`](../crates/spanda-transport/src/adapter.rs#L138)
-- [`service_result`](../crates/spanda-transport/src/adapter.rs#L160)
-- [`subscribe`](../crates/spanda-transport/src/adapter.rs#L118)
+- [`action_result`](../crates/spanda-transport/src/adapter.rs#L186)
+- [`payload_string_for_service`](../crates/spanda-transport/src/adapter.rs#L10)
+- [`receive`](../crates/spanda-transport/src/adapter.rs#L141)
+- [`service_result`](../crates/spanda-transport/src/adapter.rs#L164)
+- [`subscribe`](../crates/spanda-transport/src/adapter.rs#L121)
 
 **method**
 
-- [`StubTransportState::publish`](../crates/spanda-transport/src/adapter.rs#L87)
+- [`StubTransportState::publish`](../crates/spanda-transport/src/adapter.rs#L88)
 
 ##### `root` {#spanda-transport-root}
 
@@ -3755,8 +5324,8 @@ Source: [crates/spanda-transport/src/lib.rs](../crates/spanda-transport/src/lib.
 
 - [`adapter`](../crates/spanda-transport/src/lib.rs#L3)
 - [`security`](../crates/spanda-transport/src/lib.rs#L4)
-- [`tls`](../crates/spanda-transport/src/lib.rs#L5)
-- [`wire`](../crates/spanda-transport/src/lib.rs#L6)
+- [`tls`](../crates/spanda-transport/src/lib.rs#L6)
+- [`wire`](../crates/spanda-transport/src/lib.rs#L7)
 
 ##### `security` {#spanda-transport-security}
 
@@ -3764,33 +5333,33 @@ Source: [crates/spanda-transport/src/security.rs](../crates/spanda-transport/src
 
 **struct**
 
-- [`TlsTransportSession`](../crates/spanda-transport/src/security.rs#L90)
-- [`TransportSecurityConfig`](../crates/spanda-transport/src/security.rs#L12)
+- [`TlsTransportSession`](../crates/spanda-transport/src/security.rs#L192)
+- [`TransportSecurityConfig`](../crates/spanda-transport/src/security.rs#L14)
 
 **type**
 
-- [`TlsTransportStub`](../crates/spanda-transport/src/security.rs#L98)
+- [`TlsTransportStub`](../crates/spanda-transport/src/security.rs#L200)
 
 **impl**
 
-- [`TlsTransportSession`](../crates/spanda-transport/src/security.rs#L100)
-- [`TransportSecurityConfig`](../crates/spanda-transport/src/security.rs#L21)
+- [`TlsTransportSession`](../crates/spanda-transport/src/security.rs#L202)
+- [`TransportSecurityConfig`](../crates/spanda-transport/src/security.rs#L23)
 
 **fn**
 
-- [`decrypt_frame`](../crates/spanda-transport/src/security.rs#L182)
-- [`effective_transport_policy`](../crates/spanda-transport/src/security.rs#L204)
-- [`encrypt_frame`](../crates/spanda-transport/src/security.rs#L170)
-- [`resolve_broker_url`](../crates/spanda-transport/src/security.rs#L64)
-- [`session_material`](../crates/spanda-transport/src/security.rs#L43)
-- [`url_requires_tls`](../crates/spanda-transport/src/security.rs#L76)
-- [`validate`](../crates/spanda-transport/src/security.rs#L51)
-- [`with_secrets`](../crates/spanda-transport/src/security.rs#L37)
+- [`decrypt_frame`](../crates/spanda-transport/src/security.rs#L323)
+- [`effective_transport_policy`](../crates/spanda-transport/src/security.rs#L363)
+- [`encrypt_frame`](../crates/spanda-transport/src/security.rs#L294)
+- [`resolve_broker_url`](../crates/spanda-transport/src/security.rs#L136)
+- [`session_material`](../crates/spanda-transport/src/security.rs#L83)
+- [`url_requires_tls`](../crates/spanda-transport/src/security.rs#L163)
+- [`validate`](../crates/spanda-transport/src/security.rs#L106)
+- [`with_secrets`](../crates/spanda-transport/src/security.rs#L58)
 
 **method**
 
-- [`TlsTransportSession::connect`](../crates/spanda-transport/src/security.rs#L101)
-- [`TransportSecurityConfig::from_bus_fields`](../crates/spanda-transport/src/security.rs#L22)
+- [`TlsTransportSession::connect`](../crates/spanda-transport/src/security.rs#L203)
+- [`TransportSecurityConfig::from_bus_fields`](../crates/spanda-transport/src/security.rs#L24)
 
 ##### `tls` {#spanda-transport-tls}
 
@@ -3803,9 +5372,9 @@ Source: [crates/spanda-transport/src/tls.rs](../crates/spanda-transport/src/tls.
 
 **fn**
 
-- [`build_client_config`](../crates/spanda-transport/src/tls.rs#L88)
+- [`build_client_config`](../crates/spanda-transport/src/tls.rs#L119)
 - [`parse_tls_endpoint`](../crates/spanda-transport/src/tls.rs#L29)
-- [`perform_mtls_handshake`](../crates/spanda-transport/src/tls.rs#L148)
+- [`perform_mtls_handshake`](../crates/spanda-transport/src/tls.rs#L237)
 
 ##### `wire` {#spanda-transport-wire}
 
@@ -3821,9 +5390,9 @@ Source: [crates/spanda-transport/src/wire.rs](../crates/spanda-transport/src/wir
 
 **fn**
 
-- [`decode_payload`](../crates/spanda-transport/src/wire.rs#L40)
-- [`decode_wire_value`](../crates/spanda-transport/src/wire.rs#L62)
-- [`encode_wire_value`](../crates/spanda-transport/src/wire.rs#L45)
+- [`decode_payload`](../crates/spanda-transport/src/wire.rs#L63)
+- [`decode_wire_value`](../crates/spanda-transport/src/wire.rs#L125)
+- [`encode_wire_value`](../crates/spanda-transport/src/wire.rs#L83)
 
 **method**
 
@@ -3837,6 +5406,7 @@ Crate root: [`crates/spanda-transport-routing`](../crates/spanda-transport-routi
 
 - [live_bridges](#spanda-transport-routing-live-bridges)
 - [root](#spanda-transport-routing-root)
+- [runtime_bridge](#spanda-transport-routing-runtime-bridge)
 - [transport_live](#spanda-transport-routing-transport-live)
 
 ##### `live_bridges` {#spanda-transport-routing-live-bridges}
@@ -3845,33 +5415,33 @@ Source: [crates/spanda-transport-routing/src/live_bridges.rs](../crates/spanda-t
 
 **struct**
 
-- [`LiveDdsBridge`](../crates/spanda-transport-routing/src/live_bridges.rs#L37)
+- [`LiveDdsBridge`](../crates/spanda-transport-routing/src/live_bridges.rs#L107)
 - [`LiveMqttBridge`](../crates/spanda-transport-routing/src/live_bridges.rs#L9)
-- [`LiveWebsocketBridge`](../crates/spanda-transport-routing/src/live_bridges.rs#L65)
+- [`LiveWebsocketBridge`](../crates/spanda-transport-routing/src/live_bridges.rs#L203)
 
 **impl**
 
-- [`LiveDdsBridge`](../crates/spanda-transport-routing/src/live_bridges.rs#L41)
+- [`LiveDdsBridge`](../crates/spanda-transport-routing/src/live_bridges.rs#L111)
 - [`LiveMqttBridge`](../crates/spanda-transport-routing/src/live_bridges.rs#L13)
-- [`LiveWebsocketBridge`](../crates/spanda-transport-routing/src/live_bridges.rs#L69)
+- [`LiveWebsocketBridge`](../crates/spanda-transport-routing/src/live_bridges.rs#L207)
 
 **fn**
 
-- [`publish`](../crates/spanda-transport-routing/src/live_bridges.rs#L20)
-- [`publish`](../crates/spanda-transport-routing/src/live_bridges.rs#L48)
-- [`publish`](../crates/spanda-transport-routing/src/live_bridges.rs#L76)
-- [`receive`](../crates/spanda-transport-routing/src/live_bridges.rs#L28)
-- [`receive`](../crates/spanda-transport-routing/src/live_bridges.rs#L56)
-- [`receive`](../crates/spanda-transport-routing/src/live_bridges.rs#L84)
-- [`subscribe`](../crates/spanda-transport-routing/src/live_bridges.rs#L24)
-- [`subscribe`](../crates/spanda-transport-routing/src/live_bridges.rs#L52)
-- [`subscribe`](../crates/spanda-transport-routing/src/live_bridges.rs#L80)
+- [`publish`](../crates/spanda-transport-routing/src/live_bridges.rs#L37)
+- [`publish`](../crates/spanda-transport-routing/src/live_bridges.rs#L133)
+- [`publish`](../crates/spanda-transport-routing/src/live_bridges.rs#L229)
+- [`receive`](../crates/spanda-transport-routing/src/live_bridges.rs#L81)
+- [`receive`](../crates/spanda-transport-routing/src/live_bridges.rs#L177)
+- [`receive`](../crates/spanda-transport-routing/src/live_bridges.rs#L273)
+- [`subscribe`](../crates/spanda-transport-routing/src/live_bridges.rs#L60)
+- [`subscribe`](../crates/spanda-transport-routing/src/live_bridges.rs#L156)
+- [`subscribe`](../crates/spanda-transport-routing/src/live_bridges.rs#L252)
 
 **method**
 
-- [`LiveDdsBridge::connect`](../crates/spanda-transport-routing/src/live_bridges.rs#L42)
+- [`LiveDdsBridge::connect`](../crates/spanda-transport-routing/src/live_bridges.rs#L112)
 - [`LiveMqttBridge::connect`](../crates/spanda-transport-routing/src/live_bridges.rs#L14)
-- [`LiveWebsocketBridge::connect`](../crates/spanda-transport-routing/src/live_bridges.rs#L70)
+- [`LiveWebsocketBridge::connect`](../crates/spanda-transport-routing/src/live_bridges.rs#L208)
 
 ##### `root` {#spanda-transport-routing-root}
 
@@ -3880,40 +5450,54 @@ Source: [crates/spanda-transport-routing/src/lib.rs](../crates/spanda-transport-
 **mod**
 
 - [`live_bridges`](../crates/spanda-transport-routing/src/lib.rs#L3)
-- [`transport_live`](../crates/spanda-transport-routing/src/lib.rs#L4)
+- [`runtime_bridge`](../crates/spanda-transport-routing/src/lib.rs#L4)
+- [`transport_live`](../crates/spanda-transport-routing/src/lib.rs#L5)
 
 **struct**
 
-- [`RoutingCommBus`](../crates/spanda-transport-routing/src/lib.rs#L37)
+- [`RoutingCommBus`](../crates/spanda-transport-routing/src/lib.rs#L64)
 
 **impl**
 
-- [`RoutingCommBus`](../crates/spanda-transport-routing/src/lib.rs#L59)
-- [`RoutingCommBus`](../crates/spanda-transport-routing/src/lib.rs#L79)
-- [`RoutingCommBus`](../crates/spanda-transport-routing/src/lib.rs#L618)
-- [`std`](../crates/spanda-transport-routing/src/lib.rs#L49)
+- [`RoutingCommBus`](../crates/spanda-transport-routing/src/lib.rs#L86)
+- [`RoutingCommBus`](../crates/spanda-transport-routing/src/lib.rs#L104)
+- [`RoutingCommBus`](../crates/spanda-transport-routing/src/lib.rs#L1129)
+- [`std`](../crates/spanda-transport-routing/src/lib.rs#L76)
 
 **fn**
 
-- [`adapter`](../crates/spanda-transport-routing/src/lib.rs#L277)
-- [`adapter_mut`](../crates/spanda-transport-routing/src/lib.rs#L306)
-- [`attach_provider_registry`](../crates/spanda-transport-routing/src/lib.rs#L109)
-- [`clear_registry_backed`](../crates/spanda-transport-routing/src/lib.rs#L118)
-- [`configure`](../crates/spanda-transport-routing/src/lib.rs#L226)
-- [`is_registry_backed`](../crates/spanda-transport-routing/src/lib.rs#L123)
-- [`mark_registry_backed`](../crates/spanda-transport-routing/src/lib.rs#L113)
-- [`memory`](../crates/spanda-transport-routing/src/lib.rs#L335)
-- [`memory_mut`](../crates/spanda-transport-routing/src/lib.rs#L354)
-- [`poll_inbound`](../crates/spanda-transport-routing/src/lib.rs#L476)
-- [`publish_peer`](../crates/spanda-transport-routing/src/lib.rs#L443)
-- [`reconnect_transport`](../crates/spanda-transport-routing/src/lib.rs#L537)
-- [`register_agent`](../crates/spanda-transport-routing/src/lib.rs#L403)
-- [`register_device`](../crates/spanda-transport-routing/src/lib.rs#L423)
-- [`register_robot`](../crates/spanda-transport-routing/src/lib.rs#L383)
+- [`adapter`](../crates/spanda-transport-routing/src/lib.rs#L657)
+- [`adapter_mut`](../crates/spanda-transport-routing/src/lib.rs#L699)
+- [`attach_provider_registry`](../crates/spanda-transport-routing/src/lib.rs#L131)
+- [`clear_registry_backed`](../crates/spanda-transport-routing/src/lib.rs#L200)
+- [`configure`](../crates/spanda-transport-routing/src/lib.rs#L592)
+- [`is_registry_backed`](../crates/spanda-transport-routing/src/lib.rs#L229)
+- [`mark_registry_backed`](../crates/spanda-transport-routing/src/lib.rs#L163)
+- [`memory`](../crates/spanda-transport-routing/src/lib.rs#L741)
+- [`memory_mut`](../crates/spanda-transport-routing/src/lib.rs#L770)
+- [`poll_inbound`](../crates/spanda-transport-routing/src/lib.rs#L989)
+- [`publish_peer`](../crates/spanda-transport-routing/src/lib.rs#L933)
+- [`reconnect_transport`](../crates/spanda-transport-routing/src/lib.rs#L1048)
+- [`register_agent`](../crates/spanda-transport-routing/src/lib.rs#L871)
+- [`register_device`](../crates/spanda-transport-routing/src/lib.rs#L902)
+- [`register_robot`](../crates/spanda-transport-routing/src/lib.rs#L840)
 
 **method**
 
-- [`RoutingCommBus::new`](../crates/spanda-transport-routing/src/lib.rs#L80)
+- [`RoutingCommBus::new`](../crates/spanda-transport-routing/src/lib.rs#L105)
+
+##### `runtime_bridge` {#spanda-transport-routing-runtime-bridge}
+
+Source: [crates/spanda-transport-routing/src/runtime_bridge.rs](../crates/spanda-transport-routing/src/runtime_bridge.rs#L1)
+
+**impl**
+
+- [`RoutingCommBus`](../crates/spanda-transport-routing/src/runtime_bridge.rs#L15)
+
+**fn**
+
+- [`routing_comm_bus_factory`](../crates/spanda-transport-routing/src/runtime_bridge.rs#L80)
+- [`routing_comm_bus_factory_fn`](../crates/spanda-transport-routing/src/runtime_bridge.rs#L87)
 
 ##### `transport_live` {#spanda-transport-routing-transport-live}
 
@@ -3921,10 +5505,10 @@ Source: [crates/spanda-transport-routing/src/transport_live.rs](../crates/spanda
 
 **fn**
 
-- [`try_mqtt_publish`](../crates/spanda-transport-routing/src/transport_live.rs#L35)
-- [`try_ros2_publish`](../crates/spanda-transport-routing/src/transport_live.rs#L23)
-- [`try_ros2_service_call`](../crates/spanda-transport-routing/src/transport_live.rs#L31)
-- [`try_ros2_subscribe`](../crates/spanda-transport-routing/src/transport_live.rs#L27)
+- [`try_mqtt_publish`](../crates/spanda-transport-routing/src/transport_live.rs#L101)
+- [`try_ros2_publish`](../crates/spanda-transport-routing/src/transport_live.rs#L38)
+- [`try_ros2_service_call`](../crates/spanda-transport-routing/src/transport_live.rs#L78)
+- [`try_ros2_subscribe`](../crates/spanda-transport-routing/src/transport_live.rs#L59)
 
 #### `spanda-transport-ros2` {#crate-spanda-transport-ros2}
 
@@ -3947,11 +5531,11 @@ Source: [crates/spanda-transport-ros2/src/adapter.rs](../crates/spanda-transport
 
 **struct**
 
-- [`Ros2TransportAdapter`](../crates/spanda-transport-ros2/src/adapter.rs#L23)
+- [`Ros2TransportAdapter`](../crates/spanda-transport-ros2/src/adapter.rs#L38)
 
 **impl**
 
-- [`Ros2TransportAdapter`](../crates/spanda-transport-ros2/src/adapter.rs#L27)
+- [`Ros2TransportAdapter`](../crates/spanda-transport-ros2/src/adapter.rs#L42)
 
 ##### `daemon` {#spanda-transport-ros2-daemon}
 
@@ -3963,11 +5547,11 @@ Source: [crates/spanda-transport-ros2/src/daemon.rs](../crates/spanda-transport-
 
 **fn**
 
-- [`daemon_publish`](../crates/spanda-transport-ros2/src/daemon.rs#L141)
-- [`daemon_script_path`](../crates/spanda-transport-ros2/src/daemon.rs#L86)
-- [`daemon_service_call`](../crates/spanda-transport-ros2/src/daemon.rs#L149)
-- [`daemon_subscribe`](../crates/spanda-transport-ros2/src/daemon.rs#L145)
-- [`python_available`](../crates/spanda-transport-ros2/src/daemon.rs#L82)
+- [`daemon_publish`](../crates/spanda-transport-ros2/src/daemon.rs#L286)
+- [`daemon_script_path`](../crates/spanda-transport-ros2/src/daemon.rs#L181)
+- [`daemon_service_call`](../crates/spanda-transport-ros2/src/daemon.rs#L350)
+- [`daemon_subscribe`](../crates/spanda-transport-ros2/src/daemon.rs#L320)
+- [`python_available`](../crates/spanda-transport-ros2/src/daemon.rs#L153)
 
 ##### `live_bridge` {#spanda-transport-ros2-live-bridge}
 
@@ -3976,16 +5560,16 @@ Source: [crates/spanda-transport-ros2/src/live_bridge.rs](../crates/spanda-trans
 **fn**
 
 - [`ros2_live_enabled`](../crates/spanda-transport-ros2/src/live_bridge.rs#L7)
-- [`ros2_native_enabled`](../crates/spanda-transport-ros2/src/live_bridge.rs#L11)
-- [`try_ros2_bridge_publish`](../crates/spanda-transport-ros2/src/live_bridge.rs#L65)
-- [`try_ros2_bridge_service_call`](../crates/spanda-transport-ros2/src/live_bridge.rs#L82)
-- [`try_ros2_bridge_subscribe`](../crates/spanda-transport-ros2/src/live_bridge.rs#L75)
-- [`try_ros2_native_publish`](../crates/spanda-transport-ros2/src/live_bridge.rs#L15)
-- [`try_ros2_native_service_call`](../crates/spanda-transport-ros2/src/live_bridge.rs#L52)
-- [`try_ros2_native_subscribe`](../crates/spanda-transport-ros2/src/live_bridge.rs#L39)
-- [`try_ros2_publish`](../crates/spanda-transport-ros2/src/live_bridge.rs#L96)
-- [`try_ros2_service_call`](../crates/spanda-transport-ros2/src/live_bridge.rs#L110)
-- [`try_ros2_subscribe`](../crates/spanda-transport-ros2/src/live_bridge.rs#L103)
+- [`ros2_native_enabled`](../crates/spanda-transport-ros2/src/live_bridge.rs#L25)
+- [`try_ros2_bridge_publish`](../crates/spanda-transport-ros2/src/live_bridge.rs#L144)
+- [`try_ros2_bridge_service_call`](../crates/spanda-transport-ros2/src/live_bridge.rs#L190)
+- [`try_ros2_bridge_subscribe`](../crates/spanda-transport-ros2/src/live_bridge.rs#L168)
+- [`try_ros2_native_publish`](../crates/spanda-transport-ros2/src/live_bridge.rs#L43)
+- [`try_ros2_native_service_call`](../crates/spanda-transport-ros2/src/live_bridge.rs#L112)
+- [`try_ros2_native_subscribe`](../crates/spanda-transport-ros2/src/live_bridge.rs#L84)
+- [`try_ros2_publish`](../crates/spanda-transport-ros2/src/live_bridge.rs#L223)
+- [`try_ros2_service_call`](../crates/spanda-transport-ros2/src/live_bridge.rs#L269)
+- [`try_ros2_subscribe`](../crates/spanda-transport-ros2/src/live_bridge.rs#L247)
 
 ##### `native` {#spanda-transport-ros2-native}
 
@@ -3993,11 +5577,11 @@ Source: [crates/spanda-transport-ros2/src/native.rs](../crates/spanda-transport-
 
 **fn**
 
-- [`init_node`](../crates/spanda-transport-ros2/src/native.rs#L95)
-- [`publish`](../crates/spanda-transport-ros2/src/native.rs#L108)
-- [`sdk_available`](../crates/spanda-transport-ros2/src/native.rs#L89)
-- [`service_call`](../crates/spanda-transport-ros2/src/native.rs#L131)
-- [`subscribe`](../crates/spanda-transport-ros2/src/native.rs#L121)
+- [`init_node`](../crates/spanda-transport-ros2/src/native.rs#L167)
+- [`publish`](../crates/spanda-transport-ros2/src/native.rs#L195)
+- [`sdk_available`](../crates/spanda-transport-ros2/src/native.rs#L147)
+- [`service_call`](../crates/spanda-transport-ros2/src/native.rs#L250)
+- [`subscribe`](../crates/spanda-transport-ros2/src/native.rs#L225)
 
 ##### `native_stub` {#spanda-transport-ros2-native-stub}
 
@@ -4005,11 +5589,11 @@ Source: [crates/spanda-transport-ros2/src/native_stub.rs](../crates/spanda-trans
 
 **fn**
 
-- [`init_node`](../crates/spanda-transport-ros2/src/native_stub.rs#L7)
-- [`publish`](../crates/spanda-transport-ros2/src/native_stub.rs#L11)
+- [`init_node`](../crates/spanda-transport-ros2/src/native_stub.rs#L21)
+- [`publish`](../crates/spanda-transport-ros2/src/native_stub.rs#L40)
 - [`sdk_available`](../crates/spanda-transport-ros2/src/native_stub.rs#L3)
-- [`service_call`](../crates/spanda-transport-ros2/src/native_stub.rs#L19)
-- [`subscribe`](../crates/spanda-transport-ros2/src/native_stub.rs#L15)
+- [`service_call`](../crates/spanda-transport-ros2/src/native_stub.rs#L80)
+- [`subscribe`](../crates/spanda-transport-ros2/src/native_stub.rs#L61)
 
 ##### `python_bridge` {#spanda-transport-ros2-python-bridge}
 
@@ -4017,9 +5601,9 @@ Source: [crates/spanda-transport-ros2/src/python_bridge.rs](../crates/spanda-tra
 
 **fn**
 
-- [`bridge_script_path`](../crates/spanda-transport-ros2/src/python_bridge.rs#L43)
-- [`invoke_python_bridge`](../crates/spanda-transport-ros2/src/python_bridge.rs#L60)
-- [`python_available`](../crates/spanda-transport-ros2/src/python_bridge.rs#L39)
+- [`bridge_script_path`](../crates/spanda-transport-ros2/src/python_bridge.rs#L71)
+- [`invoke_python_bridge`](../crates/spanda-transport-ros2/src/python_bridge.rs#L102)
+- [`python_available`](../crates/spanda-transport-ros2/src/python_bridge.rs#L53)
 
 ##### `rclrs` {#spanda-transport-ros2-rclrs}
 
@@ -4027,9 +5611,9 @@ Source: [crates/spanda-transport-ros2/src/rclrs.rs](../crates/spanda-transport-r
 
 **fn**
 
-- [`try_rclrs_publish`](../crates/spanda-transport-ros2/src/rclrs.rs#L22)
-- [`try_rclrs_service_call`](../crates/spanda-transport-ros2/src/rclrs.rs#L86)
-- [`try_rclrs_subscribe`](../crates/spanda-transport-ros2/src/rclrs.rs#L55)
+- [`try_rclrs_publish`](../crates/spanda-transport-ros2/src/rclrs.rs#L46)
+- [`try_rclrs_service_call`](../crates/spanda-transport-ros2/src/rclrs.rs#L111)
+- [`try_rclrs_subscribe`](../crates/spanda-transport-ros2/src/rclrs.rs#L80)
 
 ##### `root` {#spanda-transport-ros2-root}
 
@@ -4050,13 +5634,13 @@ Source: [crates/spanda-transport-ros2/src/lib.rs](../crates/spanda-transport-ros
 
 **fn**
 
-- [`init_node`](../crates/spanda-transport-ros2/src/lib.rs#L40)
-- [`native_sdk_available`](../crates/spanda-transport-ros2/src/lib.rs#L36)
-- [`rclrs_available`](../crates/spanda-transport-ros2/src/lib.rs#L32)
+- [`init_node`](../crates/spanda-transport-ros2/src/lib.rs#L82)
+- [`native_sdk_available`](../crates/spanda-transport-ros2/src/lib.rs#L64)
+- [`rclrs_available`](../crates/spanda-transport-ros2/src/lib.rs#L46)
 - [`rclrs_enabled`](../crates/spanda-transport-ros2/src/lib.rs#L27)
-- [`try_native_publish`](../crates/spanda-transport-ros2/src/lib.rs#L55)
-- [`try_native_service_call`](../crates/spanda-transport-ros2/src/lib.rs#L63)
-- [`try_native_subscribe`](../crates/spanda-transport-ros2/src/lib.rs#L59)
+- [`try_native_publish`](../crates/spanda-transport-ros2/src/lib.rs#L112)
+- [`try_native_service_call`](../crates/spanda-transport-ros2/src/lib.rs#L152)
+- [`try_native_subscribe`](../crates/spanda-transport-ros2/src/lib.rs#L133)
 
 #### `spanda-transport-mqtt` {#crate-spanda-transport-mqtt}
 
@@ -4075,11 +5659,11 @@ Source: [crates/spanda-transport-mqtt/src/adapter.rs](../crates/spanda-transport
 
 **struct**
 
-- [`MqttTransportAdapter`](../crates/spanda-transport-mqtt/src/adapter.rs#L13)
+- [`MqttTransportAdapter`](../crates/spanda-transport-mqtt/src/adapter.rs#L11)
 
 **impl**
 
-- [`MqttTransportAdapter`](../crates/spanda-transport-mqtt/src/adapter.rs#L18)
+- [`MqttTransportAdapter`](../crates/spanda-transport-mqtt/src/adapter.rs#L16)
 
 ##### `live` {#spanda-transport-mqtt-live}
 
@@ -4095,9 +5679,9 @@ Source: [crates/spanda-transport-mqtt/src/live.rs](../crates/spanda-transport-mq
 
 **fn**
 
-- [`publish`](../crates/spanda-transport-mqtt/src/live.rs#L57)
-- [`receive`](../crates/spanda-transport-mqtt/src/live.rs#L69)
-- [`subscribe`](../crates/spanda-transport-mqtt/src/live.rs#L63)
+- [`publish`](../crates/spanda-transport-mqtt/src/live.rs#L59)
+- [`receive`](../crates/spanda-transport-mqtt/src/live.rs#L107)
+- [`subscribe`](../crates/spanda-transport-mqtt/src/live.rs#L84)
 
 **method**
 
@@ -4109,8 +5693,8 @@ Source: [crates/spanda-transport-mqtt/src/python_bridge.rs](../crates/spanda-tra
 
 **fn**
 
-- [`mqtt_live_enabled`](../crates/spanda-transport-mqtt/src/python_bridge.rs#L105)
-- [`try_mqtt_publish`](../crates/spanda-transport-mqtt/src/python_bridge.rs#L109)
+- [`mqtt_live_enabled`](../crates/spanda-transport-mqtt/src/python_bridge.rs#L150)
+- [`try_mqtt_publish`](../crates/spanda-transport-mqtt/src/python_bridge.rs#L168)
 
 ##### `root` {#spanda-transport-mqtt-root}
 
@@ -4135,9 +5719,9 @@ Source: [crates/spanda-transport-mqtt/src/lib.rs](../crates/spanda-transport-mqt
 
 **fn**
 
-- [`publish`](../crates/spanda-transport-mqtt/src/lib.rs#L57)
-- [`receive`](../crates/spanda-transport-mqtt/src/lib.rs#L75)
-- [`subscribe`](../crates/spanda-transport-mqtt/src/lib.rs#L66)
+- [`publish`](../crates/spanda-transport-mqtt/src/lib.rs#L62)
+- [`receive`](../crates/spanda-transport-mqtt/src/lib.rs#L116)
+- [`subscribe`](../crates/spanda-transport-mqtt/src/lib.rs#L90)
 
 **method**
 
@@ -4159,15 +5743,15 @@ Source: [crates/spanda-transport-dds/src/adapter.rs](../crates/spanda-transport-
 
 **struct**
 
-- [`DdsTransportAdapterLive`](../crates/spanda-transport-dds/src/adapter.rs#L13)
+- [`DdsTransportAdapterLive`](../crates/spanda-transport-dds/src/adapter.rs#L11)
 
 **type**
 
-- [`DdsTransportAdapter`](../crates/spanda-transport-dds/src/adapter.rs#L19)
+- [`DdsTransportAdapter`](../crates/spanda-transport-dds/src/adapter.rs#L17)
 
 **impl**
 
-- [`DdsTransportAdapterLive`](../crates/spanda-transport-dds/src/adapter.rs#L21)
+- [`DdsTransportAdapterLive`](../crates/spanda-transport-dds/src/adapter.rs#L19)
 
 ##### `live` {#spanda-transport-dds-live}
 
@@ -4175,21 +5759,21 @@ Source: [crates/spanda-transport-dds/src/live.rs](../crates/spanda-transport-dds
 
 **struct**
 
-- [`LiveDdsBridge`](../crates/spanda-transport-dds/src/live.rs#L16)
+- [`LiveDdsBridge`](../crates/spanda-transport-dds/src/live.rs#L17)
 
 **impl**
 
-- [`LiveDdsBridge`](../crates/spanda-transport-dds/src/live.rs#L23)
+- [`LiveDdsBridge`](../crates/spanda-transport-dds/src/live.rs#L24)
 
 **fn**
 
-- [`publish`](../crates/spanda-transport-dds/src/live.rs#L72)
-- [`receive`](../crates/spanda-transport-dds/src/live.rs#L89)
-- [`subscribe`](../crates/spanda-transport-dds/src/live.rs#L85)
+- [`publish`](../crates/spanda-transport-dds/src/live.rs#L86)
+- [`receive`](../crates/spanda-transport-dds/src/live.rs#L140)
+- [`subscribe`](../crates/spanda-transport-dds/src/live.rs#L119)
 
 **method**
 
-- [`LiveDdsBridge::connect`](../crates/spanda-transport-dds/src/live.rs#L24)
+- [`LiveDdsBridge::connect`](../crates/spanda-transport-dds/src/live.rs#L25)
 
 ##### `root` {#spanda-transport-dds-root}
 
@@ -4209,9 +5793,9 @@ Source: [crates/spanda-transport-dds/src/lib.rs](../crates/spanda-transport-dds/
 
 **fn**
 
-- [`publish`](../crates/spanda-transport-dds/src/lib.rs#L32)
-- [`receive`](../crates/spanda-transport-dds/src/lib.rs#L50)
-- [`subscribe`](../crates/spanda-transport-dds/src/lib.rs#L41)
+- [`publish`](../crates/spanda-transport-dds/src/lib.rs#L50)
+- [`receive`](../crates/spanda-transport-dds/src/lib.rs#L104)
+- [`subscribe`](../crates/spanda-transport-dds/src/lib.rs#L78)
 
 **method**
 
@@ -4233,15 +5817,15 @@ Source: [crates/spanda-transport-websocket/src/adapter.rs](../crates/spanda-tran
 
 **struct**
 
-- [`WebsocketTransportAdapterLive`](../crates/spanda-transport-websocket/src/adapter.rs#L13)
+- [`WebsocketTransportAdapterLive`](../crates/spanda-transport-websocket/src/adapter.rs#L11)
 
 **type**
 
-- [`WebsocketTransportAdapter`](../crates/spanda-transport-websocket/src/adapter.rs#L19)
+- [`WebsocketTransportAdapter`](../crates/spanda-transport-websocket/src/adapter.rs#L17)
 
 **impl**
 
-- [`WebsocketTransportAdapterLive`](../crates/spanda-transport-websocket/src/adapter.rs#L21)
+- [`WebsocketTransportAdapterLive`](../crates/spanda-transport-websocket/src/adapter.rs#L19)
 
 ##### `live` {#spanda-transport-websocket-live}
 
@@ -4249,21 +5833,21 @@ Source: [crates/spanda-transport-websocket/src/live.rs](../crates/spanda-transpo
 
 **struct**
 
-- [`LiveWebsocketBridge`](../crates/spanda-transport-websocket/src/live.rs#L16)
+- [`LiveWebsocketBridge`](../crates/spanda-transport-websocket/src/live.rs#L19)
 
 **impl**
 
-- [`LiveWebsocketBridge`](../crates/spanda-transport-websocket/src/live.rs#L21)
+- [`LiveWebsocketBridge`](../crates/spanda-transport-websocket/src/live.rs#L24)
 
 **fn**
 
-- [`publish`](../crates/spanda-transport-websocket/src/live.rs#L51)
-- [`receive`](../crates/spanda-transport-websocket/src/live.rs#L84)
-- [`subscribe`](../crates/spanda-transport-websocket/src/live.rs#L68)
+- [`publish`](../crates/spanda-transport-websocket/src/live.rs#L78)
+- [`receive`](../crates/spanda-transport-websocket/src/live.rs#L147)
+- [`subscribe`](../crates/spanda-transport-websocket/src/live.rs#L114)
 
 **method**
 
-- [`LiveWebsocketBridge::connect`](../crates/spanda-transport-websocket/src/live.rs#L22)
+- [`LiveWebsocketBridge::connect`](../crates/spanda-transport-websocket/src/live.rs#L25)
 
 ##### `root` {#spanda-transport-websocket-root}
 
@@ -4283,9 +5867,9 @@ Source: [crates/spanda-transport-websocket/src/lib.rs](../crates/spanda-transpor
 
 **fn**
 
-- [`publish`](../crates/spanda-transport-websocket/src/lib.rs#L35)
-- [`receive`](../crates/spanda-transport-websocket/src/lib.rs#L53)
-- [`subscribe`](../crates/spanda-transport-websocket/src/lib.rs#L44)
+- [`publish`](../crates/spanda-transport-websocket/src/lib.rs#L50)
+- [`receive`](../crates/spanda-transport-websocket/src/lib.rs#L104)
+- [`subscribe`](../crates/spanda-transport-websocket/src/lib.rs#L78)
 
 **method**
 
@@ -4298,6 +5882,7 @@ Crate root: [`crates/spanda-connectivity`](../crates/spanda-connectivity/) · [R
 **Modules**
 
 - [adapter_bridge](#spanda-connectivity-adapter-bridge)
+- [hardware_types](#spanda-connectivity-hardware-types)
 - [root](#spanda-connectivity-root)
 - [runtime_sim](#spanda-connectivity-runtime-sim)
 
@@ -4307,8 +5892,21 @@ Source: [crates/spanda-connectivity/src/adapter_bridge.rs](../crates/spanda-conn
 
 **fn**
 
-- [`invoke_nav2_bridge`](../crates/spanda-connectivity/src/adapter_bridge.rs#L13)
-- [`invoke_slam_bridge`](../crates/spanda-connectivity/src/adapter_bridge.rs#L45)
+- [`invoke_nav2_bridge`](../crates/spanda-connectivity/src/adapter_bridge.rs#L28)
+- [`invoke_slam_bridge`](../crates/spanda-connectivity/src/adapter_bridge.rs#L58)
+
+##### `hardware_types` {#spanda-connectivity-hardware-types}
+
+Source: [crates/spanda-connectivity/src/hardware_types.rs](../crates/spanda-connectivity/src/hardware_types.rs#L1)
+
+**struct**
+
+- [`CompatItem`](../crates/spanda-connectivity/src/hardware_types.rs#L36)
+- [`HardwareProfile`](../crates/spanda-connectivity/src/hardware_types.rs#L7)
+
+**enum**
+
+- [`CompatSeverity`](../crates/spanda-connectivity/src/hardware_types.rs#L28)
 
 ##### `root` {#spanda-connectivity-root}
 
@@ -4317,26 +5915,27 @@ Source: [crates/spanda-connectivity/src/lib.rs](../crates/spanda-connectivity/sr
 **mod**
 
 - [`adapter_bridge`](../crates/spanda-connectivity/src/lib.rs#L3)
-- [`runtime_sim`](../crates/spanda-connectivity/src/lib.rs#L4)
+- [`hardware_types`](../crates/spanda-connectivity/src/lib.rs#L4)
+- [`runtime_sim`](../crates/spanda-connectivity/src/lib.rs#L5)
 
 **enum**
 
-- [`ConnectivityRequirement`](../crates/spanda-connectivity/src/lib.rs#L17)
-- [`ConnectivityTransport`](../crates/spanda-connectivity/src/lib.rs#L24)
+- [`ConnectivityRequirement`](../crates/spanda-connectivity/src/lib.rs#L20)
+- [`ConnectivityTransport`](../crates/spanda-connectivity/src/lib.rs#L27)
 
 **fn**
 
-- [`connectivity_capabilities`](../crates/spanda-connectivity/src/lib.rs#L126)
-- [`connectivity_faults`](../crates/spanda-connectivity/src/lib.rs#L107)
-- [`connectivity_key_to_profile_tokens`](../crates/spanda-connectivity/src/lib.rs#L92)
-- [`connectivity_link_to_transport`](../crates/spanda-connectivity/src/lib.rs#L139)
-- [`connectivity_options`](../crates/spanda-connectivity/src/lib.rs#L71)
-- [`connectivity_types`](../crates/spanda-connectivity/src/lib.rs#L49)
-- [`is_cellular_link`](../crates/spanda-connectivity/src/lib.rs#L151)
-- [`is_modem_bearer`](../crates/spanda-connectivity/src/lib.rs#L162)
-- [`is_satellite_link`](../crates/spanda-connectivity/src/lib.rs#L158)
-- [`is_wifi_link`](../crates/spanda-connectivity/src/lib.rs#L166)
-- [`positioning_types`](../crates/spanda-connectivity/src/lib.rs#L33)
+- [`connectivity_capabilities`](../crates/spanda-connectivity/src/lib.rs#L200)
+- [`connectivity_faults`](../crates/spanda-connectivity/src/lib.rs#L167)
+- [`connectivity_key_to_profile_tokens`](../crates/spanda-connectivity/src/lib.rs#L137)
+- [`connectivity_link_to_transport`](../crates/spanda-connectivity/src/lib.rs#L227)
+- [`connectivity_options`](../crates/spanda-connectivity/src/lib.rs#L102)
+- [`connectivity_types`](../crates/spanda-connectivity/src/lib.rs#L66)
+- [`is_cellular_link`](../crates/spanda-connectivity/src/lib.rs#L254)
+- [`is_modem_bearer`](../crates/spanda-connectivity/src/lib.rs#L295)
+- [`is_satellite_link`](../crates/spanda-connectivity/src/lib.rs#L276)
+- [`is_wifi_link`](../crates/spanda-connectivity/src/lib.rs#L314)
+- [`positioning_types`](../crates/spanda-connectivity/src/lib.rs#L36)
 
 ##### `runtime_sim` {#spanda-connectivity-runtime-sim}
 
@@ -4348,12 +5947,12 @@ Source: [crates/spanda-connectivity/src/runtime_sim.rs](../crates/spanda-connect
 
 **fn**
 
-- [`apply_gps_position_faults`](../crates/spanda-connectivity/src/runtime_sim.rs#L52)
-- [`fault_to_connectivity`](../crates/spanda-connectivity/src/runtime_sim.rs#L38)
-- [`geofence_contains`](../crates/spanda-connectivity/src/runtime_sim.rs#L25)
-- [`hardware_event_to_connectivity`](../crates/spanda-connectivity/src/runtime_sim.rs#L30)
+- [`apply_gps_position_faults`](../crates/spanda-connectivity/src/runtime_sim.rs#L122)
+- [`fault_to_connectivity`](../crates/spanda-connectivity/src/runtime_sim.rs#L93)
+- [`geofence_contains`](../crates/spanda-connectivity/src/runtime_sim.rs#L46)
+- [`hardware_event_to_connectivity`](../crates/spanda-connectivity/src/runtime_sim.rs#L70)
 - [`haversine_m`](../crates/spanda-connectivity/src/runtime_sim.rs#L15)
-- [`is_link_impaired`](../crates/spanda-connectivity/src/runtime_sim.rs#L70)
+- [`is_link_impaired`](../crates/spanda-connectivity/src/runtime_sim.rs#L161)
 
 #### `spanda-connectivity-runtime` {#crate-spanda-connectivity-runtime}
 
@@ -4361,11 +5960,26 @@ Crate root: [`crates/spanda-connectivity-runtime`](../crates/spanda-connectivity
 
 **Modules**
 
+- [connectivity_validate](#spanda-connectivity-runtime-connectivity-validate)
 - [root](#spanda-connectivity-runtime-root)
+
+##### `connectivity_validate` {#spanda-connectivity-runtime-connectivity-validate}
+
+Source: [crates/spanda-connectivity-runtime/src/connectivity_validate.rs](../crates/spanda-connectivity-runtime/src/connectivity_validate.rs#L1)
+
+**fn**
+
+- [`validate_connectivity_policy`](../crates/spanda-connectivity-runtime/src/connectivity_validate.rs#L260)
+- [`validate_geofence`](../crates/spanda-connectivity-runtime/src/connectivity_validate.rs#L201)
+- [`verify_requires_connectivity`](../crates/spanda-connectivity-runtime/src/connectivity_validate.rs#L60)
 
 ##### `root` {#spanda-connectivity-runtime-root}
 
 Source: [crates/spanda-connectivity-runtime/src/lib.rs](../crates/spanda-connectivity-runtime/src/lib.rs#L1)
+
+**mod**
+
+- [`connectivity_validate`](../crates/spanda-connectivity-runtime/src/lib.rs#L20)
 
 **struct**
 
@@ -4373,13 +5987,13 @@ Source: [crates/spanda-connectivity-runtime/src/lib.rs](../crates/spanda-connect
 
 **fn**
 
-- [`apply_connectivity_fault`](../crates/spanda-connectivity-runtime/src/lib.rs#L220)
-- [`apply_gps_reading_faults`](../crates/spanda-connectivity-runtime/src/lib.rs#L76)
-- [`connectivity_link_to_transport`](../crates/spanda-connectivity-runtime/src/lib.rs#L124)
-- [`connectivity_policy_from_decl`](../crates/spanda-connectivity-runtime/src/lib.rs#L55)
+- [`apply_connectivity_fault`](../crates/spanda-connectivity-runtime/src/lib.rs#L326)
+- [`apply_gps_reading_faults`](../crates/spanda-connectivity-runtime/src/lib.rs#L106)
+- [`connectivity_link_to_transport`](../crates/spanda-connectivity-runtime/src/lib.rs#L177)
+- [`connectivity_policy_from_decl`](../crates/spanda-connectivity-runtime/src/lib.rs#L70)
 - [`geofence_from_decl`](../crates/spanda-connectivity-runtime/src/lib.rs#L38)
-- [`runtime_gps_fix`](../crates/spanda-connectivity-runtime/src/lib.rs#L137)
-- [`runtime_sim_identity`](../crates/spanda-connectivity-runtime/src/lib.rs#L182)
+- [`runtime_gps_fix`](../crates/spanda-connectivity-runtime/src/lib.rs#L205)
+- [`runtime_sim_identity`](../crates/spanda-connectivity-runtime/src/lib.rs#L271)
 
 ### Tooling and codegen {#group-toolingandcodegen}
 
@@ -4399,7 +6013,7 @@ Source: [crates/spanda-format/src/format.rs](../crates/spanda-format/src/format.
 
 **fn**
 
-- [`format_ast`](../crates/spanda-format/src/format.rs#L34)
+- [`format_ast`](../crates/spanda-format/src/format.rs#L31)
 - [`format_source`](../crates/spanda-format/src/format.rs#L9)
 
 ##### `pretty` {#spanda-format-pretty}
@@ -4408,17 +6022,33 @@ Source: [crates/spanda-format/src/pretty.rs](../crates/spanda-format/src/pretty.
 
 **impl**
 
+- [`MessageDecl`](../crates/spanda-format/src/pretty.rs#L1615)
 - [`PrettyPrinter`](../crates/spanda-format/src/pretty.rs#L13)
-- [`spanda_ast`](../crates/spanda-format/src/pretty.rs#L1430)
-- [`spanda_ast`](../crates/spanda-format/src/pretty.rs#L1453)
-- [`spanda_ast`](../crates/spanda-format/src/pretty.rs#L1476)
-- [`spanda_ast`](../crates/spanda-format/src/pretty.rs#L1499)
-- [`spanda_ast`](../crates/spanda-format/src/pretty.rs#L1522)
-- [`spanda_comm`](../crates/spanda-format/src/pretty.rs#L1548)
+- [`spanda_ast`](../crates/spanda-format/src/pretty.rs#L1495)
+- [`spanda_ast`](../crates/spanda-format/src/pretty.rs#L1518)
+- [`spanda_ast`](../crates/spanda-format/src/pretty.rs#L1541)
+- [`spanda_ast`](../crates/spanda-format/src/pretty.rs#L1566)
+- [`spanda_ast`](../crates/spanda-format/src/pretty.rs#L1589)
+- [`spanda_ast`](../crates/spanda-format/src/pretty.rs#L1638)
+- [`spanda_ast`](../crates/spanda-format/src/pretty.rs#L1661)
+- [`spanda_ast`](../crates/spanda-format/src/pretty.rs#L1684)
+- [`spanda_ast`](../crates/spanda-format/src/pretty.rs#L1709)
+- [`spanda_ast`](../crates/spanda-format/src/pretty.rs#L1732)
+- [`spanda_ast`](../crates/spanda-format/src/pretty.rs#L1755)
+- [`spanda_ast`](../crates/spanda-format/src/pretty.rs#L1778)
+- [`spanda_ast`](../crates/spanda-format/src/pretty.rs#L1801)
+- [`spanda_ast`](../crates/spanda-format/src/pretty.rs#L1824)
+- [`spanda_ast`](../crates/spanda-format/src/pretty.rs#L1849)
+- [`spanda_ast`](../crates/spanda-format/src/pretty.rs#L1857)
+- [`spanda_ast`](../crates/spanda-format/src/pretty.rs#L1867)
+- [`spanda_ast`](../crates/spanda-format/src/pretty.rs#L1890)
+- [`spanda_ast`](../crates/spanda-format/src/pretty.rs#L1913)
+- [`spanda_ast`](../crates/spanda-format/src/pretty.rs#L1936)
+- [`spanda_ast`](../crates/spanda-format/src/pretty.rs#L1959)
 
 **fn**
 
-- [`pretty_print_program`](../crates/spanda-format/src/pretty.rs#L1686)
+- [`pretty_print_program`](../crates/spanda-format/src/pretty.rs#L2093)
 
 ##### `root` {#spanda-format-root}
 
@@ -4426,7 +6056,7 @@ Source: [crates/spanda-format/src/lib.rs](../crates/spanda-format/src/lib.rs#L1)
 
 **mod**
 
-- [`pretty`](../crates/spanda-format/src/lib.rs#L3)
+- [`pretty`](../crates/spanda-format/src/lib.rs#L4)
 
 **export**
 
@@ -4459,7 +6089,7 @@ Source: [crates/spanda-lint/src/lib.rs](../crates/spanda-lint/src/lib.rs#L1)
 
 **fn**
 
-- [`lint`](../crates/spanda-lint/src/lib.rs#L51)
+- [`lint`](../crates/spanda-lint/src/lib.rs#L52)
 
 **method**
 
@@ -4484,7 +6114,7 @@ Source: [crates/spanda-codegen/src/lib.rs](../crates/spanda-codegen/src/lib.rs#L
 **fn**
 
 - [`generate`](../crates/spanda-codegen/src/lib.rs#L15)
-- [`wasm_deploy_manifest`](../crates/spanda-codegen/src/lib.rs#L325)
+- [`wasm_deploy_manifest`](../crates/spanda-codegen/src/lib.rs#L330)
 
 #### `spanda-docs` {#crate-spanda-docs}
 
@@ -4493,7 +6123,9 @@ Crate root: [`crates/spanda-docs`](../crates/spanda-docs/)
 **Modules**
 
 - [builtin_methods](#spanda-docs-builtin-methods)
+- [html_docs](#spanda-docs-html-docs)
 - [language_reference](#spanda-docs-language-reference)
+- [man_pages](#spanda-docs-man-pages)
 - [program_docs](#spanda-docs-program-docs)
 - [root](#spanda-docs-root)
 
@@ -4503,24 +6135,58 @@ Source: [crates/spanda-docs/src/builtin_methods.rs](../crates/spanda-docs/src/bu
 
 **fn**
 
-- [`BUILTIN_METHODS`](../crates/spanda-docs/src/builtin_methods.rs#L7)
+- [`BUILTIN_METHODS`](../crates/spanda-docs/src/builtin_methods.rs#L19)
+
+##### `html_docs` {#spanda-docs-html-docs}
+
+Source: [crates/spanda-docs/src/html_docs.rs](../crates/spanda-docs/src/html_docs.rs#L1)
+
+**fn**
+
+- [`markdown_to_html`](../crates/spanda-docs/src/html_docs.rs#L4)
 
 ##### `language_reference` {#spanda-docs-language-reference}
 
 Source: [crates/spanda-docs/src/language_reference.rs](../crates/spanda-docs/src/language_reference.rs#L1)
 
+**const**
+
+- [`CLI_COMMAND_NAMES`](../crates/spanda-docs/src/language_reference.rs#L802)
+
+**impl**
+
+- [`spanda_typecheck`](../crates/spanda-docs/src/language_reference.rs#L1279)
+
 **fn**
 
-- [`generate_cli_man_pages`](../crates/spanda-docs/src/language_reference.rs#L737)
-- [`generate_language_reference`](../crates/spanda-docs/src/language_reference.rs#L17)
+- [`generate_cli_man_pages`](../crates/spanda-docs/src/language_reference.rs#L1181)
+- [`generate_language_reference`](../crates/spanda-docs/src/language_reference.rs#L29)
+
+##### `man_pages` {#spanda-docs-man-pages}
+
+Source: [crates/spanda-docs/src/man_pages.rs](../crates/spanda-docs/src/man_pages.rs#L1)
+
+**fn**
+
+- [`list_man_pages`](../crates/spanda-docs/src/man_pages.rs#L34)
+- [`lookup_man_page`](../crates/spanda-docs/src/man_pages.rs#L6)
+- [`markdown_man_to_roff`](../crates/spanda-docs/src/man_pages.rs#L56)
 
 ##### `program_docs` {#spanda-docs-program-docs}
 
 Source: [crates/spanda-docs/src/program_docs.rs](../crates/spanda-docs/src/program_docs.rs#L1)
 
+**struct**
+
+- [`DocBatchResult`](../crates/spanda-docs/src/program_docs.rs#L108)
+- [`DocJson`](../crates/spanda-docs/src/program_docs.rs#L65)
+
 **fn**
 
-- [`generate_markdown`](../crates/spanda-docs/src/program_docs.rs#L10)
+- [`generate_docs_for_path`](../crates/spanda-docs/src/program_docs.rs#L114)
+- [`generate_html`](../crates/spanda-docs/src/program_docs.rs#L32)
+- [`generate_json_docs`](../crates/spanda-docs/src/program_docs.rs#L71)
+- [`generate_markdown`](../crates/spanda-docs/src/program_docs.rs#L11)
 
 ##### `root` {#spanda-docs-root}
 
@@ -4528,11 +6194,12 @@ Source: [crates/spanda-docs/src/lib.rs](../crates/spanda-docs/src/lib.rs#L1)
 
 **mod**
 
-- [`language_reference`](../crates/spanda-docs/src/lib.rs#L4)
+- [`html_docs`](../crates/spanda-docs/src/lib.rs#L4)
+- [`language_reference`](../crates/spanda-docs/src/lib.rs#L5)
 
 **export**
 
-- [`program_docs::generate_markdown`](../crates/spanda-docs/src/lib.rs#L8)
+- [`html_docs::markdown_to_html`](../crates/spanda-docs/src/lib.rs#L9)
 
 #### `spanda-modules` {#crate-spanda-modules}
 
@@ -4549,7 +6216,7 @@ Source: [crates/spanda-modules/src/lib.rs](../crates/spanda-modules/src/lib.rs#L
 **fn**
 
 - [`load_project_modules`](../crates/spanda-modules/src/lib.rs#L9)
-- [`module_name_from_path`](../crates/spanda-modules/src/lib.rs#L125)
+- [`module_name_from_path`](../crates/spanda-modules/src/lib.rs#L134)
 
 #### `spanda-llvm` {#crate-spanda-llvm}
 
@@ -4579,9 +6246,9 @@ Source: [crates/spanda-llvm/src/lib.rs](../crates/spanda-llvm/src/lib.rs#L1)
 
 **fn**
 
-- [`default_target_triple_for_host`](../crates/spanda-llvm/src/lib.rs#L464)
+- [`default_target_triple_for_host`](../crates/spanda-llvm/src/lib.rs#L467)
 - [`emit_module_ir`](../crates/spanda-llvm/src/lib.rs#L17)
-- [`emit_module_ir_with_options`](../crates/spanda-llvm/src/lib.rs#L56)
+- [`emit_module_ir_with_options`](../crates/spanda-llvm/src/lib.rs#L57)
 - [`emit_module_ir_with_triple`](../crates/spanda-llvm/src/lib.rs#L36)
 
 #### `spanda-rt` {#crate-spanda-rt}
@@ -4599,13 +6266,13 @@ Source: [crates/spanda-rt/src/condition.rs](../crates/spanda-rt/src/condition.rs
 
 **fn**
 
-- [`eval_condition_json`](../crates/spanda-rt/src/condition.rs#L269)
-- [`load_bool`](../crates/spanda-rt/src/condition.rs#L146)
-- [`load_double`](../crates/spanda-rt/src/condition.rs#L193)
-- [`scan_nearest`](../crates/spanda-rt/src/condition.rs#L217)
-- [`store_bool`](../crates/spanda-rt/src/condition.rs#L123)
-- [`store_double`](../crates/spanda-rt/src/condition.rs#L170)
-- [`store_string`](../crates/spanda-rt/src/condition.rs#L354)
+- [`eval_condition_json`](../crates/spanda-rt/src/condition.rs#L268)
+- [`load_bool`](../crates/spanda-rt/src/condition.rs#L143)
+- [`load_double`](../crates/spanda-rt/src/condition.rs#L190)
+- [`scan_nearest`](../crates/spanda-rt/src/condition.rs#L214)
+- [`store_bool`](../crates/spanda-rt/src/condition.rs#L120)
+- [`store_double`](../crates/spanda-rt/src/condition.rs#L167)
+- [`store_string`](../crates/spanda-rt/src/condition.rs#L352)
 
 ##### `root` {#spanda-rt-root}
 
@@ -4636,9 +6303,9 @@ Source: [crates/spanda-bridge/src/cpp.rs](../crates/spanda-bridge/src/cpp.rs#L1)
 
 **fn**
 
-- [`bridge_available`](../crates/spanda-bridge/src/cpp.rs#L75)
+- [`bridge_available`](../crates/spanda-bridge/src/cpp.rs#L73)
 - [`bridge_binary_path`](../crates/spanda-bridge/src/cpp.rs#L14)
-- [`call_extern`](../crates/spanda-bridge/src/cpp.rs#L94)
+- [`call_extern`](../crates/spanda-bridge/src/cpp.rs#L91)
 
 ##### `cpp_native` {#spanda-bridge-cpp-native}
 
@@ -4646,7 +6313,7 @@ Source: [crates/spanda-bridge/src/cpp_native.rs](../crates/spanda-bridge/src/cpp
 
 **fn**
 
-- [`call_extern`](../crates/spanda-bridge/src/cpp_native.rs#L32)
+- [`call_extern`](../crates/spanda-bridge/src/cpp_native.rs#L39)
 - [`native_available`](../crates/spanda-bridge/src/cpp_native.rs#L22)
 
 ##### `protocol` {#spanda-bridge-protocol}
@@ -4655,14 +6322,14 @@ Source: [crates/spanda-bridge/src/protocol.rs](../crates/spanda-bridge/src/proto
 
 **struct**
 
-- [`BridgeRequest`](../crates/spanda-bridge/src/protocol.rs#L17)
-- [`BridgeResponse`](../crates/spanda-bridge/src/protocol.rs#L28)
+- [`BridgeRequest`](../crates/spanda-bridge/src/protocol.rs#L19)
+- [`BridgeResponse`](../crates/spanda-bridge/src/protocol.rs#L30)
 
 **fn**
 
-- [`call_subprocess_bridge`](../crates/spanda-bridge/src/protocol.rs#L106)
+- [`call_subprocess_bridge`](../crates/spanda-bridge/src/protocol.rs#L112)
 - [`json_to_runtime_value`](../crates/spanda-bridge/src/protocol.rs#L68)
-- [`runtime_value_to_json`](../crates/spanda-bridge/src/protocol.rs#L39)
+- [`runtime_value_to_json`](../crates/spanda-bridge/src/protocol.rs#L41)
 
 ##### `python` {#spanda-bridge-python}
 
@@ -4671,8 +6338,8 @@ Source: [crates/spanda-bridge/src/python.rs](../crates/spanda-bridge/src/python.
 **fn**
 
 - [`bridge_script_path`](../crates/spanda-bridge/src/python.rs#L15)
-- [`call_extern`](../crates/spanda-bridge/src/python.rs#L124)
-- [`python_available`](../crates/spanda-bridge/src/python.rs#L72)
+- [`call_extern`](../crates/spanda-bridge/src/python.rs#L120)
+- [`python_available`](../crates/spanda-bridge/src/python.rs#L70)
 
 ##### `python_native` {#spanda-bridge-python-native}
 
@@ -4680,7 +6347,7 @@ Source: [crates/spanda-bridge/src/python_native.rs](../crates/spanda-bridge/src/
 
 **fn**
 
-- [`call_extern`](../crates/spanda-bridge/src/python_native.rs#L25)
+- [`call_extern`](../crates/spanda-bridge/src/python_native.rs#L32)
 - [`native_available`](../crates/spanda-bridge/src/python_native.rs#L15)
 
 ##### `root` {#spanda-bridge-root}
@@ -4698,7 +6365,7 @@ Source: [crates/spanda-bridge/src/lib.rs](../crates/spanda-bridge/src/lib.rs#L1)
 **fn**
 
 - [`default_ffi_registry`](../crates/spanda-bridge/src/lib.rs#L14)
-- [`new_with_core_bridges`](../crates/spanda-bridge/src/lib.rs#L22)
+- [`new_with_core_bridges`](../crates/spanda-bridge/src/lib.rs#L36)
 
 #### `spanda-ffi` {#crate-spanda-ffi}
 
@@ -4731,8 +6398,8 @@ Source: [crates/spanda-ffi/src/lib.rs](../crates/spanda-ffi/src/lib.rs#L1)
 
 **struct**
 
-- [`ExternBridges`](../crates/spanda-ffi/src/lib.rs#L17)
-- [`FfiRegistry`](../crates/spanda-ffi/src/lib.rs#L23)
+- [`ExternBridges`](../crates/spanda-ffi/src/lib.rs#L16)
+- [`FfiRegistry`](../crates/spanda-ffi/src/lib.rs#L22)
 
 **type**
 
@@ -4741,20 +6408,20 @@ Source: [crates/spanda-ffi/src/lib.rs](../crates/spanda-ffi/src/lib.rs#L1)
 
 **impl**
 
-- [`FfiRegistry`](../crates/spanda-ffi/src/lib.rs#L28)
-- [`FfiRegistry`](../crates/spanda-ffi/src/lib.rs#L48)
+- [`FfiRegistry`](../crates/spanda-ffi/src/lib.rs#L27)
+- [`FfiRegistry`](../crates/spanda-ffi/src/lib.rs#L47)
 
 **fn**
 
-- [`call`](../crates/spanda-ffi/src/lib.rs#L125)
-- [`has_handler`](../crates/spanda-ffi/src/lib.rs#L106)
-- [`register`](../crates/spanda-ffi/src/lib.rs#L85)
-- [`set_bridges`](../crates/spanda-ffi/src/lib.rs#L81)
-- [`with_bridges`](../crates/spanda-ffi/src/lib.rs#L74)
+- [`call`](../crates/spanda-ffi/src/lib.rs#L157)
+- [`has_handler`](../crates/spanda-ffi/src/lib.rs#L136)
+- [`register`](../crates/spanda-ffi/src/lib.rs#L114)
+- [`set_bridges`](../crates/spanda-ffi/src/lib.rs#L94)
+- [`with_bridges`](../crates/spanda-ffi/src/lib.rs#L72)
 
 **method**
 
-- [`FfiRegistry::new`](../crates/spanda-ffi/src/lib.rs#L49)
+- [`FfiRegistry::new`](../crates/spanda-ffi/src/lib.rs#L48)
 
 #### `spanda-lib-registry` {#crate-spanda-lib-registry}
 
@@ -4790,13 +6457,13 @@ Source: [crates/spanda-lib-registry/src/lib.rs](../crates/spanda-lib-registry/sr
 
 **fn**
 
-- [`all_library_sensor_types`](../crates/spanda-lib-registry/src/lib.rs#L1473)
-- [`get_sensor_driver`](../crates/spanda-lib-registry/src/lib.rs#L1432)
-- [`get_sensor_type_from_lib`](../crates/spanda-lib-registry/src/lib.rs#L1454)
-- [`list_libraries`](../crates/spanda-lib-registry/src/lib.rs#L1509)
-- [`list_libraries_by_vendor`](../crates/spanda-lib-registry/src/lib.rs#L1528)
-- [`read_with_driver`](../crates/spanda-lib-registry/src/lib.rs#L1551)
-- [`resolve_import`](../crates/spanda-lib-registry/src/lib.rs#L1413)
+- [`all_library_sensor_types`](../crates/spanda-lib-registry/src/lib.rs#L1491)
+- [`get_sensor_driver`](../crates/spanda-lib-registry/src/lib.rs#L1446)
+- [`get_sensor_type_from_lib`](../crates/spanda-lib-registry/src/lib.rs#L1470)
+- [`list_libraries`](../crates/spanda-lib-registry/src/lib.rs#L1526)
+- [`list_libraries_by_vendor`](../crates/spanda-lib-registry/src/lib.rs#L1544)
+- [`read_with_driver`](../crates/spanda-lib-registry/src/lib.rs#L1567)
+- [`resolve_import`](../crates/spanda-lib-registry/src/lib.rs#L1427)
 
 **method**
 
@@ -4808,10 +6475,54 @@ Crate root: [`crates/spanda-providers`](../crates/spanda-providers/) · [README]
 
 **Modules**
 
+- [anomaly_onnx](#spanda-providers-anomaly-onnx)
+- [automotive_hub](#spanda-providers-automotive-hub)
 - [bootstrap](#spanda-providers-bootstrap)
+- [hri_backends](#spanda-providers-hri-backends)
+- [iot_hub](#spanda-providers-iot-hub)
+- [iot_live](#spanda-providers-iot-live)
+- [package_dispatch](#spanda-providers-package-dispatch)
 - [package_stubs](#spanda-providers-package-stubs)
+- [radar_env_lock](#spanda-providers-radar-env-lock)
 - [root](#spanda-providers-root)
+- [runtime_bridge](#spanda-providers-runtime-bridge)
 - [transport_adapter](#spanda-providers-transport-adapter)
+
+##### `anomaly_onnx` {#spanda-providers-anomaly-onnx}
+
+Source: [crates/spanda-providers/src/anomaly_onnx.rs](../crates/spanda-providers/src/anomaly_onnx.rs#L1)
+
+**fn**
+
+- [`onnx_anomaly_enabled`](../crates/spanda-providers/src/anomaly_onnx.rs#L9)
+- [`scan_learned_score`](../crates/spanda-providers/src/anomaly_onnx.rs#L55)
+- [`threshold_anomaly_score`](../crates/spanda-providers/src/anomaly_onnx.rs#L29)
+
+##### `automotive_hub` {#spanda-providers-automotive-hub}
+
+Source: [crates/spanda-providers/src/automotive_hub.rs](../crates/spanda-providers/src/automotive_hub.rs#L1)
+
+**struct**
+
+- [`AutomotiveHub`](../crates/spanda-providers/src/automotive_hub.rs#L14)
+
+**impl**
+
+- [`AutomotiveHub`](../crates/spanda-providers/src/automotive_hub.rs#L20)
+
+**fn**
+
+- [`read_lidar`](../crates/spanda-providers/src/automotive_hub.rs#L41)
+- [`read_lidar_distance`](../crates/spanda-providers/src/automotive_hub.rs#L74)
+- [`read_radar`](../crates/spanda-providers/src/automotive_hub.rs#L32)
+- [`read_radar_distance`](../crates/spanda-providers/src/automotive_hub.rs#L66)
+- [`read_ultrasonic`](../crates/spanda-providers/src/automotive_hub.rs#L50)
+- [`read_ultrasonic_distance`](../crates/spanda-providers/src/automotive_hub.rs#L82)
+- [`seed_automotive_demos`](../crates/spanda-providers/src/automotive_hub.rs#L61)
+
+**method**
+
+- [`AutomotiveHub::seed_automotive_demo`](../crates/spanda-providers/src/automotive_hub.rs#L21)
 
 ##### `bootstrap` {#spanda-providers-bootstrap}
 
@@ -4819,10 +6530,108 @@ Source: [crates/spanda-providers/src/bootstrap.rs](../crates/spanda-providers/sr
 
 **fn**
 
-- [`bootstrap_default_providers`](../crates/spanda-providers/src/bootstrap.rs#L31)
-- [`bootstrap_providers_for_packages`](../crates/spanda-providers/src/bootstrap.rs#L36)
-- [`official_package_for_transport`](../crates/spanda-providers/src/bootstrap.rs#L157)
-- [`sync_comm_bus_for_official_packages`](../crates/spanda-providers/src/bootstrap.rs#L184)
+- [`bootstrap_default_providers`](../crates/spanda-providers/src/bootstrap.rs#L30)
+- [`bootstrap_providers_for_packages`](../crates/spanda-providers/src/bootstrap.rs#L49)
+- [`official_package_for_transport`](../crates/spanda-providers/src/bootstrap.rs#L285)
+- [`sync_comm_bus_for_official_packages`](../crates/spanda-providers/src/bootstrap.rs#L349)
+
+##### `hri_backends` {#spanda-providers-hri-backends}
+
+Source: [crates/spanda-providers/src/hri_backends.rs](../crates/spanda-providers/src/hri_backends.rs#L1)
+
+**fn**
+
+- [`enrich_healthkit_telemetry`](../crates/spanda-providers/src/hri_backends.rs#L35)
+- [`enrich_hololens_session`](../crates/spanda-providers/src/hri_backends.rs#L73)
+- [`enrich_vision_pro_overlay`](../crates/spanda-providers/src/hri_backends.rs#L83)
+- [`healthkit_live_enabled`](../crates/spanda-providers/src/hri_backends.rs#L18)
+- [`hololens_live_enabled`](../crates/spanda-providers/src/hri_backends.rs#L23)
+- [`vision_pro_live_enabled`](../crates/spanda-providers/src/hri_backends.rs#L30)
+
+##### `iot_hub` {#spanda-providers-iot-hub}
+
+Source: [crates/spanda-providers/src/iot_hub.rs](../crates/spanda-providers/src/iot_hub.rs#L1)
+
+**struct**
+
+- [`IotHub`](../crates/spanda-providers/src/iot_hub.rs#L31)
+
+**impl**
+
+- [`IotHub`](../crates/spanda-providers/src/iot_hub.rs#L43)
+
+**fn**
+
+- [`device_count`](../crates/spanda-providers/src/iot_hub.rs#L318)
+- [`hub_stats`](../crates/spanda-providers/src/iot_hub.rs#L622)
+- [`number_arg`](../crates/spanda-providers/src/iot_hub.rs#L688)
+- [`publish_telemetry`](../crates/spanda-providers/src/iot_hub.rs#L69)
+- [`publish_telemetry`](../crates/spanda-providers/src/iot_hub.rs#L391)
+- [`read_canbus_frame`](../crates/spanda-providers/src/iot_hub.rs#L272)
+- [`read_canbus_frame`](../crates/spanda-providers/src/iot_hub.rs#L508)
+- [`read_lora_payload`](../crates/spanda-providers/src/iot_hub.rs#L224)
+- [`read_lora_payload`](../crates/spanda-providers/src/iot_hub.rs#L556)
+- [`read_matter_cluster`](../crates/spanda-providers/src/iot_hub.rs#L248)
+- [`read_matter_cluster`](../crates/spanda-providers/src/iot_hub.rs#L579)
+- [`read_modbus_register`](../crates/spanda-providers/src/iot_hub.rs#L133)
+- [`read_modbus_register`](../crates/spanda-providers/src/iot_hub.rs#L462)
+- [`read_opcua_node`](../crates/spanda-providers/src/iot_hub.rs#L176)
+- [`read_opcua_node`](../crates/spanda-providers/src/iot_hub.rs#L485)
+- [`read_zigbee_attribute`](../crates/spanda-providers/src/iot_hub.rs#L197)
+- [`read_zigbee_attribute`](../crates/spanda-providers/src/iot_hub.rs#L531)
+- [`register_device`](../crates/spanda-providers/src/iot_hub.rs#L358)
+- [`seed_modbus_demo_register`](../crates/spanda-providers/src/iot_hub.rs#L642)
+- [`seed_protocol_demo`](../crates/spanda-providers/src/iot_hub.rs#L293)
+- [`seed_protocol_demos`](../crates/spanda-providers/src/iot_hub.rs#L604)
+- [`send_command`](../crates/spanda-providers/src/iot_hub.rs#L89)
+- [`send_command`](../crates/spanda-providers/src/iot_hub.rs#L423)
+- [`string_arg`](../crates/spanda-providers/src/iot_hub.rs#L663)
+- [`telemetry_count`](../crates/spanda-providers/src/iot_hub.rs#L337)
+- [`update_shadow`](../crates/spanda-providers/src/iot_hub.rs#L113)
+- [`update_shadow`](../crates/spanda-providers/src/iot_hub.rs#L443)
+- [`write_modbus_register`](../crates/spanda-providers/src/iot_hub.rs#L154)
+
+**method**
+
+- [`IotHub::register_device`](../crates/spanda-providers/src/iot_hub.rs#L44)
+
+##### `iot_live` {#spanda-providers-iot-live}
+
+Source: [crates/spanda-providers/src/iot_live.rs](../crates/spanda-providers/src/iot_live.rs#L1)
+
+**fn**
+
+- [`live_canbus_enabled`](../crates/spanda-providers/src/iot_live.rs#L187)
+- [`live_lidar_enabled`](../crates/spanda-providers/src/iot_live.rs#L211)
+- [`live_lora_enabled`](../crates/spanda-providers/src/iot_live.rs#L149)
+- [`live_matter_enabled`](../crates/spanda-providers/src/iot_live.rs#L168)
+- [`live_modbus_enabled`](../crates/spanda-providers/src/iot_live.rs#L7)
+- [`live_opcua_enabled`](../crates/spanda-providers/src/iot_live.rs#L29)
+- [`live_radar_enabled`](../crates/spanda-providers/src/iot_live.rs#L206)
+- [`live_ultrasonic_enabled`](../crates/spanda-providers/src/iot_live.rs#L216)
+- [`live_zigbee_enabled`](../crates/spanda-providers/src/iot_live.rs#L130)
+- [`read_canbus_frame_live`](../crates/spanda-providers/src/iot_live.rs#L305)
+- [`read_lidar_distance_live`](../crates/spanda-providers/src/iot_live.rs#L348)
+- [`read_lora_payload_live`](../crates/spanda-providers/src/iot_live.rs#L250)
+- [`read_matter_cluster_live`](../crates/spanda-providers/src/iot_live.rs#L275)
+- [`read_modbus_register_live`](../crates/spanda-providers/src/iot_live.rs#L51)
+- [`read_opcua_node_live`](../crates/spanda-providers/src/iot_live.rs#L84)
+- [`read_radar_distance_live`](../crates/spanda-providers/src/iot_live.rs#L331)
+- [`read_ultrasonic_distance_live`](../crates/spanda-providers/src/iot_live.rs#L365)
+- [`read_zigbee_attribute_live`](../crates/spanda-providers/src/iot_live.rs#L220)
+
+##### `package_dispatch` {#spanda-providers-package-dispatch}
+
+Source: [crates/spanda-providers/src/package_dispatch.rs](../crates/spanda-providers/src/package_dispatch.rs#L1)
+
+**struct**
+
+- [`ProviderDispatchContext`](../crates/spanda-providers/src/package_dispatch.rs#L19)
+
+**fn**
+
+- [`dispatch_official_package_call`](../crates/spanda-providers/src/package_dispatch.rs#L213)
+- [`official_package_for_module`](../crates/spanda-providers/src/package_dispatch.rs#L26)
 
 ##### `package_stubs` {#spanda-providers-package-stubs}
 
@@ -4830,39 +6639,79 @@ Source: [crates/spanda-providers/src/package_stubs.rs](../crates/spanda-provider
 
 **struct**
 
-- [`CloudPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L214)
-- [`FleetPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L153)
-- [`GpsPositioningStub`](../crates/spanda-providers/src/package_stubs.rs#L24)
-- [`LedgerPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L193)
-- [`MaintenancePackageStub`](../crates/spanda-providers/src/package_stubs.rs#L243)
-- [`NavNavigationStub`](../crates/spanda-providers/src/package_stubs.rs#L53)
-- [`SimulationPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L322)
-- [`SlamPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L89)
-- [`VisionPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L272)
+- [`CloudPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L773)
+- [`ConnectivityPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L50)
+- [`FleetPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L539)
+- [`GpsPositioningStub`](../crates/spanda-providers/src/package_stubs.rs#L234)
+- [`HriInputPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L1518)
+- [`LedgerPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L668)
+- [`MaintenancePackageStub`](../crates/spanda-providers/src/package_stubs.rs#L1015)
+- [`NavNavigationStub`](../crates/spanda-providers/src/package_stubs.rs#L320)
+- [`OverlayPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L1559)
+- [`SimulationPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L1237)
+- [`SlamPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L416)
+- [`SpatialSessionPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L1438)
+- [`VisionPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L1093)
+- [`WearablePackageStub`](../crates/spanda-providers/src/package_stubs.rs#L1372)
 
 **impl**
 
-- [`CloudPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L216)
-- [`FleetPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L155)
-- [`GpsPositioningStub`](../crates/spanda-providers/src/package_stubs.rs#L26)
-- [`LedgerPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L195)
-- [`MaintenancePackageStub`](../crates/spanda-providers/src/package_stubs.rs#L245)
-- [`NavNavigationStub`](../crates/spanda-providers/src/package_stubs.rs#L55)
-- [`SimulationPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L326)
-- [`SimulationPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L340)
-- [`SlamPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L91)
-- [`VisionPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L276)
-- [`VisionPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L290)
+- [`CloudPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L922)
+- [`ConnectivityPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L55)
+- [`ConnectivityPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L120)
+- [`FleetPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L541)
+- [`GpsPositioningStub`](../crates/spanda-providers/src/package_stubs.rs#L236)
+- [`HriInputPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L1522)
+- [`HriInputPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L1528)
+- [`LedgerPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L672)
+- [`LedgerPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L694)
+- [`MaintenancePackageStub`](../crates/spanda-providers/src/package_stubs.rs#L1017)
+- [`NavNavigationStub`](../crates/spanda-providers/src/package_stubs.rs#L322)
+- [`OverlayPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L1563)
+- [`OverlayPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L1569)
+- [`SimulationPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L1241)
+- [`SimulationPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L1283)
+- [`SlamPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L418)
+- [`SpatialSessionPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L1443)
+- [`SpatialSessionPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L1452)
+- [`StubLedgerChain`](../crates/spanda-providers/src/package_stubs.rs#L659)
+- [`VisionPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L1097)
+- [`VisionPackageStub`](../crates/spanda-providers/src/package_stubs.rs#L1139)
+- [`WearablePackageStub`](../crates/spanda-providers/src/package_stubs.rs#L1376)
+- [`WearablePackageStub`](../crates/spanda-providers/src/package_stubs.rs#L1382)
 
 **fn**
 
-- [`webots`](../crates/spanda-providers/src/package_stubs.rs#L333)
-- [`yolo`](../crates/spanda-providers/src/package_stubs.rs#L283)
+- [`ble`](../crates/spanda-providers/src/package_stubs.rs#L77)
+- [`cellular`](../crates/spanda-providers/src/package_stubs.rs#L98)
+- [`webots`](../crates/spanda-providers/src/package_stubs.rs#L1262)
+- [`yolo`](../crates/spanda-providers/src/package_stubs.rs#L1118)
 
 **method**
 
-- [`SimulationPackageStub::gazebo`](../crates/spanda-providers/src/package_stubs.rs#L327)
-- [`VisionPackageStub::opencv`](../crates/spanda-providers/src/package_stubs.rs#L277)
+- [`ConnectivityPackageStub::wifi`](../crates/spanda-providers/src/package_stubs.rs#L56)
+- [`HriInputPackageStub::new`](../crates/spanda-providers/src/package_stubs.rs#L1523)
+- [`OverlayPackageStub::new`](../crates/spanda-providers/src/package_stubs.rs#L1564)
+- [`SimulationPackageStub::gazebo`](../crates/spanda-providers/src/package_stubs.rs#L1242)
+- [`SpatialSessionPackageStub::new`](../crates/spanda-providers/src/package_stubs.rs#L1444)
+- [`VisionPackageStub::opencv`](../crates/spanda-providers/src/package_stubs.rs#L1098)
+- [`WearablePackageStub::new`](../crates/spanda-providers/src/package_stubs.rs#L1377)
+
+##### `radar_env_lock` {#spanda-providers-radar-env-lock}
+
+Source: [crates/spanda-providers/src/radar_env_lock.rs](../crates/spanda-providers/src/radar_env_lock.rs#L1)
+
+**struct**
+
+- [`RadarEnvLock`](../crates/spanda-providers/src/radar_env_lock.rs#L9)
+
+**impl**
+
+- [`RadarEnvLock`](../crates/spanda-providers/src/radar_env_lock.rs#L14)
+
+**method**
+
+- [`RadarEnvLock::acquire`](../crates/spanda-providers/src/radar_env_lock.rs#L15)
 
 ##### `root` {#spanda-providers-root}
 
@@ -4870,9 +6719,33 @@ Source: [crates/spanda-providers/src/lib.rs](../crates/spanda-providers/src/lib.
 
 **mod**
 
-- [`bootstrap`](../crates/spanda-providers/src/lib.rs#L3)
-- [`package_stubs`](../crates/spanda-providers/src/lib.rs#L4)
-- [`transport_adapter`](../crates/spanda-providers/src/lib.rs#L5)
+- [`anomaly_onnx`](../crates/spanda-providers/src/lib.rs#L3)
+- [`automotive_hub`](../crates/spanda-providers/src/lib.rs#L4)
+- [`bootstrap`](../crates/spanda-providers/src/lib.rs#L5)
+- [`hri_backends`](../crates/spanda-providers/src/lib.rs#L6)
+- [`iot_hub`](../crates/spanda-providers/src/lib.rs#L7)
+- [`iot_live`](../crates/spanda-providers/src/lib.rs#L8)
+- [`package_dispatch`](../crates/spanda-providers/src/lib.rs#L9)
+- [`package_stubs`](../crates/spanda-providers/src/lib.rs#L10)
+- [`radar_env_lock`](../crates/spanda-providers/src/lib.rs#L11)
+- [`runtime_bridge`](../crates/spanda-providers/src/lib.rs#L12)
+- [`transport_adapter`](../crates/spanda-providers/src/lib.rs#L13)
+
+**export**
+
+- [`runtime_bridge::ProviderBackedRuntime`](../crates/spanda-providers/src/lib.rs#L26)
+
+##### `runtime_bridge` {#spanda-providers-runtime-bridge}
+
+Source: [crates/spanda-providers/src/runtime_bridge.rs](../crates/spanda-providers/src/runtime_bridge.rs#L1)
+
+**struct**
+
+- [`ProviderBackedRuntime`](../crates/spanda-providers/src/runtime_bridge.rs#L13)
+
+**impl**
+
+- [`ProviderBackedRuntime`](../crates/spanda-providers/src/runtime_bridge.rs#L15)
 
 ##### `transport_adapter` {#spanda-providers-transport-adapter}
 
@@ -4880,23 +6753,23 @@ Source: [crates/spanda-providers/src/transport_adapter.rs](../crates/spanda-prov
 
 **struct**
 
-- [`TransportAdapterProvider`](../crates/spanda-providers/src/transport_adapter.rs#L43)
+- [`TransportAdapterProvider`](../crates/spanda-providers/src/transport_adapter.rs#L99)
 
 **impl**
 
-- [`TransportAdapterProvider`](../crates/spanda-providers/src/transport_adapter.rs#L48)
-- [`TransportAdapterProvider`](../crates/spanda-providers/src/transport_adapter.rs#L69)
+- [`TransportAdapterProvider`](../crates/spanda-providers/src/transport_adapter.rs#L104)
+- [`TransportAdapterProvider`](../crates/spanda-providers/src/transport_adapter.rs#L188)
 
 **fn**
 
-- [`adapter_config_to_runtime`](../crates/spanda-providers/src/transport_adapter.rs#L12)
-- [`inner`](../crates/spanda-providers/src/transport_adapter.rs#L60)
-- [`inner_mut`](../crates/spanda-providers/src/transport_adapter.rs#L64)
-- [`into_inner`](../crates/spanda-providers/src/transport_adapter.rs#L56)
+- [`adapter_config_to_runtime`](../crates/spanda-providers/src/transport_adapter.rs#L14)
+- [`inner`](../crates/spanda-providers/src/transport_adapter.rs#L149)
+- [`inner_mut`](../crates/spanda-providers/src/transport_adapter.rs#L168)
+- [`into_inner`](../crates/spanda-providers/src/transport_adapter.rs#L131)
 
 **method**
 
-- [`TransportAdapterProvider::new`](../crates/spanda-providers/src/transport_adapter.rs#L49)
+- [`TransportAdapterProvider::new`](../crates/spanda-providers/src/transport_adapter.rs#L105)
 
 #### `spanda-package` {#crate-spanda-package}
 
@@ -4911,20 +6784,26 @@ Crate root: [`crates/spanda-package`](../crates/spanda-package/) · [README](../
 - [error](#spanda-package-error)
 - [hardware_req](#spanda-package-hardware-req)
 - [import](#spanda-package-import)
+- [integrity](#spanda-package-integrity)
 - [lockfile](#spanda-package-lockfile)
 - [manifest](#spanda-package-manifest)
 - [official](#spanda-package-official)
 - [project](#spanda-package-project)
+- [provenance_gate](#spanda-package-provenance-gate)
 - [publish](#spanda-package-publish)
 - [registry](#spanda-package-registry)
 - [registry_fetch](#spanda-package-registry-fetch)
 - [registry_remote](#spanda-package-registry-remote)
+- [registry_sign](#spanda-package-registry-sign)
 - [resolver](#spanda-package-resolver)
 - [root](#spanda-package-root)
 - [safety](#spanda-package-safety)
+- [tar_extract](#spanda-package-tar-extract)
 - [testing](#spanda-package-testing)
+- [trust](#spanda-package-trust)
 - [validation](#spanda-package-validation)
 - [vendor](#spanda-package-vendor)
+- [bin/registry_index_maintain](#spanda-package-bin-registry-index-maintain)
 
 ##### `adapter` {#spanda-package-adapter}
 
@@ -4933,18 +6812,18 @@ Source: [crates/spanda-package/src/adapter.rs](../crates/spanda-package/src/adap
 **struct**
 
 - [`AdapterMetadata`](../crates/spanda-package/src/adapter.rs#L7)
-- [`FrameworkPackage`](../crates/spanda-package/src/adapter.rs#L20)
+- [`FrameworkPackage`](../crates/spanda-package/src/adapter.rs#L19)
 
 **fn**
 
-- [`adapter_metadata_for_import`](../crates/spanda-package/src/adapter.rs#L315)
-- [`adapter_metadata_for_package`](../crates/spanda-package/src/adapter.rs#L326)
-- [`cartographer_adapter_metadata`](../crates/spanda-package/src/adapter.rs#L267)
-- [`framework_import_paths`](../crates/spanda-package/src/adapter.rs#L227)
-- [`framework_packages`](../crates/spanda-package/src/adapter.rs#L27)
-- [`nav2_adapter_metadata`](../crates/spanda-package/src/adapter.rs#L250)
-- [`rtabmap_adapter_metadata`](../crates/spanda-package/src/adapter.rs#L285)
-- [`slam_adapter_metadata`](../crates/spanda-package/src/adapter.rs#L303)
+- [`adapter_metadata_for_import`](../crates/spanda-package/src/adapter.rs#L695)
+- [`adapter_metadata_for_package`](../crates/spanda-package/src/adapter.rs#L721)
+- [`cartographer_adapter_metadata`](../crates/spanda-package/src/adapter.rs#L605)
+- [`framework_import_paths`](../crates/spanda-package/src/adapter.rs#L552)
+- [`framework_packages`](../crates/spanda-package/src/adapter.rs#L26)
+- [`nav2_adapter_metadata`](../crates/spanda-package/src/adapter.rs#L574)
+- [`rtabmap_adapter_metadata`](../crates/spanda-package/src/adapter.rs#L637)
+- [`slam_adapter_metadata`](../crates/spanda-package/src/adapter.rs#L669)
 
 ##### `adapter_verify` {#spanda-package-adapter-verify}
 
@@ -4960,9 +6839,9 @@ Source: [crates/spanda-package/src/adapter_verify.rs](../crates/spanda-package/s
 
 **fn**
 
-- [`adapter_verify_ok`](../crates/spanda-package/src/adapter_verify.rs#L131)
-- [`verify_adapter_package`](../crates/spanda-package/src/adapter_verify.rs#L115)
-- [`verify_manifest_adapter`](../crates/spanda-package/src/adapter_verify.rs#L39)
+- [`adapter_verify_ok`](../crates/spanda-package/src/adapter_verify.rs#L185)
+- [`verify_adapter_package`](../crates/spanda-package/src/adapter_verify.rs#L151)
+- [`verify_manifest_adapter`](../crates/spanda-package/src/adapter_verify.rs#L73)
 
 ##### `category` {#spanda-package-category}
 
@@ -4980,7 +6859,7 @@ Source: [crates/spanda-package/src/category.rs](../crates/spanda-package/src/cat
 
 **fn**
 
-- [`as_str`](../crates/spanda-package/src/category.rs#L71)
+- [`as_str`](../crates/spanda-package/src/category.rs#L70)
 
 **method**
 
@@ -4993,13 +6872,13 @@ Source: [crates/spanda-package/src/dependency.rs](../crates/spanda-package/src/d
 **struct**
 
 - [`DependencyDetail`](../crates/spanda-package/src/dependency.rs#L21)
-- [`LockedDependency`](../crates/spanda-package/src/dependency.rs#L162)
+- [`LockedDependency`](../crates/spanda-package/src/dependency.rs#L163)
 
 **enum**
 
-- [`DependencySourceKind`](../crates/spanda-package/src/dependency.rs#L154)
+- [`DependencySourceKind`](../crates/spanda-package/src/dependency.rs#L155)
 - [`DependencySpec`](../crates/spanda-package/src/dependency.rs#L11)
-- [`LockedSource`](../crates/spanda-package/src/dependency.rs#L171)
+- [`LockedSource`](../crates/spanda-package/src/dependency.rs#L172)
 
 **impl**
 
@@ -5007,12 +6886,12 @@ Source: [crates/spanda-package/src/dependency.rs](../crates/spanda-package/src/d
 
 **fn**
 
-- [`git_url`](../crates/spanda-package/src/dependency.rs#L129)
+- [`git_url`](../crates/spanda-package/src/dependency.rs#L130)
 - [`local_path`](../crates/spanda-package/src/dependency.rs#L97)
-- [`parse_version`](../crates/spanda-package/src/dependency.rs#L208)
-- [`parse_version_req`](../crates/spanda-package/src/dependency.rs#L189)
+- [`parse_version`](../crates/spanda-package/src/dependency.rs#L209)
+- [`parse_version_req`](../crates/spanda-package/src/dependency.rs#L190)
 - [`source_kind`](../crates/spanda-package/src/dependency.rs#L66)
-- [`version_satisfies`](../crates/spanda-package/src/dependency.rs#L227)
+- [`version_satisfies`](../crates/spanda-package/src/dependency.rs#L228)
 
 **method**
 
@@ -5048,11 +6927,11 @@ Source: [crates/spanda-package/src/hardware_req.rs](../crates/spanda-package/src
 
 - [`gpu_required`](../crates/spanda-package/src/hardware_req.rs#L80)
 - [`gpu_tops_min`](../crates/spanda-package/src/hardware_req.rs#L61)
-- [`high_risk_capabilities`](../crates/spanda-package/src/hardware_req.rs#L263)
-- [`is_high_risk_capability`](../crates/spanda-package/src/hardware_req.rs#L288)
+- [`high_risk_capabilities`](../crates/spanda-package/src/hardware_req.rs#L283)
+- [`is_high_risk_capability`](../crates/spanda-package/src/hardware_req.rs#L307)
 - [`known_capabilities`](../crates/spanda-package/src/hardware_req.rs#L208)
 - [`storage_mb_min`](../crates/spanda-package/src/hardware_req.rs#L42)
-- [`validate_capability`](../crates/spanda-package/src/hardware_req.rs#L306)
+- [`validate_capability`](../crates/spanda-package/src/hardware_req.rs#L326)
 
 **method**
 
@@ -5065,9 +6944,22 @@ Source: [crates/spanda-package/src/import.rs](../crates/spanda-package/src/impor
 
 **fn**
 
-- [`all_registered_import_paths`](../crates/spanda-package/src/import.rs#L100)
+- [`all_registered_import_paths`](../crates/spanda-package/src/import.rs#L102)
 - [`builtin_import_paths`](../crates/spanda-package/src/import.rs#L7)
-- [`resolve_package_import`](../crates/spanda-package/src/import.rs#L77)
+- [`resolve_package_import`](../crates/spanda-package/src/import.rs#L76)
+
+##### `integrity` {#spanda-package-integrity}
+
+Source: [crates/spanda-package/src/integrity.rs](../crates/spanda-package/src/integrity.rs#L1)
+
+**fn**
+
+- [`checksum_sidecar_path`](../crates/spanda-package/src/integrity.rs#L42)
+- [`read_checksum_sidecar`](../crates/spanda-package/src/integrity.rs#L91)
+- [`registry_require_checksum`](../crates/spanda-package/src/integrity.rs#L149)
+- [`sha256_file`](../crates/spanda-package/src/integrity.rs#L10)
+- [`verify_sha256`](../crates/spanda-package/src/integrity.rs#L118)
+- [`write_checksum_sidecar`](../crates/spanda-package/src/integrity.rs#L66)
 
 ##### `lockfile` {#spanda-package-lockfile}
 
@@ -5088,11 +6980,11 @@ Source: [crates/spanda-package/src/lockfile.rs](../crates/spanda-package/src/loc
 
 **fn**
 
-- [`load`](../crates/spanda-package/src/lockfile.rs#L73)
-- [`load_from_dir`](../crates/spanda-package/src/lockfile.rs#L93)
-- [`parse_str`](../crates/spanda-package/src/lockfile.rs#L54)
-- [`save`](../crates/spanda-package/src/lockfile.rs#L112)
-- [`save_to_dir`](../crates/spanda-package/src/lockfile.rs#L135)
+- [`load`](../crates/spanda-package/src/lockfile.rs#L74)
+- [`load_from_dir`](../crates/spanda-package/src/lockfile.rs#L94)
+- [`parse_str`](../crates/spanda-package/src/lockfile.rs#L55)
+- [`save`](../crates/spanda-package/src/lockfile.rs#L113)
+- [`save_to_dir`](../crates/spanda-package/src/lockfile.rs#L137)
 
 **method**
 
@@ -5104,9 +6996,10 @@ Source: [crates/spanda-package/src/manifest.rs](../crates/spanda-package/src/man
 
 **struct**
 
-- [`HardwareSection`](../crates/spanda-package/src/manifest.rs#L53)
+- [`HardwareSection`](../crates/spanda-package/src/manifest.rs#L65)
+- [`PackageEntityKindDecl`](../crates/spanda-package/src/manifest.rs#L44)
 - [`PackageManifest`](../crates/spanda-package/src/manifest.rs#L18)
-- [`PackageSection`](../crates/spanda-package/src/manifest.rs#L41)
+- [`PackageSection`](../crates/spanda-package/src/manifest.rs#L53)
 
 **const**
 
@@ -5114,33 +7007,42 @@ Source: [crates/spanda-package/src/manifest.rs](../crates/spanda-package/src/man
 
 **impl**
 
-- [`PackageManifest`](../crates/spanda-package/src/manifest.rs#L58)
+- [`PackageManifest`](../crates/spanda-package/src/manifest.rs#L70)
 
 **fn**
 
-- [`all_dependencies`](../crates/spanda-package/src/manifest.rs#L160)
-- [`find_project_root`](../crates/spanda-package/src/manifest.rs#L184)
-- [`load`](../crates/spanda-package/src/manifest.rs#L80)
-- [`load_from_dir`](../crates/spanda-package/src/manifest.rs#L100)
-- [`save`](../crates/spanda-package/src/manifest.rs#L119)
-- [`version`](../crates/spanda-package/src/manifest.rs#L141)
+- [`all_dependencies`](../crates/spanda-package/src/manifest.rs#L173)
+- [`find_project_root`](../crates/spanda-package/src/manifest.rs#L197)
+- [`load`](../crates/spanda-package/src/manifest.rs#L92)
+- [`load_from_dir`](../crates/spanda-package/src/manifest.rs#L112)
+- [`save`](../crates/spanda-package/src/manifest.rs#L131)
+- [`version`](../crates/spanda-package/src/manifest.rs#L154)
 
 **method**
 
-- [`PackageManifest::parse_str`](../crates/spanda-package/src/manifest.rs#L59)
+- [`PackageManifest::parse_str`](../crates/spanda-package/src/manifest.rs#L71)
 
 ##### `official` {#spanda-package-official}
 
 Source: [crates/spanda-package/src/official.rs](../crates/spanda-package/src/official.rs#L1)
 
+**enum**
+
+- [`OfficialProvenance`](../crates/spanda-package/src/official.rs#L14)
+
 **fn**
 
-- [`installed_official_packages`](../crates/spanda-package/src/official.rs#L11)
-- [`is_official_package`](../crates/spanda-package/src/official.rs#L39)
-- [`load_official_packages_for_project`](../crates/spanda-package/src/official.rs#L74)
-- [`load_official_packages_for_source`](../crates/spanda-package/src/official.rs#L106)
-- [`official_packages_from_lockfile`](../crates/spanda-package/src/official.rs#L66)
-- [`official_packages_from_manifest`](../crates/spanda-package/src/official.rs#L58)
+- [`dependency_provenance`](../crates/spanda-package/src/official.rs#L73)
+- [`installed_official_packages`](../crates/spanda-package/src/official.rs#L26)
+- [`is_official_package`](../crates/spanda-package/src/official.rs#L54)
+- [`load_official_packages_for_project`](../crates/spanda-package/src/official.rs#L305)
+- [`load_official_packages_for_source`](../crates/spanda-package/src/official.rs#L337)
+- [`locked_dependency_provenance`](../crates/spanda-package/src/official.rs#L115)
+- [`official_packages_from_lockfile`](../crates/spanda-package/src/official.rs#L209)
+- [`official_packages_from_manifest`](../crates/spanda-package/src/official.rs#L176)
+- [`provenance_wires_official_providers`](../crates/spanda-package/src/official.rs#L154)
+- [`unofficial_official_overrides_from_lockfile`](../crates/spanda-package/src/official.rs#L272)
+- [`unofficial_official_overrides_from_manifest`](../crates/spanda-package/src/official.rs#L239)
 
 ##### `project` {#spanda-package-project}
 
@@ -5148,10 +7050,32 @@ Source: [crates/spanda-package/src/project.rs](../crates/spanda-package/src/proj
 
 **fn**
 
-- [`add_dependency`](../crates/spanda-package/src/project.rs#L169)
-- [`collect_source_files`](../crates/spanda-package/src/project.rs#L91)
+- [`add_dependency`](../crates/spanda-package/src/project.rs#L173)
+- [`collect_source_files`](../crates/spanda-package/src/project.rs#L94)
 - [`init_package`](../crates/spanda-package/src/project.rs#L37)
-- [`remove_dependency`](../crates/spanda-package/src/project.rs#L198)
+- [`remove_dependency`](../crates/spanda-package/src/project.rs#L204)
+
+##### `provenance_gate` {#spanda-package-provenance-gate}
+
+Source: [crates/spanda-package/src/provenance_gate.rs](../crates/spanda-package/src/provenance_gate.rs#L1)
+
+**struct**
+
+- [`ProjectProvenanceGateReport`](../crates/spanda-package/src/provenance_gate.rs#L18)
+
+**impl**
+
+- [`ProjectProvenanceGateReport`](../crates/spanda-package/src/provenance_gate.rs#L24)
+
+**fn**
+
+- [`evaluate_project_provenance_gate`](../crates/spanda-package/src/provenance_gate.rs#L35)
+- [`passed_registry_signatures`](../crates/spanda-package/src/provenance_gate.rs#L29)
+- [`registry_lockfile_signature_failures`](../crates/spanda-package/src/provenance_gate.rs#L93)
+
+**method**
+
+- [`ProjectProvenanceGateReport::passed_official_provenance`](../crates/spanda-package/src/provenance_gate.rs#L25)
 
 ##### `publish` {#spanda-package-publish}
 
@@ -5159,12 +7083,13 @@ Source: [crates/spanda-package/src/publish.rs](../crates/spanda-package/src/publ
 
 **struct**
 
-- [`PublishReport`](../crates/spanda-package/src/publish.rs#L12)
+- [`PublishReport`](../crates/spanda-package/src/publish.rs#L14)
 
 **fn**
 
-- [`bundle_package`](../crates/spanda-package/src/publish.rs#L19)
-- [`publish_package`](../crates/spanda-package/src/publish.rs#L68)
+- [`bundle_package`](../crates/spanda-package/src/publish.rs#L23)
+- [`mirror_bundle_to_local_registry`](../crates/spanda-package/src/publish.rs#L144)
+- [`publish_package`](../crates/spanda-package/src/publish.rs#L86)
 
 ##### `registry` {#spanda-package-registry}
 
@@ -5173,24 +7098,24 @@ Source: [crates/spanda-package/src/registry.rs](../crates/spanda-package/src/reg
 **struct**
 
 - [`RegistryEntry`](../crates/spanda-package/src/registry.rs#L9)
-- [`RegistryInfo`](../crates/spanda-package/src/registry.rs#L309)
+- [`RegistryInfo`](../crates/spanda-package/src/registry.rs#L308)
 
 **impl**
 
-- [`RegistryEntry`](../crates/spanda-package/src/registry.rs#L279)
+- [`RegistryEntry`](../crates/spanda-package/src/registry.rs#L278)
 
 **fn**
 
-- [`all_import_paths`](../crates/spanda-package/src/registry.rs#L363)
+- [`all_import_paths`](../crates/spanda-package/src/registry.rs#L362)
 - [`find_registry_entry`](../crates/spanda-package/src/registry.rs#L233)
-- [`registry_info`](../crates/spanda-package/src/registry.rs#L319)
+- [`registry_info`](../crates/spanda-package/src/registry.rs#L318)
 - [`registry_package_dir`](../crates/spanda-package/src/registry.rs#L253)
 - [`search_registry`](../crates/spanda-package/src/registry.rs#L174)
 - [`search_registry_merged`](../crates/spanda-package/src/registry.rs#L201)
 
 **method**
 
-- [`RegistryEntry::safety_level`](../crates/spanda-package/src/registry.rs#L281)
+- [`RegistryEntry::safety_level`](../crates/spanda-package/src/registry.rs#L280)
 
 ##### `registry_fetch` {#spanda-package-registry-fetch}
 
@@ -5198,15 +7123,16 @@ Source: [crates/spanda-package/src/registry_fetch.rs](../crates/spanda-package/s
 
 **fn**
 
-- [`cache_registry_tarball`](../crates/spanda-package/src/registry_fetch.rs#L136)
-- [`extract_tarball`](../crates/spanda-package/src/registry_fetch.rs#L283)
-- [`fetch_registry_tarball`](../crates/spanda-package/src/registry_fetch.rs#L177)
-- [`fetch_url_to_file`](../crates/spanda-package/src/registry_fetch.rs#L221)
-- [`file_url_path`](../crates/spanda-package/src/registry_fetch.rs#L258)
-- [`global_registry_cache_dir`](../crates/spanda-package/src/registry_fetch.rs#L50)
-- [`registry_cache_dir`](../crates/spanda-package/src/registry_fetch.rs#L31)
-- [`registry_tarball_url`](../crates/spanda-package/src/registry_fetch.rs#L11)
-- [`resolve_local_tarball`](../crates/spanda-package/src/registry_fetch.rs#L94)
+- [`cache_registry_tarball`](../crates/spanda-package/src/registry_fetch.rs#L260)
+- [`extract_tarball`](../crates/spanda-package/src/registry_fetch.rs#L499)
+- [`fetch_registry_tarball`](../crates/spanda-package/src/registry_fetch.rs#L304)
+- [`fetch_url_to_file`](../crates/spanda-package/src/registry_fetch.rs#L437)
+- [`file_url_path`](../crates/spanda-package/src/registry_fetch.rs#L474)
+- [`global_registry_cache_dir`](../crates/spanda-package/src/registry_fetch.rs#L59)
+- [`local_tarball_candidates`](../crates/spanda-package/src/registry_fetch.rs#L101)
+- [`registry_cache_dir`](../crates/spanda-package/src/registry_fetch.rs#L40)
+- [`registry_tarball_url`](../crates/spanda-package/src/registry_fetch.rs#L19)
+- [`resolve_local_tarball`](../crates/spanda-package/src/registry_fetch.rs#L157)
 
 ##### `registry_remote` {#spanda-package-registry-remote}
 
@@ -5214,35 +7140,58 @@ Source: [crates/spanda-package/src/registry_remote.rs](../crates/spanda-package/
 
 **struct**
 
-- [`RegistryEntryView`](../crates/spanda-package/src/registry_remote.rs#L247)
+- [`RegistryEntryView`](../crates/spanda-package/src/registry_remote.rs#L250)
 - [`RemoteRegistryEntry`](../crates/spanda-package/src/registry_remote.rs#L14)
 
 **enum**
 
-- [`RegistryEntryLookup`](../crates/spanda-package/src/registry_remote.rs#L310)
+- [`RegistryEntryLookup`](../crates/spanda-package/src/registry_remote.rs#L312)
 
 **impl**
 
-- [`From`](../crates/spanda-package/src/registry_remote.rs#L257)
-- [`RegistryEntryLookup`](../crates/spanda-package/src/registry_remote.rs#L315)
+- [`From`](../crates/spanda-package/src/registry_remote.rs#L260)
+- [`RegistryEntryLookup`](../crates/spanda-package/src/registry_remote.rs#L317)
 
 **fn**
 
-- [`fetch_index_json`](../crates/spanda-package/src/registry_remote.rs#L51)
-- [`find_remote_entry`](../crates/spanda-package/src/registry_remote.rs#L126)
-- [`load_remote_registry`](../crates/spanda-package/src/registry_remote.rs#L88)
-- [`lookup_registry_entry`](../crates/spanda-package/src/registry_remote.rs#L285)
-- [`registry_base_url`](../crates/spanda-package/src/registry_remote.rs#L26)
-- [`registry_label`](../crates/spanda-package/src/registry_remote.rs#L362)
-- [`remote_as_static_view`](../crates/spanda-package/src/registry_remote.rs#L218)
-- [`remote_category`](../crates/spanda-package/src/registry_remote.rs#L174)
-- [`remote_safety_level`](../crates/spanda-package/src/registry_remote.rs#L193)
-- [`search_remote_registry`](../crates/spanda-package/src/registry_remote.rs#L147)
-- [`versions`](../crates/spanda-package/src/registry_remote.rs#L338)
+- [`fetch_index_json`](../crates/spanda-package/src/registry_remote.rs#L56)
+- [`find_remote_entry`](../crates/spanda-package/src/registry_remote.rs#L129)
+- [`load_remote_registry`](../crates/spanda-package/src/registry_remote.rs#L92)
+- [`lookup_registry_entry`](../crates/spanda-package/src/registry_remote.rs#L288)
+- [`registry_base_url`](../crates/spanda-package/src/registry_remote.rs#L31)
+- [`registry_label`](../crates/spanda-package/src/registry_remote.rs#L364)
+- [`remote_as_static_view`](../crates/spanda-package/src/registry_remote.rs#L221)
+- [`remote_category`](../crates/spanda-package/src/registry_remote.rs#L177)
+- [`remote_safety_level`](../crates/spanda-package/src/registry_remote.rs#L196)
+- [`search_remote_registry`](../crates/spanda-package/src/registry_remote.rs#L150)
+- [`version_sha256`](../crates/spanda-package/src/registry_remote.rs#L386)
+- [`version_signature`](../crates/spanda-package/src/registry_remote.rs#L410)
+- [`versions`](../crates/spanda-package/src/registry_remote.rs#L340)
 
 **method**
 
-- [`RegistryEntryLookup::name`](../crates/spanda-package/src/registry_remote.rs#L316)
+- [`RegistryEntryLookup::name`](../crates/spanda-package/src/registry_remote.rs#L318)
+
+##### `registry_sign` {#spanda-package-registry-sign}
+
+Source: [crates/spanda-package/src/registry_sign.rs](../crates/spanda-package/src/registry_sign.rs#L1)
+
+**struct**
+
+- [`RegistryVersionSignature`](../crates/spanda-package/src/registry_sign.rs#L10)
+
+**type**
+
+- [`RegistryVersionSignatures`](../crates/spanda-package/src/registry_sign.rs#L175)
+
+**fn**
+
+- [`registry_require_signature`](../crates/spanda-package/src/registry_sign.rs#L110)
+- [`registry_sign_key`](../crates/spanda-package/src/registry_sign.rs#L154)
+- [`registry_signature_payload`](../crates/spanda-package/src/registry_sign.rs#L16)
+- [`registry_trust_key`](../crates/spanda-package/src/registry_sign.rs#L132)
+- [`sign_registry_tarball`](../crates/spanda-package/src/registry_sign.rs#L40)
+- [`verify_registry_signature`](../crates/spanda-package/src/registry_sign.rs#L75)
 
 ##### `resolver` {#spanda-package-resolver}
 
@@ -5250,12 +7199,12 @@ Source: [crates/spanda-package/src/resolver.rs](../crates/spanda-package/src/res
 
 **struct**
 
-- [`ResolveOptions`](../crates/spanda-package/src/resolver.rs#L15)
-- [`ResolveResult`](../crates/spanda-package/src/resolver.rs#L21)
+- [`ResolveOptions`](../crates/spanda-package/src/resolver.rs#L16)
+- [`ResolveResult`](../crates/spanda-package/src/resolver.rs#L22)
 
 **fn**
 
-- [`resolve_dependencies`](../crates/spanda-package/src/resolver.rs#L26)
+- [`resolve_dependencies`](../crates/spanda-package/src/resolver.rs#L27)
 
 ##### `root` {#spanda-package-root}
 
@@ -5270,22 +7219,28 @@ Source: [crates/spanda-package/src/lib.rs](../crates/spanda-package/src/lib.rs#L
 - [`error`](../crates/spanda-package/src/lib.rs#L10)
 - [`hardware_req`](../crates/spanda-package/src/lib.rs#L11)
 - [`import`](../crates/spanda-package/src/lib.rs#L12)
-- [`lockfile`](../crates/spanda-package/src/lib.rs#L13)
-- [`manifest`](../crates/spanda-package/src/lib.rs#L14)
-- [`official`](../crates/spanda-package/src/lib.rs#L15)
-- [`project`](../crates/spanda-package/src/lib.rs#L16)
-- [`publish`](../crates/spanda-package/src/lib.rs#L17)
-- [`registry`](../crates/spanda-package/src/lib.rs#L18)
-- [`registry_fetch`](../crates/spanda-package/src/lib.rs#L19)
-- [`registry_remote`](../crates/spanda-package/src/lib.rs#L20)
-- [`resolver`](../crates/spanda-package/src/lib.rs#L21)
-- [`safety`](../crates/spanda-package/src/lib.rs#L22)
-- [`validation`](../crates/spanda-package/src/lib.rs#L23)
-- [`vendor`](../crates/spanda-package/src/lib.rs#L24)
+- [`integrity`](../crates/spanda-package/src/lib.rs#L13)
+- [`lockfile`](../crates/spanda-package/src/lib.rs#L14)
+- [`manifest`](../crates/spanda-package/src/lib.rs#L15)
+- [`official`](../crates/spanda-package/src/lib.rs#L16)
+- [`project`](../crates/spanda-package/src/lib.rs#L17)
+- [`provenance_gate`](../crates/spanda-package/src/lib.rs#L18)
+- [`publish`](../crates/spanda-package/src/lib.rs#L19)
+- [`registry`](../crates/spanda-package/src/lib.rs#L20)
+- [`registry_fetch`](../crates/spanda-package/src/lib.rs#L21)
+- [`registry_remote`](../crates/spanda-package/src/lib.rs#L22)
+- [`registry_sign`](../crates/spanda-package/src/lib.rs#L23)
+- [`resolver`](../crates/spanda-package/src/lib.rs#L24)
+- [`safety`](../crates/spanda-package/src/lib.rs#L25)
+- [`tar_extract`](../crates/spanda-package/src/lib.rs#L26)
+- [`trust`](../crates/spanda-package/src/lib.rs#L27)
+- [`validation`](../crates/spanda-package/src/lib.rs#L28)
+- [`vendor`](../crates/spanda-package/src/lib.rs#L29)
 
 **export**
 
-- [`category::PackageCategory`](../crates/spanda-package/src/lib.rs#L34)
+- [`category::PackageCategory`](../crates/spanda-package/src/lib.rs#L39)
+- [`tar_extract::extract_tarball_safe`](../crates/spanda-package/src/lib.rs#L91)
 
 ##### `safety` {#spanda-package-safety}
 
@@ -5303,19 +7258,27 @@ Source: [crates/spanda-package/src/safety.rs](../crates/spanda-package/src/safet
 
 - [`SafetyLevel`](../crates/spanda-package/src/safety.rs#L17)
 - [`SafetyLevel`](../crates/spanda-package/src/safety.rs#L106)
-- [`SafetyMetadata`](../crates/spanda-package/src/safety.rs#L165)
-- [`SafetyMetadata`](../crates/spanda-package/src/safety.rs#L190)
+- [`SafetyMetadata`](../crates/spanda-package/src/safety.rs#L164)
+- [`SafetyMetadata`](../crates/spanda-package/src/safety.rs#L189)
 
 **fn**
 
-- [`as_str`](../crates/spanda-package/src/safety.rs#L42)
+- [`as_str`](../crates/spanda-package/src/safety.rs#L41)
 - [`can_control_actuators_default`](../crates/spanda-package/src/safety.rs#L66)
 - [`requires_review_default`](../crates/spanda-package/src/safety.rs#L86)
 
 **method**
 
 - [`SafetyLevel::all`](../crates/spanda-package/src/safety.rs#L18)
-- [`SafetyMetadata::normalize`](../crates/spanda-package/src/safety.rs#L191)
+- [`SafetyMetadata::normalize`](../crates/spanda-package/src/safety.rs#L190)
+
+##### `tar_extract` {#spanda-package-tar-extract}
+
+Source: [crates/spanda-package/src/tar_extract.rs](../crates/spanda-package/src/tar_extract.rs#L1)
+
+**fn**
+
+- [`extract_tarball_safe`](../crates/spanda-package/src/tar_extract.rs#L10)
 
 ##### `testing` {#spanda-package-testing}
 
@@ -5325,13 +7288,26 @@ Source: [crates/spanda-package/src/testing.rs](../crates/spanda-package/src/test
 
 - [`env_lock`](../crates/spanda-package/src/testing.rs#L8)
 
+##### `trust` {#spanda-package-trust}
+
+Source: [crates/spanda-package/src/trust.rs](../crates/spanda-package/src/trust.rs#L1)
+
+**struct**
+
+- [`TrustFactor`](../crates/spanda-package/src/trust.rs#L17)
+- [`TrustScoreReport`](../crates/spanda-package/src/trust.rs#L27)
+
+**fn**
+
+- [`evaluate_package_trust`](../crates/spanda-package/src/trust.rs#L39)
+
 ##### `validation` {#spanda-package-validation}
 
 Source: [crates/spanda-package/src/validation.rs](../crates/spanda-package/src/validation.rs#L1)
 
 **struct**
 
-- [`ApplicationPermissions`](../crates/spanda-package/src/validation.rs#L13)
+- [`ApplicationPermissions`](../crates/spanda-package/src/validation.rs#L14)
 - [`ValidationIssue`](../crates/spanda-package/src/validation.rs#L59)
 - [`ValidationReport`](../crates/spanda-package/src/validation.rs#L66)
 
@@ -5341,18 +7317,19 @@ Source: [crates/spanda-package/src/validation.rs](../crates/spanda-package/src/v
 
 **impl**
 
-- [`ApplicationPermissions`](../crates/spanda-package/src/validation.rs#L20)
+- [`ApplicationPermissions`](../crates/spanda-package/src/validation.rs#L21)
 - [`ValidationReport`](../crates/spanda-package/src/validation.rs#L71)
 
 **fn**
 
 - [`push_error`](../crates/spanda-package/src/validation.rs#L94)
-- [`push_warning`](../crates/spanda-package/src/validation.rs#L119)
-- [`validate_package`](../crates/spanda-package/src/validation.rs#L148)
+- [`push_warning`](../crates/spanda-package/src/validation.rs#L120)
+- [`validate_package`](../crates/spanda-package/src/validation.rs#L150)
+- [`validate_package_in`](../crates/spanda-package/src/validation.rs#L158)
 
 **method**
 
-- [`ApplicationPermissions::permissive`](../crates/spanda-package/src/validation.rs#L21)
+- [`ApplicationPermissions::permissive`](../crates/spanda-package/src/validation.rs#L22)
 - [`ValidationReport::ok`](../crates/spanda-package/src/validation.rs#L72)
 
 ##### `vendor` {#spanda-package-vendor}
@@ -5361,11 +7338,11 @@ Source: [crates/spanda-package/src/vendor.rs](../crates/spanda-package/src/vendo
 
 **struct**
 
-- [`VendorReport`](../crates/spanda-package/src/vendor.rs#L13)
+- [`VendorReport`](../crates/spanda-package/src/vendor.rs#L14)
 
 **fn**
 
-- [`vendor_dependencies`](../crates/spanda-package/src/vendor.rs#L19)
+- [`vendor_dependencies`](../crates/spanda-package/src/vendor.rs#L20)
 
 ### Security and audit {#group-securityandaudit}
 
@@ -5378,14 +7355,20 @@ Crate root: [`crates/spanda-security`](../crates/spanda-security/)
 - [capability](#spanda-security-capability)
 - [encrypted](#spanda-security-encrypted)
 - [error](#spanda-security-error)
+- [human_health](#spanda-security-human-health)
 - [identity](#spanda-security-identity)
 - [permissions](#spanda-security-permissions)
 - [policy](#spanda-security-policy)
+- [rate_limit](#spanda-security-rate-limit)
+- [rbac](#spanda-security-rbac)
 - [root](#spanda-security-root)
 - [runtime](#spanda-security-runtime)
+- [runtime_bridge](#spanda-security-runtime-bridge)
+- [secret_vault](#spanda-security-secret-vault)
 - [secrets](#spanda-security-secrets)
 - [secure_comm](#spanda-security-secure-comm)
 - [signed](#spanda-security-signed)
+- [tenant](#spanda-security-tenant)
 - [trust](#spanda-security-trust)
 - [trust_boundary](#spanda-security-trust-boundary)
 - [validate](#spanda-security-validate)
@@ -5397,30 +7380,30 @@ Source: [crates/spanda-security/src/capability.rs](../crates/spanda-security/src
 
 **struct**
 
-- [`CapabilitySet`](../crates/spanda-security/src/capability.rs#L111)
-- [`Permission`](../crates/spanda-security/src/capability.rs#L82)
+- [`CapabilitySet`](../crates/spanda-security/src/capability.rs#L132)
+- [`Permission`](../crates/spanda-security/src/capability.rs#L103)
 
 **impl**
 
-- [`CapabilitySet`](../crates/spanda-security/src/capability.rs#L116)
-- [`Permission`](../crates/spanda-security/src/capability.rs#L86)
+- [`CapabilitySet`](../crates/spanda-security/src/capability.rs#L137)
+- [`Permission`](../crates/spanda-security/src/capability.rs#L107)
 
 **fn**
 
-- [`capability_for_operation`](../crates/spanda-security/src/capability.rs#L268)
-- [`grant`](../crates/spanda-security/src/capability.rs#L161)
-- [`grant_all`](../crates/spanda-security/src/capability.rs#L181)
-- [`granted`](../crates/spanda-security/src/capability.rs#L247)
-- [`has`](../crates/spanda-security/src/capability.rs#L203)
-- [`is_known_capability`](../crates/spanda-security/src/capability.rs#L62)
+- [`capability_for_operation`](../crates/spanda-security/src/capability.rs#L289)
+- [`grant`](../crates/spanda-security/src/capability.rs#L180)
+- [`grant_all`](../crates/spanda-security/src/capability.rs#L200)
+- [`granted`](../crates/spanda-security/src/capability.rs#L268)
+- [`has`](../crates/spanda-security/src/capability.rs#L222)
+- [`is_known_capability`](../crates/spanda-security/src/capability.rs#L82)
 - [`known_capabilities`](../crates/spanda-security/src/capability.rs#L8)
-- [`permissive`](../crates/spanda-security/src/capability.rs#L136)
-- [`require`](../crates/spanda-security/src/capability.rs#L223)
+- [`permissive`](../crates/spanda-security/src/capability.rs#L156)
+- [`require`](../crates/spanda-security/src/capability.rs#L243)
 
 **method**
 
-- [`CapabilitySet::new`](../crates/spanda-security/src/capability.rs#L117)
-- [`Permission::new`](../crates/spanda-security/src/capability.rs#L87)
+- [`CapabilitySet::new`](../crates/spanda-security/src/capability.rs#L138)
+- [`Permission::new`](../crates/spanda-security/src/capability.rs#L108)
 
 ##### `encrypted` {#spanda-security-encrypted}
 
@@ -5434,23 +7417,23 @@ Source: [crates/spanda-security/src/encrypted.rs](../crates/spanda-security/src/
 - [`PublicKey`](../crates/spanda-security/src/encrypted.rs#L17)
 - [`SessionKey`](../crates/spanda-security/src/encrypted.rs#L11)
 - [`TrustedSource`](../crates/spanda-security/src/encrypted.rs#L35)
-- [`VerifiedMessage`](../crates/spanda-security/src/encrypted.rs#L77)
+- [`VerifiedMessage`](../crates/spanda-security/src/encrypted.rs#L124)
 
 **impl**
 
 - [`Deserialize`](../crates/spanda-security/src/encrypted.rs#L48)
-- [`Deserialize`](../crates/spanda-security/src/encrypted.rs#L83)
+- [`Deserialize`](../crates/spanda-security/src/encrypted.rs#L130)
 
 **fn**
 
-- [`ciphertext`](../crates/spanda-security/src/encrypted.rs#L70)
-- [`decrypt`](../crates/spanda-security/src/encrypted.rs#L60)
-- [`verify_and_open`](../crates/spanda-security/src/encrypted.rs#L91)
+- [`ciphertext`](../crates/spanda-security/src/encrypted.rs#L102)
+- [`decrypt`](../crates/spanda-security/src/encrypted.rs#L77)
+- [`verify_and_open`](../crates/spanda-security/src/encrypted.rs#L153)
 
 **method**
 
 - [`Deserialize::encrypt`](../crates/spanda-security/src/encrypted.rs#L49)
-- [`Deserialize::from_signed`](../crates/spanda-security/src/encrypted.rs#L84)
+- [`Deserialize::from_signed`](../crates/spanda-security/src/encrypted.rs#L131)
 
 ##### `error` {#spanda-security-error}
 
@@ -5474,15 +7457,15 @@ Source: [crates/spanda-security/src/identity.rs](../crates/spanda-security/src/i
 
 **impl**
 
-- [`From`](../crates/spanda-security/src/identity.rs#L116)
+- [`From`](../crates/spanda-security/src/identity.rs#L119)
 - [`RobotIdentity`](../crates/spanda-security/src/identity.rs#L14)
 
 **fn**
 
-- [`id`](../crates/spanda-security/src/identity.rs#L58)
-- [`public_key`](../crates/spanda-security/src/identity.rs#L77)
-- [`signing_key`](../crates/spanda-security/src/identity.rs#L96)
-- [`with_trust`](../crates/spanda-security/src/identity.rs#L38)
+- [`id`](../crates/spanda-security/src/identity.rs#L61)
+- [`public_key`](../crates/spanda-security/src/identity.rs#L80)
+- [`signing_key`](../crates/spanda-security/src/identity.rs#L99)
+- [`with_trust`](../crates/spanda-security/src/identity.rs#L39)
 
 **method**
 
@@ -5502,8 +7485,8 @@ Source: [crates/spanda-security/src/permissions.rs](../crates/spanda-security/sr
 
 **fn**
 
-- [`from_capabilities`](../crates/spanda-security/src/permissions.rs#L53)
-- [`permissive`](../crates/spanda-security/src/permissions.rs#L32)
+- [`from_capabilities`](../crates/spanda-security/src/permissions.rs#L51)
+- [`permissive`](../crates/spanda-security/src/permissions.rs#L31)
 
 **method**
 
@@ -5515,29 +7498,89 @@ Source: [crates/spanda-security/src/policy.rs](../crates/spanda-security/src/pol
 
 **struct**
 
-- [`BusSecurityConfig`](../crates/spanda-security/src/policy.rs#L101)
-- [`SecureCommPolicy`](../crates/spanda-security/src/policy.rs#L75)
+- [`BusSecurityConfig`](../crates/spanda-security/src/policy.rs#L177)
+- [`SecureCommPolicy`](../crates/spanda-security/src/policy.rs#L120)
 
 **enum**
 
-- [`AuthenticationMode`](../crates/spanda-security/src/policy.rs#L32)
+- [`AuthenticationMode`](../crates/spanda-security/src/policy.rs#L47)
 - [`EncryptionMode`](../crates/spanda-security/src/policy.rs#L9)
-- [`IntegrityMode`](../crates/spanda-security/src/policy.rs#L55)
+- [`IntegrityMode`](../crates/spanda-security/src/policy.rs#L85)
 
 **impl**
 
-- [`AuthenticationMode`](../crates/spanda-security/src/policy.rs#L39)
+- [`AuthenticationMode`](../crates/spanda-security/src/policy.rs#L54)
 - [`EncryptionMode`](../crates/spanda-security/src/policy.rs#L16)
-- [`IntegrityMode`](../crates/spanda-security/src/policy.rs#L61)
-- [`SecureCommPolicy`](../crates/spanda-security/src/policy.rs#L81)
+- [`IntegrityMode`](../crates/spanda-security/src/policy.rs#L91)
+- [`SecureCommPolicy`](../crates/spanda-security/src/policy.rs#L126)
 
 **fn**
 
-- [`merge_bus`](../crates/spanda-security/src/policy.rs#L90)
+- [`merge_bus`](../crates/spanda-security/src/policy.rs#L149)
 
 **method**
 
-- [`SecureCommPolicy::dev_default`](../crates/spanda-security/src/policy.rs#L82)
+- [`SecureCommPolicy::dev_default`](../crates/spanda-security/src/policy.rs#L127)
+
+##### `rate_limit` {#spanda-security-rate-limit}
+
+Source: [crates/spanda-security/src/rate_limit.rs](../crates/spanda-security/src/rate_limit.rs#L1)
+
+**struct**
+
+- [`RateLimiter`](../crates/spanda-security/src/rate_limit.rs#L15)
+
+**impl**
+
+- [`RateLimiter`](../crates/spanda-security/src/rate_limit.rs#L21)
+
+**fn**
+
+- [`check`](../crates/spanda-security/src/rate_limit.rs#L52)
+- [`is_enabled`](../crates/spanda-security/src/rate_limit.rs#L43)
+- [`limit_per_minute`](../crates/spanda-security/src/rate_limit.rs#L47)
+- [`with_limit`](../crates/spanda-security/src/rate_limit.rs#L35)
+
+**method**
+
+- [`RateLimiter::from_env`](../crates/spanda-security/src/rate_limit.rs#L22)
+
+##### `rbac` {#spanda-security-rbac}
+
+Source: [crates/spanda-security/src/rbac.rs](../crates/spanda-security/src/rbac.rs#L1)
+
+**struct**
+
+- [`ApiKeyRecord`](../crates/spanda-security/src/rbac.rs#L63)
+- [`ApiKeyStore`](../crates/spanda-security/src/rbac.rs#L75)
+- [`RbacContext`](../crates/spanda-security/src/rbac.rs#L50)
+
+**enum**
+
+- [`RbacAction`](../crates/spanda-security/src/rbac.rs#L37)
+- [`Role`](../crates/spanda-security/src/rbac.rs#L9)
+
+**impl**
+
+- [`ApiKeyStore`](../crates/spanda-security/src/rbac.rs#L79)
+- [`Role`](../crates/spanda-security/src/rbac.rs#L19)
+
+**fn**
+
+- [`authenticate`](../crates/spanda-security/src/rbac.rs#L111)
+- [`authorize`](../crates/spanda-security/src/rbac.rs#L143)
+- [`check`](../crates/spanda-security/src/rbac.rs#L158)
+- [`check_scoped`](../crates/spanda-security/src/rbac.rs#L130)
+- [`check_tenant`](../crates/spanda-security/src/rbac.rs#L126)
+- [`from_env`](../crates/spanda-security/src/rbac.rs#L84)
+- [`from_env_and_file`](../crates/spanda-security/src/rbac.rs#L99)
+- [`generate_api_key_token`](../crates/spanda-security/src/rbac.rs#L200)
+- [`permission_matrix`](../crates/spanda-security/src/rbac.rs#L167)
+
+**method**
+
+- [`ApiKeyStore::new`](../crates/spanda-security/src/rbac.rs#L80)
+- [`Role::parse`](../crates/spanda-security/src/rbac.rs#L20)
 
 ##### `root` {#spanda-security-root}
 
@@ -5548,24 +7591,32 @@ Source: [crates/spanda-security/src/lib.rs](../crates/spanda-security/src/lib.rs
 - [`capability`](../crates/spanda-security/src/lib.rs#L6)
 - [`encrypted`](../crates/spanda-security/src/lib.rs#L7)
 - [`error`](../crates/spanda-security/src/lib.rs#L8)
-- [`identity`](../crates/spanda-security/src/lib.rs#L9)
-- [`permissions`](../crates/spanda-security/src/lib.rs#L10)
-- [`policy`](../crates/spanda-security/src/lib.rs#L11)
-- [`runtime`](../crates/spanda-security/src/lib.rs#L12)
-- [`secrets`](../crates/spanda-security/src/lib.rs#L13)
-- [`secure_comm`](../crates/spanda-security/src/lib.rs#L14)
-- [`signed`](../crates/spanda-security/src/lib.rs#L15)
-- [`trust`](../crates/spanda-security/src/lib.rs#L16)
-- [`trust_boundary`](../crates/spanda-security/src/lib.rs#L17)
-- [`validate`](../crates/spanda-security/src/lib.rs#L18)
-- [`wire_crypto`](../crates/spanda-security/src/lib.rs#L19)
+- [`human_health`](../crates/spanda-security/src/lib.rs#L9)
+- [`identity`](../crates/spanda-security/src/lib.rs#L10)
+- [`permissions`](../crates/spanda-security/src/lib.rs#L11)
+- [`policy`](../crates/spanda-security/src/lib.rs#L12)
+- [`rate_limit`](../crates/spanda-security/src/lib.rs#L13)
+- [`rbac`](../crates/spanda-security/src/lib.rs#L14)
+- [`runtime`](../crates/spanda-security/src/lib.rs#L15)
+- [`runtime_bridge`](../crates/spanda-security/src/lib.rs#L16)
+- [`secret_vault`](../crates/spanda-security/src/lib.rs#L17)
+- [`secrets`](../crates/spanda-security/src/lib.rs#L18)
+- [`secure_comm`](../crates/spanda-security/src/lib.rs#L19)
+- [`signed`](../crates/spanda-security/src/lib.rs#L20)
+- [`tenant`](../crates/spanda-security/src/lib.rs#L21)
+- [`trust`](../crates/spanda-security/src/lib.rs#L22)
+- [`trust_boundary`](../crates/spanda-security/src/lib.rs#L23)
+- [`validate`](../crates/spanda-security/src/lib.rs#L24)
+- [`wire_crypto`](../crates/spanda-security/src/lib.rs#L25)
 
 **export**
 
-- [`identity::RobotIdentity`](../crates/spanda-security/src/lib.rs#L29)
-- [`permissions::PackagePermissions`](../crates/spanda-security/src/lib.rs#L30)
-- [`trust::TrustLevel`](../crates/spanda-security/src/lib.rs#L38)
-- [`wire_crypto::WireCryptoSession`](../crates/spanda-security/src/lib.rs#L40)
+- [`identity::RobotIdentity`](../crates/spanda-security/src/lib.rs#L36)
+- [`permissions::PackagePermissions`](../crates/spanda-security/src/lib.rs#L37)
+- [`rate_limit::RateLimiter`](../crates/spanda-security/src/lib.rs#L41)
+- [`runtime_bridge::SecurityBackedRuntime`](../crates/spanda-security/src/lib.rs#L47)
+- [`trust::TrustLevel`](../crates/spanda-security/src/lib.rs#L53)
+- [`wire_crypto::WireCryptoSession`](../crates/spanda-security/src/lib.rs#L59)
 
 ##### `runtime` {#spanda-security-runtime}
 
@@ -5574,41 +7625,91 @@ Source: [crates/spanda-security/src/runtime.rs](../crates/spanda-security/src/ru
 **struct**
 
 - [`SecurityContext`](../crates/spanda-security/src/runtime.rs#L19)
-- [`SecuritySnapshot`](../crates/spanda-security/src/runtime.rs#L512)
+- [`SecuritySnapshot`](../crates/spanda-security/src/runtime.rs#L755)
 
 **impl**
 
 - [`SecurityContext`](../crates/spanda-security/src/runtime.rs#L38)
 - [`SecurityContext`](../crates/spanda-security/src/runtime.rs#L58)
-- [`SecurityContext`](../crates/spanda-security/src/runtime.rs#L520)
+- [`SecurityContext`](../crates/spanda-security/src/runtime.rs#L763)
 
 **fn**
 
-- [`audit_event`](../crates/spanda-security/src/runtime.rs#L474)
-- [`audit_security_event`](../crates/spanda-security/src/runtime.rs#L464)
-- [`authorize_publish`](../crates/spanda-security/src/runtime.rs#L363)
-- [`authorize_subscribe`](../crates/spanda-security/src/runtime.rs#L332)
-- [`check_security_faults`](../crates/spanda-security/src/runtime.rs#L377)
-- [`configure_wire_session`](../crates/spanda-security/src/runtime.rs#L420)
-- [`enable_strict_permissions`](../crates/spanda-security/src/runtime.rs#L95)
-- [`enforce_trust_boundary`](../crates/spanda-security/src/runtime.rs#L237)
-- [`grant_if_not_strict`](../crates/spanda-security/src/runtime.rs#L114)
-- [`inject_security_fault`](../crates/spanda-security/src/runtime.rs#L359)
-- [`prepare_publish`](../crates/spanda-security/src/runtime.rs#L444)
-- [`register_secure_endpoint`](../crates/spanda-security/src/runtime.rs#L203)
-- [`require_operation`](../crates/spanda-security/src/runtime.rs#L178)
-- [`set_identity`](../crates/spanda-security/src/runtime.rs#L157)
+- [`audit_event`](../crates/spanda-security/src/runtime.rs#L714)
+- [`audit_security_event`](../crates/spanda-security/src/runtime.rs#L683)
+- [`authorize_publish`](../crates/spanda-security/src/runtime.rs#L467)
+- [`authorize_subscribe`](../crates/spanda-security/src/runtime.rs#L378)
+- [`check_security_faults`](../crates/spanda-security/src/runtime.rs#L500)
+- [`configure_wire_session`](../crates/spanda-security/src/runtime.rs#L562)
+- [`enable_strict_permissions`](../crates/spanda-security/src/runtime.rs#L94)
+- [`enforce_trust_boundary`](../crates/spanda-security/src/runtime.rs#L259)
+- [`grant_if_not_strict`](../crates/spanda-security/src/runtime.rs#L112)
+- [`inject_security_fault`](../crates/spanda-security/src/runtime.rs#L447)
+- [`prepare_publish`](../crates/spanda-security/src/runtime.rs#L640)
+- [`register_secure_endpoint`](../crates/spanda-security/src/runtime.rs#L202)
+- [`require_operation`](../crates/spanda-security/src/runtime.rs#L177)
+- [`set_identity`](../crates/spanda-security/src/runtime.rs#L156)
 - [`set_transport_context`](../crates/spanda-security/src/runtime.rs#L224)
-- [`sign_outbound`](../crates/spanda-security/src/runtime.rs#L272)
-- [`verify_inbound`](../crates/spanda-security/src/runtime.rs#L298)
-- [`verify_inbound_message`](../crates/spanda-security/src/runtime.rs#L344)
-- [`wire_session_material`](../crates/spanda-security/src/runtime.rs#L430)
-- [`with_permissions`](../crates/spanda-security/src/runtime.rs#L136)
+- [`sign_outbound`](../crates/spanda-security/src/runtime.rs#L313)
+- [`verify_inbound`](../crates/spanda-security/src/runtime.rs#L341)
+- [`verify_inbound_message`](../crates/spanda-security/src/runtime.rs#L407)
+- [`wire_session_material`](../crates/spanda-security/src/runtime.rs#L602)
+- [`with_permissions`](../crates/spanda-security/src/runtime.rs#L134)
 
 **method**
 
 - [`SecurityContext::new`](../crates/spanda-security/src/runtime.rs#L59)
-- [`SecurityContext::snapshot`](../crates/spanda-security/src/runtime.rs#L521)
+- [`SecurityContext::snapshot`](../crates/spanda-security/src/runtime.rs#L764)
+
+##### `runtime_bridge` {#spanda-security-runtime-bridge}
+
+Source: [crates/spanda-security/src/runtime_bridge.rs](../crates/spanda-security/src/runtime_bridge.rs#L1)
+
+**struct**
+
+- [`SecurityBackedRuntime`](../crates/spanda-security/src/runtime_bridge.rs#L23)
+
+**impl**
+
+- [`SecurityBackedRuntime`](../crates/spanda-security/src/runtime_bridge.rs#L27)
+- [`SecurityBackedRuntime`](../crates/spanda-security/src/runtime_bridge.rs#L35)
+- [`SecurityBackedRuntime`](../crates/spanda-security/src/runtime_bridge.rs#L133)
+
+**method**
+
+- [`SecurityBackedRuntime::new`](../crates/spanda-security/src/runtime_bridge.rs#L36)
+
+##### `secret_vault` {#spanda-security-secret-vault}
+
+Source: [crates/spanda-security/src/secret_vault.rs](../crates/spanda-security/src/secret_vault.rs#L1)
+
+**struct**
+
+- [`ManagedSecretVault`](../crates/spanda-security/src/secret_vault.rs#L58)
+- [`SecretMetadata`](../crates/spanda-security/src/secret_vault.rs#L10)
+
+**trait**
+
+- [`SecretVaultBackend`](../crates/spanda-security/src/secret_vault.rs#L45)
+
+**impl**
+
+- [`ManagedSecretVault`](../crates/spanda-security/src/secret_vault.rs#L63)
+- [`SecretMetadata`](../crates/spanda-security/src/secret_vault.rs#L23)
+
+**fn**
+
+- [`is_expired`](../crates/spanda-security/src/secret_vault.rs#L35)
+- [`list_metadata`](../crates/spanda-security/src/secret_vault.rs#L87)
+- [`needs_rotation`](../crates/spanda-security/src/secret_vault.rs#L39)
+- [`register`](../crates/spanda-security/src/secret_vault.rs#L68)
+- [`resolve`](../crates/spanda-security/src/secret_vault.rs#L74)
+- [`rotate_literal`](../crates/spanda-security/src/secret_vault.rs#L93)
+
+**method**
+
+- [`ManagedSecretVault::new`](../crates/spanda-security/src/secret_vault.rs#L64)
+- [`SecretMetadata::new`](../crates/spanda-security/src/secret_vault.rs#L24)
 
 ##### `secrets` {#spanda-security-secrets}
 
@@ -5630,10 +7731,10 @@ Source: [crates/spanda-security/src/secrets.rs](../crates/spanda-security/src/se
 
 **fn**
 
-- [`get`](../crates/spanda-security/src/secrets.rs#L117)
-- [`names`](../crates/spanda-security/src/secrets.rs#L159)
+- [`get`](../crates/spanda-security/src/secrets.rs#L116)
+- [`names`](../crates/spanda-security/src/secrets.rs#L160)
 - [`redacted_label`](../crates/spanda-security/src/secrets.rs#L51)
-- [`register`](../crates/spanda-security/src/secrets.rs#L97)
+- [`register`](../crates/spanda-security/src/secrets.rs#L96)
 - [`resolve`](../crates/spanda-security/src/secrets.rs#L139)
 
 **method**
@@ -5647,33 +7748,33 @@ Source: [crates/spanda-security/src/secure_comm.rs](../crates/spanda-security/sr
 
 **struct**
 
-- [`SecureEndpointRegistry`](../crates/spanda-security/src/secure_comm.rs#L294)
+- [`SecureEndpointRegistry`](../crates/spanda-security/src/secure_comm.rs#L357)
 - [`SecurePolicy`](../crates/spanda-security/src/secure_comm.rs#L14)
 
 **impl**
 
-- [`SecureEndpointRegistry`](../crates/spanda-security/src/secure_comm.rs#L298)
+- [`SecureEndpointRegistry`](../crates/spanda-security/src/secure_comm.rs#L361)
 - [`SecurePolicy`](../crates/spanda-security/src/secure_comm.rs#L25)
 
 **fn**
 
-- [`check_capabilities`](../crates/spanda-security/src/secure_comm.rs#L114)
-- [`check_trust`](../crates/spanda-security/src/secure_comm.rs#L83)
-- [`check_trusted_source`](../crates/spanda-security/src/secure_comm.rs#L275)
-- [`encrypt_payload`](../crates/spanda-security/src/secure_comm.rs#L195)
-- [`encrypted_signed`](../crates/spanda-security/src/secure_comm.rs#L73)
-- [`get`](../crates/spanda-security/src/secure_comm.rs#L339)
-- [`is_empty`](../crates/spanda-security/src/secure_comm.rs#L398)
-- [`len`](../crates/spanda-security/src/secure_comm.rs#L379)
-- [`policy_or_open`](../crates/spanda-security/src/secure_comm.rs#L359)
-- [`prepare_outbound`](../crates/spanda-security/src/secure_comm.rs#L137)
-- [`register`](../crates/spanda-security/src/secure_comm.rs#L318)
-- [`signed_trusted`](../crates/spanda-security/src/secure_comm.rs#L45)
-- [`verify_inbound`](../crates/spanda-security/src/secure_comm.rs#L211)
+- [`check_capabilities`](../crates/spanda-security/src/secure_comm.rs#L126)
+- [`check_trust`](../crates/spanda-security/src/secure_comm.rs#L95)
+- [`check_trusted_source`](../crates/spanda-security/src/secure_comm.rs#L321)
+- [`encrypt_payload`](../crates/spanda-security/src/secure_comm.rs#L213)
+- [`encrypted_signed`](../crates/spanda-security/src/secure_comm.rs#L71)
+- [`get`](../crates/spanda-security/src/secure_comm.rs#L402)
+- [`is_empty`](../crates/spanda-security/src/secure_comm.rs#L463)
+- [`len`](../crates/spanda-security/src/secure_comm.rs#L444)
+- [`policy_or_open`](../crates/spanda-security/src/secure_comm.rs#L423)
+- [`prepare_outbound`](../crates/spanda-security/src/secure_comm.rs#L150)
+- [`register`](../crates/spanda-security/src/secure_comm.rs#L380)
+- [`signed_trusted`](../crates/spanda-security/src/secure_comm.rs#L44)
+- [`verify_inbound`](../crates/spanda-security/src/secure_comm.rs#L250)
 
 **method**
 
-- [`SecureEndpointRegistry::new`](../crates/spanda-security/src/secure_comm.rs#L299)
+- [`SecureEndpointRegistry::new`](../crates/spanda-security/src/secure_comm.rs#L362)
 - [`SecurePolicy::open`](../crates/spanda-security/src/secure_comm.rs#L26)
 
 ##### `signed` {#spanda-security-signed}
@@ -5691,12 +7792,21 @@ Source: [crates/spanda-security/src/signed.rs](../crates/spanda-security/src/sig
 
 **fn**
 
-- [`to_json`](../crates/spanda-security/src/signed.rs#L81)
-- [`verify`](../crates/spanda-security/src/signed.rs#L54)
+- [`to_json`](../crates/spanda-security/src/signed.rs#L83)
+- [`verify`](../crates/spanda-security/src/signed.rs#L55)
 
 **method**
 
 - [`SignedMessage::sign`](../crates/spanda-security/src/signed.rs#L24)
+
+##### `tenant` {#spanda-security-tenant}
+
+Source: [crates/spanda-security/src/tenant.rs](../crates/spanda-security/src/tenant.rs#L1)
+
+**fn**
+
+- [`default_tenant_id`](../crates/spanda-security/src/tenant.rs#L5)
+- [`tenant_matches`](../crates/spanda-security/src/tenant.rs#L13)
 
 ##### `trust` {#spanda-security-trust}
 
@@ -5709,13 +7819,13 @@ Source: [crates/spanda-security/src/trust.rs](../crates/spanda-security/src/trus
 **impl**
 
 - [`TrustLevel`](../crates/spanda-security/src/trust.rs#L18)
-- [`TrustLevel`](../crates/spanda-security/src/trust.rs#L111)
+- [`TrustLevel`](../crates/spanda-security/src/trust.rs#L108)
 
 **fn**
 
-- [`as_str`](../crates/spanda-security/src/trust.rs#L67)
-- [`rank`](../crates/spanda-security/src/trust.rs#L43)
-- [`satisfies`](../crates/spanda-security/src/trust.rs#L90)
+- [`as_str`](../crates/spanda-security/src/trust.rs#L65)
+- [`rank`](../crates/spanda-security/src/trust.rs#L42)
+- [`satisfies`](../crates/spanda-security/src/trust.rs#L88)
 
 **method**
 
@@ -5727,7 +7837,7 @@ Source: [crates/spanda-security/src/trust_boundary.rs](../crates/spanda-security
 
 **struct**
 
-- [`TrustBoundaryRegistry`](../crates/spanda-security/src/trust_boundary.rs#L71)
+- [`TrustBoundaryRegistry`](../crates/spanda-security/src/trust_boundary.rs#L143)
 
 **enum**
 
@@ -5736,24 +7846,24 @@ Source: [crates/spanda-security/src/trust_boundary.rs](../crates/spanda-security
 **impl**
 
 - [`TrustBoundaryKind`](../crates/spanda-security/src/trust_boundary.rs#L19)
-- [`TrustBoundaryKind`](../crates/spanda-security/src/trust_boundary.rs#L44)
-- [`TrustBoundaryKind`](../crates/spanda-security/src/trust_boundary.rs#L130)
-- [`TrustBoundaryRegistry`](../crates/spanda-security/src/trust_boundary.rs#L75)
+- [`TrustBoundaryKind`](../crates/spanda-security/src/trust_boundary.rs#L74)
+- [`TrustBoundaryKind`](../crates/spanda-security/src/trust_boundary.rs#L274)
+- [`TrustBoundaryRegistry`](../crates/spanda-security/src/trust_boundary.rs#L147)
 
 **fn**
 
-- [`boundary_for_transport_name`](../crates/spanda-security/src/trust_boundary.rs#L34)
-- [`contains`](../crates/spanda-security/src/trust_boundary.rs#L84)
-- [`declare`](../crates/spanda-security/src/trust_boundary.rs#L80)
-- [`required_authentication`](../crates/spanda-security/src/trust_boundary.rs#L54)
-- [`requires_verified_actuator`](../crates/spanda-security/src/trust_boundary.rs#L61)
-- [`validate_channel`](../crates/spanda-security/src/trust_boundary.rs#L88)
+- [`boundary_for_transport_name`](../crates/spanda-security/src/trust_boundary.rs#L49)
+- [`contains`](../crates/spanda-security/src/trust_boundary.rs#L186)
+- [`declare`](../crates/spanda-security/src/trust_boundary.rs#L166)
+- [`required_authentication`](../crates/spanda-security/src/trust_boundary.rs#L98)
+- [`requires_verified_actuator`](../crates/spanda-security/src/trust_boundary.rs#L119)
+- [`validate_channel`](../crates/spanda-security/src/trust_boundary.rs#L207)
 
 **method**
 
-- [`TrustBoundaryKind::as_str`](../crates/spanda-security/src/trust_boundary.rs#L131)
-- [`TrustBoundaryKind::required_encryption`](../crates/spanda-security/src/trust_boundary.rs#L45)
-- [`TrustBoundaryRegistry::new`](../crates/spanda-security/src/trust_boundary.rs#L76)
+- [`TrustBoundaryKind::as_str`](../crates/spanda-security/src/trust_boundary.rs#L275)
+- [`TrustBoundaryKind::required_encryption`](../crates/spanda-security/src/trust_boundary.rs#L75)
+- [`TrustBoundaryRegistry::new`](../crates/spanda-security/src/trust_boundary.rs#L148)
 
 ##### `validate` {#spanda-security-validate}
 
@@ -5774,11 +7884,12 @@ Source: [crates/spanda-security/src/validate.rs](../crates/spanda-security/src/v
 
 **fn**
 
-- [`push_error`](../crates/spanda-security/src/validate.rs#L43)
-- [`push_info`](../crates/spanda-security/src/validate.rs#L61)
-- [`push_warning`](../crates/spanda-security/src/validate.rs#L52)
-- [`security_audit`](../crates/spanda-security/src/validate.rs#L79)
-- [`security_check`](../crates/spanda-security/src/validate.rs#L72)
+- [`push_error`](../crates/spanda-security/src/validate.rs#L58)
+- [`push_info`](../crates/spanda-security/src/validate.rs#L116)
+- [`push_warning`](../crates/spanda-security/src/validate.rs#L87)
+- [`security_analyze_program`](../crates/spanda-security/src/validate.rs#L193)
+- [`security_audit`](../crates/spanda-security/src/validate.rs#L169)
+- [`security_check`](../crates/spanda-security/src/validate.rs#L147)
 
 **method**
 
@@ -5788,22 +7899,9 @@ Source: [crates/spanda-security/src/validate.rs](../crates/spanda-security/src/v
 
 Source: [crates/spanda-security/src/wire_crypto.rs](../crates/spanda-security/src/wire_crypto.rs#L1)
 
-**struct**
+**export**
 
-- [`WireCryptoSession`](../crates/spanda-security/src/wire_crypto.rs#L9)
-
-**impl**
-
-- [`WireCryptoSession`](../crates/spanda-security/src/wire_crypto.rs#L14)
-
-**fn**
-
-- [`decrypt`](../crates/spanda-security/src/wire_crypto.rs#L41)
-- [`encrypt`](../crates/spanda-security/src/wire_crypto.rs#L26)
-
-**method**
-
-- [`WireCryptoSession::from_material`](../crates/spanda-security/src/wire_crypto.rs#L16)
+- [`spanda_runtime::wire_crypto::WireCryptoSession`](../crates/spanda-security/src/wire_crypto.rs#L3)
 
 #### `spanda-audit` {#crate-spanda-audit}
 
@@ -5814,6 +7912,7 @@ Crate root: [`crates/spanda-audit`](../crates/spanda-audit/)
 - [backend](#spanda-audit-backend)
 - [crypto](#spanda-audit-crypto)
 - [error](#spanda-audit-error)
+- [platform_event](#spanda-audit-platform-event)
 - [record](#spanda-audit-record)
 - [root](#spanda-audit-root)
 - [runtime](#spanda-audit-runtime)
@@ -5824,9 +7923,9 @@ Source: [crates/spanda-audit/src/backend.rs](../crates/spanda-audit/src/backend.
 
 **struct**
 
-- [`JsonAuditBackend`](../crates/spanda-audit/src/backend.rs#L200)
+- [`JsonAuditBackend`](../crates/spanda-audit/src/backend.rs#L202)
 - [`LocalAuditBackend`](../crates/spanda-audit/src/backend.rs#L22)
-- [`MockLedgerBackend`](../crates/spanda-audit/src/backend.rs#L346)
+- [`MockLedgerBackend`](../crates/spanda-audit/src/backend.rs#L350)
 
 **trait**
 
@@ -5835,27 +7934,27 @@ Source: [crates/spanda-audit/src/backend.rs](../crates/spanda-audit/src/backend.
 
 **impl**
 
-- [`JsonAuditBackend`](../crates/spanda-audit/src/backend.rs#L204)
-- [`JsonAuditBackend`](../crates/spanda-audit/src/backend.rs#L265)
+- [`JsonAuditBackend`](../crates/spanda-audit/src/backend.rs#L206)
+- [`JsonAuditBackend`](../crates/spanda-audit/src/backend.rs#L266)
 - [`LocalAuditBackend`](../crates/spanda-audit/src/backend.rs#L28)
-- [`LocalAuditBackend`](../crates/spanda-audit/src/backend.rs#L87)
-- [`MockLedgerBackend`](../crates/spanda-audit/src/backend.rs#L352)
-- [`MockLedgerBackend`](../crates/spanda-audit/src/backend.rs#L394)
-- [`MockLedgerBackend`](../crates/spanda-audit/src/backend.rs#L473)
+- [`LocalAuditBackend`](../crates/spanda-audit/src/backend.rs#L86)
+- [`MockLedgerBackend`](../crates/spanda-audit/src/backend.rs#L356)
+- [`MockLedgerBackend`](../crates/spanda-audit/src/backend.rs#L398)
+- [`MockLedgerBackend`](../crates/spanda-audit/src/backend.rs#L480)
 
 **fn**
 
-- [`anchored_count`](../crates/spanda-audit/src/backend.rs#L375)
-- [`export_json`](../crates/spanda-audit/src/backend.rs#L224)
-- [`export_json_compact`](../crates/spanda-audit/src/backend.rs#L244)
-- [`last_hash`](../crates/spanda-audit/src/backend.rs#L67)
-- [`records`](../crates/spanda-audit/src/backend.rs#L48)
+- [`anchored_count`](../crates/spanda-audit/src/backend.rs#L378)
+- [`export_json`](../crates/spanda-audit/src/backend.rs#L225)
+- [`export_json_compact`](../crates/spanda-audit/src/backend.rs#L245)
+- [`last_hash`](../crates/spanda-audit/src/backend.rs#L66)
+- [`records`](../crates/spanda-audit/src/backend.rs#L47)
 
 **method**
 
-- [`JsonAuditBackend::new`](../crates/spanda-audit/src/backend.rs#L205)
+- [`JsonAuditBackend::new`](../crates/spanda-audit/src/backend.rs#L207)
 - [`LocalAuditBackend::new`](../crates/spanda-audit/src/backend.rs#L29)
-- [`MockLedgerBackend::new`](../crates/spanda-audit/src/backend.rs#L353)
+- [`MockLedgerBackend::new`](../crates/spanda-audit/src/backend.rs#L357)
 
 ##### `crypto` {#spanda-audit-crypto}
 
@@ -5863,10 +7962,10 @@ Source: [crates/spanda-audit/src/crypto.rs](../crates/spanda-audit/src/crypto.rs
 
 **fn**
 
-- [`public_key_from_material`](../crates/spanda-audit/src/crypto.rs#L53)
-- [`sha256`](../crates/spanda-audit/src/crypto.rs#L77)
-- [`sign`](../crates/spanda-audit/src/crypto.rs#L99)
-- [`verify_signature`](../crates/spanda-audit/src/crypto.rs#L136)
+- [`public_key_from_material`](../crates/spanda-audit/src/crypto.rs#L54)
+- [`sha256`](../crates/spanda-audit/src/crypto.rs#L78)
+- [`sign`](../crates/spanda-audit/src/crypto.rs#L100)
+- [`verify_signature`](../crates/spanda-audit/src/crypto.rs#L138)
 
 ##### `error` {#spanda-audit-error}
 
@@ -5880,35 +7979,76 @@ Source: [crates/spanda-audit/src/error.rs](../crates/spanda-audit/src/error.rs#L
 
 - [`AuditResult`](../crates/spanda-audit/src/error.rs#L23)
 
+##### `platform_event` {#spanda-audit-platform-event}
+
+Source: [crates/spanda-audit/src/platform_event.rs](../crates/spanda-audit/src/platform_event.rs#L1)
+
+**mod**
+
+- [`names`](../crates/spanda-audit/src/platform_event.rs#L13)
+
+**struct**
+
+- [`PlatformEvent`](../crates/spanda-audit/src/platform_event.rs#L39)
+- [`PlatformEventType`](../crates/spanda-audit/src/platform_event.rs#L25)
+
+**const**
+
+- [`ENTITY_CREATED`](../crates/spanda-audit/src/platform_event.rs#L14)
+- [`ENTITY_RELATED`](../crates/spanda-audit/src/platform_event.rs#L17)
+- [`ENTITY_TAGGED`](../crates/spanda-audit/src/platform_event.rs#L16)
+- [`ENTITY_UPDATED`](../crates/spanda-audit/src/platform_event.rs#L15)
+- [`MISSION_COMPLETED`](../crates/spanda-audit/src/platform_event.rs#L20)
+- [`MISSION_STARTED`](../crates/spanda-audit/src/platform_event.rs#L19)
+- [`READINESS_CHANGED`](../crates/spanda-audit/src/platform_event.rs#L18)
+
+**impl**
+
+- [`PlatformEvent`](../crates/spanda-audit/src/platform_event.rs#L49)
+- [`PlatformEventType`](../crates/spanda-audit/src/platform_event.rs#L27)
+
+**fn**
+
+- [`as_str`](../crates/spanda-audit/src/platform_event.rs#L32)
+- [`namespaced_type`](../crates/spanda-audit/src/platform_event.rs#L74)
+- [`to_json_string`](../crates/spanda-audit/src/platform_event.rs#L78)
+- [`with_entity_id`](../crates/spanda-audit/src/platform_event.rs#L64)
+- [`with_timestamp`](../crates/spanda-audit/src/platform_event.rs#L69)
+
+**method**
+
+- [`PlatformEvent::new`](../crates/spanda-audit/src/platform_event.rs#L50)
+- [`PlatformEventType::new`](../crates/spanda-audit/src/platform_event.rs#L28)
+
 ##### `record` {#spanda-audit-record}
 
 Source: [crates/spanda-audit/src/record.rs](../crates/spanda-audit/src/record.rs#L1)
 
 **struct**
 
-- [`AuditExport`](../crates/spanda-audit/src/record.rs#L183)
-- [`AuditRecord`](../crates/spanda-audit/src/record.rs#L117)
+- [`AuditExport`](../crates/spanda-audit/src/record.rs#L184)
+- [`AuditRecord`](../crates/spanda-audit/src/record.rs#L118)
 - [`DeviceIdentity`](../crates/spanda-audit/src/record.rs#L20)
 - [`Hash`](../crates/spanda-audit/src/record.rs#L8)
-- [`MissionRecord`](../crates/spanda-audit/src/record.rs#L173)
-- [`ProvenanceRecord`](../crates/spanda-audit/src/record.rs#L161)
+- [`MissionRecord`](../crates/spanda-audit/src/record.rs#L174)
+- [`ProvenanceRecord`](../crates/spanda-audit/src/record.rs#L162)
 - [`RecordId`](../crates/spanda-audit/src/record.rs#L12)
 - [`TransactionId`](../crates/spanda-audit/src/record.rs#L16)
 
 **impl**
 
-- [`AuditRecord`](../crates/spanda-audit/src/record.rs#L129)
+- [`AuditRecord`](../crates/spanda-audit/src/record.rs#L130)
 - [`DeviceIdentity`](../crates/spanda-audit/src/record.rs#L25)
 
 **fn**
 
-- [`default_key`](../crates/spanda-audit/src/record.rs#L95)
-- [`signing_material`](../crates/spanda-audit/src/record.rs#L49)
-- [`verifying_key_hex`](../crates/spanda-audit/src/record.rs#L72)
+- [`default_key`](../crates/spanda-audit/src/record.rs#L96)
+- [`signing_material`](../crates/spanda-audit/src/record.rs#L50)
+- [`verifying_key_hex`](../crates/spanda-audit/src/record.rs#L73)
 
 **method**
 
-- [`AuditRecord::canonical_body`](../crates/spanda-audit/src/record.rs#L130)
+- [`AuditRecord::canonical_body`](../crates/spanda-audit/src/record.rs#L131)
 - [`DeviceIdentity::new`](../crates/spanda-audit/src/record.rs#L26)
 
 ##### `root` {#spanda-audit-root}
@@ -5920,12 +8060,13 @@ Source: [crates/spanda-audit/src/lib.rs](../crates/spanda-audit/src/lib.rs#L1)
 - [`backend`](../crates/spanda-audit/src/lib.rs#L7)
 - [`crypto`](../crates/spanda-audit/src/lib.rs#L8)
 - [`error`](../crates/spanda-audit/src/lib.rs#L9)
-- [`record`](../crates/spanda-audit/src/lib.rs#L10)
-- [`runtime`](../crates/spanda-audit/src/lib.rs#L11)
+- [`platform_event`](../crates/spanda-audit/src/lib.rs#L10)
+- [`record`](../crates/spanda-audit/src/lib.rs#L11)
+- [`runtime`](../crates/spanda-audit/src/lib.rs#L12)
 
 **export**
 
-- [`runtime::AuditRuntime`](../crates/spanda-audit/src/lib.rs#L22)
+- [`runtime::AuditRuntime`](../crates/spanda-audit/src/lib.rs#L24)
 
 ##### `runtime` {#spanda-audit-runtime}
 
@@ -5941,15 +8082,16 @@ Source: [crates/spanda-audit/src/runtime.rs](../crates/spanda-audit/src/runtime.
 
 **fn**
 
-- [`create_provenance`](../crates/spanda-audit/src/runtime.rs#L209)
-- [`export_json`](../crates/spanda-audit/src/runtime.rs#L171)
-- [`record_count`](../crates/spanda-audit/src/runtime.rs#L191)
-- [`record_event`](../crates/spanda-audit/src/runtime.rs#L96)
-- [`root_hash`](../crates/spanda-audit/src/runtime.rs#L284)
-- [`verify_provenance_signature`](../crates/spanda-audit/src/runtime.rs#L259)
-- [`verify_record`](../crates/spanda-audit/src/runtime.rs#L151)
-- [`with_identity`](../crates/spanda-audit/src/runtime.rs#L50)
-- [`with_provenance`](../crates/spanda-audit/src/runtime.rs#L70)
+- [`create_provenance`](../crates/spanda-audit/src/runtime.rs#L227)
+- [`export_json`](../crates/spanda-audit/src/runtime.rs#L188)
+- [`record_count`](../crates/spanda-audit/src/runtime.rs#L208)
+- [`record_event`](../crates/spanda-audit/src/runtime.rs#L102)
+- [`record_platform_event`](../crates/spanda-audit/src/runtime.rs#L159)
+- [`root_hash`](../crates/spanda-audit/src/runtime.rs#L305)
+- [`verify_provenance_signature`](../crates/spanda-audit/src/runtime.rs#L279)
+- [`verify_record`](../crates/spanda-audit/src/runtime.rs#L167)
+- [`with_identity`](../crates/spanda-audit/src/runtime.rs#L51)
+- [`with_provenance`](../crates/spanda-audit/src/runtime.rs#L73)
 
 **method**
 
@@ -5973,8 +8115,8 @@ Source: [crates/spanda-ros2-rclrs-native/src/lib.rs](../crates/spanda-ros2-rclrs
 
 **fn**
 
-- [`init_node`](../crates/spanda-ros2-rclrs-native/src/lib.rs#L80)
-- [`publish`](../crates/spanda-ros2-rclrs-native/src/lib.rs#L104)
+- [`init_node`](../crates/spanda-ros2-rclrs-native/src/lib.rs#L79)
+- [`publish`](../crates/spanda-ros2-rclrs-native/src/lib.rs#L103)
 - [`sdk_available`](../crates/spanda-ros2-rclrs-native/src/lib.rs#L61)
 - [`service_call`](../crates/spanda-ros2-rclrs-native/src/lib.rs#L183)
 - [`subscribe`](../crates/spanda-ros2-rclrs-native/src/lib.rs#L145)
@@ -5989,6 +8131,7 @@ Root: [`src`](../src/)
 
 - [adapter-bridge](#typescriptcore-adapter-bridge)
 - [adapter-package-verify](#typescriptcore-adapter-package-verify)
+- [adapter-runtime-bridge](#typescriptcore-adapter-runtime-bridge)
 - [adapter-verify](#typescriptcore-adapter-verify)
 - [ai](#typescriptcore-ai)
 - [ai/Agent](#typescriptcore-ai-agent)
@@ -5998,16 +8141,28 @@ Root: [`src`](../src/)
 - [ai/MockAIProvider](#typescriptcore-ai-mockaiprovider)
 - [ai/PromptRuntime](#typescriptcore-ai-promptruntime)
 - [ai/registry](#typescriptcore-ai-registry)
+- [assurance](#typescriptcore-assurance)
+- [assurance_decl](#typescriptcore-assurance-decl)
 - [ast](#typescriptcore-ast)
+- [ast/assurance-decls](#typescriptcore-ast-assurance-decls)
 - [ast/nodes](#typescriptcore-ast-nodes)
 - [certify-prover](#typescriptcore-certify-prover)
 - [certify-runtime](#typescriptcore-certify-runtime)
 - [certify-verify](#typescriptcore-certify-verify)
 - [cli](#typescriptcore-cli)
+- [cli/certify-bridge](#typescriptcore-cli-certify-bridge)
+- [cli/checker-host](#typescriptcore-cli-checker-host)
+- [cli/deploy-readiness-bridge](#typescriptcore-cli-deploy-readiness-bridge)
+- [cli/hardware-verify-bridge](#typescriptcore-cli-hardware-verify-bridge)
+- [cli/run-program](#typescriptcore-cli-run-program)
 - [comm](#typescriptcore-comm)
+- [comm/decls](#typescriptcore-comm-decls)
 - [compile](#typescriptcore-compile)
 - [concurrency](#typescriptcore-concurrency)
+- [config-fallback](#typescriptcore-config-fallback)
 - [connectivity-positioning](#typescriptcore-connectivity-positioning)
+- [continuity-checkpoint](#typescriptcore-continuity-checkpoint)
+- [continuity-diagnostics](#typescriptcore-continuity-diagnostics)
 - [deploy-agent](#typescriptcore-deploy-agent)
 - [deploy-bundle](#typescriptcore-deploy-bundle)
 - [deploy-remote](#typescriptcore-deploy-remote)
@@ -6021,36 +8176,66 @@ Root: [`src`](../src/)
 - [foundations](#typescriptcore-foundations)
 - [hal](#typescriptcore-hal)
 - [hardware-profile](#typescriptcore-hardware-profile)
+- [hardware-profile-types](#typescriptcore-hardware-profile-types)
 - [hardware-verify](#typescriptcore-hardware-verify)
+- [http-fetch](#typescriptcore-http-fetch)
 - [lexer](#typescriptcore-lexer)
 - [lib](#typescriptcore-lib)
 - [lib/registry](#typescriptcore-lib-registry)
 - [lsp/symbols](#typescriptcore-lsp-symbols)
+- [mission-continuity](#typescriptcore-mission-continuity)
 - [modules](#typescriptcore-modules)
 - [navigation](#typescriptcore-navigation)
 - [network](#typescriptcore-network)
+- [operational](#typescriptcore-operational)
 - [parser](#typescriptcore-parser)
+- [parser/assurance](#typescriptcore-parser-assurance)
+- [provider-runtime-bridge](#typescriptcore-provider-runtime-bridge)
 - [providers](#typescriptcore-providers)
 - [providers/bootstrap](#typescriptcore-providers-bootstrap)
+- [providers/package_dispatch](#typescriptcore-providers-package-dispatch)
 - [providers/registry](#typescriptcore-providers-registry)
+- [readiness](#typescriptcore-readiness)
+- [readiness-spans](#typescriptcore-readiness-spans)
+- [readiness-types](#typescriptcore-readiness-types)
+- [recovery](#typescriptcore-recovery)
+- [recovery-diagnostics](#typescriptcore-recovery-diagnostics)
 - [regex](#typescriptcore-regex)
 - [reliability](#typescriptcore-reliability)
 - [replay](#typescriptcore-replay)
 - [robotics-platform](#typescriptcore-robotics-platform)
 - [ros2](#typescriptcore-ros2)
 - [runtime](#typescriptcore-runtime)
+- [runtime/adapter-runtime](#typescriptcore-runtime-adapter-runtime)
+- [runtime/continuity-types](#typescriptcore-runtime-continuity-types)
+- [runtime/health-runtime](#typescriptcore-runtime-health-runtime)
 - [runtime/interpreter](#typescriptcore-runtime-interpreter)
+- [runtime/provider-observer](#typescriptcore-runtime-provider-observer)
+- [runtime/provider-runtime](#typescriptcore-runtime-provider-runtime)
 - [runtime/reliability-runtime](#typescriptcore-runtime-reliability-runtime)
+- [runtime/security-runtime](#typescriptcore-runtime-security-runtime)
+- [runtime/security-types](#typescriptcore-runtime-security-types)
+- [runtime/telemetry-sink](#typescriptcore-runtime-telemetry-sink)
+- [runtime/trigger-registry](#typescriptcore-runtime-trigger-registry)
 - [runtime/values](#typescriptcore-runtime-values)
 - [rust-bridge](#typescriptcore-rust-bridge)
+- [rust-bridge-types](#typescriptcore-rust-bridge-types)
 - [safety](#typescriptcore-safety)
 - [security](#typescriptcore-security)
+- [security-runtime-bridge](#typescriptcore-security-runtime-bridge)
 - [security/trust-boundary](#typescriptcore-security-trust-boundary)
 - [security/validate](#typescriptcore-security-validate)
 - [simulator](#typescriptcore-simulator)
 - [soc](#typescriptcore-soc)
 - [stdlib](#typescriptcore-stdlib)
 - [swarm-coordinator](#typescriptcore-swarm-coordinator)
+- [telemetry-cli](#typescriptcore-telemetry-cli)
+- [telemetry-fleet](#typescriptcore-telemetry-fleet)
+- [telemetry-otlp](#typescriptcore-telemetry-otlp)
+- [telemetry-push](#typescriptcore-telemetry-push)
+- [telemetry-sqlite](#typescriptcore-telemetry-sqlite)
+- [telemetry-store](#typescriptcore-telemetry-store)
+- [telemetry-store-bridge](#typescriptcore-telemetry-store-bridge)
 - [tooling](#typescriptcore-tooling)
 - [transport](#typescriptcore-transport)
 - [transport/live-dds](#typescriptcore-transport-live-dds)
@@ -6062,6 +8247,8 @@ Root: [`src`](../src/)
 - [type-system](#typescriptcore-type-system)
 - [types](#typescriptcore-types)
 - [types/checker](#typescriptcore-types-checker)
+- [types/checker-host](#typescriptcore-types-checker-host)
+- [types/sensor-types](#typescriptcore-types-sensor-types)
 - [types/units](#typescriptcore-types-units)
 - [units](#typescriptcore-units)
 
@@ -6071,8 +8258,8 @@ Source: [src/adapter-bridge.ts](../src/adapter-bridge.ts#L1)
 
 **fn**
 
-- [`invokeNav2Bridge`](../src/adapter-bridge.ts#L13)
-- [`invokeSlamBridge`](../src/adapter-bridge.ts#L28)
+- [`invokeNav2Bridge`](../src/adapter-bridge.ts#L28)
+- [`invokeSlamBridge`](../src/adapter-bridge.ts#L58)
 
 #### `adapter-package-verify` {#typescriptcore-adapter-package-verify}
 
@@ -6080,7 +8267,7 @@ Source: [src/adapter-package-verify.ts](../src/adapter-package-verify.ts#L1)
 
 **type**
 
-- [`AdapterManifestSection`](../src/adapter-package-verify.ts#L129)
+- [`AdapterManifestSection`](../src/adapter-package-verify.ts#L224)
 - [`AdapterMetadata`](../src/adapter-package-verify.ts#L9)
 - [`AdapterVerifyIssue`](../src/adapter-package-verify.ts#L16)
 - [`AdapterVerifySeverity`](../src/adapter-package-verify.ts#L14)
@@ -6088,11 +8275,23 @@ Source: [src/adapter-package-verify.ts](../src/adapter-package-verify.ts#L1)
 **fn**
 
 - [`adapterMetadataForImport`](../src/adapter-package-verify.ts#L41)
-- [`adapterMetadataForPackage`](../src/adapter-package-verify.ts#L57)
-- [`adapterVerifyOk`](../src/adapter-package-verify.ts#L125)
-- [`readAdapterManifestSection`](../src/adapter-package-verify.ts#L143)
-- [`verifyAdapterPackage`](../src/adapter-package-verify.ts#L182)
-- [`verifyManifestAdapter`](../src/adapter-package-verify.ts#L81)
+- [`adapterMetadataForPackage`](../src/adapter-package-verify.ts#L71)
+- [`adapterVerifyOk`](../src/adapter-package-verify.ts#L205)
+- [`readAdapterManifestSection`](../src/adapter-package-verify.ts#L253)
+- [`verifyAdapterPackage`](../src/adapter-package-verify.ts#L306)
+- [`verifyManifestAdapter`](../src/adapter-package-verify.ts#L143)
+
+#### `adapter-runtime-bridge` {#typescriptcore-adapter-runtime-bridge}
+
+Source: [src/adapter-runtime-bridge.ts](../src/adapter-runtime-bridge.ts#L1)
+
+**const**
+
+- [`adapterBackedRuntime`](../src/adapter-runtime-bridge.ts#L10)
+
+**fn**
+
+- [`createAdapterBackedRuntime`](../src/adapter-runtime-bridge.ts#L20)
 
 #### `adapter-verify` {#typescriptcore-adapter-verify}
 
@@ -6124,14 +8323,14 @@ Source: [src/ai/index.ts](../src/ai/index.ts#L1)
 
 **fn**
 
-- [`isActionProposal`](../src/ai/index.ts#L65)
-- [`isSafeAction`](../src/ai/index.ts#L83)
-- [`proposalFromValue`](../src/ai/index.ts#L104)
-- [`runtimeActionProposal`](../src/ai/index.ts#L41)
+- [`isActionProposal`](../src/ai/index.ts#L102)
+- [`isSafeAction`](../src/ai/index.ts#L134)
+- [`proposalFromValue`](../src/ai/index.ts#L169)
+- [`runtimeActionProposal`](../src/ai/index.ts#L58)
 - [`runtimeSafeAction`](../src/ai/index.ts#L22)
-- [`safeActionFromProposal`](../src/ai/index.ts#L134)
-- [`wrapCompletion`](../src/ai/index.ts#L156)
-- [`wrapDetection`](../src/ai/index.ts#L175)
+- [`safeActionFromProposal`](../src/ai/index.ts#L211)
+- [`wrapCompletion`](../src/ai/index.ts#L250)
+- [`wrapDetection`](../src/ai/index.ts#L286)
 
 #### `ai/Agent` {#typescriptcore-ai-agent}
 
@@ -6140,14 +8339,14 @@ Source: [src/ai/Agent.ts](../src/ai/Agent.ts#L1)
 **type**
 
 - [`AgentRuntime`](../src/ai/Agent.ts#L9)
-- [`PlanExecutor`](../src/ai/Agent.ts#L69)
+- [`PlanExecutor`](../src/ai/Agent.ts#L114)
 
 **fn**
 
-- [`agentToolNames`](../src/ai/Agent.ts#L33)
-- [`agentUsesModels`](../src/ai/Agent.ts#L51)
+- [`agentToolNames`](../src/ai/Agent.ts#L50)
+- [`agentUsesModels`](../src/ai/Agent.ts#L82)
 - [`createAgentRuntime`](../src/ai/Agent.ts#L14)
-- [`executeAgentPlan`](../src/ai/Agent.ts#L73)
+- [`executeAgentPlan`](../src/ai/Agent.ts#L118)
 
 #### `ai/AIModel` {#typescriptcore-ai-aimodel}
 
@@ -6163,7 +8362,7 @@ Source: [src/ai/AIModel.ts](../src/ai/AIModel.ts#L1)
 
 **fn**
 
-- [`createAIModel`](../src/ai/AIModel.ts#L134)
+- [`createAIModel`](../src/ai/AIModel.ts#L148)
 
 #### `ai/AIProvider` {#typescriptcore-ai-aiprovider}
 
@@ -6197,13 +8396,13 @@ Source: [src/ai/MockAIProvider.ts](../src/ai/MockAIProvider.ts#L1)
 
 **class**
 
-- [`MockAIProvider`](../src/ai/MockAIProvider.ts#L61)
+- [`MockAIProvider`](../src/ai/MockAIProvider.ts#L98)
 
 **fn**
 
-- [`mockAnalyzeFrame`](../src/ai/MockAIProvider.ts#L174)
-- [`mockCameraFrame`](../src/ai/MockAIProvider.ts#L203)
-- [`mockSummarize`](../src/ai/MockAIProvider.ts#L148)
+- [`mockAnalyzeFrame`](../src/ai/MockAIProvider.ts#L227)
+- [`mockCameraFrame`](../src/ai/MockAIProvider.ts#L272)
+- [`mockSummarize`](../src/ai/MockAIProvider.ts#L185)
 
 #### `ai/PromptRuntime` {#typescriptcore-ai-promptruntime}
 
@@ -6227,8 +8426,48 @@ Source: [src/ai/registry.ts](../src/ai/registry.ts#L1)
 
 **fn**
 
-- [`listAiLibraries`](../src/ai/registry.ts#L68)
+- [`listAiLibraries`](../src/ai/registry.ts#L82)
 - [`resolveAiImport`](../src/ai/registry.ts#L50)
+
+#### `assurance` {#typescriptcore-assurance}
+
+Source: [src/assurance.ts](../src/assurance.ts#L1)
+
+**type**
+
+- [`Anomaly`](../src/assurance.ts#L47)
+- [`AnomalyReport`](../src/assurance.ts#L55)
+- [`AssuranceCase`](../src/assurance.ts#L27)
+- [`AssuranceReport`](../src/assurance.ts#L32)
+- [`DiagnosisReport`](../src/assurance.ts#L98)
+- [`MissionAssuranceReport`](../src/assurance.ts#L80)
+- [`MissionAssuranceSummary`](../src/assurance.ts#L122)
+- [`MissionVerificationReport`](../src/assurance.ts#L13)
+- [`MitigationReport`](../src/assurance.ts#L88)
+- [`PrognosticsReport`](../src/assurance.ts#L63)
+- [`ResilienceReport`](../src/assurance.ts#L72)
+- [`StateAssuranceReport`](../src/assurance.ts#L109)
+
+**fn**
+
+- [`assureProgramTs`](../src/assurance.ts#L554)
+- [`buildAssuranceReport`](../src/assurance.ts#L196)
+- [`checkResilienceTs`](../src/assurance.ts#L328)
+- [`diagnoseProgramTs`](../src/assurance.ts#L425)
+- [`evaluatePrognosticsTs`](../src/assurance.ts#L288)
+- [`evaluateStateAssuranceTs`](../src/assurance.ts#L505)
+- [`extractMitigationsTs`](../src/assurance.ts#L398)
+- [`formatAnomalyReport`](../src/assurance.ts#L589)
+- [`formatAssuranceReport`](../src/assurance.ts#L585)
+- [`formatDiagnosisReport`](../src/assurance.ts#L624)
+- [`formatMissionAssuranceReport`](../src/assurance.ts#L616)
+- [`formatMitigationReport`](../src/assurance.ts#L620)
+- [`formatPrognosticsReport`](../src/assurance.ts#L599)
+- [`formatResilienceReport`](../src/assurance.ts#L605)
+- [`formatStateReport`](../src/assurance.ts#L609)
+- [`learnedModelsTs`](../src/assurance.ts#L235)
+- [`scanAnomaliesTs`](../src/assurance.ts#L249)
+- [`verifyMissionAssuranceTs`](../src/assurance.ts#L356)
 
 #### `ast` {#typescriptcore-ast}
 
@@ -6241,93 +8480,122 @@ Source: [src/ast/index.ts](../src/ast/index.ts#L1)
 - [`type RobotDecl`](../src/ast/index.ts#L6)
 - [`type Stmt`](../src/ast/index.ts#L6)
 
+#### `ast/assurance-decls` {#typescriptcore-ast-assurance-decls}
+
+Source: [src/ast/assurance-decls.ts](../src/ast/assurance-decls.ts#L1)
+
+**type**
+
+- [`AnomalyDetectorDecl`](../src/ast/assurance-decls.ts#L39)
+- [`AnomalyHandlerDecl`](../src/ast/assurance-decls.ts#L47)
+- [`AssuranceCaseDecl`](../src/ast/assurance-decls.ts#L134)
+- [`ContinuityPolicyBranch`](../src/ast/assurance-decls.ts#L95)
+- [`ContinuityPolicyDecl`](../src/ast/assurance-decls.ts#L101)
+- [`ExpectedBehavior`](../src/ast/assurance-decls.ts#L32)
+- [`KnowledgeComponent`](../src/ast/assurance-decls.ts#L8)
+- [`KnowledgeDependency`](../src/ast/assurance-decls.ts#L10)
+- [`KnowledgeModelDecl`](../src/ast/assurance-decls.ts#L16)
+- [`MissionConstraintDecl`](../src/ast/assurance-decls.ts#L117)
+- [`MissionPlanDecl`](../src/ast/assurance-decls.ts#L119)
+- [`MissionStepDecl`](../src/ast/assurance-decls.ts#L115)
+- [`MitigationBranch`](../src/ast/assurance-decls.ts#L69)
+- [`MitigationDecl`](../src/ast/assurance-decls.ts#L75)
+- [`OperatingModeDecl`](../src/ast/assurance-decls.ts#L108)
+- [`PrognosticRule`](../src/ast/assurance-decls.ts#L55)
+- [`PrognosticsDecl`](../src/ast/assurance-decls.ts#L62)
+- [`RecoveryPolicyBranch`](../src/ast/assurance-decls.ts#L82)
+- [`RecoveryPolicyDecl`](../src/ast/assurance-decls.ts#L88)
+- [`ResiliencePolicyDecl`](../src/ast/assurance-decls.ts#L127)
+- [`StateEstimatorDecl`](../src/ast/assurance-decls.ts#L24)
+
 #### `ast/nodes` {#typescriptcore-ast-nodes}
 
 Source: [src/ast/nodes.ts](../src/ast/nodes.ts#L1)
 
 **type**
 
-- [`ActionDecl`](../src/ast/nodes.ts#L340)
-- [`ActionSendStmt`](../src/ast/nodes.ts#L601)
-- [`ActuatorDecl`](../src/ast/nodes.ts#L364)
-- [`AgentDecl`](../src/ast/nodes.ts#L392)
-- [`AiConfigEntry`](../src/ast/nodes.ts#L378)
-- [`AiModelDecl`](../src/ast/nodes.ts#L384)
-- [`AwaitExpr`](../src/ast/nodes.ts#L653)
-- [`BehaviorDecl`](../src/ast/nodes.ts#L431)
-- [`BinaryExpr`](../src/ast/nodes.ts#L678)
-- [`BinaryOp`](../src/ast/nodes.ts#L754)
-- [`CallExpr`](../src/ast/nodes.ts#L693)
-- [`DiscoverExpr`](../src/ast/nodes.ts#L747)
-- [`DiscoverStmt`](../src/ast/nodes.ts#L539)
-- [`EmergencyStopStmt`](../src/ast/nodes.ts#L608)
-- [`EmitStmt`](../src/ast/nodes.ts#L618)
-- [`EnterModeStmt`](../src/ast/nodes.ts#L501)
-- [`EnterStmt`](../src/ast/nodes.ts#L624)
-- [`ExecuteExpr`](../src/ast/nodes.ts#L740)
-- [`ExecuteStmt`](../src/ast/nodes.ts#L532)
-- [`Expr`](../src/ast/nodes.ts#L630)
-- [`ExprStmt`](../src/ast/nodes.ts#L576)
-- [`HalAdcDecl`](../src/ast/nodes.ts#L304)
-- [`HalBlock`](../src/ast/nodes.ts#L251)
-- [`HalGpioDecl`](../src/ast/nodes.ts#L280)
-- [`HalI2cDecl`](../src/ast/nodes.ts#L265)
-- [`HalMemberDecl`](../src/ast/nodes.ts#L257)
-- [`HalPwmDecl`](../src/ast/nodes.ts#L288)
-- [`HalSpiDecl`](../src/ast/nodes.ts#L272)
-- [`HalUartDecl`](../src/ast/nodes.ts#L296)
-- [`IdentExpr`](../src/ast/nodes.ts#L672)
-- [`IfStmt`](../src/ast/nodes.ts#L561)
-- [`ImportDecl`](../src/ast/nodes.ts#L191)
-- [`LiteralExpr`](../src/ast/nodes.ts#L659)
-- [`LoopStmt`](../src/ast/nodes.ts#L569)
-- [`MatchExpr`](../src/ast/nodes.ts#L714)
-- [`MemberExpr`](../src/ast/nodes.ts#L707)
-- [`NamedArg`](../src/ast/nodes.ts#L701)
-- [`NavigateStmt`](../src/ast/nodes.ts#L518)
-- [`NodeDecl`](../src/ast/nodes.ts#L311)
-- [`ParallelStmt`](../src/ast/nodes.ts#L475)
-- [`Program`](../src/ast/nodes.ts#L162)
-- [`PublishStmt`](../src/ast/nodes.ts#L588)
-- [`ReceiveStmt`](../src/ast/nodes.ts#L546)
-- [`RememberStmt`](../src/ast/nodes.ts#L487)
-- [`ResetEmergencyStopStmt`](../src/ast/nodes.ts#L613)
-- [`ReturnStmt`](../src/ast/nodes.ts#L582)
-- [`RobotDecl`](../src/ast/nodes.ts#L197)
-- [`RunPipelineStmt`](../src/ast/nodes.ts#L512)
-- [`SafetyBlock`](../src/ast/nodes.ts#L371)
-- [`SafetyRule`](../src/ast/nodes.ts#L405)
-- [`SafetyZoneDecl`](../src/ast/nodes.ts#L419)
-- [`SelectStmt`](../src/ast/nodes.ts#L481)
-- [`SensorBinding`](../src/ast/nodes.ts#L360)
-- [`SensorDecl`](../src/ast/nodes.ts#L351)
-- [`ServiceCallExpr`](../src/ast/nodes.ts#L734)
-- [`ServiceCallStmt`](../src/ast/nodes.ts#L595)
-- [`ServiceDecl`](../src/ast/nodes.ts#L330)
-- [`SocDecl`](../src/ast/nodes.ts#L245)
-- [`SourceLocation`](../src/ast/nodes.ts#L50)
-- [`Span`](../src/ast/nodes.ts#L56)
-- [`SpandaType`](../src/ast/nodes.ts#L141)
-- [`SpawnExpr`](../src/ast/nodes.ts#L646)
-- [`SpawnStmt`](../src/ast/nodes.ts#L468)
-- [`Stmt`](../src/ast/nodes.ts#L441)
-- [`StopAllActuatorsStmt`](../src/ast/nodes.ts#L507)
-- [`StructFieldInit`](../src/ast/nodes.ts#L721)
-- [`StructLiteralExpr`](../src/ast/nodes.ts#L727)
-- [`SubscribeStmt`](../src/ast/nodes.ts#L494)
-- [`TopicDecl`](../src/ast/nodes.ts#L318)
-- [`UnaryExpr`](../src/ast/nodes.ts#L686)
-- [`UnaryOp`](../src/ast/nodes.ts#L768)
-- [`UnitKind`](../src/ast/nodes.ts#L61)
-- [`UnitLiteralExpr`](../src/ast/nodes.ts#L665)
-- [`UseFallbackStmt`](../src/ast/nodes.ts#L526)
-- [`VarDecl`](../src/ast/nodes.ts#L553)
+- [`ActionDecl`](../src/ast/nodes.ts#L363)
+- [`ActionSendStmt`](../src/ast/nodes.ts#L633)
+- [`ActuatorDecl`](../src/ast/nodes.ts#L387)
+- [`AgentDecl`](../src/ast/nodes.ts#L415)
+- [`AiConfigEntry`](../src/ast/nodes.ts#L401)
+- [`AiModelDecl`](../src/ast/nodes.ts#L407)
+- [`AwaitExpr`](../src/ast/nodes.ts#L685)
+- [`BehaviorDecl`](../src/ast/nodes.ts#L455)
+- [`BinaryExpr`](../src/ast/nodes.ts#L710)
+- [`BinaryOp`](../src/ast/nodes.ts#L786)
+- [`CallExpr`](../src/ast/nodes.ts#L725)
+- [`DiscoverExpr`](../src/ast/nodes.ts#L779)
+- [`DiscoverStmt`](../src/ast/nodes.ts#L571)
+- [`EmergencyStopStmt`](../src/ast/nodes.ts#L640)
+- [`EmitStmt`](../src/ast/nodes.ts#L650)
+- [`EnterModeStmt`](../src/ast/nodes.ts#L533)
+- [`EnterStmt`](../src/ast/nodes.ts#L656)
+- [`ExecuteExpr`](../src/ast/nodes.ts#L772)
+- [`ExecuteStmt`](../src/ast/nodes.ts#L564)
+- [`ExpectCompileErrorStmt`](../src/ast/nodes.ts#L494)
+- [`Expr`](../src/ast/nodes.ts#L662)
+- [`ExprStmt`](../src/ast/nodes.ts#L608)
+- [`HalAdcDecl`](../src/ast/nodes.ts#L327)
+- [`HalBlock`](../src/ast/nodes.ts#L274)
+- [`HalGpioDecl`](../src/ast/nodes.ts#L303)
+- [`HalI2cDecl`](../src/ast/nodes.ts#L288)
+- [`HalMemberDecl`](../src/ast/nodes.ts#L280)
+- [`HalPwmDecl`](../src/ast/nodes.ts#L311)
+- [`HalSpiDecl`](../src/ast/nodes.ts#L295)
+- [`HalUartDecl`](../src/ast/nodes.ts#L319)
+- [`IdentExpr`](../src/ast/nodes.ts#L704)
+- [`IfStmt`](../src/ast/nodes.ts#L593)
+- [`ImportDecl`](../src/ast/nodes.ts#L208)
+- [`LiteralExpr`](../src/ast/nodes.ts#L691)
+- [`LoopStmt`](../src/ast/nodes.ts#L601)
+- [`MatchExpr`](../src/ast/nodes.ts#L746)
+- [`MemberExpr`](../src/ast/nodes.ts#L739)
+- [`NamedArg`](../src/ast/nodes.ts#L733)
+- [`NavigateStmt`](../src/ast/nodes.ts#L550)
+- [`NodeDecl`](../src/ast/nodes.ts#L334)
+- [`ParallelStmt`](../src/ast/nodes.ts#L507)
+- [`Program`](../src/ast/nodes.ts#L163)
+- [`PublishStmt`](../src/ast/nodes.ts#L620)
+- [`ReceiveStmt`](../src/ast/nodes.ts#L578)
+- [`RememberStmt`](../src/ast/nodes.ts#L519)
+- [`ResetEmergencyStopStmt`](../src/ast/nodes.ts#L645)
+- [`ReturnStmt`](../src/ast/nodes.ts#L614)
+- [`RobotDecl`](../src/ast/nodes.ts#L214)
+- [`RunPipelineStmt`](../src/ast/nodes.ts#L544)
+- [`SafetyBlock`](../src/ast/nodes.ts#L394)
+- [`SafetyRule`](../src/ast/nodes.ts#L429)
+- [`SafetyZoneDecl`](../src/ast/nodes.ts#L443)
+- [`SelectStmt`](../src/ast/nodes.ts#L513)
+- [`SensorBinding`](../src/ast/nodes.ts#L383)
+- [`SensorDecl`](../src/ast/nodes.ts#L374)
+- [`ServiceCallExpr`](../src/ast/nodes.ts#L766)
+- [`ServiceCallStmt`](../src/ast/nodes.ts#L627)
+- [`ServiceDecl`](../src/ast/nodes.ts#L353)
+- [`SocDecl`](../src/ast/nodes.ts#L268)
+- [`SourceLocation`](../src/ast/nodes.ts#L51)
+- [`Span`](../src/ast/nodes.ts#L57)
+- [`SpandaType`](../src/ast/nodes.ts#L142)
+- [`SpawnExpr`](../src/ast/nodes.ts#L678)
+- [`SpawnStmt`](../src/ast/nodes.ts#L500)
+- [`Stmt`](../src/ast/nodes.ts#L466)
+- [`StopAllActuatorsStmt`](../src/ast/nodes.ts#L539)
+- [`StructFieldInit`](../src/ast/nodes.ts#L753)
+- [`StructLiteralExpr`](../src/ast/nodes.ts#L759)
+- [`SubscribeStmt`](../src/ast/nodes.ts#L526)
+- [`TopicDecl`](../src/ast/nodes.ts#L341)
+- [`UnaryExpr`](../src/ast/nodes.ts#L718)
+- [`UnaryOp`](../src/ast/nodes.ts#L800)
+- [`UnitKind`](../src/ast/nodes.ts#L62)
+- [`UnitLiteralExpr`](../src/ast/nodes.ts#L697)
+- [`UseFallbackStmt`](../src/ast/nodes.ts#L558)
+- [`VarDecl`](../src/ast/nodes.ts#L585)
 
 **const**
 
-- [`ACTION_TYPES`](../src/ast/nodes.ts#L772)
-- [`MESSAGE_TYPES`](../src/ast/nodes.ts#L770)
-- [`SERVICE_TYPES`](../src/ast/nodes.ts#L771)
+- [`ACTION_TYPES`](../src/ast/nodes.ts#L804)
+- [`MESSAGE_TYPES`](../src/ast/nodes.ts#L802)
+- [`SERVICE_TYPES`](../src/ast/nodes.ts#L803)
 
 #### `certify-prover` {#typescriptcore-certify-prover}
 
@@ -6343,7 +8611,7 @@ Source: [src/certify-prover.ts](../src/certify-prover.ts#L1)
 **fn**
 
 - [`buildCertificationProof`](../src/certify-prover.ts#L39)
-- [`buildCertificationProofSummary`](../src/certify-prover.ts#L73)
+- [`buildCertificationProofSummary`](../src/certify-prover.ts#L91)
 
 #### `certify-runtime` {#typescriptcore-certify-runtime}
 
@@ -6351,7 +8619,7 @@ Source: [src/certify-runtime.ts](../src/certify-runtime.ts#L1)
 
 **fn**
 
-- [`certificationRuntimeEnabledFromEnv`](../src/certify-runtime.ts#L18)
+- [`certificationRuntimeEnabledFromEnv`](../src/certify-runtime.ts#L33)
 - [`enforceCertificationRuntime`](../src/certify-runtime.ts#L9)
 
 #### `certify-verify` {#typescriptcore-certify-verify}
@@ -6360,7 +8628,64 @@ Source: [src/certify-verify.ts](../src/certify-verify.ts#L1)
 
 **fn**
 
-- [`verifyCertificationProof`](../src/certify-verify.ts#L21)
+- [`verifyCertificationProof`](../src/certify-verify.ts#L84)
+
+#### `cli/certify-bridge` {#typescriptcore-cli-certify-bridge}
+
+Source: [src/cli/certify-bridge.ts](../src/cli/certify-bridge.ts#L1)
+
+**type**
+
+- [`CertificationProver`](../src/cli/certify-bridge.ts#L14)
+
+**const**
+
+- [`defaultCertificationProver`](../src/cli/certify-bridge.ts#L18)
+
+#### `cli/checker-host` {#typescriptcore-cli-checker-host}
+
+Source: [src/cli/checker-host.ts](../src/cli/checker-host.ts#L1)
+
+**fn**
+
+- [`createFullCheckerHost`](../src/cli/checker-host.ts#L27)
+
+#### `cli/deploy-readiness-bridge` {#typescriptcore-cli-deploy-readiness-bridge}
+
+Source: [src/cli/deploy-readiness-bridge.ts](../src/cli/deploy-readiness-bridge.ts#L1)
+
+**const**
+
+- [`deployReadinessEvaluator`](../src/cli/deploy-readiness-bridge.ts#L15)
+
+**fn**
+
+- [`createDeployReadinessEvaluator`](../src/cli/deploy-readiness-bridge.ts#L17)
+
+#### `cli/hardware-verify-bridge` {#typescriptcore-cli-hardware-verify-bridge}
+
+Source: [src/cli/hardware-verify-bridge.ts](../src/cli/hardware-verify-bridge.ts#L1)
+
+**fn**
+
+- [`createHardwareVerifyHost`](../src/cli/hardware-verify-bridge.ts#L10)
+
+#### `cli/run-program` {#typescriptcore-cli-run-program}
+
+Source: [src/cli/run-program.ts](../src/cli/run-program.ts#L1)
+
+**type**
+
+- [`RunOptions`](../src/cli/run-program.ts#L34)
+- [`TestRunResult`](../src/cli/run-program.ts#L56)
+
+**fn**
+
+- [`run`](../src/cli/run-program.ts#L103)
+- [`runFile`](../src/cli/run-program.ts#L164)
+- [`runSource`](../src/cli/run-program.ts#L136)
+- [`runTests`](../src/cli/run-program.ts#L198)
+- [`runTestsWithRegistry`](../src/cli/run-program.ts#L169)
 
 #### `comm` {#typescriptcore-comm}
 
@@ -6368,39 +8693,52 @@ Source: [src/comm/index.ts](../src/comm/index.ts#L1)
 
 **type**
 
-- [`AgentChannelDecl`](../src/comm/index.ts#L113)
-- [`BusDecl`](../src/comm/index.ts#L88)
-- [`CommEnvelope`](../src/comm/index.ts#L136)
-- [`DeviceDecl`](../src/comm/index.ts#L106)
-- [`DiscoverFilter`](../src/comm/index.ts#L132)
-- [`DiscoverTarget`](../src/comm/index.ts#L130)
-- [`MessageDecl`](../src/comm/index.ts#L74)
-- [`MessageSchema`](../src/comm/index.ts#L82)
-- [`PeerRobotDecl`](../src/comm/index.ts#L100)
-- [`PublishedCommMessage`](../src/comm/index.ts#L141)
-- [`QosDecl`](../src/comm/index.ts#L66)
-- [`QosReliability`](../src/comm/index.ts#L63)
-- [`SimNetworkConfig`](../src/comm/index.ts#L149)
-- [`TopicRole`](../src/comm/index.ts#L64)
-- [`TransportKind`](../src/comm/index.ts#L10)
-- [`TwinSyncDecl`](../src/comm/index.ts#L121)
+- [`CommEnvelope`](../src/comm/index.ts#L32)
+- [`PublishedCommMessage`](../src/comm/index.ts#L37)
+- [`SimNetworkConfig`](../src/comm/index.ts#L45)
 
 **class**
 
-- [`InMemoryCommBus`](../src/comm/index.ts#L302)
-- [`MessageRegistry`](../src/comm/index.ts#L154)
-
-**const**
-
-- [`COMM_CAPABILITIES`](../src/comm/index.ts#L573)
+- [`InMemoryCommBus`](../src/comm/index.ts#L50)
 
 **fn**
 
-- [`defaultMessageSize`](../src/comm/index.ts#L612)
-- [`estimateTopicBandwidthMbps`](../src/comm/index.ts#L593)
-- [`isCommCapability`](../src/comm/index.ts#L575)
-- [`transportAsStr`](../src/comm/index.ts#L45)
-- [`transportFromIdent`](../src/comm/index.ts#L12)
+- [`defaultMessageSize`](../src/comm/index.ts#L183)
+- [`estimateTopicBandwidthMbps`](../src/comm/index.ts#L178)
+
+#### `comm/decls` {#typescriptcore-comm-decls}
+
+Source: [src/comm/decls.ts](../src/comm/decls.ts#L1)
+
+**type**
+
+- [`AgentChannelDecl`](../src/comm/decls.ts#L86)
+- [`BusDecl`](../src/comm/decls.ts#L61)
+- [`DeviceDecl`](../src/comm/decls.ts#L79)
+- [`DiscoverFilter`](../src/comm/decls.ts#L105)
+- [`DiscoverTarget`](../src/comm/decls.ts#L103)
+- [`MessageDecl`](../src/comm/decls.ts#L47)
+- [`MessageSchema`](../src/comm/decls.ts#L55)
+- [`PeerRobotDecl`](../src/comm/decls.ts#L73)
+- [`QosDecl`](../src/comm/decls.ts#L39)
+- [`QosReliability`](../src/comm/decls.ts#L36)
+- [`TopicRole`](../src/comm/decls.ts#L37)
+- [`TransportKind`](../src/comm/decls.ts#L9)
+- [`TwinSyncDecl`](../src/comm/decls.ts#L94)
+
+**class**
+
+- [`MessageRegistry`](../src/comm/decls.ts#L116)
+
+**const**
+
+- [`COMM_CAPABILITIES`](../src/comm/decls.ts#L109)
+
+**fn**
+
+- [`isCommCapability`](../src/comm/decls.ts#L111)
+- [`transportAsStr`](../src/comm/decls.ts#L31)
+- [`transportFromIdent`](../src/comm/decls.ts#L11)
 
 #### `compile` {#typescriptcore-compile}
 
@@ -6408,33 +8746,28 @@ Source: [src/compile.ts](../src/compile.ts#L1)
 
 **export**
 
-- [`loadProjectModules`](../src/compile.ts#L507)
-- [`ModuleRegistry`](../src/compile.ts#L507)
+- [`loadProjectModules`](../src/compile.ts#L485)
+- [`ModuleRegistry`](../src/compile.ts#L485)
 
 **type**
 
-- [`CompileBackend`](../src/compile.ts#L25)
-- [`CompileResult`](../src/compile.ts#L27)
-- [`Diagnostic`](../src/compile.ts#L33)
-- [`RunOptions`](../src/compile.ts#L254)
-- [`TestRunResult`](../src/compile.ts#L444)
-- [`VerifyHardwareOptions`](../src/compile.ts#L372)
+- [`CompileBackend`](../src/compile.ts#L16)
+- [`CompileResult`](../src/compile.ts#L18)
+- [`Diagnostic`](../src/compile.ts#L24)
+- [`VerifyHardwareOptions`](../src/compile.ts#L395)
 
 **fn**
 
-- [`compile`](../src/compile.ts#L138)
-- [`compileAsync`](../src/compile.ts#L168)
-- [`compileFile`](../src/compile.ts#L244)
-- [`compileFileAsync`](../src/compile.ts#L249)
-- [`compileWithRegistry`](../src/compile.ts#L102)
-- [`getPreferredBackend`](../src/compile.ts#L59)
-- [`run`](../src/compile.ts#L271)
-- [`runFile`](../src/compile.ts#L352)
-- [`runSource`](../src/compile.ts#L305)
-- [`runTests`](../src/compile.ts#L489)
-- [`runTestsWithRegistry`](../src/compile.ts#L450)
-- [`setPreferredBackend`](../src/compile.ts#L41)
-- [`verifyHardware`](../src/compile.ts#L379)
+- [`compile`](../src/compile.ts#L196)
+- [`compileAsync`](../src/compile.ts#L243)
+- [`compileFile`](../src/compile.ts#L353)
+- [`compileFileAsync`](../src/compile.ts#L374)
+- [`compileWithRegistry`](../src/compile.ts#L141)
+- [`getCompileCheckerHost`](../src/compile.ts#L38)
+- [`getPreferredBackend`](../src/compile.ts#L72)
+- [`setCompileCheckerHost`](../src/compile.ts#L33)
+- [`setPreferredBackend`](../src/compile.ts#L42)
+- [`verifyHardware`](../src/compile.ts#L403)
 
 #### `concurrency` {#typescriptcore-concurrency}
 
@@ -6447,7 +8780,15 @@ Source: [src/concurrency.ts](../src/concurrency.ts#L1)
 
 **class**
 
-- [`ConcurrencyRuntime`](../src/concurrency.ts#L60)
+- [`ConcurrencyRuntime`](../src/concurrency.ts#L74)
+
+#### `config-fallback` {#typescriptcore-config-fallback}
+
+Source: [src/config-fallback.ts](../src/config-fallback.ts#L1)
+
+**fn**
+
+- [`runConfigCommand`](../src/config-fallback.ts#L193)
 
 #### `connectivity-positioning` {#typescriptcore-connectivity-positioning}
 
@@ -6461,27 +8802,56 @@ Source: [src/connectivity-positioning.ts](../src/connectivity-positioning.ts#L1)
 
 **fn**
 
-- [`applyGpsPositionFaults`](../src/connectivity-positioning.ts#L339)
-- [`connectivityCapabilities`](../src/connectivity-positioning.ts#L134)
-- [`connectivityFaultNames`](../src/connectivity-positioning.ts#L196)
-- [`connectivityKeyToProfileTokens`](../src/connectivity-positioning.ts#L228)
-- [`connectivityLinkToTransport`](../src/connectivity-positioning.ts#L301)
-- [`connectivityLinkTypes`](../src/connectivity-positioning.ts#L178)
-- [`connectivityPolicyFromDecl`](../src/connectivity-positioning.ts#L107)
-- [`faultToConnectivity`](../src/connectivity-positioning.ts#L265)
-- [`geofenceContains`](../src/connectivity-positioning.ts#L65)
-- [`geofenceFromDecl`](../src/connectivity-positioning.ts#L84)
+- [`applyGpsPositionFaults`](../src/connectivity-positioning.ts#L504)
+- [`connectivityCapabilities`](../src/connectivity-positioning.ts#L208)
+- [`connectivityFaultNames`](../src/connectivity-positioning.ts#L306)
+- [`connectivityKeyToProfileTokens`](../src/connectivity-positioning.ts#L350)
+- [`connectivityLinkToTransport`](../src/connectivity-positioning.ts#L452)
+- [`connectivityLinkTypes`](../src/connectivity-positioning.ts#L276)
+- [`connectivityPolicyFromDecl`](../src/connectivity-positioning.ts#L167)
+- [`faultToConnectivity`](../src/connectivity-positioning.ts#L401)
+- [`geofenceContains`](../src/connectivity-positioning.ts#L90)
+- [`geofenceFromDecl`](../src/connectivity-positioning.ts#L130)
 - [`haversineM`](../src/connectivity-positioning.ts#L37)
-- [`isCellularLink`](../src/connectivity-positioning.ts#L372)
-- [`isLinkImpaired`](../src/connectivity-positioning.ts#L446)
-- [`isModemBearer`](../src/connectivity-positioning.ts#L409)
-- [`isSatelliteLink`](../src/connectivity-positioning.ts#L391)
-- [`isWifiLink`](../src/connectivity-positioning.ts#L427)
-- [`positioningSensorTypes`](../src/connectivity-positioning.ts#L160)
-- [`runtimeSimIdentity`](../src/connectivity-positioning.ts#L485)
-- [`validateConnectivityPolicy`](../src/connectivity-positioning.ts#L772)
-- [`validateGeofence`](../src/connectivity-positioning.ts#L711)
-- [`verifyRequiresConnectivity`](../src/connectivity-positioning.ts#L537)
+- [`isCellularLink`](../src/connectivity-positioning.ts#L558)
+- [`isLinkImpaired`](../src/connectivity-positioning.ts#L688)
+- [`isModemBearer`](../src/connectivity-positioning.ts#L623)
+- [`isSatelliteLink`](../src/connectivity-positioning.ts#L591)
+- [`isWifiLink`](../src/connectivity-positioning.ts#L655)
+- [`positioningSensorTypes`](../src/connectivity-positioning.ts#L246)
+- [`runtimeSimIdentity`](../src/connectivity-positioning.ts#L744)
+- [`validateConnectivityPolicy`](../src/connectivity-positioning.ts#L1100)
+- [`validateGeofence`](../src/connectivity-positioning.ts#L1025)
+- [`verifyRequiresConnectivity`](../src/connectivity-positioning.ts#L834)
+
+#### `continuity-checkpoint` {#typescriptcore-continuity-checkpoint}
+
+Source: [src/continuity-checkpoint.ts](../src/continuity-checkpoint.ts#L1)
+
+**type**
+
+- [`ContinuityCheckpointStore`](../src/continuity-checkpoint.ts#L10)
+
+**fn**
+
+- [`defaultCheckpointStorePath`](../src/continuity-checkpoint.ts#L18)
+- [`loadCheckpoint`](../src/continuity-checkpoint.ts#L58)
+- [`loadCheckpointStore`](../src/continuity-checkpoint.ts#L22)
+- [`persistCheckpoint`](../src/continuity-checkpoint.ts#L66)
+- [`recordCheckpoint`](../src/continuity-checkpoint.ts#L44)
+- [`saveCheckpointStore`](../src/continuity-checkpoint.ts#L33)
+
+#### `continuity-diagnostics` {#typescriptcore-continuity-diagnostics}
+
+Source: [src/continuity-diagnostics.ts](../src/continuity-diagnostics.ts#L1)
+
+**type**
+
+- [`ContinuityDiagnostic`](../src/continuity-diagnostics.ts#L8)
+
+**fn**
+
+- [`collectContinuityDiagnostics`](../src/continuity-diagnostics.ts#L150)
 
 #### `deploy-agent` {#typescriptcore-deploy-agent}
 
@@ -6489,17 +8859,19 @@ Source: [src/deploy-agent.ts](../src/deploy-agent.ts#L1)
 
 **type**
 
-- [`AgentState`](../src/deploy-agent.ts#L11)
+- [`AgentState`](../src/deploy-agent.ts#L31)
+- [`ReadinessEvaluator`](../src/deploy-agent.ts#L12)
 
 **fn**
 
-- [`createDeployAgentServer`](../src/deploy-agent.ts#L211)
-- [`defaultAgentStatePath`](../src/deploy-agent.ts#L24)
-- [`emptyAgentState`](../src/deploy-agent.ts#L28)
-- [`loadAgentState`](../src/deploy-agent.ts#L32)
-- [`readAgentStateFromDisk`](../src/deploy-agent.ts#L41)
-- [`startDeployAgentServer`](../src/deploy-agent.ts#L221)
-- [`writeAgentStateToDisk`](../src/deploy-agent.ts#L46)
+- [`agentStatePathFor`](../src/deploy-agent.ts#L48)
+- [`createDeployAgentServer`](../src/deploy-agent.ts#L297)
+- [`defaultAgentStatePath`](../src/deploy-agent.ts#L44)
+- [`emptyAgentState`](../src/deploy-agent.ts#L79)
+- [`loadAgentState`](../src/deploy-agent.ts#L83)
+- [`readAgentStateFromDisk`](../src/deploy-agent.ts#L92)
+- [`startDeployAgentServer`](../src/deploy-agent.ts#L309)
+- [`writeAgentStateToDisk`](../src/deploy-agent.ts#L97)
 
 #### `deploy-bundle` {#typescriptcore-deploy-bundle}
 
@@ -6507,14 +8879,14 @@ Source: [src/deploy-bundle.ts](../src/deploy-bundle.ts#L1)
 
 **type**
 
-- [`DeployArtifactBundle`](../src/deploy-bundle.ts#L9)
+- [`DeployArtifactBundle`](../src/deploy-bundle.ts#L8)
 
 **fn**
 
-- [`buildDeployBundle`](../src/deploy-bundle.ts#L40)
-- [`bundleCanonicalJson`](../src/deploy-bundle.ts#L53)
-- [`signDeployBundle`](../src/deploy-bundle.ts#L61)
-- [`verifyDeployBundle`](../src/deploy-bundle.ts#L74)
+- [`buildDeployBundle`](../src/deploy-bundle.ts#L54)
+- [`bundleCanonicalJson`](../src/deploy-bundle.ts#L81)
+- [`signDeployBundle`](../src/deploy-bundle.ts#L100)
+- [`verifyDeployBundle`](../src/deploy-bundle.ts#L130)
 
 #### `deploy-remote` {#typescriptcore-deploy-remote}
 
@@ -6522,25 +8894,27 @@ Source: [src/deploy-remote.ts](../src/deploy-remote.ts#L1)
 
 **type**
 
-- [`AgentStatusResponse`](../src/deploy-remote.ts#L43)
-- [`DeployAgentEntry`](../src/deploy-remote.ts#L33)
-- [`DeployAgentRegistry`](../src/deploy-remote.ts#L39)
+- [`AgentStatusResponse`](../src/deploy-remote.ts#L59)
+- [`DeployAgentEntry`](../src/deploy-remote.ts#L49)
+- [`DeployAgentRegistry`](../src/deploy-remote.ts#L55)
 
 **fn**
 
-- [`agentHealth`](../src/deploy-remote.ts#L116)
-- [`agentStatus`](../src/deploy-remote.ts#L123)
-- [`applyRemoteRolloutToState`](../src/deploy-remote.ts#L244)
-- [`defaultAgentsPath`](../src/deploy-remote.ts#L51)
-- [`emptyAgentRegistry`](../src/deploy-remote.ts#L55)
-- [`executeRemoteRollback`](../src/deploy-remote.ts#L202)
-- [`executeRemoteRollout`](../src/deploy-remote.ts#L138)
-- [`loadAgentRegistry`](../src/deploy-remote.ts#L59)
-- [`lookupAgent`](../src/deploy-remote.ts#L99)
-- [`readAgentRegistryFromDisk`](../src/deploy-remote.ts#L73)
-- [`registerAgent`](../src/deploy-remote.ts#L84)
-- [`serializeAgentRegistry`](../src/deploy-remote.ts#L69)
-- [`writeAgentRegistryToDisk`](../src/deploy-remote.ts#L78)
+- [`agentHealth`](../src/deploy-remote.ts#L280)
+- [`agentReadiness`](../src/deploy-remote.ts#L302)
+- [`agentStatus`](../src/deploy-remote.ts#L365)
+- [`agentUploadProgram`](../src/deploy-remote.ts#L337)
+- [`applyRemoteRolloutToState`](../src/deploy-remote.ts#L539)
+- [`defaultAgentsPath`](../src/deploy-remote.ts#L67)
+- [`emptyAgentRegistry`](../src/deploy-remote.ts#L85)
+- [`executeRemoteRollback`](../src/deploy-remote.ts#L480)
+- [`executeRemoteRollout`](../src/deploy-remote.ts#L395)
+- [`loadAgentRegistry`](../src/deploy-remote.ts#L103)
+- [`lookupAgent`](../src/deploy-remote.ts#L225)
+- [`readAgentRegistryFromDisk`](../src/deploy-remote.ts#L147)
+- [`registerAgent`](../src/deploy-remote.ts#L189)
+- [`serializeAgentRegistry`](../src/deploy-remote.ts#L128)
+- [`writeAgentRegistryToDisk`](../src/deploy-remote.ts#L167)
 
 #### `deploy-service` {#typescriptcore-deploy-service}
 
@@ -6548,32 +8922,35 @@ Source: [src/deploy-service.ts](../src/deploy-service.ts#L1)
 
 **type**
 
-- [`DeployAssignment`](../src/deploy-service.ts#L16)
-- [`DeployPlan`](../src/deploy-service.ts#L21)
-- [`DeployState`](../src/deploy-service.ts#L48)
-- [`RolloutOptions`](../src/deploy-service.ts#L54)
-- [`RolloutResult`](../src/deploy-service.ts#L40)
-- [`RolloutStep`](../src/deploy-service.ts#L32)
-- [`RolloutStepStatus`](../src/deploy-service.ts#L30)
-- [`RolloutStrategy`](../src/deploy-service.ts#L14)
+- [`CertificationProofSummary`](../src/deploy-service.ts#L10)
+- [`CertificationProver`](../src/deploy-service.ts#L18)
+- [`DeployAssignment`](../src/deploy-service.ts#L31)
+- [`DeployPlan`](../src/deploy-service.ts#L36)
+- [`DeployState`](../src/deploy-service.ts#L63)
+- [`RolloutOptions`](../src/deploy-service.ts#L69)
+- [`RolloutResult`](../src/deploy-service.ts#L55)
+- [`RolloutStep`](../src/deploy-service.ts#L47)
+- [`RolloutStepStatus`](../src/deploy-service.ts#L45)
+- [`RolloutStrategy`](../src/deploy-service.ts#L29)
 
 **const**
 
-- [`defaultRolloutOptions`](../src/deploy-service.ts#L63)
+- [`defaultRolloutOptions`](../src/deploy-service.ts#L78)
 
 **fn**
 
-- [`applyRollout`](../src/deploy-service.ts#L199)
-- [`buildDeployPlan`](../src/deploy-service.ts#L87)
-- [`defaultStatePath`](../src/deploy-service.ts#L248)
-- [`deployTargetKey`](../src/deploy-service.ts#L76)
-- [`emptyDeployState`](../src/deploy-service.ts#L252)
-- [`hashProgramArtifact`](../src/deploy-service.ts#L80)
-- [`loadDeployState`](../src/deploy-service.ts#L256)
-- [`planRollout`](../src/deploy-service.ts#L125)
-- [`rollbackTargets`](../src/deploy-service.ts#L211)
-- [`serializeDeployState`](../src/deploy-service.ts#L270)
-- [`validateRolloutCertification`](../src/deploy-service.ts#L111)
+- [`applyRollout`](../src/deploy-service.ts#L219)
+- [`buildDeployPlan`](../src/deploy-service.ts#L102)
+- [`defaultStatePath`](../src/deploy-service.ts#L268)
+- [`deployTargetKey`](../src/deploy-service.ts#L91)
+- [`emptyDeployState`](../src/deploy-service.ts#L272)
+- [`hashProgramArtifact`](../src/deploy-service.ts#L95)
+- [`loadDeployState`](../src/deploy-service.ts#L276)
+- [`planRollout`](../src/deploy-service.ts#L145)
+- [`rollbackTargets`](../src/deploy-service.ts#L231)
+- [`serializeDeployState`](../src/deploy-service.ts#L290)
+- [`setDeployCertificationProver`](../src/deploy-service.ts#L24)
+- [`validateRolloutCertification`](../src/deploy-service.ts#L131)
 
 #### `ffi/registry` {#typescriptcore-ffi-registry}
 
@@ -6590,7 +8967,7 @@ Source: [src/ffi/registry.ts](../src/ffi/registry.ts#L1)
 **fn**
 
 - [`ffiBridgeKind`](../src/ffi/registry.ts#L15)
-- [`resolveFfiImport`](../src/ffi/registry.ts#L37)
+- [`resolveFfiImport`](../src/ffi/registry.ts#L51)
 
 #### `ffi/subprocess-bridge` {#typescriptcore-ffi-subprocess-bridge}
 
@@ -6598,9 +8975,9 @@ Source: [src/ffi/subprocess-bridge.ts](../src/ffi/subprocess-bridge.ts#L1)
 
 **fn**
 
-- [`callExternBridge`](../src/ffi/subprocess-bridge.ts#L279)
-- [`cppBridgeBinaryPath`](../src/ffi/subprocess-bridge.ts#L122)
-- [`pythonBridgeScriptPath`](../src/ffi/subprocess-bridge.ts#L96)
+- [`callExternBridge`](../src/ffi/subprocess-bridge.ts#L396)
+- [`cppBridgeBinaryPath`](../src/ffi/subprocess-bridge.ts#L174)
+- [`pythonBridgeScriptPath`](../src/ffi/subprocess-bridge.ts#L136)
 
 #### `fleet-agent` {#typescriptcore-fleet-agent}
 
@@ -6608,16 +8985,17 @@ Source: [src/fleet-agent.ts](../src/fleet-agent.ts#L1)
 
 **type**
 
-- [`FleetAgentState`](../src/fleet-agent.ts#L11)
+- [`FleetAgentState`](../src/fleet-agent.ts#L28)
 
 **fn**
 
-- [`defaultFleetAgentStatePath`](../src/fleet-agent.ts#L17)
-- [`emptyFleetAgentState`](../src/fleet-agent.ts#L21)
-- [`loadFleetAgentState`](../src/fleet-agent.ts#L25)
-- [`readFleetAgentStateFromDisk`](../src/fleet-agent.ts#L42)
-- [`startFleetAgentServer`](../src/fleet-agent.ts#L135)
-- [`writeFleetAgentStateToDisk`](../src/fleet-agent.ts#L47)
+- [`defaultFleetAgentStatePath`](../src/fleet-agent.ts#L35)
+- [`emptyFleetAgentState`](../src/fleet-agent.ts#L63)
+- [`fleetAgentStatePathFor`](../src/fleet-agent.ts#L39)
+- [`loadFleetAgentState`](../src/fleet-agent.ts#L67)
+- [`readFleetAgentStateFromDisk`](../src/fleet-agent.ts#L85)
+- [`startFleetAgentServer`](../src/fleet-agent.ts#L218)
+- [`writeFleetAgentStateToDisk`](../src/fleet-agent.ts#L90)
 
 #### `fleet-mesh` {#typescriptcore-fleet-mesh}
 
@@ -6625,12 +9003,15 @@ Source: [src/fleet-mesh.ts](../src/fleet-mesh.ts#L1)
 
 **type**
 
-- [`MeshRelayResponse`](../src/fleet-mesh.ts#L8)
+- [`FleetRecoveryRequest`](../src/fleet-mesh.ts#L16)
+- [`FleetRecoveryResponse`](../src/fleet-mesh.ts#L23)
+- [`MeshRelayResponse`](../src/fleet-mesh.ts#L9)
 
 **fn**
 
-- [`defaultFleetMeshUrl`](../src/fleet-mesh.ts#L15)
-- [`relayDeliveriesViaMesh`](../src/fleet-mesh.ts#L34)
+- [`defaultFleetMeshUrl`](../src/fleet-mesh.ts#L30)
+- [`relayDeliveriesViaMesh`](../src/fleet-mesh.ts#L84)
+- [`relayRecoveryViaMesh`](../src/fleet-mesh.ts#L127)
 
 #### `fleet-orchestrator` {#typescriptcore-fleet-orchestrator}
 
@@ -6645,9 +9026,9 @@ Source: [src/fleet-orchestrator.ts](../src/fleet-orchestrator.ts#L1)
 
 **fn**
 
-- [`orchestrateFleets`](../src/fleet-orchestrator.ts#L57)
-- [`orchestrateFleetsMesh`](../src/fleet-orchestrator.ts#L140)
-- [`orchestrateFleetsRemote`](../src/fleet-orchestrator.ts#L165)
+- [`orchestrateFleets`](../src/fleet-orchestrator.ts#L72)
+- [`orchestrateFleetsMesh`](../src/fleet-orchestrator.ts#L171)
+- [`orchestrateFleetsRemote`](../src/fleet-orchestrator.ts#L217)
 
 #### `fleet-remote` {#typescriptcore-fleet-remote}
 
@@ -6655,23 +9036,25 @@ Source: [src/fleet-remote.ts](../src/fleet-remote.ts#L1)
 
 **type**
 
-- [`FleetAgentEntry`](../src/fleet-remote.ts#L10)
-- [`FleetAgentRegistry`](../src/fleet-remote.ts#L16)
-- [`PeerRelayResponse`](../src/fleet-remote.ts#L20)
+- [`FleetAgentEntry`](../src/fleet-remote.ts#L11)
+- [`FleetAgentRegistry`](../src/fleet-remote.ts#L17)
+- [`PeerRelayResponse`](../src/fleet-remote.ts#L21)
 
 **fn**
 
-- [`defaultFleetAgentsPath`](../src/fleet-remote.ts#L28)
-- [`emptyFleetAgentRegistry`](../src/fleet-remote.ts#L32)
-- [`fleetAgentHealth`](../src/fleet-remote.ts#L117)
-- [`loadFleetAgentRegistry`](../src/fleet-remote.ts#L36)
-- [`lookupFleetAgent`](../src/fleet-remote.ts#L97)
-- [`readFleetAgentRegistryFromDisk`](../src/fleet-remote.ts#L68)
-- [`registerFleetAgent`](../src/fleet-remote.ts#L82)
-- [`relayPeerDeliveries`](../src/fleet-remote.ts#L159)
-- [`relayPeerDelivery`](../src/fleet-remote.ts#L124)
-- [`serializeFleetAgentRegistry`](../src/fleet-remote.ts#L54)
-- [`writeFleetAgentRegistryToDisk`](../src/fleet-remote.ts#L73)
+- [`defaultFleetAgentsPath`](../src/fleet-remote.ts#L29)
+- [`emptyFleetAgentRegistry`](../src/fleet-remote.ts#L47)
+- [`fleetAgentHealth`](../src/fleet-remote.ts#L266)
+- [`fleetAgentReadiness`](../src/fleet-remote.ts#L288)
+- [`fleetAgentUploadProgram`](../src/fleet-remote.ts#L323)
+- [`loadFleetAgentRegistry`](../src/fleet-remote.ts#L65)
+- [`lookupFleetAgent`](../src/fleet-remote.ts#L208)
+- [`readFleetAgentRegistryFromDisk`](../src/fleet-remote.ts#L127)
+- [`registerFleetAgent`](../src/fleet-remote.ts#L172)
+- [`relayPeerDeliveries`](../src/fleet-remote.ts#L403)
+- [`relayPeerDelivery`](../src/fleet-remote.ts#L351)
+- [`serializeFleetAgentRegistry`](../src/fleet-remote.ts#L98)
+- [`writeFleetAgentRegistryToDisk`](../src/fleet-remote.ts#L147)
 
 #### `foundations` {#typescriptcore-foundations}
 
@@ -6679,54 +9062,62 @@ Source: [src/foundations.ts](../src/foundations.ts#L1)
 
 **type**
 
-- [`AuditDecl`](../src/foundations.ts#L424)
-- [`BleServiceDecl`](../src/foundations.ts#L276)
-- [`BluetoothConfigDecl`](../src/foundations.ts#L269)
+- [`AuditDecl`](../src/foundations.ts#L529)
+- [`BleServiceDecl`](../src/foundations.ts#L277)
+- [`BluetoothConfigDecl`](../src/foundations.ts#L270)
 - [`BridgeKind`](../src/foundations.ts#L29)
-- [`CapabilityDecl`](../src/foundations.ts#L411)
-- [`CertificationStandard`](../src/foundations.ts#L330)
-- [`CertifyDecl`](../src/foundations.ts#L332)
-- [`ConnectivityPolicyDecl`](../src/foundations.ts#L258)
-- [`ConnectivityRequirement`](../src/foundations.ts#L238)
-- [`DeployDecl`](../src/foundations.ts#L364)
+- [`CapabilityDecl`](../src/foundations.ts#L516)
+- [`CertificationStandard`](../src/foundations.ts#L366)
+- [`CertifyDecl`](../src/foundations.ts#L368)
+- [`ConnectivityPolicyDecl`](../src/foundations.ts#L259)
+- [`ConnectivityRequirement`](../src/foundations.ts#L239)
+- [`DeployDecl`](../src/foundations.ts#L462)
 - [`EnumDecl`](../src/foundations.ts#L74)
 - [`EnumVariantDecl`](../src/foundations.ts#L68)
-- [`EventDecl`](../src/foundations.ts#L377)
-- [`EventHandlerDecl`](../src/foundations.ts#L384)
+- [`EventDecl`](../src/foundations.ts#L475)
+- [`EventHandlerDecl`](../src/foundations.ts#L482)
 - [`ExternFnDecl`](../src/foundations.ts#L31)
 - [`FieldDecl`](../src/foundations.ts#L54)
-- [`FleetDecl`](../src/foundations.ts#L291)
-- [`GeofenceDecl`](../src/foundations.ts#L249)
-- [`HardwareDecl`](../src/foundations.ts#L345)
-- [`IdentityDecl`](../src/foundations.ts#L417)
+- [`FleetDecl`](../src/foundations.ts#L293)
+- [`GeofenceDecl`](../src/foundations.ts#L250)
+- [`HardwareComponentDecl`](../src/foundations.ts#L381)
+- [`HardwareDecl`](../src/foundations.ts#L442)
+- [`HealthCheckCondition`](../src/foundations.ts#L400)
+- [`HealthCheckDecl`](../src/foundations.ts#L407)
+- [`HealthPolicyDecl`](../src/foundations.ts#L422)
+- [`HealthPolicyReaction`](../src/foundations.ts#L417)
+- [`IdentityDecl`](../src/foundations.ts#L522)
+- [`KillSwitchDecl`](../src/foundations.ts#L390)
 - [`MatchArm`](../src/foundations.ts#L117)
-- [`MissionDecl`](../src/foundations.ts#L283)
-- [`ModeDecl`](../src/foundations.ts#L184)
+- [`MissionDecl`](../src/foundations.ts#L284)
+- [`ModeDecl`](../src/foundations.ts#L185)
 - [`ModuleFnDecl`](../src/foundations.ts#L17)
 - [`ModuleParamDecl`](../src/foundations.ts#L11)
-- [`ObserveDecl`](../src/foundations.ts#L405)
-- [`PermissionsDecl`](../src/foundations.ts#L478)
-- [`PipelineDecl`](../src/foundations.ts#L167)
-- [`ProgramSafetyZoneDecl`](../src/foundations.ts#L323)
-- [`ProvenanceDecl`](../src/foundations.ts#L431)
-- [`RecoverDecl`](../src/foundations.ts#L200)
-- [`RequiresConnectivityDecl`](../src/foundations.ts#L240)
-- [`RequiresHardwareDecl`](../src/foundations.ts#L220)
-- [`RequiresNetworkDecl`](../src/foundations.ts#L231)
-- [`ResourceBudgetDecl`](../src/foundations.ts#L156)
-- [`RetryDecl`](../src/foundations.ts#L191)
-- [`SecretDecl`](../src/foundations.ts#L465)
-- [`SecretSourceDecl`](../src/foundations.ts#L446)
-- [`SecureBlockDecl`](../src/foundations.ts#L484)
-- [`SecureCommPolicyDecl`](../src/foundations.ts#L451)
+- [`ObserveDecl`](../src/foundations.ts#L504)
+- [`PermissionsDecl`](../src/foundations.ts#L583)
+- [`PipelineDecl`](../src/foundations.ts#L168)
+- [`ProgramSafetyZoneDecl`](../src/foundations.ts#L359)
+- [`ProvenanceDecl`](../src/foundations.ts#L536)
+- [`RecoverDecl`](../src/foundations.ts#L201)
+- [`RequiresCapabilityDecl`](../src/foundations.ts#L431)
+- [`RequiresCapabilitySeverity`](../src/foundations.ts#L429)
+- [`RequiresConnectivityDecl`](../src/foundations.ts#L241)
+- [`RequiresHardwareDecl`](../src/foundations.ts#L221)
+- [`RequiresNetworkDecl`](../src/foundations.ts#L232)
+- [`ResourceBudgetDecl`](../src/foundations.ts#L157)
+- [`RetryDecl`](../src/foundations.ts#L192)
+- [`SecretDecl`](../src/foundations.ts#L570)
+- [`SecretSourceDecl`](../src/foundations.ts#L551)
+- [`SecureBlockDecl`](../src/foundations.ts#L589)
+- [`SecureCommPolicyDecl`](../src/foundations.ts#L556)
 - [`SelectArm`](../src/foundations.ts#L48)
-- [`SignedRecordDecl`](../src/foundations.ts#L439)
-- [`SimulateCompatibilityDecl`](../src/foundations.ts#L371)
+- [`SignedRecordDecl`](../src/foundations.ts#L544)
+- [`SimulateCompatibilityDecl`](../src/foundations.ts#L469)
 - [`StateMachineDecl`](../src/foundations.ts#L130)
 - [`StructDecl`](../src/foundations.ts#L60)
-- [`SubscribeFilterDecl`](../src/foundations.ts#L214)
-- [`SwarmDecl`](../src/foundations.ts#L300)
-- [`SwarmPolicy`](../src/foundations.ts#L298)
+- [`SubscribeFilterDecl`](../src/foundations.ts#L215)
+- [`SwarmDecl`](../src/foundations.ts#L302)
+- [`SwarmPolicy`](../src/foundations.ts#L300)
 - [`TaskDecl`](../src/foundations.ts#L140)
 - [`TaskPriority`](../src/foundations.ts#L138)
 - [`TestDecl`](../src/foundations.ts#L41)
@@ -6736,25 +9127,26 @@ Source: [src/foundations.ts](../src/foundations.ts#L1)
 - [`TraitMethodDecl`](../src/foundations.ts#L87)
 - [`TraitParamDecl`](../src/foundations.ts#L81)
 - [`TransitionDecl`](../src/foundations.ts#L124)
-- [`TrustBoundaryDecl`](../src/foundations.ts#L459)
-- [`TrustDecl`](../src/foundations.ts#L472)
-- [`TwinDecl`](../src/foundations.ts#L391)
-- [`ValidateRuleDecl`](../src/foundations.ts#L207)
-- [`VerifyDecl`](../src/foundations.ts#L399)
+- [`TrustBoundaryDecl`](../src/foundations.ts#L564)
+- [`TrustDecl`](../src/foundations.ts#L577)
+- [`TwinDecl`](../src/foundations.ts#L490)
+- [`ValidateRuleDecl`](../src/foundations.ts#L208)
+- [`VerifyDecl`](../src/foundations.ts#L498)
 - [`Visibility`](../src/foundations.ts#L9)
-- [`WatchdogDecl`](../src/foundations.ts#L175)
+- [`WatchdogDecl`](../src/foundations.ts#L176)
+- [`WorldModelDecl`](../src/foundations.ts#L510)
 
 **const**
 
-- [`CERTIFICATION_STANDARDS`](../src/foundations.ts#L339)
-- [`SWARM_POLICIES`](../src/foundations.ts#L308)
+- [`CERTIFICATION_STANDARDS`](../src/foundations.ts#L375)
+- [`SWARM_POLICIES`](../src/foundations.ts#L310)
 
 **fn**
 
-- [`parseSwarmPolicy`](../src/foundations.ts#L310)
-- [`resolveModuleImport`](../src/foundations.ts#L496)
-- [`resolveTypeAlias`](../src/foundations.ts#L567)
-- [`validateSwarmFleet`](../src/foundations.ts#L314)
+- [`parseSwarmPolicy`](../src/foundations.ts#L312)
+- [`resolveModuleImport`](../src/foundations.ts#L601)
+- [`resolveTypeAlias`](../src/foundations.ts#L686)
+- [`validateSwarmFleet`](../src/foundations.ts#L331)
 
 #### `hal` {#typescriptcore-hal}
 
@@ -6777,22 +9169,26 @@ Source: [src/hal/index.ts](../src/hal/index.ts#L1)
 **fn**
 
 - [`createSimHal`](../src/hal/index.ts#L231)
-- [`halMemberFromDecl`](../src/hal/index.ts#L249)
+- [`halMemberFromDecl`](../src/hal/index.ts#L261)
 
 #### `hardware-profile` {#typescriptcore-hardware-profile}
 
 Source: [src/hardware-profile.ts](../src/hardware-profile.ts#L1)
 
-**type**
-
-- [`HardwareProfile`](../src/hardware-profile.ts#L9)
-
 **fn**
 
-- [`applyFault`](../src/hardware-profile.ts#L232)
-- [`buildProfileRegistry`](../src/hardware-profile.ts#L210)
-- [`builtinProfiles`](../src/hardware-profile.ts#L62)
-- [`hardwareProfileFromDecl`](../src/hardware-profile.ts#L176)
+- [`applyFault`](../src/hardware-profile.ts#L298)
+- [`buildProfileRegistry`](../src/hardware-profile.ts#L262)
+- [`builtinProfiles`](../src/hardware-profile.ts#L88)
+- [`hardwareProfileFromDecl`](../src/hardware-profile.ts#L214)
+
+#### `hardware-profile-types` {#typescriptcore-hardware-profile-types}
+
+Source: [src/hardware-profile-types.ts](../src/hardware-profile-types.ts#L1)
+
+**type**
+
+- [`HardwareProfile`](../src/hardware-profile-types.ts#L6)
 
 #### `hardware-verify` {#typescriptcore-hardware-verify}
 
@@ -6800,11 +9196,25 @@ Source: [src/hardware-verify.ts](../src/hardware-verify.ts#L1)
 
 **type**
 
-- [`VerifyHardwareTsOptions`](../src/hardware-verify.ts#L31)
+- [`HardwareVerifyHost`](../src/hardware-verify.ts#L29)
+- [`VerifyHardwareTsOptions`](../src/hardware-verify.ts#L46)
 
 **fn**
 
-- [`verifyHardwareProgram`](../src/hardware-verify.ts#L483)
+- [`setDefaultHardwareVerifyHost`](../src/hardware-verify.ts#L41)
+- [`verifyHardwareProgram`](../src/hardware-verify.ts#L789)
+
+#### `http-fetch` {#typescriptcore-http-fetch}
+
+Source: [src/http-fetch.ts](../src/http-fetch.ts#L1)
+
+**const**
+
+- [`REMOTE_HTTP_TIMEOUT_MS`](../src/http-fetch.ts#L6)
+
+**fn**
+
+- [`remoteFetch`](../src/http-fetch.ts#L44)
 
 #### `lexer` {#typescriptcore-lexer}
 
@@ -6812,18 +9222,18 @@ Source: [src/lexer/index.ts](../src/lexer/index.ts#L1)
 
 **type**
 
-- [`Token`](../src/lexer/index.ts#L289)
+- [`Token`](../src/lexer/index.ts#L292)
 - [`TokenType`](../src/lexer/index.ts#L6)
-- [`UnitLexeme`](../src/lexer/index.ts#L208)
+- [`UnitLexeme`](../src/lexer/index.ts#L211)
 
 **class**
 
-- [`LexerError`](../src/lexer/index.ts#L299)
+- [`LexerError`](../src/lexer/index.ts#L302)
 
 **fn**
 
-- [`tokenize`](../src/lexer/index.ts#L498)
-- [`unitFromLexeme`](../src/lexer/index.ts#L1011)
+- [`tokenize`](../src/lexer/index.ts#L501)
+- [`unitFromLexeme`](../src/lexer/index.ts#L1115)
 
 #### `lib/registry` {#typescriptcore-lib-registry}
 
@@ -6838,17 +9248,17 @@ Source: [src/lib/registry.ts](../src/lib/registry.ts#L1)
 
 **const**
 
-- [`LIB_REGISTRY`](../src/lib/registry.ts#L84)
+- [`LIB_REGISTRY`](../src/lib/registry.ts#L115)
 
 **fn**
 
-- [`allLibrarySensorTypes`](../src/lib/registry.ts#L443)
-- [`getSensorDriver`](../src/lib/registry.ts#L401)
-- [`getSensorTypeFromLib`](../src/lib/registry.ts#L424)
-- [`listLibraries`](../src/lib/registry.ts#L468)
-- [`listLibrariesByVendor`](../src/lib/registry.ts#L486)
-- [`readWithDriver`](../src/lib/registry.ts#L504)
-- [`resolveImport`](../src/lib/registry.ts#L383)
+- [`allLibrarySensorTypes`](../src/lib/registry.ts#L522)
+- [`getSensorDriver`](../src/lib/registry.ts#L446)
+- [`getSensorTypeFromLib`](../src/lib/registry.ts#L486)
+- [`listLibraries`](../src/lib/registry.ts#L559)
+- [`listLibrariesByVendor`](../src/lib/registry.ts#L589)
+- [`readWithDriver`](../src/lib/registry.ts#L621)
+- [`resolveImport`](../src/lib/registry.ts#L414)
 
 #### `lsp/symbols` {#typescriptcore-lsp-symbols}
 
@@ -6862,13 +9272,40 @@ Source: [src/lsp/symbols.ts](../src/lsp/symbols.ts#L1)
 
 **fn**
 
-- [`buildSymbolIndex`](../src/lsp/symbols.ts#L63)
-- [`formatHover`](../src/lsp/symbols.ts#L436)
-- [`indexSource`](../src/lsp/symbols.ts#L247)
-- [`lookupDefinition`](../src/lsp/symbols.ts#L302)
-- [`resolveDefinition`](../src/lsp/symbols.ts#L392)
-- [`symbolAtPosition`](../src/lsp/symbols.ts#L265)
-- [`wordAtPosition`](../src/lsp/symbols.ts#L335)
+- [`buildSymbolIndex`](../src/lsp/symbols.ts#L78)
+- [`formatHover`](../src/lsp/symbols.ts#L559)
+- [`indexSource`](../src/lsp/symbols.ts#L276)
+- [`lookupDefinition`](../src/lsp/symbols.ts#L365)
+- [`resolveDefinition`](../src/lsp/symbols.ts#L495)
+- [`symbolAtPosition`](../src/lsp/symbols.ts#L308)
+- [`wordAtPosition`](../src/lsp/symbols.ts#L418)
+
+#### `mission-continuity` {#typescriptcore-mission-continuity}
+
+Source: [src/mission-continuity.ts](../src/mission-continuity.ts#L1)
+
+**type**
+
+- [`ContinuationDecision`](../src/mission-continuity.ts#L37)
+- [`ContinuityContext`](../src/mission-continuity.ts#L53)
+- [`ContinuityEvidence`](../src/mission-continuity.ts#L91)
+- [`ContinuityTrigger`](../src/mission-continuity.ts#L18)
+- [`DelegationReport`](../src/mission-continuity.ts#L121)
+- [`MissionContinuityReport`](../src/mission-continuity.ts#L98)
+- [`MissionStateTransfer`](../src/mission-continuity.ts#L63)
+- [`SuccessionReport`](../src/mission-continuity.ts#L130)
+- [`SuccessionScope`](../src/mission-continuity.ts#L44)
+- [`SuccessorCandidate`](../src/mission-continuity.ts#L71)
+- [`SuccessorRanking`](../src/mission-continuity.ts#L85)
+- [`TakeoverMode`](../src/mission-continuity.ts#L28)
+- [`TakeoverReport`](../src/mission-continuity.ts#L111)
+
+**fn**
+
+- [`evaluateContinuityTs`](../src/mission-continuity.ts#L218)
+- [`planDelegationTs`](../src/mission-continuity.ts#L289)
+- [`planSuccessionTs`](../src/mission-continuity.ts#L311)
+- [`planTakeoverTs`](../src/mission-continuity.ts#L268)
 
 #### `modules` {#typescriptcore-modules}
 
@@ -6914,7 +9351,54 @@ Source: [src/network/index.ts](../src/network/index.ts#L1)
 **fn**
 
 - [`isStdNetworkType`](../src/network/index.ts#L26)
-- [`resolveStdNetworkImport`](../src/network/index.ts#L44)
+- [`resolveStdNetworkImport`](../src/network/index.ts#L58)
+
+#### `operational` {#typescriptcore-operational}
+
+Source: [src/operational.ts](../src/operational.ts#L1)
+
+**export**
+
+- [`lineColumnForFactor`](../src/operational.ts#L148)
+- [`lineColumnForIssue`](../src/operational.ts#L148)
+- [`readinessDashboardFromReports`](../src/operational.ts#L147)
+
+**type**
+
+- [`ApprovalVerifyReport`](../src/operational.ts#L92)
+- [`ApprovalVerifyRow`](../src/operational.ts#L83)
+- [`AuditFinding`](../src/operational.ts#L97)
+- [`FailureAnalysisReport`](../src/operational.ts#L67)
+- [`FailureImpact`](../src/operational.ts#L60)
+- [`FleetReadinessReport`](../src/operational.ts#L121)
+- [`FleetVerifyFinding`](../src/operational.ts#L72)
+- [`FleetVerifyReport`](../src/operational.ts#L78)
+- [`MissionVerificationReport`](../src/operational.ts#L46)
+- [`RootCauseReport`](../src/operational.ts#L139)
+- [`SafetyAuditReport`](../src/operational.ts#L105)
+- [`SafetyCaseReport`](../src/operational.ts#L113)
+- [`TwinReadinessStatus`](../src/operational.ts#L130)
+
+**fn**
+
+- [`analyzeFailureTs`](../src/operational.ts#L237)
+- [`auditProgramTs`](../src/operational.ts#L348)
+- [`diagnoseTraceTs`](../src/operational.ts#L565)
+- [`evaluateFleetReadinessTs`](../src/operational.ts#L455)
+- [`evaluateTwinReadinessTs`](../src/operational.ts#L506)
+- [`formatAudit`](../src/operational.ts#L671)
+- [`formatFailureAnalysis`](../src/operational.ts#L631)
+- [`formatFleetReadiness`](../src/operational.ts#L713)
+- [`formatFleetVerify`](../src/operational.ts#L652)
+- [`formatMissionVerification`](../src/operational.ts#L605)
+- [`formatRootCause`](../src/operational.ts#L692)
+- [`formatTwinReadiness`](../src/operational.ts#L732)
+- [`generateSafetyReportTs`](../src/operational.ts#L421)
+- [`parseProgramSource`](../src/operational.ts#L161)
+- [`runOperationalCommand`](../src/operational.ts#L751)
+- [`verifyApprovalsTs`](../src/operational.ts#L311)
+- [`verifyFleetTs`](../src/operational.ts#L272)
+- [`verifyMissionTs`](../src/operational.ts#L180)
 
 #### `parser` {#typescriptcore-parser}
 
@@ -6922,15 +9406,54 @@ Source: [src/parser/index.ts](../src/parser/index.ts#L1)
 
 **export**
 
-- [`parse`](../src/parser/index.ts#L6733)
+- [`parse`](../src/parser/index.ts#L9228)
 
 **class**
 
-- [`ParseError`](../src/parser/index.ts#L111)
+- [`ParseError`](../src/parser/index.ts#L134)
 
 **fn**
 
-- [`parse`](../src/parser/index.ts#L122)
+- [`parse`](../src/parser/index.ts#L145)
+
+#### `parser/assurance` {#typescriptcore-parser-assurance}
+
+Source: [src/parser/assurance.ts](../src/parser/assurance.ts#L1)
+
+**type**
+
+- [`AssuranceParseCtx`](../src/parser/assurance.ts#L43)
+
+**class**
+
+- [`ParseError`](../src/parser/assurance.ts#L32)
+
+**fn**
+
+- [`parseAnomalyDetector`](../src/parser/assurance.ts#L275)
+- [`parseAnomalyHandler`](../src/parser/assurance.ts#L320)
+- [`parseAssuranceCase`](../src/parser/assurance.ts#L493)
+- [`parseContinuityPolicy`](../src/parser/assurance.ts#L468)
+- [`parseKnowledgeModel`](../src/parser/assurance.ts#L193)
+- [`parseMissionPlan`](../src/parser/assurance.ts#L561)
+- [`parseMitigation`](../src/parser/assurance.ts#L388)
+- [`parseOperatingMode`](../src/parser/assurance.ts#L603)
+- [`parsePrognostics`](../src/parser/assurance.ts#L350)
+- [`parseRecoveryPolicy`](../src/parser/assurance.ts#L428)
+- [`parseResiliencePolicy`](../src/parser/assurance.ts#L527)
+- [`parseStateEstimator`](../src/parser/assurance.ts#L236)
+
+#### `provider-runtime-bridge` {#typescriptcore-provider-runtime-bridge}
+
+Source: [src/provider-runtime-bridge.ts](../src/provider-runtime-bridge.ts#L1)
+
+**const**
+
+- [`providerBackedRuntime`](../src/provider-runtime-bridge.ts#L17)
+
+**fn**
+
+- [`createProviderBackedRuntime`](../src/provider-runtime-bridge.ts#L35)
 
 #### `providers` {#typescriptcore-providers}
 
@@ -6938,23 +9461,23 @@ Source: [src/providers/index.ts](../src/providers/index.ts#L1)
 
 **export**
 
-- [`ProviderRegistry`](../src/providers/index.ts#L12)
-- [`transportRegistryKey`](../src/providers/index.ts#L12)
-- [`type ProviderId`](../src/providers/index.ts#L12)
-- [`type TransportProvider`](../src/providers/index.ts#L12)
+- [`ProviderRegistry`](../src/providers/index.ts#L16)
+- [`transportRegistryKey`](../src/providers/index.ts#L16)
+- [`type ProviderId`](../src/providers/index.ts#L16)
+- [`type TransportProvider`](../src/providers/index.ts#L16)
 
 **enum**
 
-- [`ModuleOwnership`](../src/providers/index.ts#L15)
+- [`ModuleOwnership`](../src/providers/index.ts#L19)
 
 **type**
 
-- [`ModuleClassification`](../src/providers/index.ts#L24)
+- [`ModuleClassification`](../src/providers/index.ts#L28)
 
 **const**
 
-- [`MODULE_CLASSIFICATIONS`](../src/providers/index.ts#L56)
-- [`OFFICIAL_PACKAGE_NAMES`](../src/providers/index.ts#L32)
+- [`MODULE_CLASSIFICATIONS`](../src/providers/index.ts#L60)
+- [`OFFICIAL_PACKAGE_NAMES`](../src/providers/index.ts#L36)
 
 #### `providers/bootstrap` {#typescriptcore-providers-bootstrap}
 
@@ -6962,10 +9485,19 @@ Source: [src/providers/bootstrap.ts](../src/providers/bootstrap.ts#L1)
 
 **fn**
 
-- [`bootstrapDefaultProviders`](../src/providers/bootstrap.ts#L95)
-- [`bootstrapProvidersForPackages`](../src/providers/bootstrap.ts#L41)
+- [`bootstrapDefaultProviders`](../src/providers/bootstrap.ts#L149)
+- [`bootstrapProvidersForPackages`](../src/providers/bootstrap.ts#L74)
 - [`officialPackageForTransport`](../src/providers/bootstrap.ts#L17)
-- [`syncCommBusForOfficialPackages`](../src/providers/bootstrap.ts#L117)
+- [`syncCommBusForOfficialPackages`](../src/providers/bootstrap.ts#L207)
+
+#### `providers/package_dispatch` {#typescriptcore-providers-package-dispatch}
+
+Source: [src/providers/package_dispatch.ts](../src/providers/package_dispatch.ts#L1)
+
+**fn**
+
+- [`dispatchOfficialPackageCall`](../src/providers/package_dispatch.ts#L125)
+- [`officialPackageForModule`](../src/providers/package_dispatch.ts#L12)
 
 #### `providers/registry` {#typescriptcore-providers-registry}
 
@@ -6978,11 +9510,87 @@ Source: [src/providers/registry.ts](../src/providers/registry.ts#L1)
 
 **class**
 
-- [`ProviderRegistry`](../src/providers/registry.ts#L31)
+- [`ProviderRegistry`](../src/providers/registry.ts#L46)
 
 **fn**
 
 - [`transportRegistryKey`](../src/providers/registry.ts#L26)
+
+#### `readiness` {#typescriptcore-readiness}
+
+Source: [src/readiness.ts](../src/readiness.ts#L1)
+
+**fn**
+
+- [`evaluateAgentReadinessJson`](../src/readiness.ts#L385)
+- [`evaluateReadinessSource`](../src/readiness.ts#L359)
+- [`evaluateReadinessTs`](../src/readiness.ts#L200)
+- [`readinessDashboardFromReports`](../src/readiness.ts#L492)
+- [`readinessDiagnostics`](../src/readiness.ts#L444)
+
+#### `readiness-spans` {#typescriptcore-readiness-spans}
+
+Source: [src/readiness-spans.ts](../src/readiness-spans.ts#L1)
+
+**fn**
+
+- [`lineColumnForFactor`](../src/readiness-spans.ts#L354)
+- [`lineColumnForIssue`](../src/readiness-spans.ts#L405)
+
+#### `readiness-types` {#typescriptcore-readiness-types}
+
+Source: [src/readiness-types.ts](../src/readiness-types.ts#L1)
+
+**type**
+
+- [`ReadinessDashboard`](../src/readiness-types.ts#L32)
+- [`ReadinessFactorScore`](../src/readiness-types.ts#L16)
+- [`ReadinessIssue`](../src/readiness-types.ts#L9)
+- [`ReadinessOptions`](../src/readiness-types.ts#L41)
+- [`ReadinessReport`](../src/readiness-types.ts#L23)
+- [`ReadinessSeverity`](../src/readiness-types.ts#L6)
+- [`ReadinessStatus`](../src/readiness-types.ts#L7)
+
+#### `recovery` {#typescriptcore-recovery}
+
+Source: [src/recovery.ts](../src/recovery.ts#L1)
+
+**type**
+
+- [`PlannedRecoveryAction`](../src/recovery.ts#L25)
+- [`RecoveryContext`](../src/recovery.ts#L18)
+- [`RecoveryEvidence`](../src/recovery.ts#L40)
+- [`RecoveryKnowledgeBase`](../src/recovery.ts#L82)
+- [`RecoveryKnowledgeEntry`](../src/recovery.ts#L75)
+- [`RecoveryPlan`](../src/recovery.ts#L32)
+- [`RecoveryReadiness`](../src/recovery.ts#L60)
+- [`RecoveryReport`](../src/recovery.ts#L67)
+- [`RecoveryResult`](../src/recovery.ts#L51)
+- [`RecoveryStatus`](../src/recovery.ts#L11)
+
+**fn**
+
+- [`bestKnowledgeEntry`](../src/recovery.ts#L99)
+- [`coordinateFleetRecoveryViaMesh`](../src/recovery.ts#L381)
+- [`evaluateRecoveryTs`](../src/recovery.ts#L309)
+- [`formatRecoveryKnowledge`](../src/recovery.ts#L144)
+- [`formatRecoveryReport`](../src/recovery.ts#L363)
+- [`loadMergedRecoveryKnowledge`](../src/recovery.ts#L113)
+- [`loadRecoveryKnowledgeStore`](../src/recovery.ts#L90)
+- [`simulateFailureRecoveryTs`](../src/recovery.ts#L346)
+
+#### `recovery-diagnostics` {#typescriptcore-recovery-diagnostics}
+
+Source: [src/recovery-diagnostics.ts](../src/recovery-diagnostics.ts#L1)
+
+**type**
+
+- [`RecoveryDiagnostic`](../src/recovery-diagnostics.ts#L10)
+
+**fn**
+
+- [`collectRecoveryDiagnostics`](../src/recovery-diagnostics.ts#L120)
+- [`recoveryDiagnosticsFromSource`](../src/recovery-diagnostics.ts#L210)
 
 #### `regex` {#typescriptcore-regex}
 
@@ -7000,13 +9608,13 @@ Source: [src/regex.ts](../src/regex.ts#L1)
 **fn**
 
 - [`compileRegex`](../src/regex.ts#L30)
-- [`regexCapture`](../src/regex.ts#L153)
-- [`regexFind`](../src/regex.ts#L91)
-- [`regexFromLexeme`](../src/regex.ts#L204)
-- [`regexMatches`](../src/regex.ts#L71)
-- [`regexReplace`](../src/regex.ts#L112)
-- [`regexSplit`](../src/regex.ts#L133)
-- [`validateRegexLiteral`](../src/regex.ts#L184)
+- [`regexCapture`](../src/regex.ts#L238)
+- [`regexFind`](../src/regex.ts#L122)
+- [`regexFromLexeme`](../src/regex.ts#L324)
+- [`regexMatches`](../src/regex.ts#L85)
+- [`regexReplace`](../src/regex.ts#L160)
+- [`regexSplit`](../src/regex.ts#L201)
+- [`validateRegexLiteral`](../src/regex.ts#L286)
 
 #### `reliability` {#typescriptcore-reliability}
 
@@ -7032,23 +9640,28 @@ Source: [src/replay.ts](../src/replay.ts#L1)
 
 **type**
 
-- [`MissionTrace`](../src/replay.ts#L26)
-- [`PlaybackReport`](../src/replay.ts#L20)
-- [`ReplayStateSnapshot`](../src/replay.ts#L13)
-- [`TraceFrame`](../src/replay.ts#L6)
-- [`TraceVerification`](../src/replay.ts#L33)
+- [`MissionTrace`](../src/replay.ts#L33)
+- [`PlaybackReport`](../src/replay.ts#L27)
+- [`ReplayStateSnapshot`](../src/replay.ts#L20)
+- [`TraceFrame`](../src/replay.ts#L13)
+- [`TraceVerification`](../src/replay.ts#L40)
 
 **fn**
 
-- [`createMissionTrace`](../src/replay.ts#L39)
-- [`deserializeMissionTrace`](../src/replay.ts#L243)
-- [`parseReplayOffset`](../src/replay.ts#L151)
-- [`playbackFrames`](../src/replay.ts#L101)
-- [`recordTraceFrame`](../src/replay.ts#L62)
-- [`recordTraceFrameWithState`](../src/replay.ts#L88)
-- [`serializeMissionTrace`](../src/replay.ts#L239)
-- [`traceFramesFrom`](../src/replay.ts#L131)
-- [`verifyTraces`](../src/replay.ts#L190)
+- [`createMissionTrace`](../src/replay.ts#L46)
+- [`deserializeMissionTrace`](../src/replay.ts#L422)
+- [`loadMissionTrace`](../src/replay.ts#L435)
+- [`parseReplayOffset`](../src/replay.ts#L247)
+- [`playbackFrames`](../src/replay.ts#L165)
+- [`recordTraceFrame`](../src/replay.ts#L83)
+- [`recordTraceFrameWithState`](../src/replay.ts#L130)
+- [`replayMissionDeterministic`](../src/replay.ts#L466)
+- [`resolveTraceOutputPath`](../src/replay.ts#L439)
+- [`resolveTraceSource`](../src/replay.ts#L455)
+- [`saveMissionTrace`](../src/replay.ts#L447)
+- [`serializeMissionTrace`](../src/replay.ts#L369)
+- [`traceFramesFrom`](../src/replay.ts#L210)
+- [`verifyTraces`](../src/replay.ts#L300)
 
 #### `robotics-platform` {#typescriptcore-robotics-platform}
 
@@ -7061,19 +9674,19 @@ Source: [src/robotics-platform.ts](../src/robotics-platform.ts#L1)
 
 **class**
 
-- [`FleetRegistry`](../src/robotics-platform.ts#L116)
-- [`ProgramSafetyZoneRegistry`](../src/robotics-platform.ts#L144)
+- [`FleetRegistry`](../src/robotics-platform.ts#L228)
+- [`ProgramSafetyZoneRegistry`](../src/robotics-platform.ts#L260)
 
 **fn**
 
 - [`createMissionRuntime`](../src/robotics-platform.ts#L16)
-- [`missionAdvance`](../src/robotics-platform.ts#L80)
-- [`missionComplete`](../src/robotics-platform.ts#L97)
-- [`missionCurrentStep`](../src/robotics-platform.ts#L108)
-- [`missionFail`](../src/robotics-platform.ts#L103)
-- [`missionPause`](../src/robotics-platform.ts#L66)
-- [`missionResume`](../src/robotics-platform.ts#L73)
-- [`missionStart`](../src/robotics-platform.ts#L46)
+- [`missionAdvance`](../src/robotics-platform.ts#L138)
+- [`missionComplete`](../src/robotics-platform.ts#L169)
+- [`missionCurrentStep`](../src/robotics-platform.ts#L206)
+- [`missionFail`](../src/robotics-platform.ts#L188)
+- [`missionPause`](../src/robotics-platform.ts#L98)
+- [`missionResume`](../src/robotics-platform.ts#L118)
+- [`missionStart`](../src/robotics-platform.ts#L66)
 
 #### `ros2` {#typescriptcore-ros2}
 
@@ -7093,7 +9706,7 @@ Source: [src/ros2/index.ts](../src/ros2/index.ts#L1)
 
 **fn**
 
-- [`createRos2Adapter`](../src/ros2/index.ts#L197)
+- [`createRos2Adapter`](../src/ros2/index.ts#L223)
 
 #### `runtime` {#typescriptcore-runtime}
 
@@ -7106,27 +9719,94 @@ Source: [src/runtime/index.ts](../src/runtime/index.ts#L1)
 - [`ReliabilityRuntime`](../src/runtime/index.ts#L6)
 - [`RuntimeError`](../src/runtime/index.ts#L7)
 
+#### `runtime/adapter-runtime` {#typescriptcore-runtime-adapter-runtime}
+
+Source: [src/runtime/adapter-runtime.ts](../src/runtime/adapter-runtime.ts#L1)
+
+**interface**
+
+- [`AdapterRuntime`](../src/runtime/adapter-runtime.ts#L7)
+
+**const**
+
+- [`builtinAdapterRuntime`](../src/runtime/adapter-runtime.ts#L13)
+
+**fn**
+
+- [`defaultAdapterRuntime`](../src/runtime/adapter-runtime.ts#L23)
+
+#### `runtime/continuity-types` {#typescriptcore-runtime-continuity-types}
+
+Source: [src/runtime/continuity-types.ts](../src/runtime/continuity-types.ts#L1)
+
+**type**
+
+- [`MissionCheckpoint`](../src/runtime/continuity-types.ts#L6)
+- [`MissionStateSnapshot`](../src/runtime/continuity-types.ts#L16)
+
+#### `runtime/health-runtime` {#typescriptcore-runtime-health-runtime}
+
+Source: [src/runtime/health-runtime.ts](../src/runtime/health-runtime.ts#L1)
+
+**type**
+
+- [`HealthPollState`](../src/runtime/health-runtime.ts#L10)
+
+**fn**
+
+- [`createHealthPollState`](../src/runtime/health-runtime.ts#L15)
+- [`pollRuntimeHealthChanges`](../src/runtime/health-runtime.ts#L22)
+
 #### `runtime/interpreter` {#typescriptcore-runtime-interpreter}
 
 Source: [src/runtime/interpreter.ts](../src/runtime/interpreter.ts#L1)
 
 **type**
 
-- [`InterpreterOptions`](../src/runtime/interpreter.ts#L172)
-- [`MotionCommand`](../src/runtime/interpreter.ts#L142)
-- [`PoseValue`](../src/runtime/interpreter.ts#L99)
-- [`RobotState`](../src/runtime/interpreter.ts#L166)
-- [`RuntimeValue`](../src/runtime/interpreter.ts#L101)
+- [`InterpreterOptions`](../src/runtime/interpreter.ts#L183)
+- [`MotionCommand`](../src/runtime/interpreter.ts#L153)
+- [`PoseValue`](../src/runtime/interpreter.ts#L110)
+- [`RobotState`](../src/runtime/interpreter.ts#L177)
+- [`RuntimeValue`](../src/runtime/interpreter.ts#L112)
 
 **interface**
 
-- [`RobotBackend`](../src/runtime/interpreter.ts#L153)
+- [`RobotBackend`](../src/runtime/interpreter.ts#L164)
 
 **class**
 
-- [`Environment`](../src/runtime/interpreter.ts#L189)
-- [`Interpreter`](../src/runtime/interpreter.ts#L292)
-- [`RuntimeError`](../src/runtime/interpreter.ts#L4015)
+- [`Environment`](../src/runtime/interpreter.ts#L205)
+- [`Interpreter`](../src/runtime/interpreter.ts#L308)
+- [`RuntimeError`](../src/runtime/interpreter.ts#L5342)
+
+#### `runtime/provider-observer` {#typescriptcore-runtime-provider-observer}
+
+Source: [src/runtime/provider-observer.ts](../src/runtime/provider-observer.ts#L1)
+
+**type**
+
+- [`ProviderCallObserver`](../src/runtime/provider-observer.ts#L6)
+
+**fn**
+
+- [`notifyProviderCall`](../src/runtime/provider-observer.ts#L19)
+- [`setProviderCallObserver`](../src/runtime/provider-observer.ts#L15)
+
+#### `runtime/provider-runtime` {#typescriptcore-runtime-provider-runtime}
+
+Source: [src/runtime/provider-runtime.ts](../src/runtime/provider-runtime.ts#L1)
+
+**interface**
+
+- [`ProviderRuntime`](../src/runtime/provider-runtime.ts#L11)
+
+**class**
+
+- [`BuiltinProviderRuntime`](../src/runtime/provider-runtime.ts#L23)
+
+**fn**
+
+- [`defaultProviderRuntime`](../src/runtime/provider-runtime.ts#L43)
 
 #### `runtime/reliability-runtime` {#typescriptcore-runtime-reliability-runtime}
 
@@ -7134,16 +9814,97 @@ Source: [src/runtime/reliability-runtime.ts](../src/runtime/reliability-runtime.
 
 **type**
 
-- [`ReliabilityHost`](../src/runtime/reliability-runtime.ts#L12)
+- [`ReliabilityHost`](../src/runtime/reliability-runtime.ts#L14)
 
 **class**
 
-- [`ReliabilityRuntime`](../src/runtime/reliability-runtime.ts#L18)
+- [`ReliabilityRuntime`](../src/runtime/reliability-runtime.ts#L75)
 
 **fn**
 
-- [`pipelineFromDecl`](../src/runtime/reliability-runtime.ts#L140)
-- [`watchdogFromDecl`](../src/runtime/reliability-runtime.ts#L144)
+- [`pipelineFromDecl`](../src/runtime/reliability-runtime.ts#L528)
+- [`watchdogFromDecl`](../src/runtime/reliability-runtime.ts#L536)
+
+#### `runtime/security-runtime` {#typescriptcore-runtime-security-runtime}
+
+Source: [src/runtime/security-runtime.ts](../src/runtime/security-runtime.ts#L1)
+
+**interface**
+
+- [`SecurityRuntime`](../src/runtime/security-runtime.ts#L35)
+
+**class**
+
+- [`BuiltinSecurityRuntime`](../src/runtime/security-runtime.ts#L67)
+
+**fn**
+
+- [`defaultSecurityRuntime`](../src/runtime/security-runtime.ts#L178)
+
+#### `runtime/security-types` {#typescriptcore-runtime-security-types}
+
+Source: [src/runtime/security-types.ts](../src/runtime/security-types.ts#L1)
+
+**type**
+
+- [`AuthenticationMode`](../src/runtime/security-types.ts#L15)
+- [`EncryptionMode`](../src/runtime/security-types.ts#L14)
+- [`IntegrityMode`](../src/runtime/security-types.ts#L16)
+- [`SecretSource`](../src/runtime/security-types.ts#L29)
+- [`SecurePolicyConfig`](../src/runtime/security-types.ts#L18)
+- [`TrustBoundaryKind`](../src/runtime/security-types.ts#L8)
+- [`TrustLevel`](../src/runtime/security-types.ts#L6)
+
+**fn**
+
+- [`boundaryForTransportName`](../src/runtime/security-types.ts#L49)
+- [`parseTrustBoundary`](../src/runtime/security-types.ts#L69)
+- [`parseTrustLevel`](../src/runtime/security-types.ts#L34)
+
+#### `runtime/telemetry-sink` {#typescriptcore-runtime-telemetry-sink}
+
+Source: [src/runtime/telemetry-sink.ts](../src/runtime/telemetry-sink.ts#L1)
+
+**interface**
+
+- [`TelemetrySink`](../src/runtime/telemetry-sink.ts#L9)
+
+**const**
+
+- [`noopTelemetrySink`](../src/runtime/telemetry-sink.ts#L40)
+
+**fn**
+
+- [`defaultTelemetrySink`](../src/runtime/telemetry-sink.ts#L51)
+
+#### `runtime/trigger-registry` {#typescriptcore-runtime-trigger-registry}
+
+Source: [src/runtime/trigger-registry.ts](../src/runtime/trigger-registry.ts#L1)
+
+**type**
+
+- [`RegisteredTrigger`](../src/runtime/trigger-registry.ts#L40)
+- [`TriggerHandlerDecl`](../src/runtime/trigger-registry.ts#L31)
+- [`TriggerKind`](../src/runtime/trigger-registry.ts#L12)
+- [`TriggerTimerSchedule`](../src/runtime/trigger-registry.ts#L49)
+
+**class**
+
+- [`ConditionTriggerState`](../src/runtime/trigger-registry.ts#L218)
+- [`TriggerRegistry`](../src/runtime/trigger-registry.ts#L236)
+
+**const**
+
+- [`MAX_TRIGGERS_PER_TICK`](../src/runtime/trigger-registry.ts#L10)
+
+**fn**
+
+- [`priorityRank`](../src/runtime/trigger-registry.ts#L55)
+- [`timerScheduleFromHandler`](../src/runtime/trigger-registry.ts#L338)
+- [`triggerCategoryLabel`](../src/runtime/trigger-registry.ts#L126)
+- [`triggerDisplayName`](../src/runtime/trigger-registry.ts#L68)
+- [`triggerHandlerFromLegacy`](../src/runtime/trigger-registry.ts#L207)
+- [`triggerKindFromLegacyEventName`](../src/runtime/trigger-registry.ts#L165)
 
 #### `runtime/values` {#typescriptcore-runtime-values}
 
@@ -7151,25 +9912,25 @@ Source: [src/runtime/values.ts](../src/runtime/values.ts#L1)
 
 **type**
 
-- [`ActionBinding`](../src/runtime/values.ts#L218)
+- [`ActionBinding`](../src/runtime/values.ts#L372)
 - [`PoseValue`](../src/runtime/values.ts#L11)
-- [`ServiceBinding`](../src/runtime/values.ts#L213)
-- [`TopicBinding`](../src/runtime/values.ts#L207)
+- [`ServiceBinding`](../src/runtime/values.ts#L367)
+- [`TopicBinding`](../src/runtime/values.ts#L361)
 - [`VelocityValue`](../src/runtime/values.ts#L12)
-- [`ZoneBinding`](../src/runtime/values.ts#L223)
+- [`ZoneBinding`](../src/runtime/values.ts#L377)
 
 **fn**
 
-- [`getNumber`](../src/runtime/values.ts#L169)
-- [`getPoseFields`](../src/runtime/values.ts#L112)
-- [`getString`](../src/runtime/values.ts#L188)
-- [`getTrajectoryWaypoints`](../src/runtime/values.ts#L150)
-- [`getVelocityFields`](../src/runtime/values.ts#L131)
-- [`poseFromState`](../src/runtime/values.ts#L76)
+- [`getNumber`](../src/runtime/values.ts#L289)
+- [`getPoseFields`](../src/runtime/values.ts#L190)
+- [`getString`](../src/runtime/values.ts#L325)
+- [`getTrajectoryWaypoints`](../src/runtime/values.ts#L256)
+- [`getVelocityFields`](../src/runtime/values.ts#L223)
+- [`poseFromState`](../src/runtime/values.ts#L126)
 - [`runtimePose`](../src/runtime/values.ts#L14)
-- [`runtimeTrajectory`](../src/runtime/values.ts#L58)
-- [`runtimeVelocity`](../src/runtime/values.ts#L38)
-- [`velocityFromState`](../src/runtime/values.ts#L94)
+- [`runtimeTrajectory`](../src/runtime/values.ts#L94)
+- [`runtimeVelocity`](../src/runtime/values.ts#L58)
+- [`velocityFromState`](../src/runtime/values.ts#L158)
 
 #### `rust-bridge` {#typescriptcore-rust-bridge}
 
@@ -7178,37 +9939,44 @@ Source: [src/rust-bridge.ts](../src/rust-bridge.ts#L1)
 **type**
 
 - [`CheckResult`](../src/rust-bridge.ts#L12)
-- [`CodegenTarget`](../src/rust-bridge.ts#L261)
-- [`CompatItem`](../src/rust-bridge.ts#L16)
-- [`CompatSeverity`](../src/rust-bridge.ts#L14)
-- [`DebugPause`](../src/rust-bridge.ts#L262)
-- [`DebugResult`](../src/rust-bridge.ts#L263)
+- [`CodegenTarget`](../src/rust-bridge.ts#L321)
+- [`DebugPause`](../src/rust-bridge.ts#L322)
+- [`DebugResult`](../src/rust-bridge.ts#L323)
 - [`Diagnostic`](../src/rust-bridge.ts#L11)
-- [`DocResult`](../src/rust-bridge.ts#L260)
-- [`FormatResult`](../src/rust-bridge.ts#L251)
-- [`LintIssue`](../src/rust-bridge.ts#L252)
-- [`LintResult`](../src/rust-bridge.ts#L259)
-- [`MatrixCell`](../src/rust-bridge.ts#L24)
-- [`RunResult`](../src/rust-bridge.ts#L37)
-- [`SecurityCliReport`](../src/rust-bridge.ts#L547)
-- [`VerifyResult`](../src/rust-bridge.ts#L30)
+- [`DocResult`](../src/rust-bridge.ts#L320)
+- [`FormatResult`](../src/rust-bridge.ts#L311)
+- [`LintIssue`](../src/rust-bridge.ts#L312)
+- [`LintResult`](../src/rust-bridge.ts#L319)
+- [`RunResult`](../src/rust-bridge.ts#L21)
+- [`SecurityCliReport`](../src/rust-bridge.ts#L755)
 
 **fn**
 
-- [`checkViaCli`](../src/rust-bridge.ts#L97)
-- [`codegenViaCli`](../src/rust-bridge.ts#L385)
-- [`debugViaCli`](../src/rust-bridge.ts#L450)
-- [`deployViaCli`](../src/rust-bridge.ts#L418)
-- [`docViaCli`](../src/rust-bridge.ts#L353)
-- [`fmtViaCli`](../src/rust-bridge.ts#L283)
-- [`isCliAvailable`](../src/rust-bridge.ts#L79)
-- [`lintViaCli`](../src/rust-bridge.ts#L315)
-- [`runNativeCli`](../src/rust-bridge.ts#L495)
-- [`runViaCli`](../src/rust-bridge.ts#L207)
-- [`securityAuditViaCli`](../src/rust-bridge.ts#L593)
-- [`securityCheckViaCli`](../src/rust-bridge.ts#L589)
-- [`verifyFileViaCli`](../src/rust-bridge.ts#L527)
-- [`verifyViaCli`](../src/rust-bridge.ts#L142)
+- [`checkViaCli`](../src/rust-bridge.ts#L112)
+- [`codegenViaCli`](../src/rust-bridge.ts#L514)
+- [`debugViaCli`](../src/rust-bridge.ts#L610)
+- [`deployViaCli`](../src/rust-bridge.ts#L564)
+- [`docViaCli`](../src/rust-bridge.ts#L460)
+- [`fmtViaCli`](../src/rust-bridge.ts#L362)
+- [`isCliAvailable`](../src/rust-bridge.ts#L82)
+- [`lintViaCli`](../src/rust-bridge.ts#L408)
+- [`runNativeCli`](../src/rust-bridge.ts#L672)
+- [`runViaCli`](../src/rust-bridge.ts#L253)
+- [`securityAuditViaCli`](../src/rust-bridge.ts#L832)
+- [`securityCheckViaCli`](../src/rust-bridge.ts#L813)
+- [`verifyFileViaCli`](../src/rust-bridge.ts#L718)
+- [`verifyViaCli`](../src/rust-bridge.ts#L171)
+
+#### `rust-bridge-types` {#typescriptcore-rust-bridge-types}
+
+Source: [src/rust-bridge-types.ts](../src/rust-bridge-types.ts#L1)
+
+**type**
+
+- [`CompatItem`](../src/rust-bridge-types.ts#L8)
+- [`CompatSeverity`](../src/rust-bridge-types.ts#L6)
+- [`MatrixCell`](../src/rust-bridge-types.ts#L16)
+- [`VerifyResult`](../src/rust-bridge-types.ts#L22)
 
 #### `safety` {#typescriptcore-safety}
 
@@ -7226,9 +9994,9 @@ Source: [src/safety/index.ts](../src/safety/index.ts#L1)
 
 **fn**
 
-- [`applyEmergencyStop`](../src/safety/index.ts#L298)
-- [`createSafetyConfigFromRobot`](../src/safety/index.ts#L272)
-- [`interpolatePoses`](../src/safety/index.ts#L320)
+- [`applyEmergencyStop`](../src/safety/index.ts#L301)
+- [`createSafetyConfigFromRobot`](../src/safety/index.ts#L292)
+- [`interpolatePoses`](../src/safety/index.ts#L309)
 
 #### `security` {#typescriptcore-security}
 
@@ -7242,34 +10010,42 @@ Source: [src/security/index.ts](../src/security/index.ts#L1)
 
 **type**
 
-- [`RobotIdentity`](../src/security/index.ts#L226)
-- [`SecretSource`](../src/security/index.ts#L386)
-- [`SecurePolicy`](../src/security/index.ts#L294)
+- [`RobotIdentity`](../src/security/index.ts#L367)
+- [`SecretSource`](../src/security/index.ts#L547)
+- [`SecurePolicy`](../src/security/index.ts#L455)
 - [`TrustLevel`](../src/security/index.ts#L25)
 
 **class**
 
-- [`CapabilitySet`](../src/security/index.ts#L305)
-- [`SecretStore`](../src/security/index.ts#L391)
-- [`SecureEndpointRegistry`](../src/security/index.ts#L440)
-- [`SecurityContext`](../src/security/index.ts#L492)
+- [`CapabilitySet`](../src/security/index.ts#L466)
+- [`SecretStore`](../src/security/index.ts#L552)
+- [`SecureEndpointRegistry`](../src/security/index.ts#L601)
+- [`SecurityContext`](../src/security/index.ts#L653)
 
 **const**
 
-- [`KNOWN_CAPABILITIES`](../src/security/index.ts#L763)
+- [`KNOWN_CAPABILITIES`](../src/security/index.ts#L927)
 
 **fn**
 
-- [`createRobotIdentity`](../src/security/index.ts#L234)
-- [`isHexPublicKey`](../src/security/index.ts#L90)
-- [`isKnownCapability`](../src/security/index.ts#L781)
-- [`parseTrustLevel`](../src/security/index.ts#L53)
-- [`publicKeyFromMaterial`](../src/security/index.ts#L108)
-- [`sha256Hex`](../src/security/index.ts#L127)
-- [`sign`](../src/security/index.ts#L168)
-- [`signAsync`](../src/security/index.ts#L145)
+- [`createRobotIdentity`](../src/security/index.ts#L375)
+- [`isHexPublicKey`](../src/security/index.ts#L135)
+- [`isKnownCapability`](../src/security/index.ts#L945)
+- [`parseTrustLevel`](../src/security/index.ts#L70)
+- [`publicKeyFromMaterial`](../src/security/index.ts#L167)
+- [`sha256Hex`](../src/security/index.ts#L200)
+- [`sign`](../src/security/index.ts#L272)
+- [`signAsync`](../src/security/index.ts#L232)
 - [`trustSatisfies`](../src/security/index.ts#L34)
-- [`verifySignature`](../src/security/index.ts#L190)
+- [`verifySignature`](../src/security/index.ts#L311)
+
+#### `security-runtime-bridge` {#typescriptcore-security-runtime-bridge}
+
+Source: [src/security-runtime-bridge.ts](../src/security-runtime-bridge.ts#L1)
+
+**fn**
+
+- [`createSecurityBackedRuntime`](../src/security-runtime-bridge.ts#L122)
 
 #### `security/trust-boundary` {#typescriptcore-security-trust-boundary}
 
@@ -7281,15 +10057,15 @@ Source: [src/security/trust-boundary.ts](../src/security/trust-boundary.ts#L1)
 
 **class**
 
-- [`TrustBoundaryRegistry`](../src/security/trust-boundary.ts#L86)
+- [`TrustBoundaryRegistry`](../src/security/trust-boundary.ts#L156)
 
 **fn**
 
 - [`boundaryForTransportName`](../src/security/trust-boundary.ts#L14)
-- [`parseTrustBoundary`](../src/security/trust-boundary.ts#L35)
-- [`requiredAuthentication`](../src/security/trust-boundary.ts#L74)
-- [`requiredEncryption`](../src/security/trust-boundary.ts#L64)
-- [`requiresVerifiedActuator`](../src/security/trust-boundary.ts#L80)
+- [`parseTrustBoundary`](../src/security/trust-boundary.ts#L49)
+- [`requiredAuthentication`](../src/security/trust-boundary.ts#L116)
+- [`requiredEncryption`](../src/security/trust-boundary.ts#L92)
+- [`requiresVerifiedActuator`](../src/security/trust-boundary.ts#L136)
 
 #### `security/validate` {#typescriptcore-security-validate}
 
@@ -7303,10 +10079,10 @@ Source: [src/security/validate.ts](../src/security/validate.ts#L1)
 
 **fn**
 
-- [`analyzeProgram`](../src/security/validate.ts#L262)
-- [`reportHasErrors`](../src/security/validate.ts#L297)
-- [`securityAudit`](../src/security/validate.ts#L290)
-- [`securityCheck`](../src/security/validate.ts#L283)
+- [`analyzeProgram`](../src/security/validate.ts#L450)
+- [`reportHasErrors`](../src/security/validate.ts#L530)
+- [`securityAudit`](../src/security/validate.ts#L509)
+- [`securityCheck`](../src/security/validate.ts#L488)
 
 #### `simulator` {#typescriptcore-simulator}
 
@@ -7323,7 +10099,7 @@ Source: [src/simulator/index.ts](../src/simulator/index.ts#L1)
 
 **fn**
 
-- [`createDefaultSimulator`](../src/simulator/index.ts#L467)
+- [`createDefaultSimulator`](../src/simulator/index.ts#L495)
 
 #### `soc` {#typescriptcore-soc}
 
@@ -7342,8 +10118,8 @@ Source: [src/soc/index.ts](../src/soc/index.ts#L1)
 **fn**
 
 - [`getSocProfile`](../src/soc/index.ts#L158)
-- [`listSocProfiles`](../src/soc/index.ts#L269)
-- [`validateHalAgainstSoc`](../src/soc/index.ts#L176)
+- [`listSocProfiles`](../src/soc/index.ts#L300)
+- [`validateHalAgainstSoc`](../src/soc/index.ts#L190)
 
 #### `stdlib` {#typescriptcore-stdlib}
 
@@ -7369,12 +10145,131 @@ Source: [src/swarm-coordinator.ts](../src/swarm-coordinator.ts#L1)
 
 **fn**
 
-- [`coordinateSwarms`](../src/swarm-coordinator.ts#L218)
-- [`coordinateSwarmsMesh`](../src/swarm-coordinator.ts#L260)
+- [`coordinateSwarms`](../src/swarm-coordinator.ts#L346)
+- [`coordinateSwarmsMesh`](../src/swarm-coordinator.ts#L406)
 - [`defaultSwarmStatePath`](../src/swarm-coordinator.ts#L42)
-- [`emptySwarmState`](../src/swarm-coordinator.ts#L46)
-- [`readSwarmStateFromDisk`](../src/swarm-coordinator.ts#L50)
-- [`writeSwarmStateToDisk`](../src/swarm-coordinator.ts#L65)
+- [`emptySwarmState`](../src/swarm-coordinator.ts#L60)
+- [`readSwarmStateFromDisk`](../src/swarm-coordinator.ts#L78)
+- [`writeSwarmStateToDisk`](../src/swarm-coordinator.ts#L108)
+
+#### `telemetry-cli` {#typescriptcore-telemetry-cli}
+
+Source: [src/telemetry-cli.ts](../src/telemetry-cli.ts#L1)
+
+**type**
+
+- [`TelemetryEvent`](../src/telemetry-cli.ts#L34)
+
+**fn**
+
+- [`runTelemetryCli`](../src/telemetry-cli.ts#L657)
+- [`runTelemetryFleetPush`](../src/telemetry-cli.ts#L375)
+- [`runTelemetryPush`](../src/telemetry-cli.ts#L412)
+
+#### `telemetry-fleet` {#typescriptcore-telemetry-fleet}
+
+Source: [src/telemetry-fleet.ts](../src/telemetry-fleet.ts#L1)
+
+**type**
+
+- [`FleetTelemetryShard`](../src/telemetry-fleet.ts#L8)
+
+**fn**
+
+- [`envFleetAutoIngestEnabled`](../src/telemetry-fleet.ts#L19)
+- [`envFleetMeshUrl`](../src/telemetry-fleet.ts#L24)
+- [`envRobotId`](../src/telemetry-fleet.ts#L29)
+- [`fetchFleetTelemetry`](../src/telemetry-fleet.ts#L67)
+- [`ingestFleetTelemetry`](../src/telemetry-fleet.ts#L85)
+- [`maybeAutoIngestFleetAfterSession`](../src/telemetry-fleet.ts#L112)
+- [`mergeFleetOtlpJson`](../src/telemetry-fleet.ts#L43)
+
+#### `telemetry-otlp` {#typescriptcore-telemetry-otlp}
+
+Source: [src/telemetry-otlp.ts](../src/telemetry-otlp.ts#L1)
+
+**fn**
+
+- [`renderOtlpJson`](../src/telemetry-otlp.ts#L27)
+
+#### `telemetry-push` {#typescriptcore-telemetry-push}
+
+Source: [src/telemetry-push.ts](../src/telemetry-push.ts#L1)
+
+**type**
+
+- [`OtlpPushOptions`](../src/telemetry-push.ts#L9)
+
+**fn**
+
+- [`envAutoPushEnabled`](../src/telemetry-push.ts#L22)
+- [`envOtlpEndpoint`](../src/telemetry-push.ts#L27)
+- [`envOtlpToken`](../src/telemetry-push.ts#L32)
+- [`envPushIntervalMs`](../src/telemetry-push.ts#L37)
+- [`maybeAutoPushAfterSession`](../src/telemetry-push.ts#L72)
+- [`pushGlobalStore`](../src/telemetry-push.ts#L67)
+- [`pushOtlpJson`](../src/telemetry-push.ts#L43)
+- [`runOtlpPushLoop`](../src/telemetry-push.ts#L96)
+
+#### `telemetry-sqlite` {#typescriptcore-telemetry-sqlite}
+
+Source: [src/telemetry-sqlite.ts](../src/telemetry-sqlite.ts#L1)
+
+**fn**
+
+- [`defaultSqliteStorePath`](../src/telemetry-sqlite.ts#L39)
+- [`envBackendSqlite`](../src/telemetry-sqlite.ts#L35)
+- [`resolveSqlitePath`](../src/telemetry-sqlite.ts#L43)
+- [`sqliteAppendEvent`](../src/telemetry-sqlite.ts#L128)
+- [`sqliteBackendAvailable`](../src/telemetry-sqlite.ts#L31)
+- [`sqliteCompact`](../src/telemetry-sqlite.ts#L196)
+- [`sqliteReadAll`](../src/telemetry-sqlite.ts#L148)
+- [`sqliteReadHeartbeatIndex`](../src/telemetry-sqlite.ts#L173)
+- [`sqliteUpsertHeartbeat`](../src/telemetry-sqlite.ts#L159)
+
+#### `telemetry-store` {#typescriptcore-telemetry-store}
+
+Source: [src/telemetry-store.ts](../src/telemetry-store.ts#L1)
+
+**type**
+
+- [`TelemetryEvent`](../src/telemetry-store.ts#L20)
+- [`TelemetrySessionSummary`](../src/telemetry-store.ts#L208)
+
+**fn**
+
+- [`beginRunSession`](../src/telemetry-store.ts#L140)
+- [`configureSessionPersist`](../src/telemetry-store.ts#L130)
+- [`defaultHeartbeatIndexPath`](../src/telemetry-store.ts#L91)
+- [`defaultStorePath`](../src/telemetry-store.ts#L87)
+- [`endRunSession`](../src/telemetry-store.ts#L157)
+- [`envPersistEnabled`](../src/telemetry-store.ts#L112)
+- [`isHeartbeatMetric`](../src/telemetry-store.ts#L428)
+- [`listTelemetrySessions`](../src/telemetry-store.ts#L224)
+- [`persistEnabled`](../src/telemetry-store.ts#L189)
+- [`readAllEvents`](../src/telemetry-store.ts#L193)
+- [`readHeartbeatIndexForStore`](../src/telemetry-store.ts#L354)
+- [`recordDeviceHeartbeat`](../src/telemetry-store.ts#L433)
+- [`recordDeviceTelemetry`](../src/telemetry-store.ts#L478)
+- [`recordHealthEvent`](../src/telemetry-store.ts#L460)
+- [`recordSensorReading`](../src/telemetry-store.ts#L386)
+- [`recordTaskHeartbeat`](../src/telemetry-store.ts#L403)
+- [`recordTopicPublish`](../src/telemetry-store.ts#L469)
+- [`resolveHeartbeatIndexPath`](../src/telemetry-store.ts#L102)
+- [`resolveStorePath`](../src/telemetry-store.ts#L95)
+- [`usesSqliteBackend`](../src/telemetry-store.ts#L117)
+
+#### `telemetry-store-bridge` {#typescriptcore-telemetry-store-bridge}
+
+Source: [src/telemetry-store-bridge.ts](../src/telemetry-store-bridge.ts#L1)
+
+**const**
+
+- [`telemetryStoreSink`](../src/telemetry-store-bridge.ts#L19)
+
+**fn**
+
+- [`createTelemetryStoreSink`](../src/telemetry-store-bridge.ts#L60)
 
 #### `transport` {#typescriptcore-transport}
 
@@ -7382,29 +10277,29 @@ Source: [src/transport/index.ts](../src/transport/index.ts#L1)
 
 **export**
 
-- [`defaultTransportSecurity`](../src/transport/index.ts#L34)
-- [`effectiveTransportPolicy`](../src/transport/index.ts#L828)
-- [`resolveBrokerUrl`](../src/transport/index.ts#L34)
-- [`TlsTransportSession`](../src/transport/index.ts#L34)
-- [`transportAsStr`](../src/transport/index.ts#L828)
-- [`transportSecurityFromBusFields`](../src/transport/index.ts#L34)
+- [`defaultTransportSecurity`](../src/transport/index.ts#L35)
+- [`effectiveTransportPolicy`](../src/transport/index.ts#L917)
+- [`resolveBrokerUrl`](../src/transport/index.ts#L35)
+- [`TlsTransportSession`](../src/transport/index.ts#L35)
+- [`transportAsStr`](../src/transport/index.ts#L917)
+- [`transportSecurityFromBusFields`](../src/transport/index.ts#L35)
 
 **type**
 
-- [`AdapterMessage`](../src/transport/index.ts#L36)
-- [`TransportConfig`](../src/transport/index.ts#L211)
+- [`AdapterMessage`](../src/transport/index.ts#L37)
+- [`TransportConfig`](../src/transport/index.ts#L213)
 
 **interface**
 
-- [`TransportAdapter`](../src/transport/index.ts#L42)
+- [`TransportAdapter`](../src/transport/index.ts#L43)
 
 **class**
 
-- [`RoutingCommBus`](../src/transport/index.ts#L213)
+- [`RoutingCommBus`](../src/transport/index.ts#L215)
 
 **fn**
 
-- [`createTransportStub`](../src/transport/index.ts#L63)
+- [`createTransportStub`](../src/transport/index.ts#L64)
 
 #### `transport/live-dds` {#typescriptcore-transport-live-dds}
 
@@ -7416,7 +10311,7 @@ Source: [src/transport/live-dds.ts](../src/transport/live-dds.ts#L1)
 
 **fn**
 
-- [`liveDdsEnabled`](../src/transport/live-dds.ts#L74)
+- [`liveDdsEnabled`](../src/transport/live-dds.ts#L75)
 
 #### `transport/live-mqtt` {#typescriptcore-transport-live-mqtt}
 
@@ -7428,7 +10323,7 @@ Source: [src/transport/live-mqtt.ts](../src/transport/live-mqtt.ts#L1)
 
 **fn**
 
-- [`liveMqttEnabled`](../src/transport/live-mqtt.ts#L74)
+- [`liveMqttEnabled`](../src/transport/live-mqtt.ts#L76)
 
 #### `transport/live-websocket` {#typescriptcore-transport-live-websocket}
 
@@ -7440,7 +10335,7 @@ Source: [src/transport/live-websocket.ts](../src/transport/live-websocket.ts#L1)
 
 **fn**
 
-- [`liveWebsocketEnabled`](../src/transport/live-websocket.ts#L78)
+- [`liveWebsocketEnabled`](../src/transport/live-websocket.ts#L79)
 
 #### `transport/transport-security` {#typescriptcore-transport-transport-security}
 
@@ -7451,13 +10346,13 @@ Source: [src/transport/transport-security.ts](../src/transport/transport-securit
 - [`AuthenticationMode`](../src/transport/transport-security.ts#L12)
 - [`EncryptionMode`](../src/transport/transport-security.ts#L11)
 - [`IntegrityMode`](../src/transport/transport-security.ts#L13)
-- [`SecureCommPolicy`](../src/transport/transport-security.ts#L260)
-- [`TlsEndpoint`](../src/transport/transport-security.ts#L142)
+- [`SecureCommPolicy`](../src/transport/transport-security.ts#L441)
+- [`TlsEndpoint`](../src/transport/transport-security.ts#L248)
 - [`TransportSecurityConfig`](../src/transport/transport-security.ts#L18)
 
 **class**
 
-- [`TlsTransportSession`](../src/transport/transport-security.ts#L296)
+- [`TlsTransportSession`](../src/transport/transport-security.ts#L494)
 
 **const**
 
@@ -7466,13 +10361,13 @@ Source: [src/transport/transport-security.ts](../src/transport/transport-securit
 **fn**
 
 - [`defaultTransportSecurity`](../src/transport/transport-security.ts#L27)
-- [`effectiveTransportPolicy`](../src/transport/transport-security.ts#L266)
-- [`parseTlsEndpoint`](../src/transport/transport-security.ts#L144)
-- [`resolveBrokerUrl`](../src/transport/transport-security.ts#L227)
-- [`sessionMaterial`](../src/transport/transport-security.ts#L101)
-- [`transportSecurityFromBusFields`](../src/transport/transport-security.ts#L70)
-- [`urlRequiresTls`](../src/transport/transport-security.ts#L234)
-- [`validateTransportSecurity`](../src/transport/transport-security.ts#L119)
+- [`effectiveTransportPolicy`](../src/transport/transport-security.ts#L447)
+- [`parseTlsEndpoint`](../src/transport/transport-security.ts#L250)
+- [`resolveBrokerUrl`](../src/transport/transport-security.ts#L380)
+- [`sessionMaterial`](../src/transport/transport-security.ts#L178)
+- [`transportSecurityFromBusFields`](../src/transport/transport-security.ts#L127)
+- [`urlRequiresTls`](../src/transport/transport-security.ts#L401)
+- [`validateTransportSecurity`](../src/transport/transport-security.ts#L210)
 
 #### `transport/transport-wire` {#typescriptcore-transport-transport-wire}
 
@@ -7480,7 +10375,7 @@ Source: [src/transport/transport-wire.ts](../src/transport/transport-wire.ts#L1)
 
 **export**
 
-- [`WIRE_PREFIX`](../src/transport/transport-wire.ts#L244)
+- [`WIRE_PREFIX`](../src/transport/transport-wire.ts#L372)
 
 **type**
 
@@ -7489,11 +10384,11 @@ Source: [src/transport/transport-wire.ts](../src/transport/transport-wire.ts#L1)
 
 **fn**
 
-- [`createTransportWireFrame`](../src/transport/transport-wire.ts#L140)
-- [`decodeWireValue`](../src/transport/transport-wire.ts#L211)
-- [`encodeWireValue`](../src/transport/transport-wire.ts#L176)
-- [`runtimeValueFromJson`](../src/transport/transport-wire.ts#L121)
-- [`runtimeValueToJson`](../src/transport/transport-wire.ts#L61)
+- [`createTransportWireFrame`](../src/transport/transport-wire.ts#L196)
+- [`decodeWireValue`](../src/transport/transport-wire.ts#L322)
+- [`encodeWireValue`](../src/transport/transport-wire.ts#L258)
+- [`runtimeValueFromJson`](../src/transport/transport-wire.ts#L163)
+- [`runtimeValueToJson`](../src/transport/transport-wire.ts#L75)
 
 #### `transport/wire-crypto` {#typescriptcore-transport-wire-crypto}
 
@@ -7509,13 +10404,13 @@ Source: [src/type-system.ts](../src/type-system.ts#L1)
 
 **fn**
 
-- [`binaryPhysicalOpAllowed`](../src/type-system.ts#L420)
-- [`isActionProposalType`](../src/type-system.ts#L470)
-- [`isSafeActionType`](../src/type-system.ts#L488)
-- [`physicalCategory`](../src/type-system.ts#L294)
-- [`resolveGenericType`](../src/type-system.ts#L263)
-- [`resolveTypeName`](../src/type-system.ts#L70)
-- [`typeKindName`](../src/type-system.ts#L506)
+- [`binaryPhysicalOpAllowed`](../src/type-system.ts#L479)
+- [`isActionProposalType`](../src/type-system.ts#L549)
+- [`isSafeActionType`](../src/type-system.ts#L581)
+- [`physicalCategory`](../src/type-system.ts#L339)
+- [`resolveGenericType`](../src/type-system.ts#L291)
+- [`resolveTypeName`](../src/type-system.ts#L84)
+- [`typeKindName`](../src/type-system.ts#L613)
 
 #### `types` {#typescriptcore-types}
 
@@ -7523,8 +10418,10 @@ Source: [src/types/index.ts](../src/types/index.ts#L1)
 
 **export**
 
+- [`builtinCheckerHost`](../src/types/index.ts#L7)
 - [`check`](../src/types/index.ts#L6)
 - [`checkWithRegistry`](../src/types/index.ts#L6)
+- [`type CheckerHost`](../src/types/index.ts#L7)
 - [`typeCheck`](../src/types/index.ts#L6)
 
 #### `types/checker` {#typescriptcore-types-checker}
@@ -7533,9 +10430,35 @@ Source: [src/types/checker.ts](../src/types/checker.ts#L1)
 
 **fn**
 
-- [`check`](../src/types/checker.ts#L111)
-- [`checkWithRegistry`](../src/types/checker.ts#L129)
-- [`typeCheck`](../src/types/checker.ts#L93)
+- [`check`](../src/types/checker.ts#L109)
+- [`checkWithRegistry`](../src/types/checker.ts#L139)
+- [`typeCheck`](../src/types/checker.ts#L79)
+
+#### `types/checker-host` {#typescriptcore-types-checker-host}
+
+Source: [src/types/checker-host.ts](../src/types/checker-host.ts#L1)
+
+**type**
+
+- [`CheckerDiagnostic`](../src/types/checker-host.ts#L27)
+- [`CheckerHost`](../src/types/checker-host.ts#L37)
+- [`ResolvedLibModule`](../src/types/checker-host.ts#L33)
+
+**const**
+
+- [`builtinCheckerHost`](../src/types/checker-host.ts#L71)
+
+#### `types/sensor-types` {#typescriptcore-types-sensor-types}
+
+Source: [src/types/sensor-types.ts](../src/types/sensor-types.ts#L1)
+
+**type**
+
+- [`LibrarySensorEntry`](../src/types/sensor-types.ts#L6)
+
+**fn**
+
+- [`allLibrarySensorTypes`](../src/types/sensor-types.ts#L30)
 
 #### `types/units` {#typescriptcore-types-units}
 
@@ -7556,26 +10479,26 @@ Source: [src/types/units.ts](../src/types/units.ts#L1)
 
 **const**
 
-- [`ACTION_TYPES`](../src/types/units.ts#L230)
-- [`ACTUATOR_TYPES`](../src/types/units.ts#L375)
-- [`AI_MODEL_TYPES`](../src/types/units.ts#L382)
-- [`AI_VALUE_TYPES`](../src/types/units.ts#L388)
-- [`BUILTIN_FUNCTIONS`](../src/types/units.ts#L401)
-- [`BUILTIN_METHODS`](../src/types/units.ts#L520)
-- [`MESSAGE_TYPES`](../src/types/units.ts#L217)
-- [`OBJECT_PROPERTIES`](../src/types/units.ts#L742)
-- [`POSE_PROPERTIES`](../src/types/units.ts#L802)
-- [`ROBOT_METHODS`](../src/types/units.ts#L511)
-- [`SCAN_PROPERTIES`](../src/types/units.ts#L738)
-- [`SENSOR_TYPES`](../src/types/units.ts#L236)
-- [`SERVICE_TYPES`](../src/types/units.ts#L224)
-- [`VELOCITY_PROPERTIES`](../src/types/units.ts#L809)
+- [`ACTION_TYPES`](../src/types/units.ts#L298)
+- [`ACTUATOR_TYPES`](../src/types/units.ts#L481)
+- [`AI_MODEL_TYPES`](../src/types/units.ts#L488)
+- [`AI_VALUE_TYPES`](../src/types/units.ts#L494)
+- [`BUILTIN_FUNCTIONS`](../src/types/units.ts#L507)
+- [`BUILTIN_METHODS`](../src/types/units.ts#L626)
+- [`MESSAGE_TYPES`](../src/types/units.ts#L285)
+- [`OBJECT_PROPERTIES`](../src/types/units.ts#L856)
+- [`POSE_PROPERTIES`](../src/types/units.ts#L916)
+- [`ROBOT_METHODS`](../src/types/units.ts#L617)
+- [`SCAN_PROPERTIES`](../src/types/units.ts#L852)
+- [`SENSOR_TYPES`](../src/types/units.ts#L304)
+- [`SERVICE_TYPES`](../src/types/units.ts#L292)
+- [`VELOCITY_PROPERTIES`](../src/types/units.ts#L923)
 
 **fn**
 
-- [`getLibraryForSensorType`](../src/types/units.ts#L249)
-- [`mergeLibraryMethods`](../src/types/units.ts#L348)
-- [`resultUnitForBinary`](../src/types/units.ts#L137)
+- [`getLibraryForSensorType`](../src/types/units.ts#L317)
+- [`mergeLibraryMethods`](../src/types/units.ts#L444)
+- [`resultUnitForBinary`](../src/types/units.ts#L185)
 
 #### `units` {#typescriptcore-units}
 
@@ -7587,12 +10510,12 @@ Source: [src/units/index.ts](../src/units/index.ts#L1)
 
 **fn**
 
-- [`alignForBinary`](../src/units/index.ts#L738)
+- [`alignForBinary`](../src/units/index.ts#L857)
 - [`canonicalUnit`](../src/units/index.ts#L44)
-- [`convertValue`](../src/units/index.ts#L713)
-- [`unitCategory`](../src/units/index.ts#L95)
-- [`unitMatchesNamedType`](../src/units/index.ts#L248)
-- [`unitsCompatible`](../src/units/index.ts#L225)
+- [`convertValue`](../src/units/index.ts#L812)
+- [`unitCategory`](../src/units/index.ts#L109)
+- [`unitMatchesNamedType`](../src/units/index.ts#L293)
+- [`unitsCompatible`](../src/units/index.ts#L253)
 
 ### `@spanda/native` {#ts-packages-native}
 
@@ -7609,9 +10532,9 @@ Source: [packages/native/cli-bridge.ts](../packages/native/cli-bridge.ts#L1)
 
 **fn**
 
-- [`checkViaCli`](../packages/native/cli-bridge.ts#L58)
-- [`isCliAvailable`](../packages/native/cli-bridge.ts#L40)
-- [`runViaCli`](../packages/native/cli-bridge.ts#L100)
+- [`checkViaCli`](../packages/native/cli-bridge.ts#L82)
+- [`isCliAvailable`](../packages/native/cli-bridge.ts#L52)
+- [`runViaCli`](../packages/native/cli-bridge.ts#L138)
 
 #### `root` {#spanda-native-root}
 
@@ -7637,10 +10560,10 @@ Source: [packages/native/index.ts](../packages/native/index.ts#L1)
 
 **fn**
 
-- [`checkSource`](../packages/native/index.ts#L138)
-- [`coreVersion`](../packages/native/index.ts#L183)
+- [`checkSource`](../packages/native/index.ts#L160)
+- [`coreVersion`](../packages/native/index.ts#L236)
 - [`isNativeAvailable`](../packages/native/index.ts#L92)
-- [`runSource`](../packages/native/index.ts#L160)
+- [`runSource`](../packages/native/index.ts#L196)
 
 ### `@spanda/lsp` {#ts-packages-lsp}
 
@@ -7650,16 +10573,31 @@ Root: [`packages/lsp`](../packages/lsp/)
 
 - [src/server](#spanda-lsp-src-server)
 
-### `@spanda/web` {#ts-packages-web-src}
+### `@davalgi-spanda/web` {#ts-packages-web-src}
 
 Root: [`packages/web/src`](../packages/web/src/)
 
 **Modules**
 
-- [examples](#spanda-web-examples)
-- [spanda-wasm](#spanda-web-spanda-wasm)
+- [continuity-agent](#davalgi-spanda-web-continuity-agent)
+- [examples](#davalgi-spanda-web-examples)
+- [readiness-agent](#davalgi-spanda-web-readiness-agent)
+- [readiness-local](#davalgi-spanda-web-readiness-local)
+- [spanda-wasm](#davalgi-spanda-web-spanda-wasm)
 
-#### `examples` {#spanda-web-examples}
+#### `continuity-agent` {#davalgi-spanda-web-continuity-agent}
+
+Source: [packages/web/src/continuity-agent.ts](../packages/web/src/continuity-agent.ts#L1)
+
+**type**
+
+- [`AgentContinuityResponse`](../packages/web/src/continuity-agent.ts#L6)
+
+**fn**
+
+- [`fetchAgentContinuity`](../packages/web/src/continuity-agent.ts#L18)
+
+#### `examples` {#davalgi-spanda-web-examples}
 
 Source: [packages/web/src/examples.ts](../packages/web/src/examples.ts#L1)
 
@@ -7669,7 +10607,27 @@ Source: [packages/web/src/examples.ts](../packages/web/src/examples.ts#L1)
 - [`EXAMPLES`](../packages/web/src/examples.ts#L59)
 - [`KILLER_DEMO_SOURCE`](../packages/web/src/examples.ts#L6)
 
-#### `spanda-wasm` {#spanda-web-spanda-wasm}
+#### `readiness-agent` {#davalgi-spanda-web-readiness-agent}
+
+Source: [packages/web/src/readiness-agent.ts](../packages/web/src/readiness-agent.ts#L1)
+
+**type**
+
+- [`AgentReadinessResponse`](../packages/web/src/readiness-agent.ts#L6)
+
+**fn**
+
+- [`fetchAgentReadiness`](../packages/web/src/readiness-agent.ts#L19)
+
+#### `readiness-local` {#davalgi-spanda-web-readiness-local}
+
+Source: [packages/web/src/readiness-local.ts](../packages/web/src/readiness-local.ts#L1)
+
+**fn**
+
+- [`evaluateReadinessSource`](../packages/web/src/readiness-local.ts#L15)
+
+#### `spanda-wasm` {#davalgi-spanda-web-spanda-wasm}
 
 Source: [packages/web/src/spanda-wasm.ts](../packages/web/src/spanda-wasm.ts#L1)
 
@@ -7678,12 +10636,19 @@ Source: [packages/web/src/spanda-wasm.ts](../packages/web/src/spanda-wasm.ts#L1)
 - [`CheckResponse`](../packages/web/src/spanda-wasm.ts#L8)
 - [`Diagnostic`](../packages/web/src/spanda-wasm.ts#L6)
 - [`RunResponse`](../packages/web/src/spanda-wasm.ts#L10)
+- [`TelemetryResponse`](../packages/web/src/spanda-wasm.ts#L37)
+- [`TelemetryStats`](../packages/web/src/spanda-wasm.ts#L24)
 
 **fn**
 
-- [`checkSource`](../packages/web/src/spanda-wasm.ts#L79)
-- [`isWasmLoaded`](../packages/web/src/spanda-wasm.ts#L31)
-- [`runSource`](../packages/web/src/spanda-wasm.ts#L103)
+- [`checkSource`](../packages/web/src/spanda-wasm.ts#L133)
+- [`isWasmLoaded`](../packages/web/src/spanda-wasm.ts#L56)
+- [`runSource`](../packages/web/src/spanda-wasm.ts#L171)
+- [`telemetryAppend`](../packages/web/src/spanda-wasm.ts#L223)
+- [`telemetryClear`](../packages/web/src/spanda-wasm.ts#L217)
+- [`telemetryOtlp`](../packages/web/src/spanda-wasm.ts#L241)
+- [`telemetryPrometheus`](../packages/web/src/spanda-wasm.ts#L235)
+- [`telemetryStats`](../packages/web/src/spanda-wasm.ts#L229)
 
 ### `VS Code extension` {#ts-editor-vscode-src}
 
@@ -7699,8 +10664,8 @@ Source: [editor/vscode/src/extension.ts](../editor/vscode/src/extension.ts#L1)
 
 **fn**
 
-- [`activate`](../editor/vscode/src/extension.ts#L143)
-- [`deactivate`](../editor/vscode/src/extension.ts#L277)
+- [`activate`](../editor/vscode/src/extension.ts#L198)
+- [`deactivate`](../editor/vscode/src/extension.ts#L346)
 
 ## Quick lookup
 
@@ -7710,14 +10675,17 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `ACTION_TYPES` — spanda-typecheck ([`crates/spanda-typecheck/src/checker.rs`](../crates/spanda-typecheck/src/checker.rs))
 - `ActionDecl` — spanda-ast ([`crates/spanda-ast/src/nodes.rs`](../crates/spanda-ast/src/nodes.rs))
 - `ActionProposalFields` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
+- `actions_for_tamper_event` — spanda-runtime ([`crates/spanda-runtime/src/tamper_policy.rs`](../crates/spanda-runtime/src/tamper_policy.rs))
 - `activate` — VS Code extension ([`editor/vscode/src/extension.ts`](../editor/vscode/src/extension.ts))
 - `active_faults` — spanda-comm ([`crates/spanda-comm/src/lib.rs`](../crates/spanda-comm/src/lib.rs))
 - `actuator_event_for_type` — spanda-hal ([`crates/spanda-hal/src/hardware_monitor.rs`](../crates/spanda-hal/src/hardware_monitor.rs))
 - `ACTUATOR_TYPES` — spanda-typecheck ([`crates/spanda-typecheck/src/checker.rs`](../crates/spanda-typecheck/src/checker.rs))
+- `ActuatorCommand` — spanda-runtime ([`crates/spanda-runtime/src/providers/iot.rs`](../crates/spanda-runtime/src/providers/iot.rs))
 - `ActuatorDecl` — spanda-ast ([`crates/spanda-ast/src/nodes.rs`](../crates/spanda-ast/src/nodes.rs))
 - `ActuatorProvider` — spanda-runtime ([`crates/spanda-runtime/src/providers/traits.rs`](../crates/spanda-runtime/src/providers/traits.rs))
 - `adapter` — spanda-transport-routing ([`crates/spanda-transport-routing/src/lib.rs`](../crates/spanda-transport-routing/src/lib.rs))
 - `adapter_config_to_runtime` — spanda-providers ([`crates/spanda-providers/src/transport_adapter.rs`](../crates/spanda-providers/src/transport_adapter.rs))
+- `adapter_import_paths` — spanda-typecheck ([`crates/spanda-typecheck/src/import_catalog.rs`](../crates/spanda-typecheck/src/import_catalog.rs))
 - `adapter_metadata_for_import` — spanda-package ([`crates/spanda-package/src/adapter.rs`](../crates/spanda-package/src/adapter.rs))
 - `adapter_metadata_for_package` — spanda-package ([`crates/spanda-package/src/adapter.rs`](../crates/spanda-package/src/adapter.rs))
 - `adapter_mut` — spanda-transport-routing ([`crates/spanda-transport-routing/src/lib.rs`](../crates/spanda-transport-routing/src/lib.rs))
@@ -7727,31 +10695,42 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `AdapterMetadata` — spanda-package ([`crates/spanda-package/src/adapter.rs`](../crates/spanda-package/src/adapter.rs))
 - `adapterMetadataForImport` — TypeScript core ([`src/adapter-package-verify.ts`](../src/adapter-package-verify.ts))
 - `adapterMetadataForPackage` — TypeScript core ([`src/adapter-package-verify.ts`](../src/adapter-package-verify.ts))
+- `AdapterRuntime` — TypeScript core ([`src/runtime/adapter-runtime.ts`](../src/runtime/adapter-runtime.ts))
 - `AdapterVerifyIssue` — spanda-package ([`crates/spanda-package/src/adapter_verify.rs`](../crates/spanda-package/src/adapter_verify.rs))
 - `adapterVerifyOk` — TypeScript core ([`src/adapter-package-verify.ts`](../src/adapter-package-verify.ts))
 - `AdapterVerifySeverity` — spanda-package ([`crates/spanda-package/src/adapter_verify.rs`](../crates/spanda-package/src/adapter_verify.rs))
 - `add_dependency` — spanda-package ([`crates/spanda-package/src/project.rs`](../crates/spanda-package/src/project.rs))
+- `adr_dispatch` — spanda-cli ([`crates/spanda-cli/src/adr_cli.rs`](../crates/spanda-cli/src/adr_cli.rs))
 - `advance` — spanda-runtime ([`crates/spanda-runtime/src/robotics.rs`](../crates/spanda-runtime/src/robotics.rs))
 - `advance_wall_tick` — spanda-runtime ([`crates/spanda-runtime/src/scheduler.rs`](../crates/spanda-runtime/src/scheduler.rs))
 - `agent_entry_for_port` — spanda-ota ([`crates/spanda-ota/src/agent.rs`](../crates/spanda-ota/src/agent.rs))
 - `agent_health` — spanda-fleet ([`crates/spanda-fleet/src/remote.rs`](../crates/spanda-fleet/src/remote.rs))
 - `agent_health` — spanda-ota ([`crates/spanda-ota/src/remote.rs`](../crates/spanda-ota/src/remote.rs))
 - `agent_inbox_len` — spanda-concurrency ([`crates/spanda-concurrency/src/lib.rs`](../crates/spanda-concurrency/src/lib.rs))
+- `agent_readiness` — spanda-fleet ([`crates/spanda-fleet/src/remote.rs`](../crates/spanda-fleet/src/remote.rs))
+- `agent_readiness` — spanda-ota ([`crates/spanda-ota/src/remote.rs`](../crates/spanda-ota/src/remote.rs))
 - `agent_rollback` — spanda-ota ([`crates/spanda-ota/src/remote.rs`](../crates/spanda-ota/src/remote.rs))
 - `agent_rollout` — spanda-ota ([`crates/spanda-ota/src/remote.rs`](../crates/spanda-ota/src/remote.rs))
+- `agent_state_path_for` — spanda-ota ([`crates/spanda-ota/src/agent.rs`](../crates/spanda-ota/src/agent.rs))
 - `agent_status` — spanda-ota ([`crates/spanda-ota/src/remote.rs`](../crates/spanda-ota/src/remote.rs))
 - `agent_tool_names` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
+- `agent_upload_program` — spanda-fleet ([`crates/spanda-fleet/src/remote.rs`](../crates/spanda-fleet/src/remote.rs))
+- `agent_upload_program` — spanda-ota ([`crates/spanda-ota/src/remote.rs`](../crates/spanda-ota/src/remote.rs))
 - `agent_uses_models` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
 - `AgentChannelDecl` — spanda-ast ([`crates/spanda-ast/src/comm_decl.rs`](../crates/spanda-ast/src/comm_decl.rs))
 - `AgentDecl` — spanda-ast ([`crates/spanda-ast/src/nodes.rs`](../crates/spanda-ast/src/nodes.rs))
 - `agentHealth` — TypeScript core ([`src/deploy-remote.ts`](../src/deploy-remote.ts))
+- `agentReadiness` — TypeScript core ([`src/deploy-remote.ts`](../src/deploy-remote.ts))
 - `AgentRolloutResponse` — spanda-ota ([`crates/spanda-ota/src/remote.rs`](../crates/spanda-ota/src/remote.rs))
 - `AgentRoute` — spanda-concurrency ([`crates/spanda-concurrency/src/lib.rs`](../crates/spanda-concurrency/src/lib.rs))
 - `AgentRuntime` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
+- `agents_registry_path` — spanda-ota ([`crates/spanda-ota/src/remote.rs`](../crates/spanda-ota/src/remote.rs))
 - `AgentState` — spanda-ota ([`crates/spanda-ota/src/agent.rs`](../crates/spanda-ota/src/agent.rs))
+- `agentStatePathFor` — TypeScript core ([`src/deploy-agent.ts`](../src/deploy-agent.ts))
 - `agentStatus` — TypeScript core ([`src/deploy-remote.ts`](../src/deploy-remote.ts))
 - `AgentStatusResponse` — spanda-ota ([`crates/spanda-ota/src/remote.rs`](../crates/spanda-ota/src/remote.rs))
 - `agentToolNames` — TypeScript core ([`src/ai/Agent.ts`](../src/ai/Agent.ts))
+- `agentUploadProgram` — TypeScript core ([`src/deploy-remote.ts`](../src/deploy-remote.ts))
 - `agentUsesModels` — TypeScript core ([`src/ai/Agent.ts`](../src/ai/Agent.ts))
 - `ai_lib_registry` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
 - `ai_lib_registry_export` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
@@ -7778,15 +10757,27 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `all_library_sensor_types` — spanda-lib-registry ([`crates/spanda-lib-registry/src/lib.rs`](../crates/spanda-lib-registry/src/lib.rs))
 - `all_registered_import_paths` — spanda-package ([`crates/spanda-package/src/import.rs`](../crates/spanda-package/src/import.rs))
 - `allLibrarySensorTypes` — TypeScript core ([`src/lib/registry.ts`](../src/lib/registry.ts))
+- `allLibrarySensorTypes` — TypeScript core ([`src/types/sensor-types.ts`](../src/types/sensor-types.ts))
+- `analyzeFailureTs` — TypeScript core ([`src/operational.ts`](../src/operational.ts))
 - `analyzeProgram` — TypeScript core ([`src/security/validate.ts`](../src/security/validate.ts))
 - `anchored_count` — spanda-audit ([`crates/spanda-audit/src/backend.rs`](../crates/spanda-audit/src/backend.rs))
+- `anomaly_dispatch` — spanda-cli ([`crates/spanda-cli/src/assurance_cli.rs`](../crates/spanda-cli/src/assurance_cli.rs))
+- `AnomalyDetectorDecl` — spanda-ast ([`crates/spanda-ast/src/assurance_decl.rs`](../crates/spanda-ast/src/assurance_decl.rs))
+- `AnomalyHandlerDecl` — spanda-ast ([`crates/spanda-ast/src/assurance_decl.rs`](../crates/spanda-ast/src/assurance_decl.rs))
+- `AnthropicProvider` — spanda-ai ([`crates/spanda-ai/src/live.rs`](../crates/spanda-ai/src/live.rs))
+- `ApiKeyRecord` — spanda-security ([`crates/spanda-security/src/rbac.rs`](../crates/spanda-security/src/rbac.rs))
+- `ApiKeyStore` — spanda-security ([`crates/spanda-security/src/rbac.rs`](../crates/spanda-security/src/rbac.rs))
+- `ApiKeyStore::new` — spanda-security ([`crates/spanda-security/src/rbac.rs`](../crates/spanda-security/src/rbac.rs))
 - `ApplicationPermissions` — spanda-package ([`crates/spanda-package/src/validation.rs`](../crates/spanda-package/src/validation.rs))
 - `ApplicationPermissions::permissive` — spanda-package ([`crates/spanda-package/src/validation.rs`](../crates/spanda-package/src/validation.rs))
 - `apply_connectivity_fault` — spanda-connectivity-runtime ([`crates/spanda-connectivity-runtime/src/lib.rs`](../crates/spanda-connectivity-runtime/src/lib.rs))
 - `apply_emergency_stop` — spanda-safety ([`crates/spanda-safety/src/lib.rs`](../crates/spanda-safety/src/lib.rs))
+- `apply_fleet_health_checks` — spanda-runtime ([`crates/spanda-runtime/src/health_primitives.rs`](../crates/spanda-runtime/src/health_primitives.rs))
 - `apply_gps_position_faults` — spanda-connectivity ([`crates/spanda-connectivity/src/runtime_sim.rs`](../crates/spanda-connectivity/src/runtime_sim.rs))
 - `apply_gps_reading_faults` — spanda-connectivity-runtime ([`crates/spanda-connectivity-runtime/src/lib.rs`](../crates/spanda-connectivity-runtime/src/lib.rs))
 - `apply_rollout` — spanda-ota ([`crates/spanda-ota/src/service.rs`](../crates/spanda-ota/src/service.rs))
+- `apply_speed_cap` — spanda-safety ([`crates/spanda-safety/src/lib.rs`](../crates/spanda-safety/src/lib.rs))
+- `apply_system_config_to_run_options` — spanda-cli ([`crates/spanda-cli/src/config_load.rs`](../crates/spanda-cli/src/config_load.rs))
 - `applyEmergencyStop` — TypeScript core ([`src/safety/index.ts`](../src/safety/index.ts))
 - `applyFault` — TypeScript core ([`src/hardware-profile.ts`](../src/hardware-profile.ts))
 - `applyGpsPositionFaults` — TypeScript core ([`src/connectivity-positioning.ts`](../src/connectivity-positioning.ts))
@@ -7798,35 +10789,56 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `as_str` — spanda-package ([`crates/spanda-package/src/category.rs`](../crates/spanda-package/src/category.rs))
 - `as_str` — spanda-package ([`crates/spanda-package/src/safety.rs`](../crates/spanda-package/src/safety.rs))
 - `as_str` — spanda-security ([`crates/spanda-security/src/trust.rs`](../crates/spanda-security/src/trust.rs))
+- `as_str` — spanda-audit ([`crates/spanda-audit/src/platform_event.rs`](../crates/spanda-audit/src/platform_event.rs))
 - `as_string` — spanda-runtime ([`crates/spanda-runtime/src/value.rs`](../crates/spanda-runtime/src/value.rs))
+- `assurance` — spanda-interpreter ([`crates/spanda-interpreter/src/runtime/orchestrator.rs`](../crates/spanda-interpreter/src/runtime/orchestrator.rs))
+- `assurance_dispatch` — spanda-cli ([`crates/spanda-cli/src/security_assurance_cli.rs`](../crates/spanda-cli/src/security_assurance_cli.rs))
+- `AssuranceCaseDecl` — spanda-ast ([`crates/spanda-ast/src/assurance_decl.rs`](../crates/spanda-ast/src/assurance_decl.rs))
+- `AssuranceRuntime` — spanda-runtime ([`crates/spanda-runtime/src/assurance_runtime.rs`](../crates/spanda-runtime/src/assurance_runtime.rs))
+- `assureProgramTs` — TypeScript core ([`src/assurance.ts`](../src/assurance.ts))
 - `attach_provider_registry` — spanda-transport-routing ([`crates/spanda-transport-routing/src/lib.rs`](../crates/spanda-transport-routing/src/lib.rs))
+- `attach_swarm_continuity_handoff` — spanda-fleet ([`crates/spanda-fleet/src/swarm_continuity.rs`](../crates/spanda-fleet/src/swarm_continuity.rs))
+- `audit_dispatch` — spanda-cli ([`crates/spanda-cli/src/decision_cli.rs`](../crates/spanda-cli/src/decision_cli.rs))
 - `audit_event` — spanda-security ([`crates/spanda-security/src/runtime.rs`](../crates/spanda-security/src/runtime.rs))
 - `audit_security_event` — spanda-security ([`crates/spanda-security/src/runtime.rs`](../crates/spanda-security/src/runtime.rs))
 - `AuditBackend` — spanda-audit ([`crates/spanda-audit/src/backend.rs`](../crates/spanda-audit/src/backend.rs))
 - `AuditDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `AuditError` — spanda-audit ([`crates/spanda-audit/src/error.rs`](../crates/spanda-audit/src/error.rs))
 - `AuditExport` — spanda-audit ([`crates/spanda-audit/src/record.rs`](../crates/spanda-audit/src/record.rs))
+- `auditProgramTs` — TypeScript core ([`src/operational.ts`](../src/operational.ts))
 - `AuditRecord` — spanda-audit ([`crates/spanda-audit/src/record.rs`](../crates/spanda-audit/src/record.rs))
 - `AuditRecord::canonical_body` — spanda-audit ([`crates/spanda-audit/src/record.rs`](../crates/spanda-audit/src/record.rs))
 - `AuditRuntime` — spanda-audit ([`crates/spanda-audit/src/runtime.rs`](../crates/spanda-audit/src/runtime.rs))
 - `AuditRuntime::new` — spanda-audit ([`crates/spanda-audit/src/runtime.rs`](../crates/spanda-audit/src/runtime.rs))
+- `authenticate` — spanda-security ([`crates/spanda-security/src/rbac.rs`](../crates/spanda-security/src/rbac.rs))
+- `AuthenticationMode` — spanda-runtime ([`crates/spanda-runtime/src/security_types.rs`](../crates/spanda-runtime/src/security_types.rs))
 - `AuthenticationMode` — spanda-security ([`crates/spanda-security/src/policy.rs`](../crates/spanda-security/src/policy.rs))
+- `authorize` — spanda-security ([`crates/spanda-security/src/rbac.rs`](../crates/spanda-security/src/rbac.rs))
 - `authorize_publish` — spanda-security ([`crates/spanda-security/src/runtime.rs`](../crates/spanda-security/src/runtime.rs))
 - `authorize_subscribe` — spanda-security ([`crates/spanda-security/src/runtime.rs`](../crates/spanda-security/src/runtime.rs))
+- `AutomotiveHub` — spanda-providers ([`crates/spanda-providers/src/automotive_hub.rs`](../crates/spanda-providers/src/automotive_hub.rs))
+- `AutomotiveHub::seed_automotive_demo` — spanda-providers ([`crates/spanda-providers/src/automotive_hub.rs`](../crates/spanda-providers/src/automotive_hub.rs))
+- `beginRunSession` — TypeScript core ([`src/telemetry-store.ts`](../src/telemetry-store.ts))
 - `BehaviorDecl` — spanda-ast ([`crates/spanda-ast/src/nodes.rs`](../crates/spanda-ast/src/nodes.rs))
+- `belief_confidence` — spanda-runtime ([`crates/spanda-runtime/src/world_model.rs`](../crates/spanda-runtime/src/world_model.rs))
+- `bestKnowledgeEntry` — TypeScript core ([`src/recovery.ts`](../src/recovery.ts))
 - `binary_physical_op_allowed` — spanda-typecheck ([`crates/spanda-typecheck/src/type_system.rs`](../crates/spanda-typecheck/src/type_system.rs))
 - `BinaryOp` — spanda-ast ([`crates/spanda-ast/src/nodes.rs`](../crates/spanda-ast/src/nodes.rs))
 - `BinaryOp::from_lexeme` — spanda-ast ([`crates/spanda-ast/src/nodes.rs`](../crates/spanda-ast/src/nodes.rs))
 - `binaryPhysicalOpAllowed` — TypeScript core ([`src/type-system.ts`](../src/type-system.ts))
 - `bind_call_args` — spanda-interpreter ([`crates/spanda-interpreter/src/runtime/orchestrator.rs`](../crates/spanda-interpreter/src/runtime/orchestrator.rs))
 - `bind_channel_type` — spanda-concurrency ([`crates/spanda-concurrency/src/lib.rs`](../crates/spanda-concurrency/src/lib.rs))
+- `bind_requires_agent_token` — spanda-deploy-http ([`crates/spanda-deploy-http/src/lib.rs`](../crates/spanda-deploy-http/src/lib.rs))
+- `ble` — spanda-providers ([`crates/spanda-providers/src/package_stubs.rs`](../crates/spanda-providers/src/package_stubs.rs))
 - `BleServiceDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `BluetoothConfigDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `bootstrap_default_providers` — spanda-providers ([`crates/spanda-providers/src/bootstrap.rs`](../crates/spanda-providers/src/bootstrap.rs))
 - `bootstrap_providers_for_packages` — spanda-providers ([`crates/spanda-providers/src/bootstrap.rs`](../crates/spanda-providers/src/bootstrap.rs))
 - `bootstrapDefaultProviders` — TypeScript core ([`src/providers/bootstrap.ts`](../src/providers/bootstrap.ts))
 - `bootstrapProvidersForPackages` — TypeScript core ([`src/providers/bootstrap.ts`](../src/providers/bootstrap.ts))
+- `boundary_for_transport_name` — spanda-runtime ([`crates/spanda-runtime/src/security_primitives.rs`](../crates/spanda-runtime/src/security_primitives.rs))
 - `boundary_for_transport_name` — spanda-security ([`crates/spanda-security/src/trust_boundary.rs`](../crates/spanda-security/src/trust_boundary.rs))
+- `boundaryForTransportName` — TypeScript core ([`src/runtime/security-types.ts`](../src/runtime/security-types.ts))
 - `boundaryForTransportName` — TypeScript core ([`src/security/trust-boundary.ts`](../src/security/trust-boundary.ts))
 - `bridge_available` — spanda-bridge ([`crates/spanda-bridge/src/cpp.rs`](../crates/spanda-bridge/src/cpp.rs))
 - `bridge_binary_path` — spanda-bridge ([`crates/spanda-bridge/src/cpp.rs`](../crates/spanda-bridge/src/cpp.rs))
@@ -7841,11 +10853,13 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `build_client_config` — spanda-transport ([`crates/spanda-transport/src/tls.rs`](../crates/spanda-transport/src/tls.rs))
 - `build_deploy_bundle` — spanda-ota ([`crates/spanda-ota/src/bundle.rs`](../crates/spanda-ota/src/bundle.rs))
 - `build_deploy_client_config` — spanda-deploy-http ([`crates/spanda-deploy-http/src/lib.rs`](../crates/spanda-deploy-http/src/lib.rs))
-- `build_deploy_plan` — spanda-driver ([`crates/spanda-driver/src/deploy_plan.rs`](../crates/spanda-driver/src/deploy_plan.rs))
+- `build_deploy_plan` — spanda-ota ([`crates/spanda-ota/src/deploy_plan.rs`](../crates/spanda-ota/src/deploy_plan.rs))
 - `build_deploy_plan_from_program` — spanda-ota ([`crates/spanda-ota/src/plan.rs`](../crates/spanda-ota/src/plan.rs))
 - `build_deploy_server_config` — spanda-deploy-http ([`crates/spanda-deploy-http/src/lib.rs`](../crates/spanda-deploy-http/src/lib.rs))
 - `build_profile_registry` — spanda-hardware ([`crates/spanda-hardware/src/verify.rs`](../crates/spanda-hardware/src/verify.rs))
 - `build_prompt` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
+- `build_runtime_policy_monitor` — spanda-runtime ([`crates/spanda-runtime/src/operational_policy.rs`](../crates/spanda-runtime/src/operational_policy.rs))
+- `buildAssuranceReport` — TypeScript core ([`src/assurance.ts`](../src/assurance.ts))
 - `buildCertificationProof` — TypeScript core ([`src/certify-prover.ts`](../src/certify-prover.ts))
 - `buildCertificationProofSummary` — TypeScript core ([`src/certify-prover.ts`](../src/certify-prover.ts))
 - `buildDeployBundle` — TypeScript core ([`src/deploy-bundle.ts`](../src/deploy-bundle.ts))
@@ -7854,17 +10868,28 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `buildPrompt` — TypeScript core ([`src/ai/PromptRuntime.ts`](../src/ai/PromptRuntime.ts))
 - `buildSymbolIndex` — TypeScript core ([`src/lsp/symbols.ts`](../src/lsp/symbols.ts))
 - `BUILTIN_FUNCTIONS` — spanda-typecheck ([`crates/spanda-typecheck/src/checker.rs`](../crates/spanda-typecheck/src/checker.rs))
+- `builtin_import_paths` — spanda-typecheck ([`crates/spanda-typecheck/src/import_catalog.rs`](../crates/spanda-typecheck/src/import_catalog.rs))
 - `builtin_import_paths` — spanda-package ([`crates/spanda-package/src/import.rs`](../crates/spanda-package/src/import.rs))
 - `BUILTIN_METHODS` — spanda-driver ([`crates/spanda-driver/src/type_check.rs`](../crates/spanda-driver/src/type_check.rs))
 - `BUILTIN_METHODS` — spanda-typecheck ([`crates/spanda-typecheck/src/checker.rs`](../crates/spanda-typecheck/src/checker.rs))
 - `BUILTIN_METHODS` — spanda-docs ([`crates/spanda-docs/src/builtin_methods.rs`](../crates/spanda-docs/src/builtin_methods.rs))
 - `builtin_profiles` — spanda-hardware ([`crates/spanda-hardware/src/profiles.rs`](../crates/spanda-hardware/src/profiles.rs))
+- `BuiltinAssuranceRuntime` — spanda-runtime ([`crates/spanda-runtime/src/assurance_runtime.rs`](../crates/spanda-runtime/src/assurance_runtime.rs))
+- `BuiltinFaultRuntime` — spanda-runtime ([`crates/spanda-runtime/src/fault_runtime.rs`](../crates/spanda-runtime/src/fault_runtime.rs))
 - `builtinProfiles` — TypeScript core ([`src/hardware-profile.ts`](../src/hardware-profile.ts))
+- `BuiltinProviderRuntime` — spanda-runtime ([`crates/spanda-runtime/src/provider_runtime.rs`](../crates/spanda-runtime/src/provider_runtime.rs))
+- `BuiltinProviderRuntime` — TypeScript core ([`src/runtime/provider-runtime.ts`](../src/runtime/provider-runtime.ts))
+- `BuiltinSecurityRuntime` — spanda-runtime ([`crates/spanda-runtime/src/security_runtime.rs`](../crates/spanda-runtime/src/security_runtime.rs))
+- `BuiltinSecurityRuntime` — TypeScript core ([`src/runtime/security-runtime.ts`](../src/runtime/security-runtime.ts))
 - `bundle_canonical_json` — spanda-ota ([`crates/spanda-ota/src/bundle.rs`](../crates/spanda-ota/src/bundle.rs))
 - `bundle_package` — spanda-package ([`crates/spanda-package/src/publish.rs`](../crates/spanda-package/src/publish.rs))
 - `bundleCanonicalJson` — TypeScript core ([`src/deploy-bundle.ts`](../src/deploy-bundle.ts))
+- `bundled_registry_dir` — spanda-cli ([`crates/spanda-cli/src/bundled_registry.rs`](../crates/spanda-cli/src/bundled_registry.rs))
+- `bundled_registry_url` — spanda-cli ([`crates/spanda-cli/src/bundled_registry.rs`](../crates/spanda-cli/src/bundled_registry.rs))
+- `bus_security_from_fields` — spanda-runtime ([`crates/spanda-runtime/src/security_primitives.rs`](../crates/spanda-runtime/src/security_primitives.rs))
 - `BusDecl` — spanda-ast ([`crates/spanda-ast/src/comm_decl.rs`](../crates/spanda-ast/src/comm_decl.rs))
 - `BusSecurityConfig` — spanda-security ([`crates/spanda-security/src/policy.rs`](../crates/spanda-security/src/policy.rs))
+- `BusTransportSecurity` — spanda-runtime ([`crates/spanda-runtime/src/security_types.rs`](../crates/spanda-runtime/src/security_types.rs))
 - `cache_registry_tarball` — spanda-package ([`crates/spanda-package/src/registry_fetch.rs`](../crates/spanda-package/src/registry_fetch.rs))
 - `call` — spanda-ffi ([`crates/spanda-ffi/src/lib.rs`](../crates/spanda-ffi/src/lib.rs))
 - `call_extern` — spanda-bridge ([`crates/spanda-bridge/src/cpp.rs`](../crates/spanda-bridge/src/cpp.rs))
@@ -7885,6 +10910,7 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `CapabilitySet::new` — spanda-security ([`crates/spanda-security/src/capability.rs`](../crates/spanda-security/src/capability.rs))
 - `CaptureResult` — spanda-ast ([`crates/spanda-ast/src/regex.rs`](../crates/spanda-ast/src/regex.rs))
 - `cartographer_adapter_metadata` — spanda-package ([`crates/spanda-package/src/adapter.rs`](../crates/spanda-package/src/adapter.rs))
+- `cellular` — spanda-providers ([`crates/spanda-providers/src/package_stubs.rs`](../crates/spanda-providers/src/package_stubs.rs))
 - `Certificate` — spanda-security ([`crates/spanda-security/src/encrypted.rs`](../crates/spanda-security/src/encrypted.rs))
 - `certification_runtime_enabled_from_env` — spanda-certify ([`crates/spanda-certify/src/runtime.rs`](../crates/spanda-certify/src/runtime.rs))
 - `CertificationEntry` — spanda-certify ([`crates/spanda-certify/src/prover.rs`](../crates/spanda-certify/src/prover.rs))
@@ -7896,61 +10922,129 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `CertificationStandard::as_str` — spanda-ast ([`crates/spanda-ast/src/robotics_decl.rs`](../crates/spanda-ast/src/robotics_decl.rs))
 - `certify_dispatch` — spanda-cli ([`crates/spanda-cli/src/certify_cli.rs`](../crates/spanda-cli/src/certify_cli.rs))
 - `CertifyDecl` — spanda-ast ([`crates/spanda-ast/src/robotics_decl.rs`](../crates/spanda-ast/src/robotics_decl.rs))
+- `chaos_dispatch` — spanda-cli ([`crates/spanda-cli/src/chaos_cli.rs`](../crates/spanda-cli/src/chaos_cli.rs))
 - `check` — spanda-core ([`crates/spanda-core/src/lib.rs`](../crates/spanda-core/src/lib.rs))
 - `check` — spanda-driver ([`crates/spanda-driver/src/compile.rs`](../crates/spanda-driver/src/compile.rs))
 - `check` — spanda-driver ([`crates/spanda-driver/src/type_check.rs`](../crates/spanda-driver/src/type_check.rs))
 - `check` — spanda-typecheck ([`crates/spanda-typecheck/src/checker.rs`](../crates/spanda-typecheck/src/checker.rs))
+- `check` — spanda-security ([`crates/spanda-security/src/rate_limit.rs`](../crates/spanda-security/src/rate_limit.rs))
+- `check` — spanda-security ([`crates/spanda-security/src/rbac.rs`](../crates/spanda-security/src/rbac.rs))
 - `check` — TypeScript core ([`src/types/checker.ts`](../src/types/checker.ts))
 - `check_capabilities` — spanda-security ([`crates/spanda-security/src/secure_comm.rs`](../crates/spanda-security/src/secure_comm.rs))
 - `check_program` — spanda-typecheck ([`crates/spanda-typecheck/src/checker.rs`](../crates/spanda-typecheck/src/checker.rs))
+- `check_runtime_policy_motion` — spanda-runtime ([`crates/spanda-runtime/src/operational_policy.rs`](../crates/spanda-runtime/src/operational_policy.rs))
+- `check_scoped` — spanda-security ([`crates/spanda-security/src/rbac.rs`](../crates/spanda-security/src/rbac.rs))
 - `check_security_faults` — spanda-security ([`crates/spanda-security/src/runtime.rs`](../crates/spanda-security/src/runtime.rs))
 - `check_source` — spanda-node ([`crates/spanda-node/src/lib.rs`](../crates/spanda-node/src/lib.rs))
+- `check_tenant` — spanda-security ([`crates/spanda-security/src/rbac.rs`](../crates/spanda-security/src/rbac.rs))
 - `check_trust` — spanda-security ([`crates/spanda-security/src/secure_comm.rs`](../crates/spanda-security/src/secure_comm.rs))
 - `check_trusted_source` — spanda-security ([`crates/spanda-security/src/secure_comm.rs`](../crates/spanda-security/src/secure_comm.rs))
 - `check_with_registry` — spanda-core ([`crates/spanda-core/src/lib.rs`](../crates/spanda-core/src/lib.rs))
 - `check_with_registry` — spanda-driver ([`crates/spanda-driver/src/compile.rs`](../crates/spanda-driver/src/compile.rs))
 - `check_with_registry` — spanda-driver ([`crates/spanda-driver/src/type_check.rs`](../crates/spanda-driver/src/type_check.rs))
 - `check_with_registry` — spanda-typecheck ([`crates/spanda-typecheck/src/checker.rs`](../crates/spanda-typecheck/src/checker.rs))
+- `checkResilienceTs` — TypeScript core ([`src/assurance.ts`](../src/assurance.ts))
 - `CheckResultJs` — spanda-node ([`crates/spanda-node/src/lib.rs`](../crates/spanda-node/src/lib.rs))
 - `checkSource` — @spanda/native ([`packages/native/index.ts`](../packages/native/index.ts))
-- `checkSource` — @spanda/web ([`packages/web/src/spanda-wasm.ts`](../packages/web/src/spanda-wasm.ts))
+- `checkSource` — @davalgi-spanda/web ([`packages/web/src/spanda-wasm.ts`](../packages/web/src/spanda-wasm.ts))
+- `checksum_sidecar_path` — spanda-package ([`crates/spanda-package/src/integrity.rs`](../crates/spanda-package/src/integrity.rs))
 - `checkViaCli` — TypeScript core ([`src/rust-bridge.ts`](../src/rust-bridge.ts))
 - `checkViaCli` — @spanda/native ([`packages/native/cli-bridge.ts`](../packages/native/cli-bridge.ts))
 - `checkWithRegistry` — TypeScript core ([`src/types/checker.ts`](../src/types/checker.ts))
 - `ciphertext` — spanda-security ([`crates/spanda-security/src/encrypted.rs`](../crates/spanda-security/src/encrypted.rs))
 - `clamp_speed` — spanda-safety ([`crates/spanda-safety/src/lib.rs`](../crates/spanda-safety/src/lib.rs))
 - `clamp_speed_at_pose` — spanda-safety ([`crates/spanda-safety/src/lib.rs`](../crates/spanda-safety/src/lib.rs))
+- `classify_failure` — spanda-runtime ([`crates/spanda-runtime/src/recovery_primitives.rs`](../crates/spanda-runtime/src/recovery_primitives.rs))
 - `clear` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
 - `clear_event` — spanda-hal ([`crates/spanda-hal/src/hardware_monitor.rs`](../crates/spanda-hal/src/hardware_monitor.rs))
 - `clear_registry_backed` — spanda-transport-routing ([`crates/spanda-transport-routing/src/lib.rs`](../crates/spanda-transport-routing/src/lib.rs))
+- `CliRuntimeHooks` — spanda-cli ([`crates/spanda-cli/src/runtime_hooks.rs`](../crates/spanda-cli/src/runtime_hooks.rs))
 - `clone_bindings` — spanda-runtime ([`crates/spanda-runtime/src/environment.rs`](../crates/spanda-runtime/src/environment.rs))
 - `CloudPackageStub` — spanda-providers ([`crates/spanda-providers/src/package_stubs.rs`](../crates/spanda-providers/src/package_stubs.rs))
 - `CloudProvider` — spanda-runtime ([`crates/spanda-runtime/src/providers/traits.rs`](../crates/spanda-runtime/src/providers/traits.rs))
 - `cmd_add` — spanda-cli ([`crates/spanda-cli/src/package.rs`](../crates/spanda-cli/src/package.rs))
+- `cmd_analyze_failure` — spanda-cli ([`crates/spanda-cli/src/readiness_cli.rs`](../crates/spanda-cli/src/readiness_cli.rs))
+- `cmd_analyze_failure_recovery` — spanda-cli ([`crates/spanda-cli/src/recovery_cli.rs`](../crates/spanda-cli/src/recovery_cli.rs))
+- `cmd_anomaly_scan` — spanda-cli ([`crates/spanda-cli/src/assurance_cli.rs`](../crates/spanda-cli/src/assurance_cli.rs))
+- `cmd_assure` — spanda-cli ([`crates/spanda-cli/src/assurance_cli.rs`](../crates/spanda-cli/src/assurance_cli.rs))
+- `cmd_audit` — spanda-cli ([`crates/spanda-cli/src/readiness_cli.rs`](../crates/spanda-cli/src/readiness_cli.rs))
+- `cmd_audit_decisions` — spanda-cli ([`crates/spanda-cli/src/decision_cli.rs`](../crates/spanda-cli/src/decision_cli.rs))
 - `cmd_build` — spanda-cli ([`crates/spanda-cli/src/package.rs`](../crates/spanda-cli/src/package.rs))
 - `cmd_check_project` — spanda-cli ([`crates/spanda-cli/src/package.rs`](../crates/spanda-cli/src/package.rs))
+- `cmd_continuity` — spanda-cli ([`crates/spanda-cli/src/continuity_cli.rs`](../crates/spanda-cli/src/continuity_cli.rs))
+- `cmd_contract_verify` — spanda-cli ([`crates/spanda-cli/src/contract_cli.rs`](../crates/spanda-cli/src/contract_cli.rs))
+- `cmd_delegate` — spanda-cli ([`crates/spanda-cli/src/continuity_cli.rs`](../crates/spanda-cli/src/continuity_cli.rs))
+- `cmd_diagnose_assurance` — spanda-cli ([`crates/spanda-cli/src/assurance_cli.rs`](../crates/spanda-cli/src/assurance_cli.rs))
+- `cmd_explain_decision` — spanda-cli ([`crates/spanda-cli/src/explain_cli.rs`](../crates/spanda-cli/src/explain_cli.rs))
+- `cmd_explain_program` — spanda-cli ([`crates/spanda-cli/src/explain_cli.rs`](../crates/spanda-cli/src/explain_cli.rs))
+- `cmd_explain_readiness` — spanda-cli ([`crates/spanda-cli/src/explain_cli.rs`](../crates/spanda-cli/src/explain_cli.rs))
+- `cmd_explain_safety` — spanda-cli ([`crates/spanda-cli/src/explain_cli.rs`](../crates/spanda-cli/src/explain_cli.rs))
+- `cmd_explain_trace` — spanda-cli ([`crates/spanda-cli/src/explain_cli.rs`](../crates/spanda-cli/src/explain_cli.rs))
+- `cmd_explain_verify` — spanda-cli ([`crates/spanda-cli/src/explain_cli.rs`](../crates/spanda-cli/src/explain_cli.rs))
+- `cmd_fault_report` — spanda-cli ([`crates/spanda-cli/src/fault_cli.rs`](../crates/spanda-cli/src/fault_cli.rs))
+- `cmd_fault_scan` — spanda-cli ([`crates/spanda-cli/src/fault_cli.rs`](../crates/spanda-cli/src/fault_cli.rs))
+- `cmd_fleet_readiness` — spanda-cli ([`crates/spanda-cli/src/readiness_cli.rs`](../crates/spanda-cli/src/readiness_cli.rs))
+- `cmd_hardware_capabilities` — spanda-cli ([`crates/spanda-cli/src/trace_cli.rs`](../crates/spanda-cli/src/trace_cli.rs))
+- `cmd_heal` — spanda-cli ([`crates/spanda-cli/src/recovery_cli.rs`](../crates/spanda-cli/src/recovery_cli.rs))
+- `cmd_health` — spanda-cli ([`crates/spanda-cli/src/trace_cli.rs`](../crates/spanda-cli/src/trace_cli.rs))
 - `cmd_init` — spanda-cli ([`crates/spanda-cli/src/package.rs`](../crates/spanda-cli/src/package.rs))
 - `cmd_install` — spanda-cli ([`crates/spanda-cli/src/package.rs`](../crates/spanda-cli/src/package.rs))
+- `cmd_map_verify` — spanda-cli ([`crates/spanda-cli/src/device_tree_cli.rs`](../crates/spanda-cli/src/device_tree_cli.rs))
+- `cmd_mission_verify` — spanda-cli ([`crates/spanda-cli/src/assurance_cli.rs`](../crates/spanda-cli/src/assurance_cli.rs))
+- `cmd_mitigation_plan` — spanda-cli ([`crates/spanda-cli/src/assurance_cli.rs`](../crates/spanda-cli/src/assurance_cli.rs))
+- `cmd_network_scan` — spanda-cli ([`crates/spanda-cli/src/network_cli.rs`](../crates/spanda-cli/src/network_cli.rs))
+- `cmd_prognostics` — spanda-cli ([`crates/spanda-cli/src/assurance_cli.rs`](../crates/spanda-cli/src/assurance_cli.rs))
 - `cmd_publish` — spanda-cli ([`crates/spanda-cli/src/package.rs`](../crates/spanda-cli/src/package.rs))
+- `cmd_readiness` — spanda-cli ([`crates/spanda-cli/src/readiness_cli.rs`](../crates/spanda-cli/src/readiness_cli.rs))
+- `cmd_readiness_trends` — spanda-cli ([`crates/spanda-cli/src/readiness_cli.rs`](../crates/spanda-cli/src/readiness_cli.rs))
+- `cmd_recover` — spanda-cli ([`crates/spanda-cli/src/recovery_cli.rs`](../crates/spanda-cli/src/recovery_cli.rs))
+- `cmd_recovery_coverage` — spanda-cli ([`crates/spanda-cli/src/assurance_cli.rs`](../crates/spanda-cli/src/assurance_cli.rs))
+- `cmd_recovery_knowledge` — spanda-cli ([`crates/spanda-cli/src/recovery_cli.rs`](../crates/spanda-cli/src/recovery_cli.rs))
+- `cmd_recovery_report` — spanda-cli ([`crates/spanda-cli/src/recovery_cli.rs`](../crates/spanda-cli/src/recovery_cli.rs))
 - `cmd_registry_info` — spanda-cli ([`crates/spanda-cli/src/package.rs`](../crates/spanda-cli/src/package.rs))
 - `cmd_registry_search` — spanda-cli ([`crates/spanda-cli/src/package.rs`](../crates/spanda-cli/src/package.rs))
 - `cmd_remove` — spanda-cli ([`crates/spanda-cli/src/package.rs`](../crates/spanda-cli/src/package.rs))
+- `cmd_resilience_check` — spanda-cli ([`crates/spanda-cli/src/assurance_cli.rs`](../crates/spanda-cli/src/assurance_cli.rs))
+- `cmd_robot_capabilities` — spanda-cli ([`crates/spanda-cli/src/trace_cli.rs`](../crates/spanda-cli/src/trace_cli.rs))
+- `cmd_runtime_diagnose` — spanda-cli ([`crates/spanda-cli/src/fault_cli.rs`](../crates/spanda-cli/src/fault_cli.rs))
+- `cmd_runtime_health` — spanda-cli ([`crates/spanda-cli/src/fault_cli.rs`](../crates/spanda-cli/src/fault_cli.rs))
+- `cmd_safety_check` — spanda-cli ([`crates/spanda-cli/src/trace_cli.rs`](../crates/spanda-cli/src/trace_cli.rs))
+- `cmd_safety_coverage` — spanda-cli ([`crates/spanda-cli/src/readiness_cli.rs`](../crates/spanda-cli/src/readiness_cli.rs))
+- `cmd_safety_report` — spanda-cli ([`crates/spanda-cli/src/readiness_cli.rs`](../crates/spanda-cli/src/readiness_cli.rs))
+- `cmd_state_estimate` — spanda-cli ([`crates/spanda-cli/src/assurance_cli.rs`](../crates/spanda-cli/src/assurance_cli.rs))
+- `cmd_succession` — spanda-cli ([`crates/spanda-cli/src/continuity_cli.rs`](../crates/spanda-cli/src/continuity_cli.rs))
+- `cmd_takeover` — spanda-cli ([`crates/spanda-cli/src/continuity_cli.rs`](../crates/spanda-cli/src/continuity_cli.rs))
+- `cmd_telemetry` — spanda-cli ([`crates/spanda-cli/src/telemetry_cli.rs`](../crates/spanda-cli/src/telemetry_cli.rs))
 - `cmd_test` — spanda-cli ([`crates/spanda-cli/src/package.rs`](../crates/spanda-cli/src/package.rs))
+- `cmd_trace` — spanda-cli ([`crates/spanda-cli/src/trace_cli.rs`](../crates/spanda-cli/src/trace_cli.rs))
+- `cmd_trust` — spanda-cli ([`crates/spanda-cli/src/package.rs`](../crates/spanda-cli/src/package.rs))
+- `cmd_trust` — spanda-cli ([`crates/spanda-cli/src/trust_cli.rs`](../crates/spanda-cli/src/trust_cli.rs))
+- `cmd_twin_readiness` — spanda-cli ([`crates/spanda-cli/src/readiness_cli.rs`](../crates/spanda-cli/src/readiness_cli.rs))
+- `cmd_update` — spanda-cli ([`crates/spanda-cli/src/package.rs`](../crates/spanda-cli/src/package.rs))
 - `cmd_verify_adapter` — spanda-cli ([`crates/spanda-cli/src/package.rs`](../crates/spanda-cli/src/package.rs))
+- `cmd_verify_approval` — spanda-cli ([`crates/spanda-cli/src/readiness_cli.rs`](../crates/spanda-cli/src/readiness_cli.rs))
+- `cmd_verify_fleet` — spanda-cli ([`crates/spanda-cli/src/readiness_cli.rs`](../crates/spanda-cli/src/readiness_cli.rs))
+- `cmd_verify_mission` — spanda-cli ([`crates/spanda-cli/src/readiness_cli.rs`](../crates/spanda-cli/src/readiness_cli.rs))
 - `CodegenTarget` — spanda-codegen ([`crates/spanda-codegen/src/lib.rs`](../crates/spanda-codegen/src/lib.rs))
 - `codegenViaCli` — TypeScript core ([`src/rust-bridge.ts`](../src/rust-bridge.ts))
 - `collect_source_files` — spanda-package ([`crates/spanda-package/src/project.rs`](../crates/spanda-package/src/project.rs))
+- `collectContinuityDiagnostics` — TypeScript core ([`src/continuity-diagnostics.ts`](../src/continuity-diagnostics.ts))
+- `collectRecoveryDiagnostics` — TypeScript core ([`src/recovery-diagnostics.ts`](../src/recovery-diagnostics.ts))
+- `Command` — spanda-runtime ([`crates/spanda-runtime/src/providers/iot.rs`](../crates/spanda-runtime/src/providers/iot.rs))
 - `command` — spanda-debug ([`crates/spanda-debug/src/lib.rs`](../crates/spanda-debug/src/lib.rs))
+- `CommandProvider` — spanda-runtime ([`crates/spanda-runtime/src/providers/iot.rs`](../crates/spanda-runtime/src/providers/iot.rs))
 - `CommBus` — spanda-comm ([`crates/spanda-comm/src/lib.rs`](../crates/spanda-comm/src/lib.rs))
+- `CommBusHost` — spanda-comm ([`crates/spanda-comm/src/comm_bus_host.rs`](../crates/spanda-comm/src/comm_bus_host.rs))
 - `CommEnvelope` — spanda-comm ([`crates/spanda-comm/src/lib.rs`](../crates/spanda-comm/src/lib.rs))
 - `commit_frame` — spanda-runtime ([`crates/spanda-runtime/src/twin.rs`](../crates/spanda-runtime/src/twin.rs))
 - `CommSafetyStage` — spanda-comm ([`crates/spanda-comm/src/lib.rs`](../crates/spanda-comm/src/lib.rs))
+- `CommTransportSetup` — spanda-runtime ([`crates/spanda-runtime/src/security_types.rs`](../crates/spanda-runtime/src/security_types.rs))
 - `CompatibilityMatrix` — spanda-hardware ([`crates/spanda-hardware/src/verify.rs`](../crates/spanda-hardware/src/verify.rs))
 - `CompatibilityReport` — spanda-hardware ([`crates/spanda-hardware/src/verify.rs`](../crates/spanda-hardware/src/verify.rs))
 - `CompatibilityReport::errors` — spanda-hardware ([`crates/spanda-hardware/src/verify.rs`](../crates/spanda-hardware/src/verify.rs))
-- `CompatItem` — spanda-hardware ([`crates/spanda-hardware/src/compat.rs`](../crates/spanda-hardware/src/compat.rs))
+- `CompatItem` — spanda-connectivity ([`crates/spanda-connectivity/src/hardware_types.rs`](../crates/spanda-connectivity/src/hardware_types.rs))
 - `CompatItemJs` — spanda-node ([`crates/spanda-node/src/lib.rs`](../crates/spanda-node/src/lib.rs))
-- `CompatSeverity` — spanda-hardware ([`crates/spanda-hardware/src/compat.rs`](../crates/spanda-hardware/src/compat.rs))
+- `CompatSeverity` — spanda-connectivity ([`crates/spanda-connectivity/src/hardware_types.rs`](../crates/spanda-connectivity/src/hardware_types.rs))
 - `compile` — spanda-driver ([`crates/spanda-driver/src/compile.rs`](../crates/spanda-driver/src/compile.rs))
 - `compile` — TypeScript core ([`src/compile.ts`](../src/compile.ts))
 - `compile_native` — spanda-llvm ([`crates/spanda-llvm/src/compile.rs`](../crates/spanda-llvm/src/compile.rs))
@@ -7965,16 +11059,21 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `compileWithRegistry` — TypeScript core ([`src/compile.ts`](../src/compile.ts))
 - `complete` — spanda-runtime ([`crates/spanda-runtime/src/robotics.rs`](../crates/spanda-runtime/src/robotics.rs))
 - `CompletionRequest` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
+- `compliance_dispatch` — spanda-cli ([`crates/spanda-cli/src/compliance_cli.rs`](../crates/spanda-cli/src/compliance_cli.rs))
 - `ConcurrencyRuntime` — spanda-concurrency ([`crates/spanda-concurrency/src/lib.rs`](../crates/spanda-concurrency/src/lib.rs))
 - `ConcurrencyRuntime` — TypeScript core ([`src/concurrency.ts`](../src/concurrency.ts))
 - `ConcurrencyRuntime::new` — spanda-concurrency ([`crates/spanda-concurrency/src/lib.rs`](../crates/spanda-concurrency/src/lib.rs))
 - `condition_handlers` — spanda-runtime ([`crates/spanda-runtime/src/triggers.rs`](../crates/spanda-runtime/src/triggers.rs))
 - `ConditionTriggerState` — spanda-runtime ([`crates/spanda-runtime/src/triggers.rs`](../crates/spanda-runtime/src/triggers.rs))
+- `ConditionTriggerState` — TypeScript core ([`src/runtime/trigger-registry.ts`](../src/runtime/trigger-registry.ts))
 - `ConditionTriggerState::should_fire` — spanda-runtime ([`crates/spanda-runtime/src/triggers.rs`](../crates/spanda-runtime/src/triggers.rs))
+- `config_dispatch` — spanda-cli ([`crates/spanda-cli/src/config_cli.rs`](../crates/spanda-cli/src/config_cli.rs))
 - `configure` — spanda-transport-routing ([`crates/spanda-transport-routing/src/lib.rs`](../crates/spanda-transport-routing/src/lib.rs))
 - `configure_wire_session` — spanda-security ([`crates/spanda-security/src/runtime.rs`](../crates/spanda-security/src/runtime.rs))
+- `configureSessionPersist` — TypeScript core ([`src/telemetry-store.ts`](../src/telemetry-store.ts))
 - `ConfigValue` — spanda-ast ([`crates/spanda-ast/src/nodes.rs`](../crates/spanda-ast/src/nodes.rs))
 - `connectivity_capabilities` — spanda-connectivity ([`crates/spanda-connectivity/src/lib.rs`](../crates/spanda-connectivity/src/lib.rs))
+- `connectivity_count` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
 - `connectivity_faults` — spanda-connectivity ([`crates/spanda-connectivity/src/lib.rs`](../crates/spanda-connectivity/src/lib.rs))
 - `connectivity_key_to_profile_tokens` — spanda-connectivity ([`crates/spanda-connectivity/src/lib.rs`](../crates/spanda-connectivity/src/lib.rs))
 - `connectivity_link_to_transport` — spanda-connectivity ([`crates/spanda-connectivity/src/lib.rs`](../crates/spanda-connectivity/src/lib.rs))
@@ -7987,6 +11086,8 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `connectivityKeyToProfileTokens` — TypeScript core ([`src/connectivity-positioning.ts`](../src/connectivity-positioning.ts))
 - `connectivityLinkToTransport` — TypeScript core ([`src/connectivity-positioning.ts`](../src/connectivity-positioning.ts))
 - `connectivityLinkTypes` — TypeScript core ([`src/connectivity-positioning.ts`](../src/connectivity-positioning.ts))
+- `ConnectivityPackageStub` — spanda-providers ([`crates/spanda-providers/src/package_stubs.rs`](../crates/spanda-providers/src/package_stubs.rs))
+- `ConnectivityPackageStub::wifi` — spanda-providers ([`crates/spanda-providers/src/package_stubs.rs`](../crates/spanda-providers/src/package_stubs.rs))
 - `ConnectivityPolicyDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `connectivityPolicyFromDecl` — TypeScript core ([`src/connectivity-positioning.ts`](../src/connectivity-positioning.ts))
 - `ConnectivityPolicyRuntime` — spanda-connectivity-runtime ([`crates/spanda-connectivity-runtime/src/lib.rs`](../crates/spanda-connectivity-runtime/src/lib.rs))
@@ -7995,10 +11096,29 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `ConnectivityTransport` — spanda-connectivity ([`crates/spanda-connectivity/src/lib.rs`](../crates/spanda-connectivity/src/lib.rs))
 - `contains` — spanda-runtime ([`crates/spanda-runtime/src/provider_types.rs`](../crates/spanda-runtime/src/provider_types.rs))
 - `contains` — spanda-security ([`crates/spanda-security/src/trust_boundary.rs`](../crates/spanda-security/src/trust_boundary.rs))
+- `ContinuationDecision` — spanda-runtime ([`crates/spanda-runtime/src/continuity_types.rs`](../crates/spanda-runtime/src/continuity_types.rs))
+- `continuity_context_from_request` — spanda-interpreter ([`crates/spanda-interpreter/src/runtime/runtime_continuity.rs`](../crates/spanda-interpreter/src/runtime/runtime_continuity.rs))
+- `continuity_deliveries_for_request` — spanda-fleet ([`crates/spanda-fleet/src/continuity_mesh.rs`](../crates/spanda-fleet/src/continuity_mesh.rs))
+- `continuity_request_from_handoff` — spanda-fleet ([`crates/spanda-fleet/src/swarm_continuity.rs`](../crates/spanda-fleet/src/swarm_continuity.rs))
+- `ContinuityCheckpointStore` — spanda-runtime ([`crates/spanda-runtime/src/continuity_types.rs`](../crates/spanda-runtime/src/continuity_types.rs))
+- `ContinuityContext` — spanda-runtime ([`crates/spanda-runtime/src/continuity_types.rs`](../crates/spanda-runtime/src/continuity_types.rs))
+- `ContinuityEvidence` — spanda-runtime ([`crates/spanda-runtime/src/continuity_types.rs`](../crates/spanda-runtime/src/continuity_types.rs))
+- `ContinuityExecutionSnapshot` — spanda-interpreter ([`crates/spanda-interpreter/src/runtime/runtime_continuity.rs`](../crates/spanda-interpreter/src/runtime/runtime_continuity.rs))
+- `ContinuityPolicyBranch` — spanda-ast ([`crates/spanda-ast/src/assurance_decl.rs`](../crates/spanda-ast/src/assurance_decl.rs))
+- `ContinuityPolicyDecl` — spanda-ast ([`crates/spanda-ast/src/assurance_decl.rs`](../crates/spanda-ast/src/assurance_decl.rs))
+- `ContinuityPolicySpec` — spanda-runtime ([`crates/spanda-runtime/src/continuity_types.rs`](../crates/spanda-runtime/src/continuity_types.rs))
+- `ContinuityRunOptions` — spanda-interpreter ([`crates/spanda-interpreter/src/options.rs`](../crates/spanda-interpreter/src/options.rs))
+- `ContinuityRunResult` — spanda-interpreter ([`crates/spanda-interpreter/src/options.rs`](../crates/spanda-interpreter/src/options.rs))
+- `ContinuityTrigger` — spanda-runtime ([`crates/spanda-runtime/src/continuity_types.rs`](../crates/spanda-runtime/src/continuity_types.rs))
+- `contract_dispatch` — spanda-cli ([`crates/spanda-cli/src/contract_cli.rs`](../crates/spanda-cli/src/contract_cli.rs))
+- `control_center_dispatch` — spanda-cli ([`crates/spanda-cli/src/control_center_cli.rs`](../crates/spanda-cli/src/control_center_cli.rs))
+- `ControlCenterClient` — spanda-cli ([`crates/spanda-cli/src/control_center_client.rs`](../crates/spanda-cli/src/control_center_client.rs))
+- `ControlCenterClient::from_env` — spanda-cli ([`crates/spanda-cli/src/control_center_client.rs`](../crates/spanda-cli/src/control_center_client.rs))
 - `convert_value` — spanda-typecheck ([`crates/spanda-typecheck/src/units.rs`](../crates/spanda-typecheck/src/units.rs))
 - `convertValue` — TypeScript core ([`src/units/index.ts`](../src/units/index.ts))
 - `coordinate_swarms` — spanda-fleet ([`crates/spanda-fleet/src/swarm_coordinator.rs`](../crates/spanda-fleet/src/swarm_coordinator.rs))
 - `coordinate_swarms_mesh` — spanda-fleet ([`crates/spanda-fleet/src/swarm_coordinator.rs`](../crates/spanda-fleet/src/swarm_coordinator.rs))
+- `coordinateFleetRecoveryViaMesh` — TypeScript core ([`src/recovery.ts`](../src/recovery.ts))
 - `coordinateSwarms` — TypeScript core ([`src/swarm-coordinator.ts`](../src/swarm-coordinator.ts))
 - `coordinateSwarmsMesh` — TypeScript core ([`src/swarm-coordinator.ts`](../src/swarm-coordinator.ts))
 - `core_runtime_host` — spanda-runtime-host ([`crates/spanda-runtime-host/src/lib.rs`](../crates/spanda-runtime-host/src/lib.rs))
@@ -8007,6 +11127,7 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `CoreRuntimeHost` — spanda-runtime-host ([`crates/spanda-runtime-host/src/lib.rs`](../crates/spanda-runtime-host/src/lib.rs))
 - `CoreTypeCheckHost` — spanda-runtime-host ([`crates/spanda-runtime-host/src/type_check_host.rs`](../crates/spanda-runtime-host/src/type_check_host.rs))
 - `coreVersion` — @spanda/native ([`packages/native/index.ts`](../packages/native/index.ts))
+- `correlate_mesh_tamper_shards` — spanda-fleet ([`crates/spanda-fleet/src/tamper_mesh.rs`](../crates/spanda-fleet/src/tamper_mesh.rs))
 - `cppBridgeBinaryPath` — TypeScript core ([`src/ffi/subprocess-bridge.ts`](../src/ffi/subprocess-bridge.ts))
 - `create_agent_runtime` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
 - `create_ai_model` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
@@ -8016,16 +11137,24 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `create_safety_config_from_robot` — spanda-safety ([`crates/spanda-safety/src/lib.rs`](../crates/spanda-safety/src/lib.rs))
 - `create_sim_hal` — spanda-hal ([`crates/spanda-hal/src/hal.rs`](../crates/spanda-hal/src/hal.rs))
 - `create_task_handle` — spanda-concurrency ([`crates/spanda-concurrency/src/lib.rs`](../crates/spanda-concurrency/src/lib.rs))
+- `createAdapterBackedRuntime` — TypeScript core ([`src/adapter-runtime-bridge.ts`](../src/adapter-runtime-bridge.ts))
 - `createAgentRuntime` — TypeScript core ([`src/ai/Agent.ts`](../src/ai/Agent.ts))
 - `createAIModel` — TypeScript core ([`src/ai/AIModel.ts`](../src/ai/AIModel.ts))
 - `createDefaultSimulator` — TypeScript core ([`src/simulator/index.ts`](../src/simulator/index.ts))
 - `createDeployAgentServer` — TypeScript core ([`src/deploy-agent.ts`](../src/deploy-agent.ts))
+- `createDeployReadinessEvaluator` — TypeScript core ([`src/cli/deploy-readiness-bridge.ts`](../src/cli/deploy-readiness-bridge.ts))
+- `createFullCheckerHost` — TypeScript core ([`src/cli/checker-host.ts`](../src/cli/checker-host.ts))
+- `createHardwareVerifyHost` — TypeScript core ([`src/cli/hardware-verify-bridge.ts`](../src/cli/hardware-verify-bridge.ts))
+- `createHealthPollState` — TypeScript core ([`src/runtime/health-runtime.ts`](../src/runtime/health-runtime.ts))
 - `createMissionRuntime` — TypeScript core ([`src/robotics-platform.ts`](../src/robotics-platform.ts))
 - `createMissionTrace` — TypeScript core ([`src/replay.ts`](../src/replay.ts))
+- `createProviderBackedRuntime` — TypeScript core ([`src/provider-runtime-bridge.ts`](../src/provider-runtime-bridge.ts))
 - `createRobotIdentity` — TypeScript core ([`src/security/index.ts`](../src/security/index.ts))
 - `createRos2Adapter` — TypeScript core ([`src/ros2/index.ts`](../src/ros2/index.ts))
 - `createSafetyConfigFromRobot` — TypeScript core ([`src/safety/index.ts`](../src/safety/index.ts))
+- `createSecurityBackedRuntime` — TypeScript core ([`src/security-runtime-bridge.ts`](../src/security-runtime-bridge.ts))
 - `createSimHal` — TypeScript core ([`src/hal/index.ts`](../src/hal/index.ts))
+- `createTelemetryStoreSink` — TypeScript core ([`src/telemetry-store-bridge.ts`](../src/telemetry-store-bridge.ts))
 - `createTransportStub` — TypeScript core ([`src/transport/index.ts`](../src/transport/index.ts))
 - `createTransportWireFrame` — TypeScript core ([`src/transport/transport-wire.ts`](../src/transport/transport-wire.ts))
 - `CryptoProvider` — spanda-runtime ([`crates/spanda-runtime/src/providers/traits.rs`](../crates/spanda-runtime/src/providers/traits.rs))
@@ -8053,31 +11182,59 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `decode_payload` — spanda-transport ([`crates/spanda-transport/src/wire.rs`](../crates/spanda-transport/src/wire.rs))
 - `decode_wire_value` — spanda-transport ([`crates/spanda-transport/src/wire.rs`](../crates/spanda-transport/src/wire.rs))
 - `decodeWireValue` — TypeScript core ([`src/transport/transport-wire.ts`](../src/transport/transport-wire.ts))
+- `decrypt` — spanda-runtime ([`crates/spanda-runtime/src/wire_crypto.rs`](../crates/spanda-runtime/src/wire_crypto.rs))
 - `decrypt` — spanda-security ([`crates/spanda-security/src/encrypted.rs`](../crates/spanda-security/src/encrypted.rs))
-- `decrypt` — spanda-security ([`crates/spanda-security/src/wire_crypto.rs`](../crates/spanda-security/src/wire_crypto.rs))
 - `decrypt_frame` — spanda-transport ([`crates/spanda-transport/src/security.rs`](../crates/spanda-transport/src/security.rs))
 - `default_agent_state_path` — spanda-ota ([`crates/spanda-ota/src/agent.rs`](../crates/spanda-ota/src/agent.rs))
 - `default_agents_path` — spanda-ota ([`crates/spanda-ota/src/remote.rs`](../crates/spanda-ota/src/remote.rs))
+- `default_assurance_runtime` — spanda-cli ([`crates/spanda-cli/src/assurance_runtime.rs`](../crates/spanda-cli/src/assurance_runtime.rs))
+- `default_assurance_runtime` — spanda-runtime ([`crates/spanda-runtime/src/assurance_runtime.rs`](../crates/spanda-runtime/src/assurance_runtime.rs))
+- `default_checkpoint_store_path` — spanda-runtime ([`crates/spanda-runtime/src/continuity_primitives.rs`](../crates/spanda-runtime/src/continuity_primitives.rs))
+- `default_comm_bus_factory` — spanda-cli ([`crates/spanda-cli/src/comm_bus_runtime.rs`](../crates/spanda-cli/src/comm_bus_runtime.rs))
+- `default_comm_bus_factory` — spanda-comm ([`crates/spanda-comm/src/comm_bus_host.rs`](../crates/spanda-comm/src/comm_bus_host.rs))
+- `default_comm_bus_factory_fn` — spanda-comm ([`crates/spanda-comm/src/comm_bus_host.rs`](../crates/spanda-comm/src/comm_bus_host.rs))
+- `default_fault_runtime` — spanda-cli ([`crates/spanda-cli/src/fault_runtime.rs`](../crates/spanda-cli/src/fault_runtime.rs))
+- `default_fault_runtime` — spanda-runtime ([`crates/spanda-runtime/src/fault_runtime.rs`](../crates/spanda-runtime/src/fault_runtime.rs))
 - `default_ffi_registry` — spanda-bridge ([`crates/spanda-bridge/src/lib.rs`](../crates/spanda-bridge/src/lib.rs))
 - `default_fleet_agent_state_path` — spanda-fleet ([`crates/spanda-fleet/src/agent.rs`](../crates/spanda-fleet/src/agent.rs))
 - `default_fleet_agents_path` — spanda-fleet ([`crates/spanda-fleet/src/remote.rs`](../crates/spanda-fleet/src/remote.rs))
 - `default_fleet_mesh_state_path` — spanda-fleet ([`crates/spanda-fleet/src/mesh.rs`](../crates/spanda-fleet/src/mesh.rs))
 - `default_key` — spanda-audit ([`crates/spanda-audit/src/record.rs`](../crates/spanda-audit/src/record.rs))
+- `default_knowledge_store_path` — spanda-runtime ([`crates/spanda-runtime/src/recovery_primitives.rs`](../crates/spanda-runtime/src/recovery_primitives.rs))
 - `default_message_size` — spanda-comm ([`crates/spanda-comm/src/lib.rs`](../crates/spanda-comm/src/lib.rs))
+- `default_provider_runtime` — spanda-cli ([`crates/spanda-cli/src/provider_runtime.rs`](../crates/spanda-cli/src/provider_runtime.rs))
+- `default_provider_runtime` — spanda-runtime ([`crates/spanda-runtime/src/provider_runtime.rs`](../crates/spanda-runtime/src/provider_runtime.rs))
+- `default_runtime_hooks` — spanda-cli ([`crates/spanda-cli/src/runtime_hooks.rs`](../crates/spanda-cli/src/runtime_hooks.rs))
+- `default_security_runtime` — spanda-runtime ([`crates/spanda-runtime/src/security_runtime.rs`](../crates/spanda-runtime/src/security_runtime.rs))
+- `default_security_runtime_factory` — spanda-cli ([`crates/spanda-cli/src/security_runtime.rs`](../crates/spanda-cli/src/security_runtime.rs))
+- `default_security_runtime_factory` — spanda-runtime ([`crates/spanda-runtime/src/security_runtime.rs`](../crates/spanda-runtime/src/security_runtime.rs))
 - `default_state_path` — spanda-ota ([`crates/spanda-ota/src/service.rs`](../crates/spanda-ota/src/service.rs))
 - `default_swarm_state_path` — spanda-fleet ([`crates/spanda-fleet/src/swarm_coordinator.rs`](../crates/spanda-fleet/src/swarm_coordinator.rs))
 - `default_target_triple_for_host` — spanda-llvm ([`crates/spanda-llvm/src/lib.rs`](../crates/spanda-llvm/src/lib.rs))
+- `default_telemetry_sink` — spanda-cli ([`crates/spanda-cli/src/telemetry_runtime.rs`](../crates/spanda-cli/src/telemetry_runtime.rs))
+- `default_telemetry_sink` — spanda-runtime ([`crates/spanda-runtime/src/telemetry_sink.rs`](../crates/spanda-runtime/src/telemetry_sink.rs))
+- `default_tenant_id` — spanda-security ([`crates/spanda-security/src/tenant.rs`](../crates/spanda-security/src/tenant.rs))
+- `defaultAdapterRuntime` — TypeScript core ([`src/runtime/adapter-runtime.ts`](../src/runtime/adapter-runtime.ts))
 - `defaultAgentsPath` — TypeScript core ([`src/deploy-remote.ts`](../src/deploy-remote.ts))
 - `defaultAgentStatePath` — TypeScript core ([`src/deploy-agent.ts`](../src/deploy-agent.ts))
+- `defaultCheckpointStorePath` — TypeScript core ([`src/continuity-checkpoint.ts`](../src/continuity-checkpoint.ts))
 - `defaultFleetAgentsPath` — TypeScript core ([`src/fleet-remote.ts`](../src/fleet-remote.ts))
 - `defaultFleetAgentStatePath` — TypeScript core ([`src/fleet-agent.ts`](../src/fleet-agent.ts))
 - `defaultFleetMeshUrl` — TypeScript core ([`src/fleet-mesh.ts`](../src/fleet-mesh.ts))
+- `defaultHeartbeatIndexPath` — TypeScript core ([`src/telemetry-store.ts`](../src/telemetry-store.ts))
 - `defaultMessageSize` — TypeScript core ([`src/comm/index.ts`](../src/comm/index.ts))
+- `defaultProviderRuntime` — TypeScript core ([`src/runtime/provider-runtime.ts`](../src/runtime/provider-runtime.ts))
+- `defaultSecurityRuntime` — TypeScript core ([`src/runtime/security-runtime.ts`](../src/runtime/security-runtime.ts))
+- `defaultSqliteStorePath` — TypeScript core ([`src/telemetry-sqlite.ts`](../src/telemetry-sqlite.ts))
 - `defaultStatePath` — TypeScript core ([`src/deploy-service.ts`](../src/deploy-service.ts))
+- `defaultStorePath` — TypeScript core ([`src/telemetry-store.ts`](../src/telemetry-store.ts))
 - `defaultSwarmStatePath` — TypeScript core ([`src/swarm-coordinator.ts`](../src/swarm-coordinator.ts))
+- `defaultTelemetrySink` — TypeScript core ([`src/runtime/telemetry-sink.ts`](../src/runtime/telemetry-sink.ts))
 - `defaultTransportSecurity` — TypeScript core ([`src/transport/transport-security.ts`](../src/transport/transport-security.ts))
 - `define` — spanda-runtime ([`crates/spanda-runtime/src/environment.rs`](../crates/spanda-runtime/src/environment.rs))
 - `deliver_peer_steps` — spanda-fleet ([`crates/spanda-fleet/src/orchestrator.rs`](../crates/spanda-fleet/src/orchestrator.rs))
+- `demo_dispatch` — spanda-cli ([`crates/spanda-cli/src/demo_cli.rs`](../crates/spanda-cli/src/demo_cli.rs))
+- `dependency_provenance` — spanda-package ([`crates/spanda-package/src/official.rs`](../crates/spanda-package/src/official.rs))
 - `DependencyDetail` — spanda-package ([`crates/spanda-package/src/dependency.rs`](../crates/spanda-package/src/dependency.rs))
 - `DependencySourceKind` — spanda-package ([`crates/spanda-package/src/dependency.rs`](../crates/spanda-package/src/dependency.rs))
 - `DependencySpec` — spanda-package ([`crates/spanda-package/src/dependency.rs`](../crates/spanda-package/src/dependency.rs))
@@ -8104,16 +11261,32 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `detect` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
 - `detect_divergence` — spanda-runtime ([`crates/spanda-runtime/src/twin.rs`](../crates/spanda-runtime/src/twin.rs))
 - `DetectionRequest` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
+- `device_count` — spanda-providers ([`crates/spanda-providers/src/iot_hub.rs`](../crates/spanda-providers/src/iot_hub.rs))
+- `device_dispatch` — spanda-cli ([`crates/spanda-cli/src/device_cli.rs`](../crates/spanda-cli/src/device_cli.rs))
+- `device_telemetry_sink` — spanda-runtime ([`crates/spanda-runtime/src/device_telemetry_sink.rs`](../crates/spanda-runtime/src/device_telemetry_sink.rs))
+- `device_tree_dispatch` — spanda-cli ([`crates/spanda-cli/src/device_tree_cli.rs`](../crates/spanda-cli/src/device_tree_cli.rs))
 - `DeviceDecl` — spanda-ast ([`crates/spanda-ast/src/comm_decl.rs`](../crates/spanda-ast/src/comm_decl.rs))
 - `DeviceIdentity` — spanda-audit ([`crates/spanda-audit/src/record.rs`](../crates/spanda-audit/src/record.rs))
 - `DeviceIdentity::new` — spanda-audit ([`crates/spanda-audit/src/record.rs`](../crates/spanda-audit/src/record.rs))
+- `DeviceShadow` — spanda-runtime ([`crates/spanda-runtime/src/providers/iot.rs`](../crates/spanda-runtime/src/providers/iot.rs))
+- `DeviceShadowProvider` — spanda-runtime ([`crates/spanda-runtime/src/providers/iot.rs`](../crates/spanda-runtime/src/providers/iot.rs))
+- `DeviceTelemetrySink` — spanda-runtime ([`crates/spanda-runtime/src/device_telemetry_sink.rs`](../crates/spanda-runtime/src/device_telemetry_sink.rs))
+- `diagnoseProgramTs` — TypeScript core ([`src/assurance.ts`](../src/assurance.ts))
+- `diagnoseTraceTs` — TypeScript core ([`src/operational.ts`](../src/operational.ts))
 - `Diagnostic` — spanda-typecheck ([`crates/spanda-typecheck/src/diagnostics.rs`](../crates/spanda-typecheck/src/diagnostics.rs))
 - `DiagnosticJs` — spanda-node ([`crates/spanda-node/src/lib.rs`](../crates/spanda-node/src/lib.rs))
+- `diff_dispatch` — spanda-cli ([`crates/spanda-cli/src/diff_cli.rs`](../crates/spanda-cli/src/diff_cli.rs))
 - `DiscoverFilter` — spanda-ast ([`crates/spanda-ast/src/comm_decl.rs`](../crates/spanda-ast/src/comm_decl.rs))
 - `DiscoverTarget` — spanda-ast ([`crates/spanda-ast/src/comm_decl.rs`](../crates/spanda-ast/src/comm_decl.rs))
+- `dispatch_official_package_call` — spanda-providers ([`crates/spanda-providers/src/package_dispatch.rs`](../crates/spanda-providers/src/package_dispatch.rs))
+- `dispatchOfficialPackageCall` — TypeScript core ([`src/providers/package_dispatch.ts`](../src/providers/package_dispatch.ts))
+- `DocBatchResult` — spanda-docs ([`crates/spanda-docs/src/program_docs.rs`](../crates/spanda-docs/src/program_docs.rs))
+- `DocJson` — spanda-docs ([`crates/spanda-docs/src/program_docs.rs`](../crates/spanda-docs/src/program_docs.rs))
 - `docViaCli` — TypeScript core ([`src/rust-bridge.ts`](../src/rust-bridge.ts))
 - `drain_fire_and_forget_queue` — spanda-concurrency ([`crates/spanda-concurrency/src/lib.rs`](../crates/spanda-concurrency/src/lib.rs))
+- `drift_dispatch` — spanda-cli ([`crates/spanda-cli/src/drift_cli.rs`](../crates/spanda-cli/src/drift_cli.rs))
 - `DriverContext` — spanda-lib-registry ([`crates/spanda-lib-registry/src/lib.rs`](../crates/spanda-lib-registry/src/lib.rs))
+- `effective_bus_security` — spanda-runtime ([`crates/spanda-runtime/src/security_primitives.rs`](../crates/spanda-runtime/src/security_primitives.rs))
 - `effective_max_speed` — spanda-safety ([`crates/spanda-safety/src/lib.rs`](../crates/spanda-safety/src/lib.rs))
 - `effective_transport_policy` — spanda-transport ([`crates/spanda-transport/src/security.rs`](../crates/spanda-transport/src/security.rs))
 - `effectiveTransportPolicy` — TypeScript core ([`src/transport/transport-security.ts`](../src/transport/transport-security.ts))
@@ -8122,6 +11295,7 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `emit_module_ir` — spanda-llvm ([`crates/spanda-llvm/src/lib.rs`](../crates/spanda-llvm/src/lib.rs))
 - `emit_module_ir_with_options` — spanda-llvm ([`crates/spanda-llvm/src/lib.rs`](../crates/spanda-llvm/src/lib.rs))
 - `emit_module_ir_with_triple` — spanda-llvm ([`crates/spanda-llvm/src/lib.rs`](../crates/spanda-llvm/src/lib.rs))
+- `empty_fault_scan_report` — spanda-runtime ([`crates/spanda-runtime/src/fault_primitives.rs`](../crates/spanda-runtime/src/fault_primitives.rs))
 - `emptyAgentRegistry` — TypeScript core ([`src/deploy-remote.ts`](../src/deploy-remote.ts))
 - `emptyAgentState` — TypeScript core ([`src/deploy-agent.ts`](../src/deploy-agent.ts))
 - `emptyDeployState` — TypeScript core ([`src/deploy-service.ts`](../src/deploy-service.ts))
@@ -8131,34 +11305,75 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `enable_strict_permissions` — spanda-security ([`crates/spanda-security/src/runtime.rs`](../crates/spanda-security/src/runtime.rs))
 - `encode_wire_value` — spanda-transport ([`crates/spanda-transport/src/wire.rs`](../crates/spanda-transport/src/wire.rs))
 - `encodeWireValue` — TypeScript core ([`src/transport/transport-wire.ts`](../src/transport/transport-wire.ts))
-- `encrypt` — spanda-security ([`crates/spanda-security/src/wire_crypto.rs`](../crates/spanda-security/src/wire_crypto.rs))
+- `encrypt` — spanda-runtime ([`crates/spanda-runtime/src/wire_crypto.rs`](../crates/spanda-runtime/src/wire_crypto.rs))
 - `encrypt_frame` — spanda-transport ([`crates/spanda-transport/src/security.rs`](../crates/spanda-transport/src/security.rs))
 - `encrypt_payload` — spanda-security ([`crates/spanda-security/src/secure_comm.rs`](../crates/spanda-security/src/secure_comm.rs))
 - `encrypted_signed` — spanda-security ([`crates/spanda-security/src/secure_comm.rs`](../crates/spanda-security/src/secure_comm.rs))
 - `EncryptedMessage` — spanda-security ([`crates/spanda-security/src/encrypted.rs`](../crates/spanda-security/src/encrypted.rs))
+- `EncryptionMode` — spanda-runtime ([`crates/spanda-runtime/src/security_types.rs`](../crates/spanda-runtime/src/security_types.rs))
 - `EncryptionMode` — spanda-security ([`crates/spanda-security/src/policy.rs`](../crates/spanda-security/src/policy.rs))
+- `endRunSession` — TypeScript core ([`src/telemetry-store.ts`](../src/telemetry-store.ts))
 - `enforce_certification_runtime` — spanda-certify ([`crates/spanda-certify/src/runtime.rs`](../crates/spanda-certify/src/runtime.rs))
 - `enforce_trust_boundary` — spanda-security ([`crates/spanda-security/src/runtime.rs`](../crates/spanda-security/src/runtime.rs))
 - `enforceCertificationRuntime` — TypeScript core ([`src/certify-runtime.ts`](../src/certify-runtime.ts))
+- `enrich_healthkit_telemetry` — spanda-providers ([`crates/spanda-providers/src/hri_backends.rs`](../crates/spanda-providers/src/hri_backends.rs))
+- `enrich_hololens_session` — spanda-providers ([`crates/spanda-providers/src/hri_backends.rs`](../crates/spanda-providers/src/hri_backends.rs))
+- `enrich_vision_pro_overlay` — spanda-providers ([`crates/spanda-providers/src/hri_backends.rs`](../crates/spanda-providers/src/hri_backends.rs))
+- `ensure_agent_auth` — spanda-deploy-http ([`crates/spanda-deploy-http/src/lib.rs`](../crates/spanda-deploy-http/src/lib.rs))
+- `ensure_bundled_registry_env` — spanda-cli ([`crates/spanda-cli/src/bundled_registry.rs`](../crates/spanda-cli/src/bundled_registry.rs))
+- `entity_dispatch` — spanda-cli ([`crates/spanda-cli/src/entity_cli.rs`](../crates/spanda-cli/src/entity_cli.rs))
 - `EnumDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `EnumVariantDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `env` — spanda-interpreter ([`crates/spanda-interpreter/src/runtime/orchestrator.rs`](../crates/spanda-interpreter/src/runtime/orchestrator.rs))
 - `env_lock` — spanda-package ([`crates/spanda-package/src/testing.rs`](../crates/spanda-package/src/testing.rs))
 - `env_mut` — spanda-interpreter ([`crates/spanda-interpreter/src/runtime/orchestrator.rs`](../crates/spanda-interpreter/src/runtime/orchestrator.rs))
+- `envAutoPushEnabled` — TypeScript core ([`src/telemetry-push.ts`](../src/telemetry-push.ts))
+- `envBackendSqlite` — TypeScript core ([`src/telemetry-sqlite.ts`](../src/telemetry-sqlite.ts))
+- `envFleetAutoIngestEnabled` — TypeScript core ([`src/telemetry-fleet.ts`](../src/telemetry-fleet.ts))
+- `envFleetMeshUrl` — TypeScript core ([`src/telemetry-fleet.ts`](../src/telemetry-fleet.ts))
 - `Environment` — spanda-runtime ([`crates/spanda-runtime/src/environment.rs`](../crates/spanda-runtime/src/environment.rs))
 - `Environment` — TypeScript core ([`src/runtime/interpreter.ts`](../src/runtime/interpreter.ts))
 - `Environment::new` — spanda-runtime ([`crates/spanda-runtime/src/environment.rs`](../crates/spanda-runtime/src/environment.rs))
+- `envOtlpEndpoint` — TypeScript core ([`src/telemetry-push.ts`](../src/telemetry-push.ts))
+- `envOtlpToken` — TypeScript core ([`src/telemetry-push.ts`](../src/telemetry-push.ts))
+- `envPersistEnabled` — TypeScript core ([`src/telemetry-store.ts`](../src/telemetry-store.ts))
+- `envPushIntervalMs` — TypeScript core ([`src/telemetry-push.ts`](../src/telemetry-push.ts))
+- `envRobotId` — TypeScript core ([`src/telemetry-fleet.ts`](../src/telemetry-fleet.ts))
+- `estimate_dispatch` — spanda-cli ([`crates/spanda-cli/src/estimate_cli.rs`](../crates/spanda-cli/src/estimate_cli.rs))
 - `estimate_topic_bandwidth_mbps` — spanda-comm ([`crates/spanda-comm/src/lib.rs`](../crates/spanda-comm/src/lib.rs))
 - `estimateTopicBandwidthMbps` — TypeScript core ([`src/comm/index.ts`](../src/comm/index.ts))
 - `eval_condition_json` — spanda-rt ([`crates/spanda-rt/src/condition.rs`](../crates/spanda-rt/src/condition.rs))
+- `evaluate_agent_readiness_json` — spanda-cli ([`crates/spanda-cli/src/readiness_cli.rs`](../crates/spanda-cli/src/readiness_cli.rs))
 - `evaluate_before_motion` — spanda-safety ([`crates/spanda-safety/src/lib.rs`](../crates/spanda-safety/src/lib.rs))
+- `evaluate_health_checks` — spanda-runtime ([`crates/spanda-runtime/src/health_primitives.rs`](../crates/spanda-runtime/src/health_primitives.rs))
 - `evaluate_injected_faults` — spanda-hal ([`crates/spanda-hal/src/hardware_monitor.rs`](../crates/spanda-hal/src/hardware_monitor.rs))
+- `evaluate_package_trust` — spanda-package ([`crates/spanda-package/src/trust.rs`](../crates/spanda-package/src/trust.rs))
+- `evaluate_project_provenance_gate` — spanda-package ([`crates/spanda-package/src/provenance_gate.rs`](../crates/spanda-package/src/provenance_gate.rs))
+- `evaluate_runtime_health` — spanda-runtime ([`crates/spanda-runtime/src/health_primitives.rs`](../crates/spanda-runtime/src/health_primitives.rs))
+- `evaluateAgentReadinessJson` — TypeScript core ([`src/readiness.ts`](../src/readiness.ts))
+- `evaluateContinuityTs` — TypeScript core ([`src/mission-continuity.ts`](../src/mission-continuity.ts))
+- `evaluateFleetReadinessTs` — TypeScript core ([`src/operational.ts`](../src/operational.ts))
+- `evaluatePrognosticsTs` — TypeScript core ([`src/assurance.ts`](../src/assurance.ts))
+- `evaluateReadinessSource` — TypeScript core ([`src/readiness.ts`](../src/readiness.ts))
+- `evaluateReadinessSource` — @davalgi-spanda/web ([`packages/web/src/readiness-local.ts`](../packages/web/src/readiness-local.ts))
+- `evaluateReadinessTs` — TypeScript core ([`src/readiness.ts`](../src/readiness.ts))
+- `evaluateRecoveryTs` — TypeScript core ([`src/recovery.ts`](../src/recovery.ts))
+- `evaluateStateAssuranceTs` — TypeScript core ([`src/assurance.ts`](../src/assurance.ts))
+- `evaluateTwinReadinessTs` — TypeScript core ([`src/operational.ts`](../src/operational.ts))
 - `event_handler_body` — spanda-runtime ([`crates/spanda-runtime/src/triggers.rs`](../crates/spanda-runtime/src/triggers.rs))
 - `EventBus` — spanda-runtime ([`crates/spanda-runtime/src/events.rs`](../crates/spanda-runtime/src/events.rs))
 - `EventBus::new` — spanda-runtime ([`crates/spanda-runtime/src/events.rs`](../crates/spanda-runtime/src/events.rs))
 - `EventDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `EventHandlerDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `execute_agent_plan` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
+- `execute_assurance_continuity_on_agent` — spanda-fleet ([`crates/spanda-fleet/src/continuity_agent.rs`](../crates/spanda-fleet/src/continuity_agent.rs))
+- `execute_assurance_recovery_on_agent` — spanda-fleet ([`crates/spanda-fleet/src/recovery_agent.rs`](../crates/spanda-fleet/src/recovery_agent.rs))
+- `execute_continuity_on_program` — spanda-interpreter ([`crates/spanda-interpreter/src/runtime/runtime_continuity.rs`](../crates/spanda-interpreter/src/runtime/runtime_continuity.rs))
+- `execute_interpreter_continuity_on_agent` — spanda-fleet ([`crates/spanda-fleet/src/continuity_agent.rs`](../crates/spanda-fleet/src/continuity_agent.rs))
+- `execute_interpreter_recovery_on_agent` — spanda-fleet ([`crates/spanda-fleet/src/recovery_agent.rs`](../crates/spanda-fleet/src/recovery_agent.rs))
+- `execute_recovery_on_program` — spanda-driver ([`crates/spanda-driver/src/recovery_run.rs`](../crates/spanda-driver/src/recovery_run.rs))
+- `execute_recovery_on_program` — spanda-interpreter ([`crates/spanda-interpreter/src/runtime/runtime_recovery.rs`](../crates/spanda-interpreter/src/runtime/runtime_recovery.rs))
+- `execute_recovery_source` — spanda-driver ([`crates/spanda-driver/src/recovery_run.rs`](../crates/spanda-driver/src/recovery_run.rs))
 - `execute_remote_rollback` — spanda-ota ([`crates/spanda-ota/src/remote.rs`](../crates/spanda-ota/src/remote.rs))
 - `execute_remote_rollout` — spanda-ota ([`crates/spanda-ota/src/remote.rs`](../crates/spanda-ota/src/remote.rs))
 - `executeAgentPlan` — TypeScript core ([`src/ai/Agent.ts`](../src/ai/Agent.ts))
@@ -8166,6 +11381,9 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `executeRemoteRollout` — TypeScript core ([`src/deploy-remote.ts`](../src/deploy-remote.ts))
 - `ExecutionMetrics` — spanda-runtime ([`crates/spanda-runtime/src/telemetry.rs`](../crates/spanda-runtime/src/telemetry.rs))
 - `ExecutionMetricsJs` — spanda-node ([`crates/spanda-node/src/lib.rs`](../crates/spanda-node/src/lib.rs))
+- `ExpectedBehavior` — spanda-ast ([`crates/spanda-ast/src/assurance_decl.rs`](../crates/spanda-ast/src/assurance_decl.rs))
+- `explain_dispatch` — spanda-cli ([`crates/spanda-cli/src/explain_cli.rs`](../crates/spanda-cli/src/explain_cli.rs))
+- `export_json` — spanda-runtime ([`crates/spanda-runtime/src/world_model.rs`](../crates/spanda-runtime/src/world_model.rs))
 - `export_json` — spanda-audit ([`crates/spanda-audit/src/backend.rs`](../crates/spanda-audit/src/backend.rs))
 - `export_json` — spanda-audit ([`crates/spanda-audit/src/runtime.rs`](../crates/spanda-audit/src/runtime.rs))
 - `export_json_compact` — spanda-audit ([`crates/spanda-audit/src/backend.rs`](../crates/spanda-audit/src/backend.rs))
@@ -8173,14 +11391,34 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `Expr` — spanda-ast ([`crates/spanda-ast/src/nodes.rs`](../crates/spanda-ast/src/nodes.rs))
 - `ExternBridges` — spanda-ffi ([`crates/spanda-ffi/src/lib.rs`](../crates/spanda-ffi/src/lib.rs))
 - `ExternFnDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
+- `extract_continuity_policies` — spanda-runtime ([`crates/spanda-runtime/src/continuity_primitives.rs`](../crates/spanda-runtime/src/continuity_primitives.rs))
+- `extract_recovery_policies` — spanda-runtime ([`crates/spanda-runtime/src/recovery_primitives.rs`](../crates/spanda-runtime/src/recovery_primitives.rs))
+- `extract_tamper_policies` — spanda-runtime ([`crates/spanda-runtime/src/tamper_policy.rs`](../crates/spanda-runtime/src/tamper_policy.rs))
 - `extract_tarball` — spanda-package ([`crates/spanda-package/src/registry_fetch.rs`](../crates/spanda-package/src/registry_fetch.rs))
+- `extract_tarball_safe` — spanda-package ([`crates/spanda-package/src/tar_extract.rs`](../crates/spanda-package/src/tar_extract.rs))
+- `extractMitigationsTs` — TypeScript core ([`src/assurance.ts`](../src/assurance.ts))
 - `fail` — spanda-runtime ([`crates/spanda-runtime/src/robotics.rs`](../crates/spanda-runtime/src/robotics.rs))
+- `FailureClassification` — spanda-runtime ([`crates/spanda-runtime/src/recovery_types.rs`](../crates/spanda-runtime/src/recovery_types.rs))
+- `fault_dispatch` — spanda-cli ([`crates/spanda-cli/src/fault_cli.rs`](../crates/spanda-cli/src/fault_cli.rs))
+- `fault_runtime` — spanda-interpreter ([`crates/spanda-interpreter/src/runtime/orchestrator.rs`](../crates/spanda-interpreter/src/runtime/orchestrator.rs))
 - `fault_to_connectivity` — spanda-connectivity ([`crates/spanda-connectivity/src/runtime_sim.rs`](../crates/spanda-connectivity/src/runtime_sim.rs))
+- `FaultEvidence` — spanda-runtime ([`crates/spanda-runtime/src/fault_types.rs`](../crates/spanda-runtime/src/fault_types.rs))
 - `FaultHandlerDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
+- `FaultRuntime` — spanda-runtime ([`crates/spanda-runtime/src/fault_runtime.rs`](../crates/spanda-runtime/src/fault_runtime.rs))
+- `faults_from_hardware_signals` — spanda-runtime ([`crates/spanda-runtime/src/fault_primitives.rs`](../crates/spanda-runtime/src/fault_primitives.rs))
+- `FaultScanOptions` — spanda-runtime ([`crates/spanda-runtime/src/fault_types.rs`](../crates/spanda-runtime/src/fault_types.rs))
+- `FaultScanReport` — spanda-runtime ([`crates/spanda-runtime/src/fault_types.rs`](../crates/spanda-runtime/src/fault_types.rs))
+- `FaultTimeline` — spanda-runtime ([`crates/spanda-runtime/src/fault_types.rs`](../crates/spanda-runtime/src/fault_types.rs))
 - `faultToConnectivity` — TypeScript core ([`src/connectivity-positioning.ts`](../src/connectivity-positioning.ts))
+- `fetch_fleet_tamper_report` — spanda-deploy-http ([`crates/spanda-deploy-http/src/fleet_tamper.rs`](../crates/spanda-deploy-http/src/fleet_tamper.rs))
+- `fetch_fleet_telemetry` — spanda-fleet ([`crates/spanda-fleet/src/telemetry_mesh.rs`](../crates/spanda-fleet/src/telemetry_mesh.rs))
 - `fetch_index_json` — spanda-package ([`crates/spanda-package/src/registry_remote.rs`](../crates/spanda-package/src/registry_remote.rs))
+- `fetch_live_fleet_tamper_report` — spanda-fleet ([`crates/spanda-fleet/src/tamper_mesh.rs`](../crates/spanda-fleet/src/tamper_mesh.rs))
 - `fetch_registry_tarball` — spanda-package ([`crates/spanda-package/src/registry_fetch.rs`](../crates/spanda-package/src/registry_fetch.rs))
 - `fetch_url_to_file` — spanda-package ([`crates/spanda-package/src/registry_fetch.rs`](../crates/spanda-package/src/registry_fetch.rs))
+- `fetchAgentContinuity` — @davalgi-spanda/web ([`packages/web/src/continuity-agent.ts`](../packages/web/src/continuity-agent.ts))
+- `fetchAgentReadiness` — @davalgi-spanda/web ([`packages/web/src/readiness-agent.ts`](../packages/web/src/readiness-agent.ts))
+- `fetchFleetTelemetry` — TypeScript core ([`src/telemetry-fleet.ts`](../src/telemetry-fleet.ts))
 - `ffiBridgeKind` — TypeScript core ([`src/ffi/registry.ts`](../src/ffi/registry.ts))
 - `FfiRegistry` — spanda-ffi ([`crates/spanda-ffi/src/lib.rs`](../crates/spanda-ffi/src/lib.rs))
 - `FfiRegistry::new` — spanda-ffi ([`crates/spanda-ffi/src/lib.rs`](../crates/spanda-ffi/src/lib.rs))
@@ -8190,14 +11428,27 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `find_registry_entry` — spanda-package ([`crates/spanda-package/src/registry.rs`](../crates/spanda-package/src/registry.rs))
 - `find_remote_entry` — spanda-package ([`crates/spanda-package/src/registry_remote.rs`](../crates/spanda-package/src/registry_remote.rs))
 - `fleet_agent_dispatch` — spanda-cli ([`crates/spanda-cli/src/deploy_ota.rs`](../crates/spanda-cli/src/deploy_ota.rs))
+- `fleet_agent_state_path_for` — spanda-fleet ([`crates/spanda-fleet/src/agent.rs`](../crates/spanda-fleet/src/agent.rs))
+- `fleet_agent_status` — spanda-fleet ([`crates/spanda-fleet/src/remote.rs`](../crates/spanda-fleet/src/remote.rs))
+- `fleet_count` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
 - `fleet_entry_for_port` — spanda-fleet ([`crates/spanda-fleet/src/agent.rs`](../crates/spanda-fleet/src/agent.rs))
 - `fleet_mesh_dispatch` — spanda-cli ([`crates/spanda-cli/src/deploy_ota.rs`](../crates/spanda-cli/src/deploy_ota.rs))
 - `fleet_orchestrate_dispatch` — spanda-cli ([`crates/spanda-cli/src/deploy_ota.rs`](../crates/spanda-cli/src/deploy_ota.rs))
 - `fleet_registry_from_program` — spanda-fleet ([`crates/spanda-fleet/src/orchestrator.rs`](../crates/spanda-fleet/src/orchestrator.rs))
+- `fleet_tamper_runtime` — spanda-runtime ([`crates/spanda-runtime/src/fleet_tamper_runtime.rs`](../crates/spanda-runtime/src/fleet_tamper_runtime.rs))
+- `fleet_telemetry_runtime` — spanda-runtime ([`crates/spanda-runtime/src/fleet_telemetry_runtime.rs`](../crates/spanda-runtime/src/fleet_telemetry_runtime.rs))
 - `FleetAgentEntry` — spanda-fleet ([`crates/spanda-fleet/src/remote.rs`](../crates/spanda-fleet/src/remote.rs))
 - `fleetAgentHealth` — TypeScript core ([`src/fleet-remote.ts`](../src/fleet-remote.ts))
+- `fleetAgentReadiness` — TypeScript core ([`src/fleet-remote.ts`](../src/fleet-remote.ts))
 - `FleetAgentRegistry` — spanda-fleet ([`crates/spanda-fleet/src/remote.rs`](../crates/spanda-fleet/src/remote.rs))
 - `FleetAgentState` — spanda-fleet ([`crates/spanda-fleet/src/agent.rs`](../crates/spanda-fleet/src/agent.rs))
+- `fleetAgentStatePathFor` — TypeScript core ([`src/fleet-agent.ts`](../src/fleet-agent.ts))
+- `FleetAgentStatusResponse` — spanda-fleet ([`crates/spanda-fleet/src/remote.rs`](../crates/spanda-fleet/src/remote.rs))
+- `fleetAgentUploadProgram` — TypeScript core ([`src/fleet-remote.ts`](../src/fleet-remote.ts))
+- `FleetContinuityRequest` — spanda-interpreter ([`crates/spanda-interpreter/src/fleet_http.rs`](../crates/spanda-interpreter/src/fleet_http.rs))
+- `FleetContinuityRequest` — spanda-deploy-http ([`crates/spanda-deploy-http/src/fleet_continuity.rs`](../crates/spanda-deploy-http/src/fleet_continuity.rs))
+- `FleetContinuityResponse` — spanda-interpreter ([`crates/spanda-interpreter/src/fleet_http.rs`](../crates/spanda-interpreter/src/fleet_http.rs))
+- `FleetContinuityResponse` — spanda-deploy-http ([`crates/spanda-deploy-http/src/fleet_continuity.rs`](../crates/spanda-deploy-http/src/fleet_continuity.rs))
 - `FleetDecl` — spanda-ast ([`crates/spanda-ast/src/robotics_decl.rs`](../crates/spanda-ast/src/robotics_decl.rs))
 - `FleetMemberState` — spanda-fleet ([`crates/spanda-fleet/src/orchestrator.rs`](../crates/spanda-fleet/src/orchestrator.rs))
 - `FleetMeshState` — spanda-fleet ([`crates/spanda-fleet/src/mesh.rs`](../crates/spanda-fleet/src/mesh.rs))
@@ -8207,9 +11458,22 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `FleetPeerMesh` — spanda-fleet ([`crates/spanda-fleet/src/orchestrator.rs`](../crates/spanda-fleet/src/orchestrator.rs))
 - `FleetPeerMesh::new` — spanda-fleet ([`crates/spanda-fleet/src/orchestrator.rs`](../crates/spanda-fleet/src/orchestrator.rs))
 - `FleetProvider` — spanda-runtime ([`crates/spanda-runtime/src/providers/traits.rs`](../crates/spanda-runtime/src/providers/traits.rs))
+- `FleetRecoveryPlan` — spanda-runtime ([`crates/spanda-runtime/src/recovery_types.rs`](../crates/spanda-runtime/src/recovery_types.rs))
+- `FleetRecoveryRequest` — spanda-interpreter ([`crates/spanda-interpreter/src/fleet_http.rs`](../crates/spanda-interpreter/src/fleet_http.rs))
+- `FleetRecoveryRequest` — spanda-deploy-http ([`crates/spanda-deploy-http/src/fleet_recovery.rs`](../crates/spanda-deploy-http/src/fleet_recovery.rs))
+- `FleetRecoveryResponse` — spanda-interpreter ([`crates/spanda-interpreter/src/fleet_http.rs`](../crates/spanda-interpreter/src/fleet_http.rs))
+- `FleetRecoveryResponse` — spanda-deploy-http ([`crates/spanda-deploy-http/src/fleet_recovery.rs`](../crates/spanda-deploy-http/src/fleet_recovery.rs))
 - `FleetRegistry` — spanda-runtime ([`crates/spanda-runtime/src/robotics.rs`](../crates/spanda-runtime/src/robotics.rs))
 - `FleetRegistry` — TypeScript core ([`src/robotics-platform.ts`](../src/robotics-platform.ts))
 - `FleetRegistry::register` — spanda-runtime ([`crates/spanda-runtime/src/robotics.rs`](../crates/spanda-runtime/src/robotics.rs))
+- `FleetTamperIngestRequest` — spanda-interpreter ([`crates/spanda-interpreter/src/fleet_http.rs`](../crates/spanda-interpreter/src/fleet_http.rs))
+- `FleetTamperIngestRequest` — spanda-deploy-http ([`crates/spanda-deploy-http/src/fleet_tamper.rs`](../crates/spanda-deploy-http/src/fleet_tamper.rs))
+- `FleetTamperIngestResponse` — spanda-interpreter ([`crates/spanda-interpreter/src/fleet_http.rs`](../crates/spanda-interpreter/src/fleet_http.rs))
+- `FleetTamperIngestResponse` — spanda-deploy-http ([`crates/spanda-deploy-http/src/fleet_tamper.rs`](../crates/spanda-deploy-http/src/fleet_tamper.rs))
+- `FleetTamperRuntime` — spanda-runtime ([`crates/spanda-runtime/src/fleet_tamper_runtime.rs`](../crates/spanda-runtime/src/fleet_tamper_runtime.rs))
+- `FleetTelemetryIngestRequest` — spanda-fleet ([`crates/spanda-fleet/src/telemetry_mesh.rs`](../crates/spanda-fleet/src/telemetry_mesh.rs))
+- `FleetTelemetryIngestResponse` — spanda-fleet ([`crates/spanda-fleet/src/telemetry_mesh.rs`](../crates/spanda-fleet/src/telemetry_mesh.rs))
+- `FleetTelemetryRuntime` — spanda-runtime ([`crates/spanda-runtime/src/fleet_telemetry_runtime.rs`](../crates/spanda-runtime/src/fleet_telemetry_runtime.rs))
 - `fmt_source` — spanda-node ([`crates/spanda-node/src/lib.rs`](../crates/spanda-node/src/lib.rs))
 - `fmtViaCli` — TypeScript core ([`src/rust-bridge.ts`](../src/rust-bridge.ts))
 - `FnSig` — spanda-typecheck ([`crates/spanda-typecheck/src/checker.rs`](../crates/spanda-typecheck/src/checker.rs))
@@ -8218,21 +11482,48 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `format_runtime_value` — spanda-runtime ([`crates/spanda-runtime/src/value.rs`](../crates/spanda-runtime/src/value.rs))
 - `format_source` — spanda-format ([`crates/spanda-format/src/format.rs`](../crates/spanda-format/src/format.rs))
 - `format_type_name` — spanda-typecheck ([`crates/spanda-typecheck/src/checker.rs`](../crates/spanda-typecheck/src/checker.rs))
+- `formatAnomalyReport` — TypeScript core ([`src/assurance.ts`](../src/assurance.ts))
+- `formatAssuranceReport` — TypeScript core ([`src/assurance.ts`](../src/assurance.ts))
+- `formatAudit` — TypeScript core ([`src/operational.ts`](../src/operational.ts))
+- `formatDiagnosisReport` — TypeScript core ([`src/assurance.ts`](../src/assurance.ts))
+- `formatFailureAnalysis` — TypeScript core ([`src/operational.ts`](../src/operational.ts))
+- `formatFleetReadiness` — TypeScript core ([`src/operational.ts`](../src/operational.ts))
+- `formatFleetVerify` — TypeScript core ([`src/operational.ts`](../src/operational.ts))
 - `formatHover` — TypeScript core ([`src/lsp/symbols.ts`](../src/lsp/symbols.ts))
+- `formatMissionAssuranceReport` — TypeScript core ([`src/assurance.ts`](../src/assurance.ts))
+- `formatMissionVerification` — TypeScript core ([`src/operational.ts`](../src/operational.ts))
+- `formatMitigationReport` — TypeScript core ([`src/assurance.ts`](../src/assurance.ts))
+- `formatPrognosticsReport` — TypeScript core ([`src/assurance.ts`](../src/assurance.ts))
+- `formatRecoveryKnowledge` — TypeScript core ([`src/recovery.ts`](../src/recovery.ts))
+- `formatRecoveryReport` — TypeScript core ([`src/recovery.ts`](../src/recovery.ts))
+- `formatResilienceReport` — TypeScript core ([`src/assurance.ts`](../src/assurance.ts))
+- `formatRootCause` — TypeScript core ([`src/operational.ts`](../src/operational.ts))
+- `formatStateReport` — TypeScript core ([`src/assurance.ts`](../src/assurance.ts))
+- `formatTwinReadiness` — TypeScript core ([`src/operational.ts`](../src/operational.ts))
 - `frame_variables` — spanda-driver ([`crates/spanda-driver/src/debug_session.rs`](../crates/spanda-driver/src/debug_session.rs))
 - `frames_from` — spanda-runtime ([`crates/spanda-runtime/src/replay.rs`](../crates/spanda-runtime/src/replay.rs))
 - `framework_import_paths` — spanda-package ([`crates/spanda-package/src/adapter.rs`](../crates/spanda-package/src/adapter.rs))
 - `framework_packages` — spanda-package ([`crates/spanda-package/src/adapter.rs`](../crates/spanda-package/src/adapter.rs))
 - `FrameworkPackage` — spanda-package ([`crates/spanda-package/src/adapter.rs`](../crates/spanda-package/src/adapter.rs))
 - `from_capabilities` — spanda-security ([`crates/spanda-security/src/permissions.rs`](../crates/spanda-security/src/permissions.rs))
+- `from_env` — spanda-security ([`crates/spanda-security/src/rbac.rs`](../crates/spanda-security/src/rbac.rs))
+- `from_env_and_file` — spanda-security ([`crates/spanda-security/src/rbac.rs`](../crates/spanda-security/src/rbac.rs))
 - `from_lexeme` — spanda-ast ([`crates/spanda-ast/src/nodes.rs`](../crates/spanda-ast/src/nodes.rs))
 - `from_program` — spanda-typecheck ([`crates/spanda-typecheck/src/message_registry.rs`](../crates/spanda-typecheck/src/message_registry.rs))
 - `from_programs` — spanda-typecheck ([`crates/spanda-typecheck/src/module_registry.rs`](../crates/spanda-typecheck/src/module_registry.rs))
 - `function` — spanda-typecheck ([`crates/spanda-typecheck/src/module_registry.rs`](../crates/spanda-typecheck/src/module_registry.rs))
+- `FusionPreview` — spanda-runtime ([`crates/spanda-runtime/src/fusion.rs`](../crates/spanda-runtime/src/fusion.rs))
 - `generate` — spanda-codegen ([`crates/spanda-codegen/src/lib.rs`](../crates/spanda-codegen/src/lib.rs))
+- `generate_api_key_token` — spanda-security ([`crates/spanda-security/src/rbac.rs`](../crates/spanda-security/src/rbac.rs))
 - `generate_cli_man_pages` — spanda-docs ([`crates/spanda-docs/src/language_reference.rs`](../crates/spanda-docs/src/language_reference.rs))
+- `generate_dispatch` — spanda-cli ([`crates/spanda-cli/src/generate_cli.rs`](../crates/spanda-cli/src/generate_cli.rs))
+- `generate_docs_for_path` — spanda-docs ([`crates/spanda-docs/src/program_docs.rs`](../crates/spanda-docs/src/program_docs.rs))
+- `generate_html` — spanda-docs ([`crates/spanda-docs/src/program_docs.rs`](../crates/spanda-docs/src/program_docs.rs))
+- `generate_json_docs` — spanda-docs ([`crates/spanda-docs/src/program_docs.rs`](../crates/spanda-docs/src/program_docs.rs))
+- `generate_language_reference` — spanda-core ([`crates/spanda-core/src/language_reference.rs`](../crates/spanda-core/src/language_reference.rs))
 - `generate_language_reference` — spanda-docs ([`crates/spanda-docs/src/language_reference.rs`](../crates/spanda-docs/src/language_reference.rs))
 - `generate_markdown` — spanda-docs ([`crates/spanda-docs/src/program_docs.rs`](../crates/spanda-docs/src/program_docs.rs))
+- `generateSafetyReportTs` — TypeScript core ([`src/operational.ts`](../src/operational.ts))
 - `generic_arity` — spanda-typecheck ([`crates/spanda-typecheck/src/type_system.rs`](../crates/spanda-typecheck/src/type_system.rs))
 - `GenericDef` — spanda-typecheck ([`crates/spanda-typecheck/src/type_system.rs`](../crates/spanda-typecheck/src/type_system.rs))
 - `geofence_contains` — spanda-connectivity ([`crates/spanda-connectivity/src/runtime_sim.rs`](../crates/spanda-connectivity/src/runtime_sim.rs))
@@ -8241,6 +11532,7 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `GeofenceDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `geofenceFromDecl` — TypeScript core ([`src/connectivity-positioning.ts`](../src/connectivity-positioning.ts))
 - `GeofenceRuntime` — spanda-connectivity ([`crates/spanda-connectivity/src/runtime_sim.rs`](../crates/spanda-connectivity/src/runtime_sim.rs))
+- `get` — spanda-cli ([`crates/spanda-cli/src/control_center_client.rs`](../crates/spanda-cli/src/control_center_client.rs))
 - `get` — spanda-typecheck ([`crates/spanda-typecheck/src/message_registry.rs`](../crates/spanda-typecheck/src/message_registry.rs))
 - `get` — spanda-runtime ([`crates/spanda-runtime/src/environment.rs`](../crates/spanda-runtime/src/environment.rs))
 - `get` — spanda-runtime ([`crates/spanda-runtime/src/triggers.rs`](../crates/spanda-runtime/src/triggers.rs))
@@ -8261,6 +11553,7 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `get_string` — spanda-runtime ([`crates/spanda-runtime/src/value.rs`](../crates/spanda-runtime/src/value.rs))
 - `get_trajectory_waypoints` — spanda-runtime ([`crates/spanda-runtime/src/value.rs`](../crates/spanda-runtime/src/value.rs))
 - `get_velocity_fields` — spanda-runtime ([`crates/spanda-runtime/src/value.rs`](../crates/spanda-runtime/src/value.rs))
+- `getCompileCheckerHost` — TypeScript core ([`src/compile.ts`](../src/compile.ts))
 - `getLibraryForSensorType` — TypeScript core ([`src/types/units.ts`](../src/types/units.ts))
 - `getNumber` — TypeScript core ([`src/runtime/values.ts`](../src/runtime/values.ts))
 - `getPoseFields` — TypeScript core ([`src/runtime/values.ts`](../src/runtime/values.ts))
@@ -8282,6 +11575,7 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `grant_capability` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
 - `grant_if_not_strict` — spanda-security ([`crates/spanda-security/src/runtime.rs`](../crates/spanda-security/src/runtime.rs))
 - `granted` — spanda-security ([`crates/spanda-security/src/capability.rs`](../crates/spanda-security/src/capability.rs))
+- `graph_dispatch` — spanda-cli ([`crates/spanda-cli/src/graph_cli.rs`](../crates/spanda-cli/src/graph_cli.rs))
 - `hal_member_from_decl` — spanda-hal ([`crates/spanda-hal/src/hal.rs`](../crates/spanda-hal/src/hal.rs))
 - `HalBackend` — spanda-hal ([`crates/spanda-hal/src/hal.rs`](../crates/spanda-hal/src/hal.rs))
 - `HalBackend` — TypeScript core ([`src/hal/index.ts`](../src/hal/index.ts))
@@ -8294,7 +11588,15 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `handle` — spanda-concurrency ([`crates/spanda-concurrency/src/lib.rs`](../crates/spanda-concurrency/src/lib.rs))
 - `handle_agent_request` — spanda-ota ([`crates/spanda-ota/src/agent.rs`](../crates/spanda-ota/src/agent.rs))
 - `handle_fleet_agent_request` — spanda-fleet ([`crates/spanda-fleet/src/agent.rs`](../crates/spanda-fleet/src/agent.rs))
+- `handle_fleet_continuity_post` — spanda-fleet ([`crates/spanda-fleet/src/continuity_mesh.rs`](../crates/spanda-fleet/src/continuity_mesh.rs))
 - `handle_fleet_mesh_request` — spanda-fleet ([`crates/spanda-fleet/src/mesh.rs`](../crates/spanda-fleet/src/mesh.rs))
+- `handle_fleet_recovery_command` — spanda-fleet ([`crates/spanda-fleet/src/recovery_agent.rs`](../crates/spanda-fleet/src/recovery_agent.rs))
+- `handle_fleet_recovery_post` — spanda-fleet ([`crates/spanda-fleet/src/recovery_mesh.rs`](../crates/spanda-fleet/src/recovery_mesh.rs))
+- `handle_fleet_takeover_command` — spanda-fleet ([`crates/spanda-fleet/src/continuity_agent.rs`](../crates/spanda-fleet/src/continuity_agent.rs))
+- `handle_fleet_tamper_get` — spanda-fleet ([`crates/spanda-fleet/src/tamper_mesh.rs`](../crates/spanda-fleet/src/tamper_mesh.rs))
+- `handle_fleet_tamper_ingest_post` — spanda-fleet ([`crates/spanda-fleet/src/tamper_mesh.rs`](../crates/spanda-fleet/src/tamper_mesh.rs))
+- `handle_fleet_telemetry_get` — spanda-fleet ([`crates/spanda-fleet/src/telemetry_mesh.rs`](../crates/spanda-fleet/src/telemetry_mesh.rs))
+- `handle_fleet_telemetry_ingest_post` — spanda-fleet ([`crates/spanda-fleet/src/telemetry_mesh.rs`](../crates/spanda-fleet/src/telemetry_mesh.rs))
 - `handle_mut` — spanda-concurrency ([`crates/spanda-concurrency/src/lib.rs`](../crates/spanda-concurrency/src/lib.rs))
 - `handler_body` — spanda-runtime ([`crates/spanda-runtime/src/events.rs`](../crates/spanda-runtime/src/events.rs))
 - `handler_count` — spanda-runtime ([`crates/spanda-runtime/src/triggers.rs`](../crates/spanda-runtime/src/triggers.rs))
@@ -8302,16 +11604,18 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `handlers_for_connectivity` — spanda-runtime ([`crates/spanda-runtime/src/triggers.rs`](../crates/spanda-runtime/src/triggers.rs))
 - `handlers_for_event` — spanda-runtime ([`crates/spanda-runtime/src/triggers.rs`](../crates/spanda-runtime/src/triggers.rs))
 - `handlers_for_geofence` — spanda-runtime ([`crates/spanda-runtime/src/triggers.rs`](../crates/spanda-runtime/src/triggers.rs))
+- `handlers_for_kill_switch` — spanda-runtime ([`crates/spanda-runtime/src/triggers.rs`](../crates/spanda-runtime/src/triggers.rs))
 - `handlers_for_message` — spanda-runtime ([`crates/spanda-runtime/src/triggers.rs`](../crates/spanda-runtime/src/triggers.rs))
 - `handlers_for_sensor_event` — spanda-runtime ([`crates/spanda-runtime/src/triggers.rs`](../crates/spanda-runtime/src/triggers.rs))
 - `handlers_for_state_entered` — spanda-runtime ([`crates/spanda-runtime/src/triggers.rs`](../crates/spanda-runtime/src/triggers.rs))
 - `handlers_for_state_exited` — spanda-runtime ([`crates/spanda-runtime/src/triggers.rs`](../crates/spanda-runtime/src/triggers.rs))
 - `hardware_event_to_connectivity` — spanda-connectivity ([`crates/spanda-connectivity/src/runtime_sim.rs`](../crates/spanda-connectivity/src/runtime_sim.rs))
 - `hardware_profile_from_decl` — spanda-hardware ([`crates/spanda-hardware/src/verify.rs`](../crates/spanda-hardware/src/verify.rs))
+- `HardwareComponentDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `HardwareDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `HardwareMonitor` — spanda-hal ([`crates/spanda-hal/src/hardware_monitor.rs`](../crates/spanda-hal/src/hardware_monitor.rs))
 - `HardwareMonitor::register_sensor` — spanda-hal ([`crates/spanda-hal/src/hardware_monitor.rs`](../crates/spanda-hal/src/hardware_monitor.rs))
-- `HardwareProfile` — spanda-hardware ([`crates/spanda-hardware/src/profiles.rs`](../crates/spanda-hardware/src/profiles.rs))
+- `HardwareProfile` — spanda-connectivity ([`crates/spanda-connectivity/src/hardware_types.rs`](../crates/spanda-connectivity/src/hardware_types.rs))
 - `hardwareProfileFromDecl` — TypeScript core ([`src/hardware-profile.ts`](../src/hardware-profile.ts))
 - `HardwareRequirements` — spanda-package ([`crates/spanda-package/src/hardware_req.rs`](../crates/spanda-package/src/hardware_req.rs))
 - `HardwareRequirements::memory_mb_min` — spanda-package ([`crates/spanda-package/src/hardware_req.rs`](../crates/spanda-package/src/hardware_req.rs))
@@ -8322,21 +11626,43 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `has_injected_faults` — spanda-hal ([`crates/spanda-hal/src/hardware_monitor.rs`](../crates/spanda-hal/src/hardware_monitor.rs))
 - `has_official_package` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
 - `Hash` — spanda-audit ([`crates/spanda-audit/src/record.rs`](../crates/spanda-audit/src/record.rs))
+- `hash_program_artifact` — spanda-certify ([`crates/spanda-certify/src/artifact.rs`](../crates/spanda-certify/src/artifact.rs))
 - `hash_program_artifact` — spanda-ota ([`crates/spanda-ota/src/service.rs`](../crates/spanda-ota/src/service.rs))
 - `hashProgramArtifact` — TypeScript core ([`src/deploy-service.ts`](../src/deploy-service.ts))
 - `haversine_m` — spanda-connectivity ([`crates/spanda-connectivity/src/runtime_sim.rs`](../crates/spanda-connectivity/src/runtime_sim.rs))
 - `haversineM` — TypeScript core ([`src/connectivity-positioning.ts`](../src/connectivity-positioning.ts))
+- `HealthCheckCondition` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
+- `HealthCheckDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
+- `HealthCheckResult` — spanda-runtime ([`crates/spanda-runtime/src/health_types.rs`](../crates/spanda-runtime/src/health_types.rs))
+- `healthkit_live_enabled` — spanda-providers ([`crates/spanda-providers/src/hri_backends.rs`](../crates/spanda-providers/src/hri_backends.rs))
+- `HealthPolicyDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
+- `HealthPolicyReaction` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
+- `HealthReport` — spanda-runtime ([`crates/spanda-runtime/src/health_types.rs`](../crates/spanda-runtime/src/health_types.rs))
+- `HealthStatus` — spanda-runtime ([`crates/spanda-runtime/src/health_types.rs`](../crates/spanda-runtime/src/health_types.rs))
+- `HealthTraceRow` — spanda-runtime ([`crates/spanda-runtime/src/health_types.rs`](../crates/spanda-runtime/src/health_types.rs))
+- `HeartbeatDecl` — spanda-ast ([`crates/spanda-ast/src/fault_decl.rs`](../crates/spanda-ast/src/fault_decl.rs))
+- `HeartbeatStatus` — spanda-runtime ([`crates/spanda-runtime/src/fault_types.rs`](../crates/spanda-runtime/src/fault_types.rs))
 - `high_risk_capabilities` — spanda-package ([`crates/spanda-package/src/hardware_req.rs`](../crates/spanda-package/src/hardware_req.rs))
+- `hololens_live_enabled` — spanda-providers ([`crates/spanda-providers/src/hri_backends.rs`](../crates/spanda-providers/src/hri_backends.rs))
+- `HriInputPackageStub` — spanda-providers ([`crates/spanda-providers/src/package_stubs.rs`](../crates/spanda-providers/src/package_stubs.rs))
+- `HriInputPackageStub::new` — spanda-providers ([`crates/spanda-providers/src/package_stubs.rs`](../crates/spanda-providers/src/package_stubs.rs))
+- `HriInputProvider` — spanda-runtime ([`crates/spanda-runtime/src/providers/hri.rs`](../crates/spanda-runtime/src/providers/hri.rs))
 - `http_request` — spanda-deploy-http ([`crates/spanda-deploy-http/src/lib.rs`](../crates/spanda-deploy-http/src/lib.rs))
 - `http_response` — spanda-deploy-http ([`crates/spanda-deploy-http/src/lib.rs`](../crates/spanda-deploy-http/src/lib.rs))
 - `HttpRequest` — spanda-deploy-http ([`crates/spanda-deploy-http/src/lib.rs`](../crates/spanda-deploy-http/src/lib.rs))
 - `HttpResponse` — spanda-deploy-http ([`crates/spanda-deploy-http/src/lib.rs`](../crates/spanda-deploy-http/src/lib.rs))
+- `hub_stats` — spanda-providers ([`crates/spanda-providers/src/iot_hub.rs`](../crates/spanda-providers/src/iot_hub.rs))
+- `human_replay` — spanda-cli ([`crates/spanda-cli/src/replay_cli.rs`](../crates/spanda-cli/src/replay_cli.rs))
 - `id` — spanda-security ([`crates/spanda-security/src/identity.rs`](../crates/spanda-security/src/identity.rs))
 - `IdentityDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `ImportDecl` — spanda-ast ([`crates/spanda-ast/src/nodes.rs`](../crates/spanda-ast/src/nodes.rs))
 - `imports_enable_navigation` — spanda-runtime ([`crates/spanda-runtime/src/host.rs`](../crates/spanda-runtime/src/host.rs))
 - `imports_enable_slam` — spanda-runtime ([`crates/spanda-runtime/src/host.rs`](../crates/spanda-runtime/src/host.rs))
 - `indexSource` — TypeScript core ([`src/lsp/symbols.ts`](../src/lsp/symbols.ts))
+- `ingest_fleet_tamper_trace` — spanda-interpreter ([`crates/spanda-interpreter/src/fleet_http.rs`](../crates/spanda-interpreter/src/fleet_http.rs))
+- `ingest_fleet_tamper_trace` — spanda-deploy-http ([`crates/spanda-deploy-http/src/fleet_tamper.rs`](../crates/spanda-deploy-http/src/fleet_tamper.rs))
+- `ingest_fleet_telemetry` — spanda-fleet ([`crates/spanda-fleet/src/telemetry_mesh.rs`](../crates/spanda-fleet/src/telemetry_mesh.rs))
+- `ingestFleetTelemetry` — TypeScript core ([`src/telemetry-fleet.ts`](../src/telemetry-fleet.ts))
 - `init_node` — spanda-transport-ros2 ([`crates/spanda-transport-ros2/src/native.rs`](../crates/spanda-transport-ros2/src/native.rs))
 - `init_node` — spanda-transport-ros2 ([`crates/spanda-transport-ros2/src/native_stub.rs`](../crates/spanda-transport-ros2/src/native_stub.rs))
 - `init_node` — spanda-transport-ros2 ([`crates/spanda-transport-ros2/src/lib.rs`](../crates/spanda-transport-ros2/src/lib.rs))
@@ -8352,6 +11678,8 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `inner_mut` — spanda-providers ([`crates/spanda-providers/src/transport_adapter.rs`](../crates/spanda-providers/src/transport_adapter.rs))
 - `insert` — spanda-runtime ([`crates/spanda-runtime/src/provider_types.rs`](../crates/spanda-runtime/src/provider_types.rs))
 - `installed_official_packages` — spanda-package ([`crates/spanda-package/src/official.rs`](../crates/spanda-package/src/official.rs))
+- `integrity_dispatch` — spanda-cli ([`crates/spanda-cli/src/integrity_cli.rs`](../crates/spanda-cli/src/integrity_cli.rs))
+- `IntegrityMode` — spanda-runtime ([`crates/spanda-runtime/src/security_types.rs`](../crates/spanda-runtime/src/security_types.rs))
 - `IntegrityMode` — spanda-security ([`crates/spanda-security/src/policy.rs`](../crates/spanda-security/src/policy.rs))
 - `interpolate_poses` — spanda-safety ([`crates/spanda-safety/src/lib.rs`](../crates/spanda-safety/src/lib.rs))
 - `interpolatePoses` — TypeScript core ([`src/safety/index.ts`](../src/safety/index.ts))
@@ -8366,16 +11694,24 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `invoke_slam_bridge` — spanda-connectivity ([`crates/spanda-connectivity/src/adapter_bridge.rs`](../crates/spanda-connectivity/src/adapter_bridge.rs))
 - `invokeNav2Bridge` — TypeScript core ([`src/adapter-bridge.ts`](../src/adapter-bridge.ts))
 - `invokeSlamBridge` — TypeScript core ([`src/adapter-bridge.ts`](../src/adapter-bridge.ts))
+- `IoTDevice` — spanda-runtime ([`crates/spanda-runtime/src/providers/iot.rs`](../crates/spanda-runtime/src/providers/iot.rs))
+- `IoTDeviceProvider` — spanda-runtime ([`crates/spanda-runtime/src/providers/iot.rs`](../crates/spanda-runtime/src/providers/iot.rs))
+- `IotHub` — spanda-providers ([`crates/spanda-providers/src/iot_hub.rs`](../crates/spanda-providers/src/iot_hub.rs))
+- `IotHub::register_device` — spanda-providers ([`crates/spanda-providers/src/iot_hub.rs`](../crates/spanda-providers/src/iot_hub.rs))
 - `is_action_proposal` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
 - `is_action_proposal_type` — spanda-typecheck ([`crates/spanda-typecheck/src/type_system.rs`](../crates/spanda-typecheck/src/type_system.rs))
+- `is_bundled_registry_path` — spanda-cli ([`crates/spanda-cli/src/bundled_registry.rs`](../crates/spanda-cli/src/bundled_registry.rs))
 - `is_cellular_link` — spanda-connectivity ([`crates/spanda-connectivity/src/lib.rs`](../crates/spanda-connectivity/src/lib.rs))
 - `is_comm_capability` — spanda-typecheck ([`crates/spanda-typecheck/src/message_registry.rs`](../crates/spanda-typecheck/src/message_registry.rs))
 - `is_emergency_stop` — spanda-safety ([`crates/spanda-safety/src/lib.rs`](../crates/spanda-safety/src/lib.rs))
 - `is_empty` — spanda-security ([`crates/spanda-security/src/secure_comm.rs`](../crates/spanda-security/src/secure_comm.rs))
+- `is_enabled` — spanda-security ([`crates/spanda-security/src/rate_limit.rs`](../crates/spanda-security/src/rate_limit.rs))
+- `is_expired` — spanda-security ([`crates/spanda-security/src/secret_vault.rs`](../crates/spanda-security/src/secret_vault.rs))
 - `is_finished` — spanda-driver ([`crates/spanda-driver/src/debug_session.rs`](../crates/spanda-driver/src/debug_session.rs))
 - `is_high_risk_capability` — spanda-package ([`crates/spanda-package/src/hardware_req.rs`](../crates/spanda-package/src/hardware_req.rs))
 - `is_in_zone` — spanda-safety ([`crates/spanda-safety/src/lib.rs`](../crates/spanda-safety/src/lib.rs))
 - `is_known` — spanda-typecheck ([`crates/spanda-typecheck/src/message_registry.rs`](../crates/spanda-typecheck/src/message_registry.rs))
+- `is_known_capability` — spanda-typecheck ([`crates/spanda-typecheck/src/security_capabilities.rs`](../crates/spanda-typecheck/src/security_capabilities.rs))
 - `is_known_capability` — spanda-security ([`crates/spanda-security/src/capability.rs`](../crates/spanda-security/src/capability.rs))
 - `is_level_active` — spanda-runtime ([`crates/spanda-runtime/src/triggers.rs`](../crates/spanda-runtime/src/triggers.rs))
 - `is_link_impaired` — spanda-connectivity ([`crates/spanda-connectivity/src/runtime_sim.rs`](../crates/spanda-connectivity/src/runtime_sim.rs))
@@ -8391,7 +11727,8 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `isCellularLink` — TypeScript core ([`src/connectivity-positioning.ts`](../src/connectivity-positioning.ts))
 - `isCliAvailable` — TypeScript core ([`src/rust-bridge.ts`](../src/rust-bridge.ts))
 - `isCliAvailable` — @spanda/native ([`packages/native/cli-bridge.ts`](../packages/native/cli-bridge.ts))
-- `isCommCapability` — TypeScript core ([`src/comm/index.ts`](../src/comm/index.ts))
+- `isCommCapability` — TypeScript core ([`src/comm/decls.ts`](../src/comm/decls.ts))
+- `isHeartbeatMetric` — TypeScript core ([`src/telemetry-store.ts`](../src/telemetry-store.ts))
 - `isHexPublicKey` — TypeScript core ([`src/security/index.ts`](../src/security/index.ts))
 - `isKnownCapability` — TypeScript core ([`src/security/index.ts`](../src/security/index.ts))
 - `isLinkImpaired` — TypeScript core ([`src/connectivity-positioning.ts`](../src/connectivity-positioning.ts))
@@ -8401,15 +11738,23 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `isSafeActionType` — TypeScript core ([`src/type-system.ts`](../src/type-system.ts))
 - `isSatelliteLink` — TypeScript core ([`src/connectivity-positioning.ts`](../src/connectivity-positioning.ts))
 - `isStdNetworkType` — TypeScript core ([`src/network/index.ts`](../src/network/index.ts))
-- `isWasmLoaded` — @spanda/web ([`packages/web/src/spanda-wasm.ts`](../packages/web/src/spanda-wasm.ts))
+- `issue_to_continuity_trigger` — spanda-runtime ([`crates/spanda-runtime/src/continuity_primitives.rs`](../crates/spanda-runtime/src/continuity_primitives.rs))
+- `issue_to_recovery_issue` — spanda-runtime ([`crates/spanda-runtime/src/recovery_primitives.rs`](../crates/spanda-runtime/src/recovery_primitives.rs))
+- `isWasmLoaded` — @davalgi-spanda/web ([`packages/web/src/spanda-wasm.ts`](../packages/web/src/spanda-wasm.ts))
 - `isWifiLink` — TypeScript core ([`src/connectivity-positioning.ts`](../src/connectivity-positioning.ts))
 - `iter` — spanda-runtime ([`crates/spanda-runtime/src/provider_types.rs`](../crates/spanda-runtime/src/provider_types.rs))
 - `json_to_runtime_value` — spanda-bridge ([`crates/spanda-bridge/src/protocol.rs`](../crates/spanda-bridge/src/protocol.rs))
 - `JsonAuditBackend` — spanda-audit ([`crates/spanda-audit/src/backend.rs`](../crates/spanda-audit/src/backend.rs))
 - `JsonAuditBackend::new` — spanda-audit ([`crates/spanda-audit/src/backend.rs`](../crates/spanda-audit/src/backend.rs))
+- `KillSwitchDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
+- `KnowledgeComponent` — spanda-ast ([`crates/spanda-ast/src/assurance_decl.rs`](../crates/spanda-ast/src/assurance_decl.rs))
+- `KnowledgeDependency` — spanda-ast ([`crates/spanda-ast/src/assurance_decl.rs`](../crates/spanda-ast/src/assurance_decl.rs))
+- `KnowledgeModelDecl` — spanda-ast ([`crates/spanda-ast/src/assurance_decl.rs`](../crates/spanda-ast/src/assurance_decl.rs))
+- `known_capabilities` — spanda-typecheck ([`crates/spanda-typecheck/src/security_capabilities.rs`](../crates/spanda-typecheck/src/security_capabilities.rs))
 - `known_capabilities` — spanda-package ([`crates/spanda-package/src/hardware_req.rs`](../crates/spanda-package/src/hardware_req.rs))
 - `known_capabilities` — spanda-security ([`crates/spanda-security/src/capability.rs`](../crates/spanda-security/src/capability.rs))
 - `last_hash` — spanda-audit ([`crates/spanda-audit/src/backend.rs`](../crates/spanda-audit/src/backend.rs))
+- `learnedModelsTs` — TypeScript core ([`src/assurance.ts`](../src/assurance.ts))
 - `LedgerBackend` — spanda-audit ([`crates/spanda-audit/src/backend.rs`](../crates/spanda-audit/src/backend.rs))
 - `LedgerPackageStub` — spanda-providers ([`crates/spanda-providers/src/package_stubs.rs`](../crates/spanda-providers/src/package_stubs.rs))
 - `LedgerProvider` — spanda-runtime ([`crates/spanda-runtime/src/providers/traits.rs`](../crates/spanda-runtime/src/providers/traits.rs))
@@ -8418,6 +11763,9 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `LexerError` — TypeScript core ([`src/lexer/index.ts`](../src/lexer/index.ts))
 - `LibModule` — spanda-lib-registry ([`crates/spanda-lib-registry/src/lib.rs`](../crates/spanda-lib-registry/src/lib.rs))
 - `LibrarySensorTypeInfo` — spanda-lib-registry ([`crates/spanda-lib-registry/src/lib.rs`](../crates/spanda-lib-registry/src/lib.rs))
+- `limit_per_minute` — spanda-security ([`crates/spanda-security/src/rate_limit.rs`](../crates/spanda-security/src/rate_limit.rs))
+- `lineColumnForFactor` — TypeScript core ([`src/readiness-spans.ts`](../src/readiness-spans.ts))
+- `lineColumnForIssue` — TypeScript core ([`src/readiness-spans.ts`](../src/readiness-spans.ts))
 - `lint` — spanda-lint ([`crates/spanda-lint/src/lib.rs`](../crates/spanda-lint/src/lib.rs))
 - `LintIssue` — spanda-lint ([`crates/spanda-lint/src/lib.rs`](../crates/spanda-lint/src/lib.rs))
 - `LintReport` — spanda-lint ([`crates/spanda-lint/src/lib.rs`](../crates/spanda-lint/src/lib.rs))
@@ -8429,6 +11777,8 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `list_hardware_profiles` — spanda-hardware ([`crates/spanda-hardware/src/profiles.rs`](../crates/spanda-hardware/src/profiles.rs))
 - `list_libraries` — spanda-lib-registry ([`crates/spanda-lib-registry/src/lib.rs`](../crates/spanda-lib-registry/src/lib.rs))
 - `list_libraries_by_vendor` — spanda-lib-registry ([`crates/spanda-lib-registry/src/lib.rs`](../crates/spanda-lib-registry/src/lib.rs))
+- `list_man_pages` — spanda-docs ([`crates/spanda-docs/src/man_pages.rs`](../crates/spanda-docs/src/man_pages.rs))
+- `list_metadata` — spanda-security ([`crates/spanda-security/src/secret_vault.rs`](../crates/spanda-security/src/secret_vault.rs))
 - `list_positioning` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
 - `list_soc_profiles` — spanda-hal ([`crates/spanda-hal/src/soc.rs`](../crates/spanda-hal/src/soc.rs))
 - `list_transports` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
@@ -8436,8 +11786,21 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `listLibraries` — TypeScript core ([`src/lib/registry.ts`](../src/lib/registry.ts))
 - `listLibrariesByVendor` — TypeScript core ([`src/lib/registry.ts`](../src/lib/registry.ts))
 - `listSocProfiles` — TypeScript core ([`src/soc/index.ts`](../src/soc/index.ts))
+- `listTelemetrySessions` — TypeScript core ([`src/telemetry-store.ts`](../src/telemetry-store.ts))
 - `LiteralValue` — spanda-ast ([`crates/spanda-ast/src/nodes.rs`](../crates/spanda-ast/src/nodes.rs))
+- `live_ai_enabled` — spanda-ai ([`crates/spanda-ai/src/live.rs`](../crates/spanda-ai/src/live.rs))
+- `live_anthropic_enabled` — spanda-ai ([`crates/spanda-ai/src/live.rs`](../crates/spanda-ai/src/live.rs))
+- `live_canbus_enabled` — spanda-providers ([`crates/spanda-providers/src/iot_live.rs`](../crates/spanda-providers/src/iot_live.rs))
+- `live_lidar_enabled` — spanda-providers ([`crates/spanda-providers/src/iot_live.rs`](../crates/spanda-providers/src/iot_live.rs))
+- `live_lora_enabled` — spanda-providers ([`crates/spanda-providers/src/iot_live.rs`](../crates/spanda-providers/src/iot_live.rs))
+- `live_matter_enabled` — spanda-providers ([`crates/spanda-providers/src/iot_live.rs`](../crates/spanda-providers/src/iot_live.rs))
 - `live_mirrored_fields` — spanda-runtime ([`crates/spanda-runtime/src/twin.rs`](../crates/spanda-runtime/src/twin.rs))
+- `live_modbus_enabled` — spanda-providers ([`crates/spanda-providers/src/iot_live.rs`](../crates/spanda-providers/src/iot_live.rs))
+- `live_onnx_enabled` — spanda-ai ([`crates/spanda-ai/src/live.rs`](../crates/spanda-ai/src/live.rs))
+- `live_opcua_enabled` — spanda-providers ([`crates/spanda-providers/src/iot_live.rs`](../crates/spanda-providers/src/iot_live.rs))
+- `live_radar_enabled` — spanda-providers ([`crates/spanda-providers/src/iot_live.rs`](../crates/spanda-providers/src/iot_live.rs))
+- `live_ultrasonic_enabled` — spanda-providers ([`crates/spanda-providers/src/iot_live.rs`](../crates/spanda-providers/src/iot_live.rs))
+- `live_zigbee_enabled` — spanda-providers ([`crates/spanda-providers/src/iot_live.rs`](../crates/spanda-providers/src/iot_live.rs))
 - `LiveDdsBridge` — spanda-transport-routing ([`crates/spanda-transport-routing/src/live_bridges.rs`](../crates/spanda-transport-routing/src/live_bridges.rs))
 - `LiveDdsBridge` — spanda-transport-dds ([`crates/spanda-transport-dds/src/live.rs`](../crates/spanda-transport-dds/src/live.rs))
 - `LiveDdsBridge` — spanda-transport-dds ([`crates/spanda-transport-dds/src/lib.rs`](../crates/spanda-transport-dds/src/lib.rs))
@@ -8468,6 +11831,8 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `load_agent_registry` — spanda-ota ([`crates/spanda-ota/src/remote.rs`](../crates/spanda-ota/src/remote.rs))
 - `load_agent_state` — spanda-ota ([`crates/spanda-ota/src/agent.rs`](../crates/spanda-ota/src/agent.rs))
 - `load_bool` — spanda-rt ([`crates/spanda-rt/src/condition.rs`](../crates/spanda-rt/src/condition.rs))
+- `load_checkpoint` — spanda-runtime ([`crates/spanda-runtime/src/continuity_primitives.rs`](../crates/spanda-runtime/src/continuity_primitives.rs))
+- `load_checkpoint_store` — spanda-runtime ([`crates/spanda-runtime/src/continuity_primitives.rs`](../crates/spanda-runtime/src/continuity_primitives.rs))
 - `load_deploy_state` — spanda-ota ([`crates/spanda-ota/src/service.rs`](../crates/spanda-ota/src/service.rs))
 - `load_double` — spanda-rt ([`crates/spanda-rt/src/condition.rs`](../crates/spanda-rt/src/condition.rs))
 - `load_fleet_agent_registry` — spanda-fleet ([`crates/spanda-fleet/src/remote.rs`](../crates/spanda-fleet/src/remote.rs))
@@ -8478,17 +11843,27 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `load_official_packages_for_source` — spanda-package ([`crates/spanda-package/src/official.rs`](../crates/spanda-package/src/official.rs))
 - `load_program_metadata` — spanda-interpreter ([`crates/spanda-interpreter/src/runtime/orchestrator.rs`](../crates/spanda-interpreter/src/runtime/orchestrator.rs))
 - `load_project_modules` — spanda-modules ([`crates/spanda-modules/src/lib.rs`](../crates/spanda-modules/src/lib.rs))
+- `load_recovery_knowledge_store` — spanda-runtime ([`crates/spanda-runtime/src/recovery_primitives.rs`](../crates/spanda-runtime/src/recovery_primitives.rs))
 - `load_remote_registry` — spanda-package ([`crates/spanda-package/src/registry_remote.rs`](../crates/spanda-package/src/registry_remote.rs))
 - `load_swarm_state` — spanda-fleet ([`crates/spanda-fleet/src/swarm_coordinator.rs`](../crates/spanda-fleet/src/swarm_coordinator.rs))
+- `load_system_config` — spanda-cli ([`crates/spanda-cli/src/config_load.rs`](../crates/spanda-cli/src/config_load.rs))
+- `load_system_config_from_cli_args` — spanda-cli ([`crates/spanda-cli/src/config_load.rs`](../crates/spanda-cli/src/config_load.rs))
 - `loadAgentRegistry` — TypeScript core ([`src/deploy-remote.ts`](../src/deploy-remote.ts))
 - `loadAgentState` — TypeScript core ([`src/deploy-agent.ts`](../src/deploy-agent.ts))
+- `loadCheckpoint` — TypeScript core ([`src/continuity-checkpoint.ts`](../src/continuity-checkpoint.ts))
+- `loadCheckpointStore` — TypeScript core ([`src/continuity-checkpoint.ts`](../src/continuity-checkpoint.ts))
 - `loadDeployState` — TypeScript core ([`src/deploy-service.ts`](../src/deploy-service.ts))
 - `loadFleetAgentRegistry` — TypeScript core ([`src/fleet-remote.ts`](../src/fleet-remote.ts))
 - `loadFleetAgentState` — TypeScript core ([`src/fleet-agent.ts`](../src/fleet-agent.ts))
+- `loadMergedRecoveryKnowledge` — TypeScript core ([`src/recovery.ts`](../src/recovery.ts))
+- `loadMissionTrace` — TypeScript core ([`src/replay.ts`](../src/replay.ts))
 - `loadProjectModules` — TypeScript core ([`src/modules/index.ts`](../src/modules/index.ts))
+- `loadRecoveryKnowledgeStore` — TypeScript core ([`src/recovery.ts`](../src/recovery.ts))
 - `local_path` — spanda-package ([`crates/spanda-package/src/dependency.rs`](../crates/spanda-package/src/dependency.rs))
+- `local_tarball_candidates` — spanda-package ([`crates/spanda-package/src/registry_fetch.rs`](../crates/spanda-package/src/registry_fetch.rs))
 - `LocalAuditBackend` — spanda-audit ([`crates/spanda-audit/src/backend.rs`](../crates/spanda-audit/src/backend.rs))
 - `LocalAuditBackend::new` — spanda-audit ([`crates/spanda-audit/src/backend.rs`](../crates/spanda-audit/src/backend.rs))
+- `locked_dependency_provenance` — spanda-package ([`crates/spanda-package/src/official.rs`](../crates/spanda-package/src/official.rs))
 - `LockedDependency` — spanda-package ([`crates/spanda-package/src/dependency.rs`](../crates/spanda-package/src/dependency.rs))
 - `LockedSource` — spanda-package ([`crates/spanda-package/src/dependency.rs`](../crates/spanda-package/src/dependency.rs))
 - `Lockfile` — spanda-package ([`crates/spanda-package/src/lockfile.rs`](../crates/spanda-package/src/lockfile.rs))
@@ -8496,6 +11871,7 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `LockPackageInfo` — spanda-package ([`crates/spanda-package/src/lockfile.rs`](../crates/spanda-package/src/lockfile.rs))
 - `lookup_agent` — spanda-ota ([`crates/spanda-ota/src/remote.rs`](../crates/spanda-ota/src/remote.rs))
 - `lookup_fleet_agent` — spanda-fleet ([`crates/spanda-fleet/src/remote.rs`](../crates/spanda-fleet/src/remote.rs))
+- `lookup_man_page` — spanda-docs ([`crates/spanda-docs/src/man_pages.rs`](../crates/spanda-docs/src/man_pages.rs))
 - `lookup_registry_entry` — spanda-package ([`crates/spanda-package/src/registry_remote.rs`](../crates/spanda-package/src/registry_remote.rs))
 - `lookupAgent` — TypeScript core ([`src/deploy-remote.ts`](../src/deploy-remote.ts))
 - `lookupDefinition` — TypeScript core ([`src/lsp/symbols.ts`](../src/lsp/symbols.ts))
@@ -8504,10 +11880,16 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `lower_to_sir` — spanda-driver ([`crates/spanda-driver/src/pipeline.rs`](../crates/spanda-driver/src/pipeline.rs))
 - `MaintenancePackageStub` — spanda-providers ([`crates/spanda-providers/src/package_stubs.rs`](../crates/spanda-providers/src/package_stubs.rs))
 - `MaintenanceProvider` — spanda-runtime ([`crates/spanda-runtime/src/providers/traits.rs`](../crates/spanda-runtime/src/providers/traits.rs))
+- `ManagedSecretVault` — spanda-security ([`crates/spanda-security/src/secret_vault.rs`](../crates/spanda-security/src/secret_vault.rs))
+- `ManagedSecretVault::new` — spanda-security ([`crates/spanda-security/src/secret_vault.rs`](../crates/spanda-security/src/secret_vault.rs))
 - `mark_registry_backed` — spanda-transport-routing ([`crates/spanda-transport-routing/src/lib.rs`](../crates/spanda-transport-routing/src/lib.rs))
+- `markdown_man_to_roff` — spanda-docs ([`crates/spanda-docs/src/man_pages.rs`](../crates/spanda-docs/src/man_pages.rs))
+- `markdown_to_html` — spanda-docs ([`crates/spanda-docs/src/html_docs.rs`](../crates/spanda-docs/src/html_docs.rs))
 - `MatchArm` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `MatrixCell` — spanda-hardware ([`crates/spanda-hardware/src/verify.rs`](../crates/spanda-hardware/src/verify.rs))
 - `max_speed_for` — spanda-runtime ([`crates/spanda-runtime/src/robotics.rs`](../crates/spanda-runtime/src/robotics.rs))
+- `maybeAutoIngestFleetAfterSession` — TypeScript core ([`src/telemetry-fleet.ts`](../src/telemetry-fleet.ts))
+- `maybeAutoPushAfterSession` — TypeScript core ([`src/telemetry-push.ts`](../src/telemetry-push.ts))
 - `members` — spanda-runtime ([`crates/spanda-runtime/src/robotics.rs`](../crates/spanda-runtime/src/robotics.rs))
 - `memory` — spanda-transport-routing ([`crates/spanda-transport-routing/src/lib.rs`](../crates/spanda-transport-routing/src/lib.rs))
 - `memory_mut` — spanda-transport-routing ([`crates/spanda-transport-routing/src/lib.rs`](../crates/spanda-transport-routing/src/lib.rs))
@@ -8515,9 +11897,12 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `MemoryStore` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
 - `MemoryStore` — TypeScript core ([`src/ai/MemoryStore.ts`](../src/ai/MemoryStore.ts))
 - `MemoryStore::new` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
+- `MemoryWatchDecl` — spanda-ast ([`crates/spanda-ast/src/fault_decl.rs`](../crates/spanda-ast/src/fault_decl.rs))
 - `merge_bus` — spanda-security ([`crates/spanda-security/src/policy.rs`](../crates/spanda-security/src/policy.rs))
 - `merge_library_methods` — spanda-driver ([`crates/spanda-driver/src/type_check.rs`](../crates/spanda-driver/src/type_check.rs))
 - `merge_library_methods` — spanda-typecheck ([`crates/spanda-typecheck/src/checker.rs`](../crates/spanda-typecheck/src/checker.rs))
+- `merge_recovery_knowledge` — spanda-runtime ([`crates/spanda-runtime/src/recovery_primitives.rs`](../crates/spanda-runtime/src/recovery_primitives.rs))
+- `mergeFleetOtlpJson` — TypeScript core ([`src/telemetry-fleet.ts`](../src/telemetry-fleet.ts))
 - `mergeLibraryMethods` — TypeScript core ([`src/types/units.ts`](../src/types/units.ts))
 - `mesh_registry_path` — spanda-fleet ([`crates/spanda-fleet/src/mesh.rs`](../crates/spanda-fleet/src/mesh.rs))
 - `MeshRegistryBacking` — spanda-fleet ([`crates/spanda-fleet/src/mesh.rs`](../crates/spanda-fleet/src/mesh.rs))
@@ -8526,18 +11911,25 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `MESSAGE_TYPES` — spanda-typecheck ([`crates/spanda-typecheck/src/checker.rs`](../crates/spanda-typecheck/src/checker.rs))
 - `MessageDecl` — spanda-ast ([`crates/spanda-ast/src/comm_decl.rs`](../crates/spanda-ast/src/comm_decl.rs))
 - `MessageRegistry` — spanda-typecheck ([`crates/spanda-typecheck/src/message_registry.rs`](../crates/spanda-typecheck/src/message_registry.rs))
-- `MessageRegistry` — TypeScript core ([`src/comm/index.ts`](../src/comm/index.ts))
+- `MessageRegistry` — TypeScript core ([`src/comm/decls.ts`](../src/comm/decls.ts))
 - `MessageRegistry::new` — spanda-typecheck ([`crates/spanda-typecheck/src/message_registry.rs`](../crates/spanda-typecheck/src/message_registry.rs))
 - `MessageSchema` — spanda-ast ([`crates/spanda-ast/src/comm_decl.rs`](../crates/spanda-ast/src/comm_decl.rs))
 - `MethodSig` — spanda-typecheck ([`crates/spanda-typecheck/src/checker.rs`](../crates/spanda-typecheck/src/checker.rs))
 - `MethodSig::params` — spanda-typecheck ([`crates/spanda-typecheck/src/checker.rs`](../crates/spanda-typecheck/src/checker.rs))
+- `mirror_bundle_to_local_registry` — spanda-package ([`crates/spanda-package/src/publish.rs`](../crates/spanda-package/src/publish.rs))
 - `missing_remote_targets` — spanda-ota ([`crates/spanda-ota/src/remote.rs`](../crates/spanda-ota/src/remote.rs))
+- `mission_dispatch` — spanda-cli ([`crates/spanda-cli/src/assurance_cli.rs`](../crates/spanda-cli/src/assurance_cli.rs))
 - `missionAdvance` — TypeScript core ([`src/robotics-platform.ts`](../src/robotics-platform.ts))
+- `MissionApprovalReq` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
+- `MissionCheckpoint` — spanda-runtime ([`crates/spanda-runtime/src/continuity_types.rs`](../crates/spanda-runtime/src/continuity_types.rs))
 - `missionComplete` — TypeScript core ([`src/robotics-platform.ts`](../src/robotics-platform.ts))
+- `MissionConstraintDecl` — spanda-ast ([`crates/spanda-ast/src/assurance_decl.rs`](../crates/spanda-ast/src/assurance_decl.rs))
 - `missionCurrentStep` — TypeScript core ([`src/robotics-platform.ts`](../src/robotics-platform.ts))
 - `MissionDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
+- `MissionExecutionState` — spanda-runtime ([`crates/spanda-runtime/src/continuity_types.rs`](../crates/spanda-runtime/src/continuity_types.rs))
 - `missionFail` — TypeScript core ([`src/robotics-platform.ts`](../src/robotics-platform.ts))
 - `missionPause` — TypeScript core ([`src/robotics-platform.ts`](../src/robotics-platform.ts))
+- `MissionPlanDecl` — spanda-ast ([`crates/spanda-ast/src/assurance_decl.rs`](../crates/spanda-ast/src/assurance_decl.rs))
 - `MissionRecord` — spanda-audit ([`crates/spanda-audit/src/record.rs`](../crates/spanda-audit/src/record.rs))
 - `missionResume` — TypeScript core ([`src/robotics-platform.ts`](../src/robotics-platform.ts))
 - `MissionRuntime` — spanda-runtime ([`crates/spanda-runtime/src/robotics.rs`](../crates/spanda-runtime/src/robotics.rs))
@@ -8545,8 +11937,14 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `missionStart` — TypeScript core ([`src/robotics-platform.ts`](../src/robotics-platform.ts))
 - `MissionState` — spanda-runtime ([`crates/spanda-runtime/src/robotics.rs`](../crates/spanda-runtime/src/robotics.rs))
 - `MissionState::as_str` — spanda-runtime ([`crates/spanda-runtime/src/robotics.rs`](../crates/spanda-runtime/src/robotics.rs))
+- `MissionStateSnapshot` — spanda-runtime ([`crates/spanda-runtime/src/continuity_types.rs`](../crates/spanda-runtime/src/continuity_types.rs))
+- `MissionStateTransfer` — spanda-runtime ([`crates/spanda-runtime/src/continuity_types.rs`](../crates/spanda-runtime/src/continuity_types.rs))
+- `MissionStepDecl` — spanda-ast ([`crates/spanda-ast/src/assurance_decl.rs`](../crates/spanda-ast/src/assurance_decl.rs))
 - `MissionTrace` — spanda-runtime ([`crates/spanda-runtime/src/replay.rs`](../crates/spanda-runtime/src/replay.rs))
 - `MissionTrace::new` — spanda-runtime ([`crates/spanda-runtime/src/replay.rs`](../crates/spanda-runtime/src/replay.rs))
+- `mitigation_dispatch` — spanda-cli ([`crates/spanda-cli/src/assurance_cli.rs`](../crates/spanda-cli/src/assurance_cli.rs))
+- `MitigationBranch` — spanda-ast ([`crates/spanda-ast/src/assurance_decl.rs`](../crates/spanda-ast/src/assurance_decl.rs))
+- `MitigationDecl` — spanda-ast ([`crates/spanda-ast/src/assurance_decl.rs`](../crates/spanda-ast/src/assurance_decl.rs))
 - `mock_analyze_frame` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
 - `mock_camera_frame` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
 - `mock_summarize` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
@@ -8563,6 +11961,7 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `module_classifications` — spanda-runtime ([`crates/spanda-runtime/src/classification.rs`](../crates/spanda-runtime/src/classification.rs))
 - `module_count` — spanda-typecheck ([`crates/spanda-typecheck/src/module_registry.rs`](../crates/spanda-typecheck/src/module_registry.rs))
 - `module_name_from_path` — spanda-modules ([`crates/spanda-modules/src/lib.rs`](../crates/spanda-modules/src/lib.rs))
+- `module_registry_for_source` — spanda-cli ([`crates/spanda-cli/src/package.rs`](../crates/spanda-cli/src/package.rs))
 - `ModuleClassification` — spanda-runtime ([`crates/spanda-runtime/src/classification.rs`](../crates/spanda-runtime/src/classification.rs))
 - `ModuleExports` — spanda-typecheck ([`crates/spanda-typecheck/src/module_registry.rs`](../crates/spanda-typecheck/src/module_registry.rs))
 - `ModuleFnDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
@@ -8580,35 +11979,61 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `NamedArg` — spanda-ast ([`crates/spanda-ast/src/nodes.rs`](../crates/spanda-ast/src/nodes.rs))
 - `names` — spanda-runtime ([`crates/spanda-runtime/src/robotics.rs`](../crates/spanda-runtime/src/robotics.rs))
 - `names` — spanda-security ([`crates/spanda-security/src/secrets.rs`](../crates/spanda-security/src/secrets.rs))
+- `namespaced_type` — spanda-audit ([`crates/spanda-audit/src/platform_event.rs`](../crates/spanda-audit/src/platform_event.rs))
 - `native_available` — spanda-bridge ([`crates/spanda-bridge/src/cpp_native.rs`](../crates/spanda-bridge/src/cpp_native.rs))
 - `native_available` — spanda-bridge ([`crates/spanda-bridge/src/python_native.rs`](../crates/spanda-bridge/src/python_native.rs))
 - `native_sdk_available` — spanda-transport-ros2 ([`crates/spanda-transport-ros2/src/lib.rs`](../crates/spanda-transport-ros2/src/lib.rs))
 - `nav2_adapter_metadata` — spanda-package ([`crates/spanda-package/src/adapter.rs`](../crates/spanda-package/src/adapter.rs))
 - `nav2_import_paths` — spanda-runtime-host ([`crates/spanda-runtime-host/src/nav2_adapter.rs`](../crates/spanda-runtime-host/src/nav2_adapter.rs))
+- `navigation_count` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
 - `NavigationProvider` — spanda-runtime ([`crates/spanda-runtime/src/providers/traits.rs`](../crates/spanda-runtime/src/providers/traits.rs))
 - `NavNavigationStub` — spanda-providers ([`crates/spanda-providers/src/package_stubs.rs`](../crates/spanda-providers/src/package_stubs.rs))
+- `needs_rotation` — spanda-security ([`crates/spanda-security/src/secret_vault.rs`](../crates/spanda-security/src/secret_vault.rs))
 - `new_with_core_bridges` — spanda-bridge ([`crates/spanda-bridge/src/lib.rs`](../crates/spanda-bridge/src/lib.rs))
 - `NodeDecl` — spanda-ast ([`crates/spanda-ast/src/nodes.rs`](../crates/spanda-ast/src/nodes.rs))
+- `NoopDeviceTelemetrySink` — spanda-runtime ([`crates/spanda-runtime/src/device_telemetry_sink.rs`](../crates/spanda-runtime/src/device_telemetry_sink.rs))
+- `NoopFleetTamperRuntime` — spanda-runtime ([`crates/spanda-runtime/src/fleet_tamper_runtime.rs`](../crates/spanda-runtime/src/fleet_tamper_runtime.rs))
+- `NoopFleetTelemetryRuntime` — spanda-runtime ([`crates/spanda-runtime/src/fleet_telemetry_runtime.rs`](../crates/spanda-runtime/src/fleet_telemetry_runtime.rs))
+- `NoopReadinessRuntime` — spanda-runtime ([`crates/spanda-runtime/src/readiness_runtime.rs`](../crates/spanda-runtime/src/readiness_runtime.rs))
+- `NoopRuntimeHooks` — spanda-runtime ([`crates/spanda-runtime/src/hooks.rs`](../crates/spanda-runtime/src/hooks.rs))
+- `NoopTelemetrySink` — spanda-runtime ([`crates/spanda-runtime/src/telemetry_sink.rs`](../crates/spanda-runtime/src/telemetry_sink.rs))
+- `notifyProviderCall` — TypeScript core ([`src/runtime/provider-observer.ts`](../src/runtime/provider-observer.ts))
+- `number_arg` — spanda-providers ([`crates/spanda-providers/src/iot_hub.rs`](../crates/spanda-providers/src/iot_hub.rs))
 - `object` — spanda-runtime ([`crates/spanda-runtime/src/value.rs`](../crates/spanda-runtime/src/value.rs))
 - `OBJECT_PROPERTIES` — spanda-typecheck ([`crates/spanda-typecheck/src/checker.rs`](../crates/spanda-typecheck/src/checker.rs))
 - `ObserveDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `Obstacle` — spanda-interpreter ([`crates/spanda-interpreter/src/simulator.rs`](../crates/spanda-interpreter/src/simulator.rs))
 - `ObstacleConfig` — spanda-interpreter ([`crates/spanda-interpreter/src/options.rs`](../crates/spanda-interpreter/src/options.rs))
+- `official_package_for_module` — spanda-providers ([`crates/spanda-providers/src/package_dispatch.rs`](../crates/spanda-providers/src/package_dispatch.rs))
 - `official_package_for_transport` — spanda-providers ([`crates/spanda-providers/src/bootstrap.rs`](../crates/spanda-providers/src/bootstrap.rs))
 - `official_package_names` — spanda-runtime ([`crates/spanda-runtime/src/classification.rs`](../crates/spanda-runtime/src/classification.rs))
 - `official_packages` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
 - `official_packages_for_source` — spanda-cli ([`crates/spanda-cli/src/package.rs`](../crates/spanda-cli/src/package.rs))
 - `official_packages_from_lockfile` — spanda-package ([`crates/spanda-package/src/official.rs`](../crates/spanda-package/src/official.rs))
 - `official_packages_from_manifest` — spanda-package ([`crates/spanda-package/src/official.rs`](../crates/spanda-package/src/official.rs))
+- `officialPackageForModule` — TypeScript core ([`src/providers/package_dispatch.ts`](../src/providers/package_dispatch.ts))
 - `officialPackageForTransport` — TypeScript core ([`src/providers/bootstrap.ts`](../src/providers/bootstrap.ts))
+- `OfficialProvenance` — spanda-package ([`crates/spanda-package/src/official.rs`](../crates/spanda-package/src/official.rs))
+- `onnx_anomaly_enabled` — spanda-providers ([`crates/spanda-providers/src/anomaly_onnx.rs`](../crates/spanda-providers/src/anomaly_onnx.rs))
+- `OnnxProvider` — spanda-ai ([`crates/spanda-ai/src/live.rs`](../crates/spanda-ai/src/live.rs))
+- `OpenAiProvider` — spanda-ai ([`crates/spanda-ai/src/live.rs`](../crates/spanda-ai/src/live.rs))
+- `OperatingModeDecl` — spanda-ast ([`crates/spanda-ast/src/assurance_decl.rs`](../crates/spanda-ast/src/assurance_decl.rs))
+- `OperationalMode` — spanda-runtime ([`crates/spanda-runtime/src/recovery_types.rs`](../crates/spanda-runtime/src/recovery_types.rs))
+- `OperationalPolicyDecl` — spanda-ast ([`crates/spanda-ast/src/policy_decl.rs`](../crates/spanda-ast/src/policy_decl.rs))
+- `OperationalPolicyRule` — spanda-ast ([`crates/spanda-ast/src/policy_decl.rs`](../crates/spanda-ast/src/policy_decl.rs))
 - `orchestrate_fleets` — spanda-fleet ([`crates/spanda-fleet/src/orchestrator.rs`](../crates/spanda-fleet/src/orchestrator.rs))
 - `orchestrate_fleets_mesh` — spanda-fleet ([`crates/spanda-fleet/src/orchestrator.rs`](../crates/spanda-fleet/src/orchestrator.rs))
 - `orchestrate_fleets_remote` — spanda-fleet ([`crates/spanda-fleet/src/orchestrator.rs`](../crates/spanda-fleet/src/orchestrator.rs))
 - `orchestrateFleets` — TypeScript core ([`src/fleet-orchestrator.ts`](../src/fleet-orchestrator.ts))
 - `orchestrateFleetsMesh` — TypeScript core ([`src/fleet-orchestrator.ts`](../src/fleet-orchestrator.ts))
 - `orchestrateFleetsRemote` — TypeScript core ([`src/fleet-orchestrator.ts`](../src/fleet-orchestrator.ts))
+- `overall_health_label` — spanda-hal ([`crates/spanda-hal/src/hardware_monitor.rs`](../crates/spanda-hal/src/hardware_monitor.rs))
+- `OverlayPackageStub` — spanda-providers ([`crates/spanda-providers/src/package_stubs.rs`](../crates/spanda-providers/src/package_stubs.rs))
+- `OverlayPackageStub::new` — spanda-providers ([`crates/spanda-providers/src/package_stubs.rs`](../crates/spanda-providers/src/package_stubs.rs))
+- `OverlayProvider` — spanda-runtime ([`crates/spanda-runtime/src/providers/hri.rs`](../crates/spanda-runtime/src/providers/hri.rs))
 - `PackageCategory` — spanda-package ([`crates/spanda-package/src/category.rs`](../crates/spanda-package/src/category.rs))
 - `PackageCategory::all` — spanda-package ([`crates/spanda-package/src/category.rs`](../crates/spanda-package/src/category.rs))
+- `PackageEntityKindDecl` — spanda-package ([`crates/spanda-package/src/manifest.rs`](../crates/spanda-package/src/manifest.rs))
 - `PackageError` — spanda-package ([`crates/spanda-package/src/error.rs`](../crates/spanda-package/src/error.rs))
 - `PackageManifest` — spanda-package ([`crates/spanda-package/src/manifest.rs`](../crates/spanda-package/src/manifest.rs))
 - `PackageManifest::parse_str` — spanda-package ([`crates/spanda-package/src/manifest.rs`](../crates/spanda-package/src/manifest.rs))
@@ -8617,22 +12042,43 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `PackageSection` — spanda-package ([`crates/spanda-package/src/manifest.rs`](../crates/spanda-package/src/manifest.rs))
 - `parse` — spanda-parser ([`crates/spanda-parser/src/lib.rs`](../crates/spanda-parser/src/lib.rs))
 - `parse` — TypeScript core ([`src/parser/index.ts`](../src/parser/index.ts))
+- `parse_fusion_input` — spanda-runtime ([`crates/spanda-runtime/src/fusion.rs`](../crates/spanda-runtime/src/fusion.rs))
 - `parse_http_request` — spanda-deploy-http ([`crates/spanda-deploy-http/src/lib.rs`](../crates/spanda-deploy-http/src/lib.rs))
 - `parse_http_response` — spanda-deploy-http ([`crates/spanda-deploy-http/src/lib.rs`](../crates/spanda-deploy-http/src/lib.rs))
 - `parse_http_url` — spanda-deploy-http ([`crates/spanda-deploy-http/src/lib.rs`](../crates/spanda-deploy-http/src/lib.rs))
 - `parse_ident` — spanda-ast ([`crates/spanda-ast/src/robotics_decl.rs`](../crates/spanda-ast/src/robotics_decl.rs))
+- `parse_program` — spanda-cli ([`crates/spanda-cli/src/trace_cli.rs`](../crates/spanda-cli/src/trace_cli.rs))
 - `parse_replay_offset` — spanda-runtime ([`crates/spanda-runtime/src/replay.rs`](../crates/spanda-runtime/src/replay.rs))
 - `parse_str` — spanda-package ([`crates/spanda-package/src/lockfile.rs`](../crates/spanda-package/src/lockfile.rs))
 - `parse_tls_endpoint` — spanda-transport ([`crates/spanda-transport/src/tls.rs`](../crates/spanda-transport/src/tls.rs))
+- `parse_trigger` — spanda-runtime ([`crates/spanda-runtime/src/continuity_primitives.rs`](../crates/spanda-runtime/src/continuity_primitives.rs))
 - `parse_version` — spanda-package ([`crates/spanda-package/src/dependency.rs`](../crates/spanda-package/src/dependency.rs))
 - `parse_version_req` — spanda-package ([`crates/spanda-package/src/dependency.rs`](../crates/spanda-package/src/dependency.rs))
+- `parseAnomalyDetector` — TypeScript core ([`src/parser/assurance.ts`](../src/parser/assurance.ts))
+- `parseAnomalyHandler` — TypeScript core ([`src/parser/assurance.ts`](../src/parser/assurance.ts))
+- `parseAssuranceCase` — TypeScript core ([`src/parser/assurance.ts`](../src/parser/assurance.ts))
+- `parseContinuityPolicy` — TypeScript core ([`src/parser/assurance.ts`](../src/parser/assurance.ts))
 - `ParsedUrl` — spanda-deploy-http ([`crates/spanda-deploy-http/src/lib.rs`](../crates/spanda-deploy-http/src/lib.rs))
 - `ParseError` — TypeScript core ([`src/parser/index.ts`](../src/parser/index.ts))
+- `ParseError` — TypeScript core ([`src/parser/assurance.ts`](../src/parser/assurance.ts))
+- `parseKnowledgeModel` — TypeScript core ([`src/parser/assurance.ts`](../src/parser/assurance.ts))
+- `parseMissionPlan` — TypeScript core ([`src/parser/assurance.ts`](../src/parser/assurance.ts))
+- `parseMitigation` — TypeScript core ([`src/parser/assurance.ts`](../src/parser/assurance.ts))
+- `parseOperatingMode` — TypeScript core ([`src/parser/assurance.ts`](../src/parser/assurance.ts))
+- `parsePrognostics` — TypeScript core ([`src/parser/assurance.ts`](../src/parser/assurance.ts))
+- `parseProgramSource` — TypeScript core ([`src/operational.ts`](../src/operational.ts))
+- `parseRecoveryPolicy` — TypeScript core ([`src/parser/assurance.ts`](../src/parser/assurance.ts))
 - `parseReplayOffset` — TypeScript core ([`src/replay.ts`](../src/replay.ts))
+- `parseResiliencePolicy` — TypeScript core ([`src/parser/assurance.ts`](../src/parser/assurance.ts))
+- `parseStateEstimator` — TypeScript core ([`src/parser/assurance.ts`](../src/parser/assurance.ts))
 - `parseSwarmPolicy` — TypeScript core ([`src/foundations.ts`](../src/foundations.ts))
 - `parseTlsEndpoint` — TypeScript core ([`src/transport/transport-security.ts`](../src/transport/transport-security.ts))
+- `parseTrustBoundary` — TypeScript core ([`src/runtime/security-types.ts`](../src/runtime/security-types.ts))
 - `parseTrustBoundary` — TypeScript core ([`src/security/trust-boundary.ts`](../src/security/trust-boundary.ts))
+- `parseTrustLevel` — TypeScript core ([`src/runtime/security-types.ts`](../src/runtime/security-types.ts))
 - `parseTrustLevel` — TypeScript core ([`src/security/index.ts`](../src/security/index.ts))
+- `passed_registry_signatures` — spanda-package ([`crates/spanda-package/src/provenance_gate.rs`](../crates/spanda-package/src/provenance_gate.rs))
+- `patch` — spanda-cli ([`crates/spanda-cli/src/control_center_client.rs`](../crates/spanda-cli/src/control_center_client.rs))
 - `pause` — spanda-runtime ([`crates/spanda-runtime/src/robotics.rs`](../crates/spanda-runtime/src/robotics.rs))
 - `pauses` — spanda-driver ([`crates/spanda-driver/src/debug_session.rs`](../crates/spanda-driver/src/debug_session.rs))
 - `pauses` — spanda-debug ([`crates/spanda-debug/src/lib.rs`](../crates/spanda-debug/src/lib.rs))
@@ -8646,9 +12092,12 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `perform_mtls_handshake` — spanda-transport ([`crates/spanda-transport/src/tls.rs`](../crates/spanda-transport/src/tls.rs))
 - `Permission` — spanda-security ([`crates/spanda-security/src/capability.rs`](../crates/spanda-security/src/capability.rs))
 - `Permission::new` — spanda-security ([`crates/spanda-security/src/capability.rs`](../crates/spanda-security/src/capability.rs))
+- `permission_matrix` — spanda-security ([`crates/spanda-security/src/rbac.rs`](../crates/spanda-security/src/rbac.rs))
 - `PermissionsDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `permissive` — spanda-security ([`crates/spanda-security/src/capability.rs`](../crates/spanda-security/src/capability.rs))
 - `permissive` — spanda-security ([`crates/spanda-security/src/permissions.rs`](../crates/spanda-security/src/permissions.rs))
+- `persistCheckpoint` — TypeScript core ([`src/continuity-checkpoint.ts`](../src/continuity-checkpoint.ts))
+- `persistEnabled` — TypeScript core ([`src/telemetry-store.ts`](../src/telemetry-store.ts))
 - `physical_category` — spanda-typecheck ([`crates/spanda-typecheck/src/type_system.rs`](../crates/spanda-typecheck/src/type_system.rs))
 - `PhysicalCategory` — spanda-typecheck ([`crates/spanda-typecheck/src/units.rs`](../crates/spanda-typecheck/src/units.rs))
 - `physicalCategory` — TypeScript core ([`src/type-system.ts`](../src/type-system.ts))
@@ -8659,8 +12108,18 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `PipelineRuntime` — spanda-runtime ([`crates/spanda-runtime/src/reliability_runtime.rs`](../crates/spanda-runtime/src/reliability_runtime.rs))
 - `PipelineRuntime::from_decl` — spanda-runtime ([`crates/spanda-runtime/src/reliability_runtime.rs`](../crates/spanda-runtime/src/reliability_runtime.rs))
 - `plan_rollout` — spanda-ota ([`crates/spanda-ota/src/service.rs`](../crates/spanda-ota/src/service.rs))
+- `plan_swarm_member_continuity` — spanda-fleet ([`crates/spanda-fleet/src/swarm_continuity.rs`](../crates/spanda-fleet/src/swarm_continuity.rs))
+- `planDelegationTs` — TypeScript core ([`src/mission-continuity.ts`](../src/mission-continuity.ts))
 - `PlanExecutor` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
+- `PlannedRecoveryAction` — spanda-runtime ([`crates/spanda-runtime/src/recovery_types.rs`](../crates/spanda-runtime/src/recovery_types.rs))
 - `planRollout` — TypeScript core ([`src/deploy-service.ts`](../src/deploy-service.ts))
+- `planSuccessionTs` — TypeScript core ([`src/mission-continuity.ts`](../src/mission-continuity.ts))
+- `planTakeoverTs` — TypeScript core ([`src/mission-continuity.ts`](../src/mission-continuity.ts))
+- `platform_assurance_runtime` — spanda-runtime ([`crates/spanda-runtime/src/assurance_runtime.rs`](../crates/spanda-runtime/src/assurance_runtime.rs))
+- `PlatformEvent` — spanda-audit ([`crates/spanda-audit/src/platform_event.rs`](../crates/spanda-audit/src/platform_event.rs))
+- `PlatformEvent::new` — spanda-audit ([`crates/spanda-audit/src/platform_event.rs`](../crates/spanda-audit/src/platform_event.rs))
+- `PlatformEventType` — spanda-audit ([`crates/spanda-audit/src/platform_event.rs`](../crates/spanda-audit/src/platform_event.rs))
+- `PlatformEventType::new` — spanda-audit ([`crates/spanda-audit/src/platform_event.rs`](../crates/spanda-audit/src/platform_event.rs))
 - `playback_frames` — spanda-runtime ([`crates/spanda-runtime/src/replay.rs`](../crates/spanda-runtime/src/replay.rs))
 - `playback_mission` — spanda-driver ([`crates/spanda-driver/src/replay.rs`](../crates/spanda-driver/src/replay.rs))
 - `playbackFrames` — TypeScript core ([`src/replay.ts`](../src/replay.ts))
@@ -8668,6 +12127,7 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `policy_or_open` — spanda-security ([`crates/spanda-security/src/secure_comm.rs`](../crates/spanda-security/src/secure_comm.rs))
 - `poll_inbound` — spanda-transport-routing ([`crates/spanda-transport-routing/src/lib.rs`](../crates/spanda-transport-routing/src/lib.rs))
 - `poll_new_events` — spanda-hal ([`crates/spanda-hal/src/hardware_monitor.rs`](../crates/spanda-hal/src/hardware_monitor.rs))
+- `pollRuntimeHealthChanges` — TypeScript core ([`src/runtime/health-runtime.ts`](../src/runtime/health-runtime.ts))
 - `Pose2d` — spanda-safety ([`crates/spanda-safety/src/lib.rs`](../crates/spanda-safety/src/lib.rs))
 - `Pose3d` — spanda-safety ([`crates/spanda-safety/src/lib.rs`](../crates/spanda-safety/src/lib.rs))
 - `pose_from_state` — spanda-interpreter ([`crates/spanda-interpreter/src/runtime/orchestrator.rs`](../crates/spanda-interpreter/src/runtime/orchestrator.rs))
@@ -8676,40 +12136,60 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `PoseState` — spanda-runtime ([`crates/spanda-runtime/src/robot_state.rs`](../crates/spanda-runtime/src/robot_state.rs))
 - `PoseStateJs` — spanda-node ([`crates/spanda-node/src/lib.rs`](../crates/spanda-node/src/lib.rs))
 - `PoseValue` — spanda-runtime ([`crates/spanda-runtime/src/value.rs`](../crates/spanda-runtime/src/value.rs))
+- `positioning_count` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
 - `positioning_types` — spanda-connectivity ([`crates/spanda-connectivity/src/lib.rs`](../crates/spanda-connectivity/src/lib.rs))
 - `PositioningProvider` — spanda-runtime ([`crates/spanda-runtime/src/providers/traits.rs`](../crates/spanda-runtime/src/providers/traits.rs))
 - `positioningSensorTypes` — TypeScript core ([`src/connectivity-positioning.ts`](../src/connectivity-positioning.ts))
+- `post` — spanda-cli ([`crates/spanda-cli/src/control_center_client.rs`](../crates/spanda-cli/src/control_center_client.rs))
 - `prepare_outbound` — spanda-security ([`crates/spanda-security/src/secure_comm.rs`](../crates/spanda-security/src/secure_comm.rs))
 - `prepare_publish` — spanda-security ([`crates/spanda-security/src/runtime.rs`](../crates/spanda-security/src/runtime.rs))
+- `prepare_recovery_execution` — spanda-interpreter ([`crates/spanda-interpreter/src/runtime/runtime_recovery.rs`](../crates/spanda-interpreter/src/runtime/runtime_recovery.rs))
 - `pretty_print_program` — spanda-format ([`crates/spanda-format/src/pretty.rs`](../crates/spanda-format/src/pretty.rs))
+- `preview_fusion_inputs` — spanda-runtime ([`crates/spanda-runtime/src/fusion.rs`](../crates/spanda-runtime/src/fusion.rs))
 - `priority_rank` — spanda-runtime ([`crates/spanda-runtime/src/triggers.rs`](../crates/spanda-runtime/src/triggers.rs))
+- `priorityRank` — TypeScript core ([`src/runtime/trigger-registry.ts`](../src/runtime/trigger-registry.ts))
 - `PrivateKey` — spanda-security ([`crates/spanda-security/src/encrypted.rs`](../crates/spanda-security/src/encrypted.rs))
+- `ProcessHealth` — spanda-runtime ([`crates/spanda-runtime/src/fault_types.rs`](../crates/spanda-runtime/src/fault_types.rs))
+- `PrognosticRule` — spanda-ast ([`crates/spanda-ast/src/assurance_decl.rs`](../crates/spanda-ast/src/assurance_decl.rs))
+- `PrognosticsDecl` — spanda-ast ([`crates/spanda-ast/src/assurance_decl.rs`](../crates/spanda-ast/src/assurance_decl.rs))
 - `Program` — spanda-ast ([`crates/spanda-ast/src/nodes.rs`](../crates/spanda-ast/src/nodes.rs))
 - `Program::imports` — spanda-ast ([`crates/spanda-ast/src/nodes.rs`](../crates/spanda-ast/src/nodes.rs))
+- `program_has_continuity_for_trigger` — spanda-runtime ([`crates/spanda-runtime/src/continuity_primitives.rs`](../crates/spanda-runtime/src/continuity_primitives.rs))
+- `program_has_recovery_for_issue` — spanda-runtime ([`crates/spanda-runtime/src/recovery_primitives.rs`](../crates/spanda-runtime/src/recovery_primitives.rs))
 - `program_uses_nav2` — spanda-runtime-host ([`crates/spanda-runtime-host/src/nav2_adapter.rs`](../crates/spanda-runtime-host/src/nav2_adapter.rs))
 - `program_uses_slam` — spanda-runtime-host ([`crates/spanda-runtime-host/src/slam_adapter.rs`](../crates/spanda-runtime-host/src/slam_adapter.rs))
 - `ProgramSafetyZoneDecl` — spanda-ast ([`crates/spanda-ast/src/robotics_decl.rs`](../crates/spanda-ast/src/robotics_decl.rs))
 - `ProgramSafetyZoneRegistry` — spanda-runtime ([`crates/spanda-runtime/src/robotics.rs`](../crates/spanda-runtime/src/robotics.rs))
 - `ProgramSafetyZoneRegistry` — TypeScript core ([`src/robotics-platform.ts`](../src/robotics-platform.ts))
 - `ProgramSafetyZoneRegistry::register` — spanda-runtime ([`crates/spanda-runtime/src/robotics.rs`](../crates/spanda-runtime/src/robotics.rs))
+- `ProjectProvenanceGateReport` — spanda-package ([`crates/spanda-package/src/provenance_gate.rs`](../crates/spanda-package/src/provenance_gate.rs))
+- `ProjectProvenanceGateReport::passed_official_provenance` — spanda-package ([`crates/spanda-package/src/provenance_gate.rs`](../crates/spanda-package/src/provenance_gate.rs))
 - `proposal_confidence` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
 - `proposal_from_value` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
 - `proposalFromValue` — TypeScript core ([`src/ai/index.ts`](../src/ai/index.ts))
+- `provenance_wires_official_providers` — spanda-package ([`crates/spanda-package/src/official.rs`](../crates/spanda-package/src/official.rs))
 - `ProvenanceDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `ProvenanceRecord` — spanda-audit ([`crates/spanda-audit/src/record.rs`](../crates/spanda-audit/src/record.rs))
 - `provider_registry` — spanda-interpreter ([`crates/spanda-interpreter/src/runtime/orchestrator.rs`](../crates/spanda-interpreter/src/runtime/orchestrator.rs))
+- `provider_runtime` — spanda-interpreter ([`crates/spanda-interpreter/src/runtime/orchestrator.rs`](../crates/spanda-interpreter/src/runtime/orchestrator.rs))
+- `ProviderBackedRuntime` — spanda-providers ([`crates/spanda-providers/src/runtime_bridge.rs`](../crates/spanda-providers/src/runtime_bridge.rs))
 - `ProviderCapability` — spanda-runtime ([`crates/spanda-runtime/src/provider_types.rs`](../crates/spanda-runtime/src/provider_types.rs))
 - `ProviderCapability::new` — spanda-runtime ([`crates/spanda-runtime/src/provider_types.rs`](../crates/spanda-runtime/src/provider_types.rs))
 - `ProviderCapabilitySet` — spanda-runtime ([`crates/spanda-runtime/src/provider_types.rs`](../crates/spanda-runtime/src/provider_types.rs))
 - `ProviderCapabilitySet::new` — spanda-runtime ([`crates/spanda-runtime/src/provider_types.rs`](../crates/spanda-runtime/src/provider_types.rs))
+- `ProviderDispatchContext` — spanda-runtime ([`crates/spanda-runtime/src/provider_runtime.rs`](../crates/spanda-runtime/src/provider_runtime.rs))
+- `ProviderDispatchContext` — spanda-providers ([`crates/spanda-providers/src/package_dispatch.rs`](../crates/spanda-providers/src/package_dispatch.rs))
 - `ProviderError` — spanda-runtime ([`crates/spanda-runtime/src/provider_types.rs`](../crates/spanda-runtime/src/provider_types.rs))
 - `ProviderError::new` — spanda-runtime ([`crates/spanda-runtime/src/provider_types.rs`](../crates/spanda-runtime/src/provider_types.rs))
 - `ProviderId` — spanda-runtime ([`crates/spanda-runtime/src/provider_types.rs`](../crates/spanda-runtime/src/provider_types.rs))
 - `ProviderId::new` — spanda-runtime ([`crates/spanda-runtime/src/provider_types.rs`](../crates/spanda-runtime/src/provider_types.rs))
 - `ProviderMetadata` — spanda-runtime ([`crates/spanda-runtime/src/provider_types.rs`](../crates/spanda-runtime/src/provider_types.rs))
+- `ProviderMetrics` — spanda-runtime ([`crates/spanda-runtime/src/telemetry.rs`](../crates/spanda-runtime/src/telemetry.rs))
 - `ProviderRegistry` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
 - `ProviderRegistry` — TypeScript core ([`src/providers/registry.ts`](../src/providers/registry.ts))
 - `ProviderRegistry::new` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
+- `ProviderRuntime` — spanda-runtime ([`crates/spanda-runtime/src/provider_runtime.rs`](../crates/spanda-runtime/src/provider_runtime.rs))
+- `ProviderRuntime` — TypeScript core ([`src/runtime/provider-runtime.ts`](../src/runtime/provider-runtime.ts))
 - `ProviderSafetyLevel` — spanda-runtime ([`crates/spanda-runtime/src/provider_types.rs`](../crates/spanda-runtime/src/provider_types.rs))
 - `public_key` — spanda-security ([`crates/spanda-security/src/identity.rs`](../crates/spanda-security/src/identity.rs))
 - `public_key_from_material` — spanda-audit ([`crates/spanda-audit/src/crypto.rs`](../crates/spanda-audit/src/crypto.rs))
@@ -8729,6 +12209,7 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `publish_peer` — spanda-comm ([`crates/spanda-comm/src/lib.rs`](../crates/spanda-comm/src/lib.rs))
 - `publish_peer` — spanda-fleet ([`crates/spanda-fleet/src/orchestrator.rs`](../crates/spanda-fleet/src/orchestrator.rs))
 - `publish_peer` — spanda-transport-routing ([`crates/spanda-transport-routing/src/lib.rs`](../crates/spanda-transport-routing/src/lib.rs))
+- `publish_telemetry` — spanda-providers ([`crates/spanda-providers/src/iot_hub.rs`](../crates/spanda-providers/src/iot_hub.rs))
 - `PublishedCommMessage` — spanda-comm ([`crates/spanda-comm/src/lib.rs`](../crates/spanda-comm/src/lib.rs))
 - `PublishedMessage` — spanda-interpreter ([`crates/spanda-interpreter/src/simulator.rs`](../crates/spanda-interpreter/src/simulator.rs))
 - `PublishReport` — spanda-package ([`crates/spanda-package/src/publish.rs`](../crates/spanda-package/src/publish.rs))
@@ -8738,6 +12219,8 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `push_info` — spanda-security ([`crates/spanda-security/src/validate.rs`](../crates/spanda-security/src/validate.rs))
 - `push_warning` — spanda-package ([`crates/spanda-package/src/validation.rs`](../crates/spanda-package/src/validation.rs))
 - `push_warning` — spanda-security ([`crates/spanda-security/src/validate.rs`](../crates/spanda-security/src/validate.rs))
+- `pushGlobalStore` — TypeScript core ([`src/telemetry-push.ts`](../src/telemetry-push.ts))
+- `pushOtlpJson` — TypeScript core ([`src/telemetry-push.ts`](../src/telemetry-push.ts))
 - `python_available` — spanda-transport-ros2 ([`crates/spanda-transport-ros2/src/daemon.rs`](../crates/spanda-transport-ros2/src/daemon.rs))
 - `python_available` — spanda-transport-ros2 ([`crates/spanda-transport-ros2/src/python_bridge.rs`](../crates/spanda-transport-ros2/src/python_bridge.rs))
 - `python_available` — spanda-bridge ([`crates/spanda-bridge/src/python.rs`](../crates/spanda-bridge/src/python.rs))
@@ -8746,16 +12229,51 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `QosDecl` — spanda-ast ([`crates/spanda-ast/src/comm_decl.rs`](../crates/spanda-ast/src/comm_decl.rs))
 - `QosReliability` — spanda-ast ([`crates/spanda-ast/src/comm_decl.rs`](../crates/spanda-ast/src/comm_decl.rs))
 - `queue_fire_and_forget` — spanda-concurrency ([`crates/spanda-concurrency/src/lib.rs`](../crates/spanda-concurrency/src/lib.rs))
+- `RadarEnvLock` — spanda-providers ([`crates/spanda-providers/src/radar_env_lock.rs`](../crates/spanda-providers/src/radar_env_lock.rs))
+- `RadarEnvLock::acquire` — spanda-providers ([`crates/spanda-providers/src/radar_env_lock.rs`](../crates/spanda-providers/src/radar_env_lock.rs))
 - `rank` — spanda-security ([`crates/spanda-security/src/trust.rs`](../crates/spanda-security/src/trust.rs))
+- `RateLimiter` — spanda-security ([`crates/spanda-security/src/rate_limit.rs`](../crates/spanda-security/src/rate_limit.rs))
+- `RateLimiter::from_env` — spanda-security ([`crates/spanda-security/src/rate_limit.rs`](../crates/spanda-security/src/rate_limit.rs))
+- `RbacAction` — spanda-security ([`crates/spanda-security/src/rbac.rs`](../crates/spanda-security/src/rbac.rs))
+- `RbacContext` — spanda-security ([`crates/spanda-security/src/rbac.rs`](../crates/spanda-security/src/rbac.rs))
 - `rclrs_available` — spanda-transport-ros2 ([`crates/spanda-transport-ros2/src/lib.rs`](../crates/spanda-transport-ros2/src/lib.rs))
 - `rclrs_enabled` — spanda-transport-ros2 ([`crates/spanda-transport-ros2/src/lib.rs`](../crates/spanda-transport-ros2/src/lib.rs))
+- `read_canbus_frame` — spanda-providers ([`crates/spanda-providers/src/iot_hub.rs`](../crates/spanda-providers/src/iot_hub.rs))
+- `read_canbus_frame_live` — spanda-providers ([`crates/spanda-providers/src/iot_live.rs`](../crates/spanda-providers/src/iot_live.rs))
+- `read_checksum_sidecar` — spanda-package ([`crates/spanda-package/src/integrity.rs`](../crates/spanda-package/src/integrity.rs))
+- `read_lidar` — spanda-providers ([`crates/spanda-providers/src/automotive_hub.rs`](../crates/spanda-providers/src/automotive_hub.rs))
+- `read_lidar_distance` — spanda-providers ([`crates/spanda-providers/src/automotive_hub.rs`](../crates/spanda-providers/src/automotive_hub.rs))
+- `read_lidar_distance_live` — spanda-providers ([`crates/spanda-providers/src/iot_live.rs`](../crates/spanda-providers/src/iot_live.rs))
+- `read_lora_payload` — spanda-providers ([`crates/spanda-providers/src/iot_hub.rs`](../crates/spanda-providers/src/iot_hub.rs))
+- `read_lora_payload_live` — spanda-providers ([`crates/spanda-providers/src/iot_live.rs`](../crates/spanda-providers/src/iot_live.rs))
+- `read_matter_cluster` — spanda-providers ([`crates/spanda-providers/src/iot_hub.rs`](../crates/spanda-providers/src/iot_hub.rs))
+- `read_matter_cluster_live` — spanda-providers ([`crates/spanda-providers/src/iot_live.rs`](../crates/spanda-providers/src/iot_live.rs))
+- `read_modbus_register` — spanda-providers ([`crates/spanda-providers/src/iot_hub.rs`](../crates/spanda-providers/src/iot_hub.rs))
+- `read_modbus_register_live` — spanda-providers ([`crates/spanda-providers/src/iot_live.rs`](../crates/spanda-providers/src/iot_live.rs))
+- `read_opcua_node` — spanda-providers ([`crates/spanda-providers/src/iot_hub.rs`](../crates/spanda-providers/src/iot_hub.rs))
+- `read_opcua_node_live` — spanda-providers ([`crates/spanda-providers/src/iot_live.rs`](../crates/spanda-providers/src/iot_live.rs))
 - `read_plain_request` — spanda-deploy-http ([`crates/spanda-deploy-http/src/lib.rs`](../crates/spanda-deploy-http/src/lib.rs))
+- `read_radar` — spanda-providers ([`crates/spanda-providers/src/automotive_hub.rs`](../crates/spanda-providers/src/automotive_hub.rs))
+- `read_radar_distance` — spanda-providers ([`crates/spanda-providers/src/automotive_hub.rs`](../crates/spanda-providers/src/automotive_hub.rs))
+- `read_radar_distance_live` — spanda-providers ([`crates/spanda-providers/src/iot_live.rs`](../crates/spanda-providers/src/iot_live.rs))
+- `read_ultrasonic` — spanda-providers ([`crates/spanda-providers/src/automotive_hub.rs`](../crates/spanda-providers/src/automotive_hub.rs))
+- `read_ultrasonic_distance` — spanda-providers ([`crates/spanda-providers/src/automotive_hub.rs`](../crates/spanda-providers/src/automotive_hub.rs))
+- `read_ultrasonic_distance_live` — spanda-providers ([`crates/spanda-providers/src/iot_live.rs`](../crates/spanda-providers/src/iot_live.rs))
 - `read_with_driver` — spanda-lib-registry ([`crates/spanda-lib-registry/src/lib.rs`](../crates/spanda-lib-registry/src/lib.rs))
+- `read_zigbee_attribute` — spanda-providers ([`crates/spanda-providers/src/iot_hub.rs`](../crates/spanda-providers/src/iot_hub.rs))
+- `read_zigbee_attribute_live` — spanda-providers ([`crates/spanda-providers/src/iot_live.rs`](../crates/spanda-providers/src/iot_live.rs))
 - `readAdapterManifestSection` — TypeScript core ([`src/adapter-package-verify.ts`](../src/adapter-package-verify.ts))
 - `readAgentRegistryFromDisk` — TypeScript core ([`src/deploy-remote.ts`](../src/deploy-remote.ts))
 - `readAgentStateFromDisk` — TypeScript core ([`src/deploy-agent.ts`](../src/deploy-agent.ts))
+- `readAllEvents` — TypeScript core ([`src/telemetry-store.ts`](../src/telemetry-store.ts))
 - `readFleetAgentRegistryFromDisk` — TypeScript core ([`src/fleet-remote.ts`](../src/fleet-remote.ts))
 - `readFleetAgentStateFromDisk` — TypeScript core ([`src/fleet-agent.ts`](../src/fleet-agent.ts))
+- `readHeartbeatIndexForStore` — TypeScript core ([`src/telemetry-store.ts`](../src/telemetry-store.ts))
+- `readiness_dispatch` — spanda-cli ([`crates/spanda-cli/src/readiness_cli.rs`](../crates/spanda-cli/src/readiness_cli.rs))
+- `readiness_runtime` — spanda-runtime ([`crates/spanda-runtime/src/readiness_runtime.rs`](../crates/spanda-runtime/src/readiness_runtime.rs))
+- `readinessDashboardFromReports` — TypeScript core ([`src/readiness.ts`](../src/readiness.ts))
+- `readinessDiagnostics` — TypeScript core ([`src/readiness.ts`](../src/readiness.ts))
+- `ReadinessRuntime` — spanda-runtime ([`crates/spanda-runtime/src/readiness_runtime.rs`](../crates/spanda-runtime/src/readiness_runtime.rs))
 - `readSwarmStateFromDisk` — TypeScript core ([`src/swarm-coordinator.ts`](../src/swarm-coordinator.ts))
 - `readWithDriver` — TypeScript core ([`src/lib/registry.ts`](../src/lib/registry.ts))
 - `reason` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
@@ -8772,15 +12290,20 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `reconnect_transport` — spanda-transport-routing ([`crates/spanda-transport-routing/src/lib.rs`](../crates/spanda-transport-routing/src/lib.rs))
 - `record` — spanda-runtime ([`crates/spanda-runtime/src/replay.rs`](../crates/spanda-runtime/src/replay.rs))
 - `record_budget_violation` — spanda-runtime ([`crates/spanda-runtime/src/telemetry.rs`](../crates/spanda-runtime/src/telemetry.rs))
+- `record_checkpoint` — spanda-runtime ([`crates/spanda-runtime/src/continuity_primitives.rs`](../crates/spanda-runtime/src/continuity_primitives.rs))
 - `record_count` — spanda-audit ([`crates/spanda-audit/src/runtime.rs`](../crates/spanda-audit/src/runtime.rs))
 - `record_emergency_stop` — spanda-runtime ([`crates/spanda-runtime/src/telemetry.rs`](../crates/spanda-runtime/src/telemetry.rs))
 - `record_event` — spanda-audit ([`crates/spanda-audit/src/runtime.rs`](../crates/spanda-audit/src/runtime.rs))
+- `record_fault_in_trace` — spanda-runtime ([`crates/spanda-runtime/src/fault_primitives.rs`](../crates/spanda-runtime/src/fault_primitives.rs))
 - `record_fire_and_forget_spawn` — spanda-runtime ([`crates/spanda-runtime/src/telemetry.rs`](../crates/spanda-runtime/src/telemetry.rs))
 - `record_join` — spanda-runtime ([`crates/spanda-runtime/src/telemetry.rs`](../crates/spanda-runtime/src/telemetry.rs))
 - `record_missed_deadline` — spanda-runtime ([`crates/spanda-runtime/src/telemetry.rs`](../crates/spanda-runtime/src/telemetry.rs))
 - `record_parallel_block` — spanda-runtime ([`crates/spanda-runtime/src/telemetry.rs`](../crates/spanda-runtime/src/telemetry.rs))
 - `record_pause` — spanda-debug ([`crates/spanda-debug/src/lib.rs`](../crates/spanda-debug/src/lib.rs))
 - `record_pipeline_execution` — spanda-runtime ([`crates/spanda-runtime/src/telemetry.rs`](../crates/spanda-runtime/src/telemetry.rs))
+- `record_platform_event` — spanda-audit ([`crates/spanda-audit/src/runtime.rs`](../crates/spanda-audit/src/runtime.rs))
+- `record_provider_call` — spanda-runtime ([`crates/spanda-runtime/src/telemetry.rs`](../crates/spanda-runtime/src/telemetry.rs))
+- `record_recovery_outcome` — spanda-runtime ([`crates/spanda-runtime/src/recovery_primitives.rs`](../crates/spanda-runtime/src/recovery_primitives.rs))
 - `record_replay_frames` — spanda-runtime ([`crates/spanda-runtime/src/telemetry.rs`](../crates/spanda-runtime/src/telemetry.rs))
 - `record_scheduler_start` — spanda-runtime ([`crates/spanda-runtime/src/telemetry.rs`](../crates/spanda-runtime/src/telemetry.rs))
 - `record_scheduler_tick` — spanda-runtime ([`crates/spanda-runtime/src/telemetry.rs`](../crates/spanda-runtime/src/telemetry.rs))
@@ -8795,12 +12318,43 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `record_trigger_missed_deadline` — spanda-runtime ([`crates/spanda-runtime/src/telemetry.rs`](../crates/spanda-runtime/src/telemetry.rs))
 - `record_watchdog_timeout` — spanda-runtime ([`crates/spanda-runtime/src/telemetry.rs`](../crates/spanda-runtime/src/telemetry.rs))
 - `record_with_state` — spanda-runtime ([`crates/spanda-runtime/src/replay.rs`](../crates/spanda-runtime/src/replay.rs))
+- `recordCheckpoint` — TypeScript core ([`src/continuity-checkpoint.ts`](../src/continuity-checkpoint.ts))
+- `recordDeviceHeartbeat` — TypeScript core ([`src/telemetry-store.ts`](../src/telemetry-store.ts))
+- `recordDeviceTelemetry` — TypeScript core ([`src/telemetry-store.ts`](../src/telemetry-store.ts))
+- `recordHealthEvent` — TypeScript core ([`src/telemetry-store.ts`](../src/telemetry-store.ts))
 - `RecordId` — spanda-audit ([`crates/spanda-audit/src/record.rs`](../crates/spanda-audit/src/record.rs))
 - `records` — spanda-audit ([`crates/spanda-audit/src/backend.rs`](../crates/spanda-audit/src/backend.rs))
+- `recordSensorReading` — TypeScript core ([`src/telemetry-store.ts`](../src/telemetry-store.ts))
+- `recordTaskHeartbeat` — TypeScript core ([`src/telemetry-store.ts`](../src/telemetry-store.ts))
+- `recordTopicPublish` — TypeScript core ([`src/telemetry-store.ts`](../src/telemetry-store.ts))
 - `recordTraceFrame` — TypeScript core ([`src/replay.ts`](../src/replay.ts))
 - `recordTraceFrameWithState` — TypeScript core ([`src/replay.ts`](../src/replay.ts))
 - `recover_handlers_from_decls` — spanda-runtime ([`crates/spanda-runtime/src/reliability_runtime.rs`](../crates/spanda-runtime/src/reliability_runtime.rs))
 - `RecoverDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
+- `recovery_deliveries_for_request` — spanda-fleet ([`crates/spanda-fleet/src/recovery_mesh.rs`](../crates/spanda-fleet/src/recovery_mesh.rs))
+- `recovery_dispatch` — spanda-cli ([`crates/spanda-cli/src/recovery_cli.rs`](../crates/spanda-cli/src/recovery_cli.rs))
+- `recovery_execution_snapshot` — spanda-interpreter ([`crates/spanda-interpreter/src/runtime/runtime_recovery.rs`](../crates/spanda-interpreter/src/runtime/runtime_recovery.rs))
+- `RecoveryAssuranceMetrics` — spanda-runtime ([`crates/spanda-runtime/src/recovery_types.rs`](../crates/spanda-runtime/src/recovery_types.rs))
+- `RecoveryAuditRecord` — spanda-runtime ([`crates/spanda-runtime/src/recovery_types.rs`](../crates/spanda-runtime/src/recovery_types.rs))
+- `RecoveryContext` — spanda-runtime ([`crates/spanda-runtime/src/recovery_types.rs`](../crates/spanda-runtime/src/recovery_types.rs))
+- `recoveryDiagnosticsFromSource` — TypeScript core ([`src/recovery-diagnostics.ts`](../src/recovery-diagnostics.ts))
+- `RecoveryEvidence` — spanda-runtime ([`crates/spanda-runtime/src/recovery_types.rs`](../crates/spanda-runtime/src/recovery_types.rs))
+- `RecoveryExecutionSnapshot` — spanda-interpreter ([`crates/spanda-interpreter/src/runtime/runtime_recovery.rs`](../crates/spanda-interpreter/src/runtime/runtime_recovery.rs))
+- `RecoveryKnowledgeBase` — spanda-runtime ([`crates/spanda-runtime/src/recovery_types.rs`](../crates/spanda-runtime/src/recovery_types.rs))
+- `RecoveryKnowledgeEntry` — spanda-runtime ([`crates/spanda-runtime/src/recovery_types.rs`](../crates/spanda-runtime/src/recovery_types.rs))
+- `RecoveryLevel` — spanda-runtime ([`crates/spanda-runtime/src/recovery_types.rs`](../crates/spanda-runtime/src/recovery_types.rs))
+- `RecoveryPlan` — spanda-runtime ([`crates/spanda-runtime/src/recovery_types.rs`](../crates/spanda-runtime/src/recovery_types.rs))
+- `RecoveryPolicyBranch` — spanda-ast ([`crates/spanda-ast/src/assurance_decl.rs`](../crates/spanda-ast/src/assurance_decl.rs))
+- `RecoveryPolicyDecl` — spanda-ast ([`crates/spanda-ast/src/assurance_decl.rs`](../crates/spanda-ast/src/assurance_decl.rs))
+- `RecoveryPolicySpec` — spanda-runtime ([`crates/spanda-runtime/src/recovery_types.rs`](../crates/spanda-runtime/src/recovery_types.rs))
+- `RecoveryReadiness` — spanda-runtime ([`crates/spanda-runtime/src/recovery_types.rs`](../crates/spanda-runtime/src/recovery_types.rs))
+- `RecoveryReport` — spanda-runtime ([`crates/spanda-runtime/src/recovery_types.rs`](../crates/spanda-runtime/src/recovery_types.rs))
+- `RecoveryResult` — spanda-runtime ([`crates/spanda-runtime/src/recovery_types.rs`](../crates/spanda-runtime/src/recovery_types.rs))
+- `RecoveryRunOptions` — spanda-interpreter ([`crates/spanda-interpreter/src/options.rs`](../crates/spanda-interpreter/src/options.rs))
+- `RecoveryRunResult` — spanda-interpreter ([`crates/spanda-interpreter/src/options.rs`](../crates/spanda-interpreter/src/options.rs))
+- `RecoveryStatus` — spanda-runtime ([`crates/spanda-runtime/src/recovery_types.rs`](../crates/spanda-runtime/src/recovery_types.rs))
+- `RecoveryStrategy` — spanda-runtime ([`crates/spanda-runtime/src/recovery_types.rs`](../crates/spanda-runtime/src/recovery_types.rs))
+- `RecoveryTraceChain` — spanda-runtime ([`crates/spanda-runtime/src/recovery_types.rs`](../crates/spanda-runtime/src/recovery_types.rs))
 - `redacted_label` — spanda-security ([`crates/spanda-security/src/secrets.rs`](../crates/spanda-security/src/secrets.rs))
 - `regex_capture` — spanda-regex-lang ([`crates/spanda-regex-lang/src/lib.rs`](../crates/spanda-regex-lang/src/lib.rs))
 - `regex_find` — spanda-regex-lang ([`crates/spanda-regex-lang/src/lib.rs`](../crates/spanda-regex-lang/src/lib.rs))
@@ -8822,6 +12376,7 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `register` — spanda-runtime ([`crates/spanda-runtime/src/events.rs`](../crates/spanda-runtime/src/events.rs))
 - `register` — spanda-runtime ([`crates/spanda-runtime/src/triggers.rs`](../crates/spanda-runtime/src/triggers.rs))
 - `register` — spanda-ffi ([`crates/spanda-ffi/src/lib.rs`](../crates/spanda-ffi/src/lib.rs))
+- `register` — spanda-security ([`crates/spanda-security/src/secret_vault.rs`](../crates/spanda-security/src/secret_vault.rs))
 - `register` — spanda-security ([`crates/spanda-security/src/secrets.rs`](../crates/spanda-security/src/secrets.rs))
 - `register` — spanda-security ([`crates/spanda-security/src/secure_comm.rs`](../crates/spanda-security/src/secure_comm.rs))
 - `register_actuator` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
@@ -8835,13 +12390,16 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `register_crypto` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
 - `register_device` — spanda-comm ([`crates/spanda-comm/src/lib.rs`](../crates/spanda-comm/src/lib.rs))
 - `register_device` — spanda-transport-routing ([`crates/spanda-transport-routing/src/lib.rs`](../crates/spanda-transport-routing/src/lib.rs))
+- `register_device` — spanda-providers ([`crates/spanda-providers/src/iot_hub.rs`](../crates/spanda-providers/src/iot_hub.rs))
 - `register_fleet` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
 - `register_fleet_agent` — spanda-fleet ([`crates/spanda-fleet/src/remote.rs`](../crates/spanda-fleet/src/remote.rs))
 - `register_hal` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
+- `register_hri_input` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
 - `register_ledger` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
 - `register_legacy_event` — spanda-runtime ([`crates/spanda-runtime/src/triggers.rs`](../crates/spanda-runtime/src/triggers.rs))
 - `register_maintenance` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
 - `register_navigation` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
+- `register_overlay` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
 - `register_positioning` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
 - `register_robot` — spanda-comm ([`crates/spanda-comm/src/lib.rs`](../crates/spanda-comm/src/lib.rs))
 - `register_robot` — spanda-fleet ([`crates/spanda-fleet/src/orchestrator.rs`](../crates/spanda-fleet/src/orchestrator.rs))
@@ -8851,45 +12409,68 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `register_sensor` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
 - `register_simulation` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
 - `register_slam` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
+- `register_spatial_session` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
 - `register_transport` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
 - `register_vision` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
+- `register_wearable_telemetry` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
 - `registerAgent` — TypeScript core ([`src/deploy-remote.ts`](../src/deploy-remote.ts))
+- `registered_continuity_members` — spanda-fleet ([`crates/spanda-fleet/src/continuity_mesh.rs`](../crates/spanda-fleet/src/continuity_mesh.rs))
+- `registered_recovery_members` — spanda-fleet ([`crates/spanda-fleet/src/recovery_mesh.rs`](../crates/spanda-fleet/src/recovery_mesh.rs))
 - `RegisteredTrigger` — spanda-runtime ([`crates/spanda-runtime/src/triggers.rs`](../crates/spanda-runtime/src/triggers.rs))
 - `registerFleetAgent` — TypeScript core ([`src/fleet-remote.ts`](../src/fleet-remote.ts))
 - `registry_base_url` — spanda-package ([`crates/spanda-package/src/registry_remote.rs`](../crates/spanda-package/src/registry_remote.rs))
 - `registry_by_robot` — spanda-fleet ([`crates/spanda-fleet/src/remote.rs`](../crates/spanda-fleet/src/remote.rs))
 - `registry_by_target` — spanda-ota ([`crates/spanda-ota/src/remote.rs`](../crates/spanda-ota/src/remote.rs))
 - `registry_cache_dir` — spanda-package ([`crates/spanda-package/src/registry_fetch.rs`](../crates/spanda-package/src/registry_fetch.rs))
+- `registry_import_paths` — spanda-typecheck ([`crates/spanda-typecheck/src/import_catalog.rs`](../crates/spanda-typecheck/src/import_catalog.rs))
 - `registry_info` — spanda-package ([`crates/spanda-package/src/registry.rs`](../crates/spanda-package/src/registry.rs))
 - `registry_label` — spanda-package ([`crates/spanda-package/src/registry_remote.rs`](../crates/spanda-package/src/registry_remote.rs))
+- `registry_lockfile_signature_failures` — spanda-package ([`crates/spanda-package/src/provenance_gate.rs`](../crates/spanda-package/src/provenance_gate.rs))
 - `registry_package_dir` — spanda-package ([`crates/spanda-package/src/registry.rs`](../crates/spanda-package/src/registry.rs))
+- `registry_require_checksum` — spanda-package ([`crates/spanda-package/src/integrity.rs`](../crates/spanda-package/src/integrity.rs))
+- `registry_require_signature` — spanda-package ([`crates/spanda-package/src/registry_sign.rs`](../crates/spanda-package/src/registry_sign.rs))
+- `registry_sign_key` — spanda-package ([`crates/spanda-package/src/registry_sign.rs`](../crates/spanda-package/src/registry_sign.rs))
+- `registry_signature_payload` — spanda-package ([`crates/spanda-package/src/registry_sign.rs`](../crates/spanda-package/src/registry_sign.rs))
 - `registry_tarball_url` — spanda-package ([`crates/spanda-package/src/registry_fetch.rs`](../crates/spanda-package/src/registry_fetch.rs))
+- `registry_trust_key` — spanda-package ([`crates/spanda-package/src/registry_sign.rs`](../crates/spanda-package/src/registry_sign.rs))
 - `RegistryEntry` — spanda-package ([`crates/spanda-package/src/registry.rs`](../crates/spanda-package/src/registry.rs))
 - `RegistryEntry::safety_level` — spanda-package ([`crates/spanda-package/src/registry.rs`](../crates/spanda-package/src/registry.rs))
 - `RegistryEntryLookup` — spanda-package ([`crates/spanda-package/src/registry_remote.rs`](../crates/spanda-package/src/registry_remote.rs))
 - `RegistryEntryLookup::name` — spanda-package ([`crates/spanda-package/src/registry_remote.rs`](../crates/spanda-package/src/registry_remote.rs))
 - `RegistryEntryView` — spanda-package ([`crates/spanda-package/src/registry_remote.rs`](../crates/spanda-package/src/registry_remote.rs))
 - `RegistryInfo` — spanda-package ([`crates/spanda-package/src/registry.rs`](../crates/spanda-package/src/registry.rs))
+- `RegistryVersionSignature` — spanda-package ([`crates/spanda-package/src/registry_sign.rs`](../crates/spanda-package/src/registry_sign.rs))
+- `relay_continuity_via_mesh` — spanda-interpreter ([`crates/spanda-interpreter/src/fleet_http.rs`](../crates/spanda-interpreter/src/fleet_http.rs))
+- `relay_continuity_via_mesh` — spanda-deploy-http ([`crates/spanda-deploy-http/src/fleet_continuity.rs`](../crates/spanda-deploy-http/src/fleet_continuity.rs))
 - `relay_deliveries_via_mesh` — spanda-fleet ([`crates/spanda-fleet/src/mesh.rs`](../crates/spanda-fleet/src/mesh.rs))
+- `relay_fleet_continuity` — spanda-fleet ([`crates/spanda-fleet/src/continuity_mesh.rs`](../crates/spanda-fleet/src/continuity_mesh.rs))
+- `relay_fleet_recovery` — spanda-fleet ([`crates/spanda-fleet/src/recovery_mesh.rs`](../crates/spanda-fleet/src/recovery_mesh.rs))
 - `relay_peer_deliveries` — spanda-fleet ([`crates/spanda-fleet/src/remote.rs`](../crates/spanda-fleet/src/remote.rs))
 - `relay_peer_delivery` — spanda-fleet ([`crates/spanda-fleet/src/remote.rs`](../crates/spanda-fleet/src/remote.rs))
+- `relay_recovery_via_mesh` — spanda-interpreter ([`crates/spanda-interpreter/src/fleet_http.rs`](../crates/spanda-interpreter/src/fleet_http.rs))
+- `relay_recovery_via_mesh` — spanda-deploy-http ([`crates/spanda-deploy-http/src/fleet_recovery.rs`](../crates/spanda-deploy-http/src/fleet_recovery.rs))
 - `relayDeliveriesViaMesh` — TypeScript core ([`src/fleet-mesh.ts`](../src/fleet-mesh.ts))
 - `relayPeerDeliveries` — TypeScript core ([`src/fleet-remote.ts`](../src/fleet-remote.ts))
 - `relayPeerDelivery` — TypeScript core ([`src/fleet-remote.ts`](../src/fleet-remote.ts))
+- `relayRecoveryViaMesh` — TypeScript core ([`src/fleet-mesh.ts`](../src/fleet-mesh.ts))
 - `ReliabilityRuntime` — TypeScript core ([`src/runtime/reliability-runtime.ts`](../src/runtime/reliability-runtime.ts))
 - `remember` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
 - `remote_as_static_view` — spanda-package ([`crates/spanda-package/src/registry_remote.rs`](../crates/spanda-package/src/registry_remote.rs))
 - `remote_category` — spanda-package ([`crates/spanda-package/src/registry_remote.rs`](../crates/spanda-package/src/registry_remote.rs))
 - `remote_safety_level` — spanda-package ([`crates/spanda-package/src/registry_remote.rs`](../crates/spanda-package/src/registry_remote.rs))
+- `remoteFetch` — TypeScript core ([`src/http-fetch.ts`](../src/http-fetch.ts))
 - `RemoteRegistryEntry` — spanda-package ([`crates/spanda-package/src/registry_remote.rs`](../crates/spanda-package/src/registry_remote.rs))
 - `remove` — spanda-runtime ([`crates/spanda-runtime/src/environment.rs`](../crates/spanda-runtime/src/environment.rs))
 - `remove_dependency` — spanda-package ([`crates/spanda-package/src/project.rs`](../crates/spanda-package/src/project.rs))
+- `renderOtlpJson` — TypeScript core ([`src/telemetry-otlp.ts`](../src/telemetry-otlp.ts))
 - `replay_field` — spanda-runtime ([`crates/spanda-runtime/src/twin.rs`](../crates/spanda-runtime/src/twin.rs))
 - `replay_frame_count` — spanda-runtime ([`crates/spanda-runtime/src/twin.rs`](../crates/spanda-runtime/src/twin.rs))
 - `replay_mission` — spanda-driver ([`crates/spanda-driver/src/replay.rs`](../crates/spanda-driver/src/replay.rs))
+- `replayMissionDeterministic` — TypeScript core ([`src/replay.ts`](../src/replay.ts))
 - `ReplayStateSnapshot` — spanda-runtime ([`crates/spanda-runtime/src/replay.rs`](../crates/spanda-runtime/src/replay.rs))
 - `ReplayStateTarget` — spanda-runtime ([`crates/spanda-runtime/src/replay.rs`](../crates/spanda-runtime/src/replay.rs))
 - `reportHasErrors` — TypeScript core ([`src/security/validate.ts`](../src/security/validate.ts))
+- `request` — spanda-cli ([`crates/spanda-cli/src/control_center_client.rs`](../crates/spanda-cli/src/control_center_client.rs))
 - `require` — spanda-security ([`crates/spanda-security/src/capability.rs`](../crates/spanda-security/src/capability.rs))
 - `require_operation` — spanda-security ([`crates/spanda-security/src/runtime.rs`](../crates/spanda-security/src/runtime.rs))
 - `required_authentication` — spanda-security ([`crates/spanda-security/src/trust_boundary.rs`](../crates/spanda-security/src/trust_boundary.rs))
@@ -8897,14 +12478,21 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `requiredEncryption` — TypeScript core ([`src/security/trust-boundary.ts`](../src/security/trust-boundary.ts))
 - `requires_review_default` — spanda-package ([`crates/spanda-package/src/safety.rs`](../crates/spanda-package/src/safety.rs))
 - `requires_verified_actuator` — spanda-security ([`crates/spanda-security/src/trust_boundary.rs`](../crates/spanda-security/src/trust_boundary.rs))
+- `RequiresCapabilityDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
+- `RequiresCapabilitySeverity` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `RequiresConnectivityDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `RequiresHardwareDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `RequiresNetworkDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `requiresVerifiedActuator` — TypeScript core ([`src/security/trust-boundary.ts`](../src/security/trust-boundary.ts))
 - `reserved_keywords` — spanda-lexer ([`crates/spanda-lexer/src/lib.rs`](../crates/spanda-lexer/src/lib.rs))
 - `reset` — spanda-safety ([`crates/spanda-safety/src/lib.rs`](../crates/spanda-safety/src/lib.rs))
+- `resilience_dispatch` — spanda-cli ([`crates/spanda-cli/src/assurance_cli.rs`](../crates/spanda-cli/src/assurance_cli.rs))
+- `ResiliencePolicyDecl` — spanda-ast ([`crates/spanda-ast/src/assurance_decl.rs`](../crates/spanda-ast/src/assurance_decl.rs))
+- `resolve` — spanda-security ([`crates/spanda-security/src/secret_vault.rs`](../crates/spanda-security/src/secret_vault.rs))
 - `resolve` — spanda-security ([`crates/spanda-security/src/secrets.rs`](../crates/spanda-security/src/secrets.rs))
 - `resolve_ai_import` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
+- `resolve_ai_provider` — spanda-ai ([`crates/spanda-ai/src/live.rs`](../crates/spanda-ai/src/live.rs))
+- `resolve_broker_url` — spanda-runtime ([`crates/spanda-runtime/src/security_primitives.rs`](../crates/spanda-runtime/src/security_primitives.rs))
 - `resolve_broker_url` — spanda-transport ([`crates/spanda-transport/src/security.rs`](../crates/spanda-transport/src/security.rs))
 - `resolve_dependencies` — spanda-package ([`crates/spanda-package/src/resolver.rs`](../crates/spanda-package/src/resolver.rs))
 - `resolve_ffi_import` — spanda-ffi ([`crates/spanda-ffi/src/ffi_imports.rs`](../crates/spanda-ffi/src/ffi_imports.rs))
@@ -8912,6 +12500,7 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `resolve_import` — spanda-lib-registry ([`crates/spanda-lib-registry/src/lib.rs`](../crates/spanda-lib-registry/src/lib.rs))
 - `resolve_local_tarball` — spanda-package ([`crates/spanda-package/src/registry_fetch.rs`](../crates/spanda-package/src/registry_fetch.rs))
 - `resolve_module_import` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
+- `resolve_package_import` — spanda-typecheck ([`crates/spanda-typecheck/src/import_catalog.rs`](../crates/spanda-typecheck/src/import_catalog.rs))
 - `resolve_package_import` — spanda-package ([`crates/spanda-package/src/import.rs`](../crates/spanda-package/src/import.rs))
 - `resolve_std_import` — spanda-typecheck ([`crates/spanda-typecheck/src/reliability_validation.rs`](../crates/spanda-typecheck/src/reliability_validation.rs))
 - `resolve_sync_call` — spanda-interpreter ([`crates/spanda-interpreter/src/runtime/orchestrator.rs`](../crates/spanda-interpreter/src/runtime/orchestrator.rs))
@@ -8923,15 +12512,25 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `resolveDefinition` — TypeScript core ([`src/lsp/symbols.ts`](../src/lsp/symbols.ts))
 - `resolveFfiImport` — TypeScript core ([`src/ffi/registry.ts`](../src/ffi/registry.ts))
 - `resolveGenericType` — TypeScript core ([`src/type-system.ts`](../src/type-system.ts))
+- `resolveHeartbeatIndexPath` — TypeScript core ([`src/telemetry-store.ts`](../src/telemetry-store.ts))
 - `resolveImport` — TypeScript core ([`src/lib/registry.ts`](../src/lib/registry.ts))
 - `resolveModuleImport` — TypeScript core ([`src/foundations.ts`](../src/foundations.ts))
 - `ResolveOptions` — spanda-package ([`crates/spanda-package/src/resolver.rs`](../crates/spanda-package/src/resolver.rs))
 - `ResolveResult` — spanda-package ([`crates/spanda-package/src/resolver.rs`](../crates/spanda-package/src/resolver.rs))
+- `resolveSqlitePath` — TypeScript core ([`src/telemetry-sqlite.ts`](../src/telemetry-sqlite.ts))
 - `resolveStdImport` — TypeScript core ([`src/stdlib.ts`](../src/stdlib.ts))
 - `resolveStdNetworkImport` — TypeScript core ([`src/network/index.ts`](../src/network/index.ts))
+- `resolveStorePath` — TypeScript core ([`src/telemetry-store.ts`](../src/telemetry-store.ts))
+- `resolveTraceOutputPath` — TypeScript core ([`src/replay.ts`](../src/replay.ts))
+- `resolveTraceSource` — TypeScript core ([`src/replay.ts`](../src/replay.ts))
 - `resolveTypeAlias` — TypeScript core ([`src/foundations.ts`](../src/foundations.ts))
 - `resolveTypeName` — TypeScript core ([`src/type-system.ts`](../src/type-system.ts))
 - `ResourceBudgetDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
+- `ResourceWatchCondition` — spanda-ast ([`crates/spanda-ast/src/fault_decl.rs`](../crates/spanda-ast/src/fault_decl.rs))
+- `ResourceWatchDecl` — spanda-ast ([`crates/spanda-ast/src/fault_decl.rs`](../crates/spanda-ast/src/fault_decl.rs))
+- `restart` — spanda-runtime ([`crates/spanda-runtime/src/robotics.rs`](../crates/spanda-runtime/src/robotics.rs))
+- `restart_current_step` — spanda-runtime ([`crates/spanda-runtime/src/robotics.rs`](../crates/spanda-runtime/src/robotics.rs))
+- `RestartPolicyDecl` — spanda-ast ([`crates/spanda-ast/src/fault_decl.rs`](../crates/spanda-ast/src/fault_decl.rs))
 - `restore_env` — spanda-interpreter ([`crates/spanda-interpreter/src/runtime/orchestrator.rs`](../crates/spanda-interpreter/src/runtime/orchestrator.rs))
 - `result_unit_for_binary` — spanda-typecheck ([`crates/spanda-typecheck/src/checker.rs`](../crates/spanda-typecheck/src/checker.rs))
 - `resultUnitForBinary` — TypeScript core ([`src/types/units.ts`](../src/types/units.ts))
@@ -8946,11 +12545,15 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `RobotBackend` — TypeScript core ([`src/runtime/interpreter.ts`](../src/runtime/interpreter.ts))
 - `RobotDecl` — spanda-ast ([`crates/spanda-ast/src/nodes.rs`](../crates/spanda-ast/src/nodes.rs))
 - `RobotDecl::name` — spanda-ast ([`crates/spanda-ast/src/nodes.rs`](../crates/spanda-ast/src/nodes.rs))
+- `RobotIdentity` — spanda-runtime ([`crates/spanda-runtime/src/security_types.rs`](../crates/spanda-runtime/src/security_types.rs))
 - `RobotIdentity` — spanda-security ([`crates/spanda-security/src/identity.rs`](../crates/spanda-security/src/identity.rs))
+- `RobotIdentity::new` — spanda-runtime ([`crates/spanda-runtime/src/security_types.rs`](../crates/spanda-runtime/src/security_types.rs))
 - `RobotIdentity::new` — spanda-security ([`crates/spanda-security/src/identity.rs`](../crates/spanda-security/src/identity.rs))
 - `robots` — spanda-ast ([`crates/spanda-ast/src/nodes.rs`](../crates/spanda-ast/src/nodes.rs))
 - `RobotState` — spanda-runtime ([`crates/spanda-runtime/src/robot_state.rs`](../crates/spanda-runtime/src/robot_state.rs))
 - `RobotStateJs` — spanda-node ([`crates/spanda-node/src/lib.rs`](../crates/spanda-node/src/lib.rs))
+- `Role` — spanda-security ([`crates/spanda-security/src/rbac.rs`](../crates/spanda-security/src/rbac.rs))
+- `Role::parse` — spanda-security ([`crates/spanda-security/src/rbac.rs`](../crates/spanda-security/src/rbac.rs))
 - `rollback_targets` — spanda-ota ([`crates/spanda-ota/src/service.rs`](../crates/spanda-ota/src/service.rs))
 - `rollbackTargets` — TypeScript core ([`src/deploy-service.ts`](../src/deploy-service.ts))
 - `RolloutOptions` — spanda-ota ([`crates/spanda-ota/src/types.rs`](../crates/spanda-ota/src/types.rs))
@@ -8959,43 +12562,57 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `RolloutStepStatus` — spanda-ota ([`crates/spanda-ota/src/types.rs`](../crates/spanda-ota/src/types.rs))
 - `RolloutStrategy` — spanda-ota ([`crates/spanda-ota/src/types.rs`](../crates/spanda-ota/src/types.rs))
 - `root_hash` — spanda-audit ([`crates/spanda-audit/src/runtime.rs`](../crates/spanda-audit/src/runtime.rs))
+- `ros2_dispatch` — spanda-cli ([`crates/spanda-cli/src/ros2_cli.rs`](../crates/spanda-cli/src/ros2_cli.rs))
 - `ros2_live_enabled` — spanda-transport-ros2 ([`crates/spanda-transport-ros2/src/live_bridge.rs`](../crates/spanda-transport-ros2/src/live_bridge.rs))
 - `ros2_native_enabled` — spanda-transport-ros2 ([`crates/spanda-transport-ros2/src/live_bridge.rs`](../crates/spanda-transport-ros2/src/live_bridge.rs))
 - `Ros2Adapter` — TypeScript core ([`src/ros2/index.ts`](../src/ros2/index.ts))
 - `Ros2AdapterStub` — TypeScript core ([`src/ros2/index.ts`](../src/ros2/index.ts))
 - `Ros2TransportAdapter` — spanda-transport-ros2 ([`crates/spanda-transport-ros2/src/adapter.rs`](../crates/spanda-transport-ros2/src/adapter.rs))
 - `RosProvider` — spanda-runtime ([`crates/spanda-runtime/src/providers/traits.rs`](../crates/spanda-runtime/src/providers/traits.rs))
+- `rotate_literal` — spanda-security ([`crates/spanda-security/src/secret_vault.rs`](../crates/spanda-security/src/secret_vault.rs))
+- `routing_comm_bus_factory` — spanda-transport-routing ([`crates/spanda-transport-routing/src/runtime_bridge.rs`](../crates/spanda-transport-routing/src/runtime_bridge.rs))
+- `routing_comm_bus_factory_fn` — spanda-transport-routing ([`crates/spanda-transport-routing/src/runtime_bridge.rs`](../crates/spanda-transport-routing/src/runtime_bridge.rs))
 - `RoutingCommBus` — spanda-transport-routing ([`crates/spanda-transport-routing/src/lib.rs`](../crates/spanda-transport-routing/src/lib.rs))
 - `RoutingCommBus` — TypeScript core ([`src/transport/index.ts`](../src/transport/index.ts))
 - `RoutingCommBus::new` — spanda-transport-routing ([`crates/spanda-transport-routing/src/lib.rs`](../crates/spanda-transport-routing/src/lib.rs))
 - `rtabmap_adapter_metadata` — spanda-package ([`crates/spanda-package/src/adapter.rs`](../crates/spanda-package/src/adapter.rs))
 - `run` — spanda-driver ([`crates/spanda-driver/src/run.rs`](../crates/spanda-driver/src/run.rs))
 - `run` — spanda-interpreter ([`crates/spanda-interpreter/src/runtime/orchestrator.rs`](../crates/spanda-interpreter/src/runtime/orchestrator.rs))
-- `run` — TypeScript core ([`src/compile.ts`](../src/compile.ts))
+- `run` — TypeScript core ([`src/cli/run-program.ts`](../src/cli/run-program.ts))
 - `run_debug` — spanda-driver ([`crates/spanda-driver/src/debug_run.rs`](../crates/spanda-driver/src/debug_run.rs))
 - `run_deploy_agent_server` — spanda-ota ([`crates/spanda-ota/src/agent.rs`](../crates/spanda-ota/src/agent.rs))
 - `run_fleet_agent_server` — spanda-fleet ([`crates/spanda-fleet/src/agent.rs`](../crates/spanda-fleet/src/agent.rs))
 - `run_fleet_mesh_coordinator` — spanda-fleet ([`crates/spanda-fleet/src/mesh.rs`](../crates/spanda-fleet/src/mesh.rs))
 - `run_program` — spanda-driver ([`crates/spanda-driver/src/run.rs`](../crates/spanda-driver/src/run.rs))
 - `run_program` — spanda-interpreter ([`crates/spanda-interpreter/src/run.rs`](../crates/spanda-interpreter/src/run.rs))
+- `run_recovery_issue` — spanda-interpreter ([`crates/spanda-interpreter/src/runtime/runtime_recovery.rs`](../crates/spanda-interpreter/src/runtime/runtime_recovery.rs))
 - `run_source` — spanda-node ([`crates/spanda-node/src/lib.rs`](../crates/spanda-node/src/lib.rs))
 - `run_tests` — spanda-driver ([`crates/spanda-driver/src/pipeline.rs`](../crates/spanda-driver/src/pipeline.rs))
 - `run_tests` — spanda-interpreter ([`crates/spanda-interpreter/src/runtime/orchestrator.rs`](../crates/spanda-interpreter/src/runtime/orchestrator.rs))
 - `run_tests_with_registry` — spanda-driver ([`crates/spanda-driver/src/run.rs`](../crates/spanda-driver/src/run.rs))
 - `run_tests_with_registry` — spanda-interpreter ([`crates/spanda-interpreter/src/run.rs`](../crates/spanda-interpreter/src/run.rs))
 - `run_until_pause` — spanda-driver ([`crates/spanda-driver/src/debug_session.rs`](../crates/spanda-driver/src/debug_session.rs))
-- `runFile` — TypeScript core ([`src/compile.ts`](../src/compile.ts))
+- `runConfigCommand` — TypeScript core ([`src/config-fallback.ts`](../src/config-fallback.ts))
+- `runFile` — TypeScript core ([`src/cli/run-program.ts`](../src/cli/run-program.ts))
 - `runNativeCli` — TypeScript core ([`src/rust-bridge.ts`](../src/rust-bridge.ts))
+- `runOperationalCommand` — TypeScript core ([`src/operational.ts`](../src/operational.ts))
 - `RunOptions` — spanda-interpreter ([`crates/spanda-interpreter/src/options.rs`](../crates/spanda-interpreter/src/options.rs))
 - `RunOptionsJs` — spanda-node ([`crates/spanda-node/src/lib.rs`](../crates/spanda-node/src/lib.rs))
+- `runOtlpPushLoop` — TypeScript core ([`src/telemetry-push.ts`](../src/telemetry-push.ts))
 - `RunResult` — spanda-interpreter ([`crates/spanda-interpreter/src/options.rs`](../crates/spanda-interpreter/src/options.rs))
 - `RunResultJs` — spanda-node ([`crates/spanda-node/src/lib.rs`](../crates/spanda-node/src/lib.rs))
-- `runSource` — TypeScript core ([`src/compile.ts`](../src/compile.ts))
+- `runSource` — TypeScript core ([`src/cli/run-program.ts`](../src/cli/run-program.ts))
 - `runSource` — @spanda/native ([`packages/native/index.ts`](../packages/native/index.ts))
-- `runSource` — @spanda/web ([`packages/web/src/spanda-wasm.ts`](../packages/web/src/spanda-wasm.ts))
-- `runTests` — TypeScript core ([`src/compile.ts`](../src/compile.ts))
-- `runTestsWithRegistry` — TypeScript core ([`src/compile.ts`](../src/compile.ts))
+- `runSource` — @davalgi-spanda/web ([`packages/web/src/spanda-wasm.ts`](../packages/web/src/spanda-wasm.ts))
+- `runTelemetryCli` — TypeScript core ([`src/telemetry-cli.ts`](../src/telemetry-cli.ts))
+- `runTelemetryFleetPush` — TypeScript core ([`src/telemetry-cli.ts`](../src/telemetry-cli.ts))
+- `runTelemetryPush` — TypeScript core ([`src/telemetry-cli.ts`](../src/telemetry-cli.ts))
+- `runTests` — TypeScript core ([`src/cli/run-program.ts`](../src/cli/run-program.ts))
+- `runTestsWithRegistry` — TypeScript core ([`src/cli/run-program.ts`](../src/cli/run-program.ts))
 - `runtime_action_proposal` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
+- `runtime_dispatch` — spanda-cli ([`crates/spanda-cli/src/fault_cli.rs`](../crates/spanda-cli/src/fault_cli.rs))
+- `runtime_events` — spanda-hal ([`crates/spanda-hal/src/hardware_monitor.rs`](../crates/spanda-hal/src/hardware_monitor.rs))
+- `runtime_faults` — spanda-hal ([`crates/spanda-hal/src/hardware_monitor.rs`](../crates/spanda-hal/src/hardware_monitor.rs))
 - `runtime_from_json_string` — spanda-runtime ([`crates/spanda-runtime/src/serialize.rs`](../crates/spanda-runtime/src/serialize.rs))
 - `runtime_gps_fix` — spanda-connectivity-runtime ([`crates/spanda-connectivity-runtime/src/lib.rs`](../crates/spanda-connectivity-runtime/src/lib.rs))
 - `runtime_host` — spanda-interpreter ([`crates/spanda-interpreter/src/runtime/orchestrator.rs`](../crates/spanda-interpreter/src/runtime/orchestrator.rs))
@@ -9010,7 +12627,17 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `RuntimeError` — spanda-runtime ([`crates/spanda-runtime/src/error.rs`](../crates/spanda-runtime/src/error.rs))
 - `RuntimeError` — TypeScript core ([`src/runtime/interpreter.ts`](../src/runtime/interpreter.ts))
 - `RuntimeError::new` — spanda-runtime ([`crates/spanda-runtime/src/error.rs`](../crates/spanda-runtime/src/error.rs))
+- `RuntimeFault` — spanda-runtime ([`crates/spanda-runtime/src/fault_types.rs`](../crates/spanda-runtime/src/fault_types.rs))
+- `RuntimeFaultKind` — spanda-runtime ([`crates/spanda-runtime/src/fault_types.rs`](../crates/spanda-runtime/src/fault_types.rs))
+- `RuntimeFaultKind::as_str` — spanda-runtime ([`crates/spanda-runtime/src/fault_types.rs`](../crates/spanda-runtime/src/fault_types.rs))
+- `RuntimeFaultTriggerDecl` — spanda-ast ([`crates/spanda-ast/src/fault_decl.rs`](../crates/spanda-ast/src/fault_decl.rs))
+- `RuntimeHealth` — spanda-runtime ([`crates/spanda-runtime/src/fault_types.rs`](../crates/spanda-runtime/src/fault_types.rs))
+- `RuntimeHealthStatus` — spanda-runtime ([`crates/spanda-runtime/src/fault_types.rs`](../crates/spanda-runtime/src/fault_types.rs))
+- `RuntimeHealthStatus::as_str` — spanda-runtime ([`crates/spanda-runtime/src/fault_types.rs`](../crates/spanda-runtime/src/fault_types.rs))
+- `RuntimeHooks` — spanda-runtime ([`crates/spanda-runtime/src/hooks.rs`](../crates/spanda-runtime/src/hooks.rs))
 - `RuntimeHost` — spanda-runtime ([`crates/spanda-runtime/src/host.rs`](../crates/spanda-runtime/src/host.rs))
+- `RuntimePolicyMonitor` — spanda-runtime ([`crates/spanda-runtime/src/operational_policy.rs`](../crates/spanda-runtime/src/operational_policy.rs))
+- `RuntimePolicyViolation` — spanda-runtime ([`crates/spanda-runtime/src/operational_policy.rs`](../crates/spanda-runtime/src/operational_policy.rs))
 - `runtimePose` — TypeScript core ([`src/runtime/values.ts`](../src/runtime/values.ts))
 - `runtimeSafeAction` — TypeScript core ([`src/ai/index.ts`](../src/ai/index.ts))
 - `runtimeSimIdentity` — TypeScript core ([`src/connectivity-positioning.ts`](../src/connectivity-positioning.ts))
@@ -9027,6 +12654,7 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `runViaCli` — @spanda/native ([`packages/native/cli-bridge.ts`](../packages/native/cli-bridge.ts))
 - `safe_action_from_proposal` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
 - `safeActionFromProposal` — TypeScript core ([`src/ai/index.ts`](../src/ai/index.ts))
+- `SafeRecoveryAction` — spanda-runtime ([`crates/spanda-runtime/src/recovery_types.rs`](../crates/spanda-runtime/src/recovery_types.rs))
 - `SafetyBlock` — spanda-ast ([`crates/spanda-ast/src/nodes.rs`](../crates/spanda-ast/src/nodes.rs))
 - `SafetyConfig` — spanda-safety ([`crates/spanda-safety/src/lib.rs`](../crates/spanda-safety/src/lib.rs))
 - `SafetyEvaluation` — spanda-safety ([`crates/spanda-safety/src/lib.rs`](../crates/spanda-safety/src/lib.rs))
@@ -9047,18 +12675,25 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `save` — spanda-package ([`crates/spanda-package/src/manifest.rs`](../crates/spanda-package/src/manifest.rs))
 - `save_agent_registry` — spanda-ota ([`crates/spanda-ota/src/remote.rs`](../crates/spanda-ota/src/remote.rs))
 - `save_agent_state` — spanda-ota ([`crates/spanda-ota/src/agent.rs`](../crates/spanda-ota/src/agent.rs))
+- `save_checkpoint_store` — spanda-runtime ([`crates/spanda-runtime/src/continuity_primitives.rs`](../crates/spanda-runtime/src/continuity_primitives.rs))
 - `save_deploy_state` — spanda-ota ([`crates/spanda-ota/src/service.rs`](../crates/spanda-ota/src/service.rs))
 - `save_fleet_agent_registry` — spanda-fleet ([`crates/spanda-fleet/src/remote.rs`](../crates/spanda-fleet/src/remote.rs))
 - `save_fleet_agent_state` — spanda-fleet ([`crates/spanda-fleet/src/agent.rs`](../crates/spanda-fleet/src/agent.rs))
+- `save_recovery_knowledge_store` — spanda-runtime ([`crates/spanda-runtime/src/recovery_primitives.rs`](../crates/spanda-runtime/src/recovery_primitives.rs))
 - `save_swarm_state` — spanda-fleet ([`crates/spanda-fleet/src/swarm_coordinator.rs`](../crates/spanda-fleet/src/swarm_coordinator.rs))
 - `save_to_dir` — spanda-package ([`crates/spanda-package/src/lockfile.rs`](../crates/spanda-package/src/lockfile.rs))
+- `saveCheckpointStore` — TypeScript core ([`src/continuity-checkpoint.ts`](../src/continuity-checkpoint.ts))
+- `saveMissionTrace` — TypeScript core ([`src/replay.ts`](../src/replay.ts))
 - `scan` — spanda-runtime ([`crates/spanda-runtime/src/value.rs`](../crates/spanda-runtime/src/value.rs))
+- `scan_learned_score` — spanda-providers ([`crates/spanda-providers/src/anomaly_onnx.rs`](../crates/spanda-providers/src/anomaly_onnx.rs))
 - `scan_nearest` — spanda-rt ([`crates/spanda-rt/src/condition.rs`](../crates/spanda-rt/src/condition.rs))
 - `SCAN_PROPERTIES` — spanda-typecheck ([`crates/spanda-typecheck/src/checker.rs`](../crates/spanda-typecheck/src/checker.rs))
+- `scanAnomaliesTs` — TypeScript core ([`src/assurance.ts`](../src/assurance.ts))
 - `SchedulerClock` — spanda-runtime ([`crates/spanda-runtime/src/scheduler.rs`](../crates/spanda-runtime/src/scheduler.rs))
 - `SchedulerClock::as_str` — spanda-runtime ([`crates/spanda-runtime/src/scheduler.rs`](../crates/spanda-runtime/src/scheduler.rs))
 - `SchedulerMetrics` — spanda-runtime ([`crates/spanda-runtime/src/telemetry.rs`](../crates/spanda-runtime/src/telemetry.rs))
 - `SchedulerMetricsJs` — spanda-node ([`crates/spanda-node/src/lib.rs`](../crates/spanda-node/src/lib.rs))
+- `score_dispatch` — spanda-cli ([`crates/spanda-cli/src/score_cli.rs`](../crates/spanda-cli/src/score_cli.rs))
 - `sdk_available` — spanda-transport-ros2 ([`crates/spanda-transport-ros2/src/native.rs`](../crates/spanda-transport-ros2/src/native.rs))
 - `sdk_available` — spanda-transport-ros2 ([`crates/spanda-transport-ros2/src/native_stub.rs`](../crates/spanda-transport-ros2/src/native_stub.rs))
 - `sdk_available` — spanda-ros2-rclrs-native ([`crates/spanda-ros2-rclrs-native/src/lib.rs`](../crates/spanda-ros2-rclrs-native/src/lib.rs))
@@ -9066,26 +12701,36 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `search_registry_merged` — spanda-package ([`crates/spanda-package/src/registry.rs`](../crates/spanda-package/src/registry.rs))
 - `search_remote_registry` — spanda-package ([`crates/spanda-package/src/registry_remote.rs`](../crates/spanda-package/src/registry_remote.rs))
 - `SecretDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
+- `SecretHandle` — spanda-runtime ([`crates/spanda-runtime/src/security_types.rs`](../crates/spanda-runtime/src/security_types.rs))
 - `SecretHandle` — spanda-security ([`crates/spanda-security/src/secrets.rs`](../crates/spanda-security/src/secrets.rs))
 - `SecretHandle::resolve` — spanda-security ([`crates/spanda-security/src/secrets.rs`](../crates/spanda-security/src/secrets.rs))
+- `SecretMetadata` — spanda-security ([`crates/spanda-security/src/secret_vault.rs`](../crates/spanda-security/src/secret_vault.rs))
+- `SecretMetadata::new` — spanda-security ([`crates/spanda-security/src/secret_vault.rs`](../crates/spanda-security/src/secret_vault.rs))
+- `SecretSource` — spanda-runtime ([`crates/spanda-runtime/src/security_types.rs`](../crates/spanda-runtime/src/security_types.rs))
 - `SecretSource` — spanda-security ([`crates/spanda-security/src/secrets.rs`](../crates/spanda-security/src/secrets.rs))
 - `SecretSourceDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `SecretStore` — spanda-security ([`crates/spanda-security/src/secrets.rs`](../crates/spanda-security/src/secrets.rs))
 - `SecretStore` — TypeScript core ([`src/security/index.ts`](../src/security/index.ts))
 - `SecretStore::new` — spanda-security ([`crates/spanda-security/src/secrets.rs`](../crates/spanda-security/src/secrets.rs))
+- `SecretVaultBackend` — spanda-security ([`crates/spanda-security/src/secret_vault.rs`](../crates/spanda-security/src/secret_vault.rs))
 - `SecureBlockDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
+- `SecureCommPolicy` — spanda-runtime ([`crates/spanda-runtime/src/security_types.rs`](../crates/spanda-runtime/src/security_types.rs))
 - `SecureCommPolicy` — spanda-security ([`crates/spanda-security/src/policy.rs`](../crates/spanda-security/src/policy.rs))
 - `SecureCommPolicy::dev_default` — spanda-security ([`crates/spanda-security/src/policy.rs`](../crates/spanda-security/src/policy.rs))
 - `SecureCommPolicyDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `SecureEndpointRegistry` — spanda-security ([`crates/spanda-security/src/secure_comm.rs`](../crates/spanda-security/src/secure_comm.rs))
 - `SecureEndpointRegistry` — TypeScript core ([`src/security/index.ts`](../src/security/index.ts))
 - `SecureEndpointRegistry::new` — spanda-security ([`crates/spanda-security/src/secure_comm.rs`](../crates/spanda-security/src/secure_comm.rs))
+- `SecurePolicy` — spanda-runtime ([`crates/spanda-runtime/src/security_types.rs`](../crates/spanda-runtime/src/security_types.rs))
 - `SecurePolicy` — spanda-security ([`crates/spanda-security/src/secure_comm.rs`](../crates/spanda-security/src/secure_comm.rs))
 - `SecurePolicy::open` — spanda-security ([`crates/spanda-security/src/secure_comm.rs`](../crates/spanda-security/src/secure_comm.rs))
+- `security_analyze_program` — spanda-security ([`crates/spanda-security/src/validate.rs`](../crates/spanda-security/src/validate.rs))
 - `security_audit` — spanda-security ([`crates/spanda-security/src/validate.rs`](../crates/spanda-security/src/validate.rs))
 - `security_check` — spanda-security ([`crates/spanda-security/src/validate.rs`](../crates/spanda-security/src/validate.rs))
 - `securityAudit` — TypeScript core ([`src/security/validate.ts`](../src/security/validate.ts))
 - `securityAuditViaCli` — TypeScript core ([`src/rust-bridge.ts`](../src/rust-bridge.ts))
+- `SecurityBackedRuntime` — spanda-security ([`crates/spanda-security/src/runtime_bridge.rs`](../crates/spanda-security/src/runtime_bridge.rs))
+- `SecurityBackedRuntime::new` — spanda-security ([`crates/spanda-security/src/runtime_bridge.rs`](../crates/spanda-security/src/runtime_bridge.rs))
 - `securityCheck` — TypeScript core ([`src/security/validate.ts`](../src/security/validate.ts))
 - `securityCheckViaCli` — TypeScript core ([`src/rust-bridge.ts`](../src/rust-bridge.ts))
 - `SecurityContext` — spanda-security ([`crates/spanda-security/src/runtime.rs`](../crates/spanda-security/src/runtime.rs))
@@ -9096,13 +12741,22 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `SecurityFinding` — spanda-security ([`crates/spanda-security/src/validate.rs`](../crates/spanda-security/src/validate.rs))
 - `SecurityReport` — spanda-security ([`crates/spanda-security/src/validate.rs`](../crates/spanda-security/src/validate.rs))
 - `SecurityReport::has_errors` — spanda-security ([`crates/spanda-security/src/validate.rs`](../crates/spanda-security/src/validate.rs))
+- `SecurityRuntime` — spanda-runtime ([`crates/spanda-runtime/src/security_runtime.rs`](../crates/spanda-runtime/src/security_runtime.rs))
+- `SecurityRuntime` — TypeScript core ([`src/runtime/security-runtime.ts`](../src/runtime/security-runtime.ts))
 - `SecuritySeverity` — spanda-security ([`crates/spanda-security/src/validate.rs`](../crates/spanda-security/src/validate.rs))
 - `SecuritySnapshot` — spanda-security ([`crates/spanda-security/src/runtime.rs`](../crates/spanda-security/src/runtime.rs))
+- `seed_automotive_demos` — spanda-providers ([`crates/spanda-providers/src/automotive_hub.rs`](../crates/spanda-providers/src/automotive_hub.rs))
 - `seed_imu_registers` — spanda-hal ([`crates/spanda-hal/src/hal.rs`](../crates/spanda-hal/src/hal.rs))
+- `seed_modbus_demo_register` — spanda-providers ([`crates/spanda-providers/src/iot_hub.rs`](../crates/spanda-providers/src/iot_hub.rs))
+- `seed_protocol_demo` — spanda-providers ([`crates/spanda-providers/src/iot_hub.rs`](../crates/spanda-providers/src/iot_hub.rs))
+- `seed_protocol_demos` — spanda-providers ([`crates/spanda-providers/src/iot_hub.rs`](../crates/spanda-providers/src/iot_hub.rs))
 - `SelectArm` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
+- `SelfCorrectionAction` — spanda-runtime ([`crates/spanda-runtime/src/recovery_types.rs`](../crates/spanda-runtime/src/recovery_types.rs))
 - `send` — spanda-concurrency ([`crates/spanda-concurrency/src/lib.rs`](../crates/spanda-concurrency/src/lib.rs))
 - `send_agent` — spanda-concurrency ([`crates/spanda-concurrency/src/lib.rs`](../crates/spanda-concurrency/src/lib.rs))
+- `send_command` — spanda-providers ([`crates/spanda-providers/src/iot_hub.rs`](../crates/spanda-providers/src/iot_hub.rs))
 - `sensor_event_for_type` — spanda-hal ([`crates/spanda-hal/src/hardware_monitor.rs`](../crates/spanda-hal/src/hardware_monitor.rs))
+- `sensor_type_index` — spanda-runtime ([`crates/spanda-runtime/src/fusion.rs`](../crates/spanda-runtime/src/fusion.rs))
 - `SENSOR_TYPES` — spanda-driver ([`crates/spanda-driver/src/type_check.rs`](../crates/spanda-driver/src/type_check.rs))
 - `SENSOR_TYPES` — spanda-typecheck ([`crates/spanda-typecheck/src/checker.rs`](../crates/spanda-typecheck/src/checker.rs))
 - `SensorBinding` — spanda-ast ([`crates/spanda-ast/src/nodes.rs`](../crates/spanda-ast/src/nodes.rs))
@@ -9111,6 +12765,7 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `SensorInterface` — spanda-lib-registry ([`crates/spanda-lib-registry/src/lib.rs`](../crates/spanda-lib-registry/src/lib.rs))
 - `SensorInterface::as_str` — spanda-lib-registry ([`crates/spanda-lib-registry/src/lib.rs`](../crates/spanda-lib-registry/src/lib.rs))
 - `SensorProvider` — spanda-runtime ([`crates/spanda-runtime/src/providers/traits.rs`](../crates/spanda-runtime/src/providers/traits.rs))
+- `SensorReading` — spanda-runtime ([`crates/spanda-runtime/src/providers/iot.rs`](../crates/spanda-runtime/src/providers/iot.rs))
 - `serialize_expr_condition` — spanda-sir ([`crates/spanda-sir/src/lib.rs`](../crates/spanda-sir/src/lib.rs))
 - `serialize_value` — spanda-runtime ([`crates/spanda-runtime/src/serialize.rs`](../crates/spanda-runtime/src/serialize.rs))
 - `serializeAgentRegistry` — TypeScript core ([`src/deploy-remote.ts`](../src/deploy-remote.ts))
@@ -9132,22 +12787,35 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `set` — spanda-runtime ([`crates/spanda-runtime/src/environment.rs`](../crates/spanda-runtime/src/environment.rs))
 - `set_adc_value` — spanda-hal ([`crates/spanda-hal/src/hal.rs`](../crates/spanda-hal/src/hal.rs))
 - `set_bridges` — spanda-ffi ([`crates/spanda-ffi/src/lib.rs`](../crates/spanda-ffi/src/lib.rs))
+- `set_device_telemetry_sink` — spanda-runtime ([`crates/spanda-runtime/src/device_telemetry_sink.rs`](../crates/spanda-runtime/src/device_telemetry_sink.rs))
 - `set_emergency_stop` — spanda-safety ([`crates/spanda-safety/src/lib.rs`](../crates/spanda-safety/src/lib.rs))
+- `set_fleet_tamper_runtime` — spanda-runtime ([`crates/spanda-runtime/src/fleet_tamper_runtime.rs`](../crates/spanda-runtime/src/fleet_tamper_runtime.rs))
+- `set_fleet_telemetry_runtime` — spanda-runtime ([`crates/spanda-runtime/src/fleet_telemetry_runtime.rs`](../crates/spanda-runtime/src/fleet_telemetry_runtime.rs))
 - `set_handle_result` — spanda-concurrency ([`crates/spanda-concurrency/src/lib.rs`](../crates/spanda-concurrency/src/lib.rs))
 - `set_identity` — spanda-security ([`crates/spanda-security/src/runtime.rs`](../crates/spanda-security/src/runtime.rs))
 - `set_official_packages` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
+- `set_platform_assurance_runtime` — spanda-runtime ([`crates/spanda-runtime/src/assurance_runtime.rs`](../crates/spanda-runtime/src/assurance_runtime.rs))
+- `set_readiness_runtime` — spanda-runtime ([`crates/spanda-runtime/src/readiness_runtime.rs`](../crates/spanda-runtime/src/readiness_runtime.rs))
 - `set_transport_context` — spanda-security ([`crates/spanda-security/src/runtime.rs`](../crates/spanda-security/src/runtime.rs))
 - `set_variable` — spanda-driver ([`crates/spanda-driver/src/debug_session.rs`](../crates/spanda-driver/src/debug_session.rs))
+- `setCompileCheckerHost` — TypeScript core ([`src/compile.ts`](../src/compile.ts))
+- `setDefaultHardwareVerifyHost` — TypeScript core ([`src/hardware-verify.ts`](../src/hardware-verify.ts))
+- `setDeployCertificationProver` — TypeScript core ([`src/deploy-service.ts`](../src/deploy-service.ts))
 - `setPreferredBackend` — TypeScript core ([`src/compile.ts`](../src/compile.ts))
+- `setProviderCallObserver` — TypeScript core ([`src/runtime/provider-observer.ts`](../src/runtime/provider-observer.ts))
 - `setup_robot_for_debug` — spanda-interpreter ([`crates/spanda-interpreter/src/runtime/orchestrator.rs`](../crates/spanda-interpreter/src/runtime/orchestrator.rs))
+- `severity_rank` — spanda-runtime ([`crates/spanda-runtime/src/fault_types.rs`](../crates/spanda-runtime/src/fault_types.rs))
 - `sha256` — spanda-audit ([`crates/spanda-audit/src/crypto.rs`](../crates/spanda-audit/src/crypto.rs))
+- `sha256_file` — spanda-package ([`crates/spanda-package/src/integrity.rs`](../crates/spanda-package/src/integrity.rs))
 - `sha256Hex` — TypeScript core ([`src/security/index.ts`](../src/security/index.ts))
 - `shadow_field` — spanda-runtime ([`crates/spanda-runtime/src/twin.rs`](../crates/spanda-runtime/src/twin.rs))
+- `shared_telemetry_sink` — spanda-interpreter ([`crates/spanda-interpreter/src/runtime/orchestrator.rs`](../crates/spanda-interpreter/src/runtime/orchestrator.rs))
 - `should_pause` — spanda-debug ([`crates/spanda-debug/src/lib.rs`](../crates/spanda-debug/src/lib.rs))
 - `sign` — spanda-audit ([`crates/spanda-audit/src/crypto.rs`](../crates/spanda-audit/src/crypto.rs))
 - `sign` — TypeScript core ([`src/security/index.ts`](../src/security/index.ts))
 - `sign_deploy_bundle` — spanda-ota ([`crates/spanda-ota/src/bundle.rs`](../crates/spanda-ota/src/bundle.rs))
 - `sign_outbound` — spanda-security ([`crates/spanda-security/src/runtime.rs`](../crates/spanda-security/src/runtime.rs))
+- `sign_registry_tarball` — spanda-package ([`crates/spanda-package/src/registry_sign.rs`](../crates/spanda-package/src/registry_sign.rs))
 - `signAsync` — TypeScript core ([`src/security/index.ts`](../src/security/index.ts))
 - `Signature` — spanda-security ([`crates/spanda-security/src/signed.rs`](../crates/spanda-security/src/signed.rs))
 - `signDeployBundle` — TypeScript core ([`src/deploy-bundle.ts`](../src/deploy-bundle.ts))
@@ -9157,6 +12825,9 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `SignedRecordDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `signing_key` — spanda-security ([`crates/spanda-security/src/identity.rs`](../crates/spanda-security/src/identity.rs))
 - `signing_material` — spanda-audit ([`crates/spanda-audit/src/record.rs`](../crates/spanda-audit/src/record.rs))
+- `sim_time_ms` — spanda-interpreter ([`crates/spanda-interpreter/src/runtime/orchestrator.rs`](../crates/spanda-interpreter/src/runtime/orchestrator.rs))
+- `SimCommBusHost` — spanda-comm ([`crates/spanda-comm/src/comm_bus_host.rs`](../crates/spanda-comm/src/comm_bus_host.rs))
+- `SimCommBusHost::new` — spanda-comm ([`crates/spanda-comm/src/comm_bus_host.rs`](../crates/spanda-comm/src/comm_bus_host.rs))
 - `SimFaultDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `SimHalBackend` — spanda-hal ([`crates/spanda-hal/src/hal.rs`](../crates/spanda-hal/src/hal.rs))
 - `SimHalBackend` — TypeScript core ([`src/hal/index.ts`](../src/hal/index.ts))
@@ -9165,6 +12836,7 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `SimState` — spanda-lib-registry ([`crates/spanda-lib-registry/src/lib.rs`](../crates/spanda-lib-registry/src/lib.rs))
 - `simulate_uart_data` — spanda-hal ([`crates/spanda-hal/src/hal.rs`](../crates/spanda-hal/src/hal.rs))
 - `SimulateCompatibilityDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
+- `simulateFailureRecoveryTs` — TypeScript core ([`src/recovery.ts`](../src/recovery.ts))
 - `SimulationPackageStub` — spanda-providers ([`crates/spanda-providers/src/package_stubs.rs`](../crates/spanda-providers/src/package_stubs.rs))
 - `SimulationPackageStub::gazebo` — spanda-providers ([`crates/spanda-providers/src/package_stubs.rs`](../crates/spanda-providers/src/package_stubs.rs))
 - `SimulationProvider` — spanda-runtime ([`crates/spanda-runtime/src/providers/traits.rs`](../crates/spanda-runtime/src/providers/traits.rs))
@@ -9204,17 +12876,30 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `SpandaError::diagnostics` — spanda-error ([`crates/spanda-error/src/lib.rs`](../crates/spanda-error/src/lib.rs))
 - `SpandaNative` — @spanda/native ([`packages/native/index.ts`](../packages/native/index.ts))
 - `SpandaType` — spanda-ast ([`crates/spanda-ast/src/nodes.rs`](../crates/spanda-ast/src/nodes.rs))
+- `SpatialSessionInfo` — spanda-runtime ([`crates/spanda-runtime/src/providers/hri.rs`](../crates/spanda-runtime/src/providers/hri.rs))
+- `SpatialSessionPackageStub` — spanda-providers ([`crates/spanda-providers/src/package_stubs.rs`](../crates/spanda-providers/src/package_stubs.rs))
+- `SpatialSessionPackageStub::new` — spanda-providers ([`crates/spanda-providers/src/package_stubs.rs`](../crates/spanda-providers/src/package_stubs.rs))
+- `SpatialSessionProvider` — spanda-runtime ([`crates/spanda-runtime/src/providers/hri.rs`](../crates/spanda-runtime/src/providers/hri.rs))
 - `spawn_test_agent` — spanda-ota ([`crates/spanda-ota/src/agent.rs`](../crates/spanda-ota/src/agent.rs))
 - `spawn_test_agent_with_options` — spanda-ota ([`crates/spanda-ota/src/agent.rs`](../crates/spanda-ota/src/agent.rs))
 - `spawn_test_fleet_agent` — spanda-fleet ([`crates/spanda-fleet/src/agent.rs`](../crates/spanda-fleet/src/agent.rs))
 - `spawn_test_fleet_mesh` — spanda-fleet ([`crates/spanda-fleet/src/mesh.rs`](../crates/spanda-fleet/src/mesh.rs))
 - `SpawnHandle` — spanda-concurrency ([`crates/spanda-concurrency/src/lib.rs`](../crates/spanda-concurrency/src/lib.rs))
 - `speed_caps` — spanda-runtime ([`crates/spanda-runtime/src/robotics.rs`](../crates/spanda-runtime/src/robotics.rs))
+- `spoof_check_dispatch` — spanda-cli ([`crates/spanda-cli/src/spoof_cli.rs`](../crates/spanda-cli/src/spoof_cli.rs))
+- `sqliteAppendEvent` — TypeScript core ([`src/telemetry-sqlite.ts`](../src/telemetry-sqlite.ts))
+- `sqliteBackendAvailable` — TypeScript core ([`src/telemetry-sqlite.ts`](../src/telemetry-sqlite.ts))
+- `sqliteCompact` — TypeScript core ([`src/telemetry-sqlite.ts`](../src/telemetry-sqlite.ts))
+- `sqliteReadAll` — TypeScript core ([`src/telemetry-sqlite.ts`](../src/telemetry-sqlite.ts))
+- `sqliteReadHeartbeatIndex` — TypeScript core ([`src/telemetry-sqlite.ts`](../src/telemetry-sqlite.ts))
+- `sqliteUpsertHeartbeat` — TypeScript core ([`src/telemetry-sqlite.ts`](../src/telemetry-sqlite.ts))
 - `stack_trace` — spanda-driver ([`crates/spanda-driver/src/debug_session.rs`](../crates/spanda-driver/src/debug_session.rs))
 - `stack_trace_frames` — spanda-driver ([`crates/spanda-driver/src/debug_session.rs`](../crates/spanda-driver/src/debug_session.rs))
 - `start` — spanda-runtime ([`crates/spanda-runtime/src/robotics.rs`](../crates/spanda-runtime/src/robotics.rs))
 - `startDeployAgentServer` — TypeScript core ([`src/deploy-agent.ts`](../src/deploy-agent.ts))
 - `startFleetAgentServer` — TypeScript core ([`src/fleet-agent.ts`](../src/fleet-agent.ts))
+- `state_dispatch` — spanda-cli ([`crates/spanda-cli/src/assurance_cli.rs`](../crates/spanda-cli/src/assurance_cli.rs))
+- `StateEstimatorDecl` — spanda-ast ([`crates/spanda-ast/src/assurance_decl.rs`](../crates/spanda-ast/src/assurance_decl.rs))
 - `StateMachineDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `StateMachineRuntime` — spanda-runtime ([`crates/spanda-runtime/src/state_machine.rs`](../crates/spanda-runtime/src/state_machine.rs))
 - `StateMachineRuntime::new` — spanda-runtime ([`crates/spanda-runtime/src/state_machine.rs`](../crates/spanda-runtime/src/state_machine.rs))
@@ -9226,6 +12911,7 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `store_double` — spanda-rt ([`crates/spanda-rt/src/condition.rs`](../crates/spanda-rt/src/condition.rs))
 - `store_string` — spanda-rt ([`crates/spanda-rt/src/condition.rs`](../crates/spanda-rt/src/condition.rs))
 - `string` — spanda-runtime ([`crates/spanda-runtime/src/value.rs`](../crates/spanda-runtime/src/value.rs))
+- `string_arg` — spanda-providers ([`crates/spanda-providers/src/iot_hub.rs`](../crates/spanda-providers/src/iot_hub.rs))
 - `StructDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `StructFieldInit` — spanda-ast ([`crates/spanda-ast/src/nodes.rs`](../crates/spanda-ast/src/nodes.rs))
 - `StubTransportState` — spanda-transport ([`crates/spanda-transport/src/adapter.rs`](../crates/spanda-transport/src/adapter.rs))
@@ -9243,11 +12929,14 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `subscribe` — spanda-ros2-rclrs-native ([`crates/spanda-ros2-rclrs-native/src/lib.rs`](../crates/spanda-ros2-rclrs-native/src/lib.rs))
 - `SubscribeFilterDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `subscription_paths` — spanda-comm ([`crates/spanda-comm/src/lib.rs`](../crates/spanda-comm/src/lib.rs))
+- `SuccessionScope` — spanda-runtime ([`crates/spanda-runtime/src/continuity_types.rs`](../crates/spanda-runtime/src/continuity_types.rs))
+- `suggest_dispatch` — spanda-cli ([`crates/spanda-cli/src/generate_cli.rs`](../crates/spanda-cli/src/generate_cli.rs))
 - `summarize` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
 - `summary_for_prompt` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
 - `supports_encryption` — spanda-ast ([`crates/spanda-ast/src/comm_decl.rs`](../crates/spanda-ast/src/comm_decl.rs))
 - `swarm_dispatch` — spanda-cli ([`crates/spanda-cli/src/swarm_cli.rs`](../crates/spanda-cli/src/swarm_cli.rs))
 - `swarm_usage_lines` — spanda-cli ([`crates/spanda-cli/src/swarm_cli.rs`](../crates/spanda-cli/src/swarm_cli.rs))
+- `SwarmContinuityHandoff` — spanda-fleet ([`crates/spanda-fleet/src/swarm_continuity.rs`](../crates/spanda-fleet/src/swarm_continuity.rs))
 - `SwarmCoordinationReport` — spanda-fleet ([`crates/spanda-fleet/src/swarm_coordinator.rs`](../crates/spanda-fleet/src/swarm_coordinator.rs))
 - `SwarmCoordinationResult` — spanda-fleet ([`crates/spanda-fleet/src/swarm_coordinator.rs`](../crates/spanda-fleet/src/swarm_coordinator.rs))
 - `SwarmDecl` — spanda-ast ([`crates/spanda-ast/src/robotics_decl.rs`](../crates/spanda-ast/src/robotics_decl.rs))
@@ -9261,6 +12950,15 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `take_events` — spanda-rt ([`crates/spanda-rt/src/lib.rs`](../crates/spanda-rt/src/lib.rs))
 - `take_mission_trace` — spanda-interpreter ([`crates/spanda-interpreter/src/runtime/orchestrator.rs`](../crates/spanda-interpreter/src/runtime/orchestrator.rs))
 - `take_telemetry` — spanda-interpreter ([`crates/spanda-interpreter/src/runtime/orchestrator.rs`](../crates/spanda-interpreter/src/runtime/orchestrator.rs))
+- `TakeoverMode` — spanda-runtime ([`crates/spanda-runtime/src/continuity_types.rs`](../crates/spanda-runtime/src/continuity_types.rs))
+- `TakeoverReport` — spanda-runtime ([`crates/spanda-runtime/src/continuity_types.rs`](../crates/spanda-runtime/src/continuity_types.rs))
+- `tamper_check_dispatch` — spanda-cli ([`crates/spanda-cli/src/tamper_cli.rs`](../crates/spanda-cli/src/tamper_cli.rs))
+- `tamper_diagnose_dispatch` — spanda-cli ([`crates/spanda-cli/src/tamper_cli.rs`](../crates/spanda-cli/src/tamper_cli.rs))
+- `tamper_policy_coverage` — spanda-runtime ([`crates/spanda-runtime/src/tamper_policy.rs`](../crates/spanda-runtime/src/tamper_policy.rs))
+- `TamperPolicyBranch` — spanda-ast ([`crates/spanda-ast/src/assurance_decl.rs`](../crates/spanda-ast/src/assurance_decl.rs))
+- `TamperPolicyDecl` — spanda-ast ([`crates/spanda-ast/src/assurance_decl.rs`](../crates/spanda-ast/src/assurance_decl.rs))
+- `TamperPolicySpec` — spanda-runtime ([`crates/spanda-runtime/src/tamper_policy.rs`](../crates/spanda-runtime/src/tamper_policy.rs))
+- `TamperSeverity` — spanda-runtime ([`crates/spanda-runtime/src/tamper_policy.rs`](../crates/spanda-runtime/src/tamper_policy.rs))
 - `TaskDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `TaskMetrics` — spanda-runtime ([`crates/spanda-runtime/src/telemetry.rs`](../crates/spanda-runtime/src/telemetry.rs))
 - `TaskMetricsJs` — spanda-node ([`crates/spanda-node/src/lib.rs`](../crates/spanda-node/src/lib.rs))
@@ -9268,15 +12966,31 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `TaskPriority::from_ident` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `taskPriorityLabel` — TypeScript core ([`src/reliability.ts`](../src/reliability.ts))
 - `telemetry` — spanda-interpreter ([`crates/spanda-interpreter/src/runtime/orchestrator.rs`](../crates/spanda-interpreter/src/runtime/orchestrator.rs))
+- `Telemetry` — spanda-runtime ([`crates/spanda-runtime/src/providers/iot.rs`](../crates/spanda-runtime/src/providers/iot.rs))
+- `telemetry_count` — spanda-providers ([`crates/spanda-providers/src/iot_hub.rs`](../crates/spanda-providers/src/iot_hub.rs))
+- `telemetry_sink` — spanda-interpreter ([`crates/spanda-interpreter/src/runtime/orchestrator.rs`](../crates/spanda-interpreter/src/runtime/orchestrator.rs))
+- `telemetryAppend` — @davalgi-spanda/web ([`packages/web/src/spanda-wasm.ts`](../packages/web/src/spanda-wasm.ts))
+- `telemetryClear` — @davalgi-spanda/web ([`packages/web/src/spanda-wasm.ts`](../packages/web/src/spanda-wasm.ts))
+- `telemetryOtlp` — @davalgi-spanda/web ([`packages/web/src/spanda-wasm.ts`](../packages/web/src/spanda-wasm.ts))
+- `telemetryPrometheus` — @davalgi-spanda/web ([`packages/web/src/spanda-wasm.ts`](../packages/web/src/spanda-wasm.ts))
+- `TelemetryProvider` — spanda-runtime ([`crates/spanda-runtime/src/providers/iot.rs`](../crates/spanda-runtime/src/providers/iot.rs))
+- `TelemetrySink` — spanda-runtime ([`crates/spanda-runtime/src/telemetry_sink.rs`](../crates/spanda-runtime/src/telemetry_sink.rs))
+- `TelemetrySink` — TypeScript core ([`src/runtime/telemetry-sink.ts`](../src/runtime/telemetry-sink.ts))
+- `telemetryStats` — @davalgi-spanda/web ([`packages/web/src/spanda-wasm.ts`](../packages/web/src/spanda-wasm.ts))
+- `tenant_matches` — spanda-security ([`crates/spanda-security/src/tenant.rs`](../crates/spanda-security/src/tenant.rs))
 - `TestDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `TestRunResult` — spanda-interpreter ([`crates/spanda-interpreter/src/options.rs`](../crates/spanda-interpreter/src/options.rs))
+- `threat_model_dispatch` — spanda-cli ([`crates/spanda-cli/src/threat_model_cli.rs`](../crates/spanda-cli/src/threat_model_cli.rs))
+- `threshold_anomaly_score` — spanda-providers ([`crates/spanda-providers/src/anomaly_onnx.rs`](../crates/spanda-providers/src/anomaly_onnx.rs))
 - `timer_handlers` — spanda-runtime ([`crates/spanda-runtime/src/triggers.rs`](../crates/spanda-runtime/src/triggers.rs))
+- `timerScheduleFromHandler` — TypeScript core ([`src/runtime/trigger-registry.ts`](../src/runtime/trigger-registry.ts))
 - `TlsEndpoint` — spanda-transport ([`crates/spanda-transport/src/tls.rs`](../crates/spanda-transport/src/tls.rs))
 - `TlsTransportSession` — spanda-transport ([`crates/spanda-transport/src/security.rs`](../crates/spanda-transport/src/security.rs))
 - `TlsTransportSession` — TypeScript core ([`src/transport/transport-security.ts`](../src/transport/transport-security.ts))
 - `TlsTransportSession::connect` — spanda-transport ([`crates/spanda-transport/src/security.rs`](../crates/spanda-transport/src/security.rs))
 - `to_canonical` — spanda-typecheck ([`crates/spanda-typecheck/src/units.rs`](../crates/spanda-typecheck/src/units.rs))
 - `to_json` — spanda-security ([`crates/spanda-security/src/signed.rs`](../crates/spanda-security/src/signed.rs))
+- `to_json_string` — spanda-audit ([`crates/spanda-audit/src/platform_event.rs`](../crates/spanda-audit/src/platform_event.rs))
 - `to_runtime_value` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
 - `Token` — spanda-lexer ([`crates/spanda-lexer/src/lib.rs`](../crates/spanda-lexer/src/lib.rs))
 - `tokenize` — spanda-driver ([`crates/spanda-driver/src/compile.rs`](../crates/spanda-driver/src/compile.rs))
@@ -9303,10 +13017,10 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `TransportAdapter` — TypeScript core ([`src/transport/index.ts`](../src/transport/index.ts))
 - `TransportAdapterProvider` — spanda-providers ([`crates/spanda-providers/src/transport_adapter.rs`](../crates/spanda-providers/src/transport_adapter.rs))
 - `TransportAdapterProvider::new` — spanda-providers ([`crates/spanda-providers/src/transport_adapter.rs`](../crates/spanda-providers/src/transport_adapter.rs))
-- `transportAsStr` — TypeScript core ([`src/comm/index.ts`](../src/comm/index.ts))
+- `transportAsStr` — TypeScript core ([`src/comm/decls.ts`](../src/comm/decls.ts))
 - `TransportConfig` — spanda-runtime ([`crates/spanda-runtime/src/providers/transport_types.rs`](../crates/spanda-runtime/src/providers/transport_types.rs))
 - `TransportConfig` — spanda-transport ([`crates/spanda-transport/src/adapter.rs`](../crates/spanda-transport/src/adapter.rs))
-- `transportFromIdent` — TypeScript core ([`src/comm/index.ts`](../src/comm/index.ts))
+- `transportFromIdent` — TypeScript core ([`src/comm/decls.ts`](../src/comm/decls.ts))
 - `TransportKind` — spanda-ast ([`crates/spanda-ast/src/comm_decl.rs`](../crates/spanda-ast/src/comm_decl.rs))
 - `TransportKind::from_ident` — spanda-ast ([`crates/spanda-ast/src/comm_decl.rs`](../crates/spanda-ast/src/comm_decl.rs))
 - `TransportProvider` — spanda-runtime ([`crates/spanda-runtime/src/providers/traits.rs`](../crates/spanda-runtime/src/providers/traits.rs))
@@ -9318,14 +13032,20 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `TransportWireFrame::new` — spanda-transport ([`crates/spanda-transport/src/wire.rs`](../crates/spanda-transport/src/wire.rs))
 - `trigger_display_name` — spanda-runtime ([`crates/spanda-runtime/src/triggers.rs`](../crates/spanda-runtime/src/triggers.rs))
 - `trigger_mut` — spanda-runtime ([`crates/spanda-runtime/src/telemetry.rs`](../crates/spanda-runtime/src/telemetry.rs))
+- `triggerCategoryLabel` — TypeScript core ([`src/runtime/trigger-registry.ts`](../src/runtime/trigger-registry.ts))
+- `triggerDisplayName` — TypeScript core ([`src/runtime/trigger-registry.ts`](../src/runtime/trigger-registry.ts))
 - `TriggerHandlerDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
+- `triggerHandlerFromLegacy` — TypeScript core ([`src/runtime/trigger-registry.ts`](../src/runtime/trigger-registry.ts))
 - `TriggerKind` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
+- `triggerKindFromLegacyEventName` — TypeScript core ([`src/runtime/trigger-registry.ts`](../src/runtime/trigger-registry.ts))
 - `TriggerMetrics` — spanda-runtime ([`crates/spanda-runtime/src/telemetry.rs`](../crates/spanda-runtime/src/telemetry.rs))
 - `TriggerRegistry` — spanda-runtime ([`crates/spanda-runtime/src/triggers.rs`](../crates/spanda-runtime/src/triggers.rs))
+- `TriggerRegistry` — TypeScript core ([`src/runtime/trigger-registry.ts`](../src/runtime/trigger-registry.ts))
 - `TriggerRegistry::new` — spanda-runtime ([`crates/spanda-runtime/src/triggers.rs`](../crates/spanda-runtime/src/triggers.rs))
 - `TriggerTimerSchedule` — spanda-runtime ([`crates/spanda-runtime/src/triggers.rs`](../crates/spanda-runtime/src/triggers.rs))
 - `TriggerTimerSchedule::from_handler` — spanda-runtime ([`crates/spanda-runtime/src/triggers.rs`](../crates/spanda-runtime/src/triggers.rs))
 - `TrustBoundaryDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
+- `TrustBoundaryKind` — spanda-runtime ([`crates/spanda-runtime/src/security_types.rs`](../crates/spanda-runtime/src/security_types.rs))
 - `TrustBoundaryKind` — spanda-security ([`crates/spanda-security/src/trust_boundary.rs`](../crates/spanda-security/src/trust_boundary.rs))
 - `TrustBoundaryKind::as_str` — spanda-security ([`crates/spanda-security/src/trust_boundary.rs`](../crates/spanda-security/src/trust_boundary.rs))
 - `TrustBoundaryKind::required_encryption` — spanda-security ([`crates/spanda-security/src/trust_boundary.rs`](../crates/spanda-security/src/trust_boundary.rs))
@@ -9334,9 +13054,13 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `TrustBoundaryRegistry::new` — spanda-security ([`crates/spanda-security/src/trust_boundary.rs`](../crates/spanda-security/src/trust_boundary.rs))
 - `TrustDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `TrustedSource` — spanda-security ([`crates/spanda-security/src/encrypted.rs`](../crates/spanda-security/src/encrypted.rs))
+- `TrustFactor` — spanda-package ([`crates/spanda-package/src/trust.rs`](../crates/spanda-package/src/trust.rs))
+- `TrustLevel` — spanda-runtime ([`crates/spanda-runtime/src/security_types.rs`](../crates/spanda-runtime/src/security_types.rs))
 - `TrustLevel` — spanda-security ([`crates/spanda-security/src/trust.rs`](../crates/spanda-security/src/trust.rs))
 - `TrustLevel::all` — spanda-security ([`crates/spanda-security/src/trust.rs`](../crates/spanda-security/src/trust.rs))
+- `TrustLevel::as_str` — spanda-runtime ([`crates/spanda-runtime/src/security_types.rs`](../crates/spanda-runtime/src/security_types.rs))
 - `trustSatisfies` — TypeScript core ([`src/security/index.ts`](../src/security/index.ts))
+- `TrustScoreReport` — spanda-package ([`crates/spanda-package/src/trust.rs`](../crates/spanda-package/src/trust.rs))
 - `try_enter` — spanda-runtime ([`crates/spanda-runtime/src/state_machine.rs`](../crates/spanda-runtime/src/state_machine.rs))
 - `try_mqtt_publish` — spanda-transport-routing ([`crates/spanda-transport-routing/src/transport_live.rs`](../crates/spanda-transport-routing/src/transport_live.rs))
 - `try_mqtt_publish` — spanda-transport-mqtt ([`crates/spanda-transport-mqtt/src/python_bridge.rs`](../crates/spanda-transport-mqtt/src/python_bridge.rs))
@@ -9393,21 +13117,28 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `units_compatible` — spanda-typecheck ([`crates/spanda-typecheck/src/checker.rs`](../crates/spanda-typecheck/src/checker.rs))
 - `units_compatible` — spanda-typecheck ([`crates/spanda-typecheck/src/units.rs`](../crates/spanda-typecheck/src/units.rs))
 - `unitsCompatible` — TypeScript core ([`src/units/index.ts`](../src/units/index.ts))
+- `unofficial_official_overrides_from_lockfile` — spanda-package ([`crates/spanda-package/src/official.rs`](../crates/spanda-package/src/official.rs))
+- `unofficial_official_overrides_from_manifest` — spanda-package ([`crates/spanda-package/src/official.rs`](../crates/spanda-package/src/official.rs))
+- `update` — spanda-runtime ([`crates/spanda-runtime/src/world_model.rs`](../crates/spanda-runtime/src/world_model.rs))
+- `update_shadow` — spanda-providers ([`crates/spanda-providers/src/iot_hub.rs`](../crates/spanda-providers/src/iot_hub.rs))
 - `url_requires_tls` — spanda-transport ([`crates/spanda-transport/src/security.rs`](../crates/spanda-transport/src/security.rs))
 - `urlRequiresTls` — TypeScript core ([`src/transport/transport-security.ts`](../src/transport/transport-security.ts))
 - `usage_package` — spanda-cli ([`crates/spanda-cli/src/package.rs`](../crates/spanda-cli/src/package.rs))
+- `usesSqliteBackend` — TypeScript core ([`src/telemetry-store.ts`](../src/telemetry-store.ts))
 - `validate` — spanda-transport ([`crates/spanda-transport/src/security.rs`](../crates/spanda-transport/src/security.rs))
 - `validate_action_proposal` — spanda-safety ([`crates/spanda-safety/src/lib.rs`](../crates/spanda-safety/src/lib.rs))
+- `validate_bus_security` — spanda-runtime ([`crates/spanda-runtime/src/security_primitives.rs`](../crates/spanda-runtime/src/security_primitives.rs))
 - `validate_capability` — spanda-package ([`crates/spanda-package/src/hardware_req.rs`](../crates/spanda-package/src/hardware_req.rs))
 - `validate_certification_standard` — spanda-runtime-host ([`crates/spanda-runtime-host/src/robotics_validation.rs`](../crates/spanda-runtime-host/src/robotics_validation.rs))
 - `validate_channel` — spanda-security ([`crates/spanda-security/src/trust_boundary.rs`](../crates/spanda-security/src/trust_boundary.rs))
 - `validate_comm_safety_chain` — spanda-comm ([`crates/spanda-comm/src/lib.rs`](../crates/spanda-comm/src/lib.rs))
-- `validate_connectivity_policy` — spanda-hardware ([`crates/spanda-hardware/src/connectivity_validate.rs`](../crates/spanda-hardware/src/connectivity_validate.rs))
+- `validate_connectivity_policy` — spanda-connectivity-runtime ([`crates/spanda-connectivity-runtime/src/connectivity_validate.rs`](../crates/spanda-connectivity-runtime/src/connectivity_validate.rs))
 - `validate_fleet_members` — spanda-runtime-host ([`crates/spanda-runtime-host/src/robotics_validation.rs`](../crates/spanda-runtime-host/src/robotics_validation.rs))
-- `validate_geofence` — spanda-hardware ([`crates/spanda-hardware/src/connectivity_validate.rs`](../crates/spanda-hardware/src/connectivity_validate.rs))
+- `validate_geofence` — spanda-connectivity-runtime ([`crates/spanda-connectivity-runtime/src/connectivity_validate.rs`](../crates/spanda-connectivity-runtime/src/connectivity_validate.rs))
 - `validate_hal_against_soc` — spanda-hal ([`crates/spanda-hal/src/soc.rs`](../crates/spanda-hal/src/soc.rs))
 - `validate_mission_decl` — spanda-runtime-host ([`crates/spanda-runtime-host/src/robotics_validation.rs`](../crates/spanda-runtime-host/src/robotics_validation.rs))
 - `validate_package` — spanda-package ([`crates/spanda-package/src/validation.rs`](../crates/spanda-package/src/validation.rs))
+- `validate_package_in` — spanda-package ([`crates/spanda-package/src/validation.rs`](../crates/spanda-package/src/validation.rs))
 - `validate_pipeline` — spanda-typecheck ([`crates/spanda-typecheck/src/reliability_validation.rs`](../crates/spanda-typecheck/src/reliability_validation.rs))
 - `validate_recover` — spanda-typecheck ([`crates/spanda-typecheck/src/reliability_validation.rs`](../crates/spanda-typecheck/src/reliability_validation.rs))
 - `validate_regex_literal` — spanda-regex-lang ([`crates/spanda-regex-lang/src/lib.rs`](../crates/spanda-regex-lang/src/lib.rs))
@@ -9433,6 +13164,7 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `validateTaskTiming` — TypeScript core ([`src/reliability.ts`](../src/reliability.ts))
 - `validateTransportSecurity` — TypeScript core ([`src/transport/transport-security.ts`](../src/transport/transport-security.ts))
 - `validateWatchdog` — TypeScript core ([`src/reliability.ts`](../src/reliability.ts))
+- `ValidationGateResult` — spanda-runtime ([`crates/spanda-runtime/src/recovery_types.rs`](../crates/spanda-runtime/src/recovery_types.rs))
 - `ValidationIssue` — spanda-package ([`crates/spanda-package/src/validation.rs`](../crates/spanda-package/src/validation.rs))
 - `ValidationReport` — spanda-package ([`crates/spanda-package/src/validation.rs`](../crates/spanda-package/src/validation.rs))
 - `ValidationReport::ok` — spanda-package ([`crates/spanda-package/src/validation.rs`](../crates/spanda-package/src/validation.rs))
@@ -9449,9 +13181,11 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `verify_adapter_package` — spanda-package ([`crates/spanda-package/src/adapter_verify.rs`](../crates/spanda-package/src/adapter_verify.rs))
 - `verify_and_open` — spanda-security ([`crates/spanda-security/src/encrypted.rs`](../crates/spanda-security/src/encrypted.rs))
 - `verify_certification_proof` — spanda-certify ([`crates/spanda-certify/src/verify.rs`](../crates/spanda-certify/src/verify.rs))
-- `verify_compatibility` — spanda-driver ([`crates/spanda-driver/src/verify.rs`](../crates/spanda-driver/src/verify.rs))
-- `verify_compatibility_target` — spanda-driver ([`crates/spanda-driver/src/verify.rs`](../crates/spanda-driver/src/verify.rs))
+- `verify_compatibility` — spanda-core ([`crates/spanda-core/src/hardware_verify.rs`](../crates/spanda-core/src/hardware_verify.rs))
+- `verify_compatibility_target` — spanda-core ([`crates/spanda-core/src/hardware_verify.rs`](../crates/spanda-core/src/hardware_verify.rs))
+- `verify_compatibility_with_registry` — spanda-core ([`crates/spanda-core/src/hardware_verify.rs`](../crates/spanda-core/src/hardware_verify.rs))
 - `verify_deploy_bundle` — spanda-ota ([`crates/spanda-ota/src/bundle.rs`](../crates/spanda-ota/src/bundle.rs))
+- `verify_extensions` — spanda-cli ([`crates/spanda-cli/src/trace_cli.rs`](../crates/spanda-cli/src/trace_cli.rs))
 - `verify_framework_imports` — spanda-hardware ([`crates/spanda-hardware/src/adapter_verify.rs`](../crates/spanda-hardware/src/adapter_verify.rs))
 - `verify_inbound` — spanda-security ([`crates/spanda-security/src/runtime.rs`](../crates/spanda-security/src/runtime.rs))
 - `verify_inbound` — spanda-security ([`crates/spanda-security/src/secure_comm.rs`](../crates/spanda-security/src/secure_comm.rs))
@@ -9461,21 +13195,27 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `verify_program_compatibility_legacy` — spanda-hardware ([`crates/spanda-hardware/src/verify.rs`](../crates/spanda-hardware/src/verify.rs))
 - `verify_provenance_signature` — spanda-audit ([`crates/spanda-audit/src/runtime.rs`](../crates/spanda-audit/src/runtime.rs))
 - `verify_record` — spanda-audit ([`crates/spanda-audit/src/runtime.rs`](../crates/spanda-audit/src/runtime.rs))
-- `verify_requires_connectivity` — spanda-hardware ([`crates/spanda-hardware/src/connectivity_validate.rs`](../crates/spanda-hardware/src/connectivity_validate.rs))
+- `verify_registry_signature` — spanda-package ([`crates/spanda-package/src/registry_sign.rs`](../crates/spanda-package/src/registry_sign.rs))
+- `verify_requires_connectivity` — spanda-connectivity-runtime ([`crates/spanda-connectivity-runtime/src/connectivity_validate.rs`](../crates/spanda-connectivity-runtime/src/connectivity_validate.rs))
 - `verify_rollout_artifact` — spanda-ota ([`crates/spanda-ota/src/bundle.rs`](../crates/spanda-ota/src/bundle.rs))
+- `verify_sha256` — spanda-package ([`crates/spanda-package/src/integrity.rs`](../crates/spanda-package/src/integrity.rs))
 - `verify_signature` — spanda-audit ([`crates/spanda-audit/src/crypto.rs`](../crates/spanda-audit/src/crypto.rs))
 - `verify_source` — spanda-node ([`crates/spanda-node/src/lib.rs`](../crates/spanda-node/src/lib.rs))
 - `verify_traces` — spanda-runtime ([`crates/spanda-runtime/src/replay.rs`](../crates/spanda-runtime/src/replay.rs))
 - `verifyAdapterPackage` — TypeScript core ([`src/adapter-package-verify.ts`](../src/adapter-package-verify.ts))
+- `verifyApprovalsTs` — TypeScript core ([`src/operational.ts`](../src/operational.ts))
 - `verifyCertificationProof` — TypeScript core ([`src/certify-verify.ts`](../src/certify-verify.ts))
 - `VerifyDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
 - `verifyDeployBundle` — TypeScript core ([`src/deploy-bundle.ts`](../src/deploy-bundle.ts))
 - `verifyFileViaCli` — TypeScript core ([`src/rust-bridge.ts`](../src/rust-bridge.ts))
+- `verifyFleetTs` — TypeScript core ([`src/operational.ts`](../src/operational.ts))
 - `verifyFrameworkImports` — TypeScript core ([`src/adapter-verify.ts`](../src/adapter-verify.ts))
 - `verifyHardware` — TypeScript core ([`src/compile.ts`](../src/compile.ts))
 - `verifyHardwareProgram` — TypeScript core ([`src/hardware-verify.ts`](../src/hardware-verify.ts))
 - `verifying_key_hex` — spanda-audit ([`crates/spanda-audit/src/record.rs`](../crates/spanda-audit/src/record.rs))
 - `verifyManifestAdapter` — TypeScript core ([`src/adapter-package-verify.ts`](../src/adapter-package-verify.ts))
+- `verifyMissionAssuranceTs` — TypeScript core ([`src/assurance.ts`](../src/assurance.ts))
+- `verifyMissionTs` — TypeScript core ([`src/operational.ts`](../src/operational.ts))
 - `VerifyOptions` — spanda-hardware ([`crates/spanda-hardware/src/verify.rs`](../crates/spanda-hardware/src/verify.rs))
 - `verifyRequiresConnectivity` — TypeScript core ([`src/connectivity-positioning.ts`](../src/connectivity-positioning.ts))
 - `VerifyResultJs` — spanda-node ([`crates/spanda-node/src/lib.rs`](../crates/spanda-node/src/lib.rs))
@@ -9484,8 +13224,11 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `verifyViaCli` — TypeScript core ([`src/rust-bridge.ts`](../src/rust-bridge.ts))
 - `version` — spanda-package ([`crates/spanda-package/src/manifest.rs`](../crates/spanda-package/src/manifest.rs))
 - `version_satisfies` — spanda-package ([`crates/spanda-package/src/dependency.rs`](../crates/spanda-package/src/dependency.rs))
+- `version_sha256` — spanda-package ([`crates/spanda-package/src/registry_remote.rs`](../crates/spanda-package/src/registry_remote.rs))
+- `version_signature` — spanda-package ([`crates/spanda-package/src/registry_remote.rs`](../crates/spanda-package/src/registry_remote.rs))
 - `versions` — spanda-package ([`crates/spanda-package/src/registry_remote.rs`](../crates/spanda-package/src/registry_remote.rs))
 - `Visibility` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
+- `vision_pro_live_enabled` — spanda-providers ([`crates/spanda-providers/src/hri_backends.rs`](../crates/spanda-providers/src/hri_backends.rs))
 - `VisionPackageStub` — spanda-providers ([`crates/spanda-providers/src/package_stubs.rs`](../crates/spanda-providers/src/package_stubs.rs))
 - `VisionPackageStub::opencv` — spanda-providers ([`crates/spanda-providers/src/package_stubs.rs`](../crates/spanda-providers/src/package_stubs.rs))
 - `VisionProvider` — spanda-runtime ([`crates/spanda-runtime/src/providers/traits.rs`](../crates/spanda-runtime/src/providers/traits.rs))
@@ -9494,6 +13237,11 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `wasm_fmt` — spanda-wasm ([`crates/spanda-wasm/src/lib.rs`](../crates/spanda-wasm/src/lib.rs))
 - `wasm_ir` — spanda-wasm ([`crates/spanda-wasm/src/lib.rs`](../crates/spanda-wasm/src/lib.rs))
 - `wasm_run` — spanda-wasm ([`crates/spanda-wasm/src/lib.rs`](../crates/spanda-wasm/src/lib.rs))
+- `wasm_telemetry_append` — spanda-wasm ([`crates/spanda-wasm/src/lib.rs`](../crates/spanda-wasm/src/lib.rs))
+- `wasm_telemetry_clear` — spanda-wasm ([`crates/spanda-wasm/src/lib.rs`](../crates/spanda-wasm/src/lib.rs))
+- `wasm_telemetry_otlp` — spanda-wasm ([`crates/spanda-wasm/src/lib.rs`](../crates/spanda-wasm/src/lib.rs))
+- `wasm_telemetry_prometheus` — spanda-wasm ([`crates/spanda-wasm/src/lib.rs`](../crates/spanda-wasm/src/lib.rs))
+- `wasm_telemetry_stats` — spanda-wasm ([`crates/spanda-wasm/src/lib.rs`](../crates/spanda-wasm/src/lib.rs))
 - `wasm_verify` — spanda-wasm ([`crates/spanda-wasm/src/lib.rs`](../crates/spanda-wasm/src/lib.rs))
 - `wasm_version` — spanda-wasm ([`crates/spanda-wasm/src/lib.rs`](../crates/spanda-wasm/src/lib.rs))
 - `watchdog_mut` — spanda-runtime ([`crates/spanda-runtime/src/telemetry.rs`](../crates/spanda-runtime/src/telemetry.rs))
@@ -9502,26 +13250,53 @@ Alphabetical index of public functions, methods, structs, enums, traits, and cla
 - `WatchdogMetrics` — spanda-runtime ([`crates/spanda-runtime/src/telemetry.rs`](../crates/spanda-runtime/src/telemetry.rs))
 - `WatchdogRuntime` — spanda-runtime ([`crates/spanda-runtime/src/reliability_runtime.rs`](../crates/spanda-runtime/src/reliability_runtime.rs))
 - `WatchdogRuntime::from_decl` — spanda-runtime ([`crates/spanda-runtime/src/reliability_runtime.rs`](../crates/spanda-runtime/src/reliability_runtime.rs))
+- `WearablePackageStub` — spanda-providers ([`crates/spanda-providers/src/package_stubs.rs`](../crates/spanda-providers/src/package_stubs.rs))
+- `WearablePackageStub::new` — spanda-providers ([`crates/spanda-providers/src/package_stubs.rs`](../crates/spanda-providers/src/package_stubs.rs))
+- `WearableTelemetryProvider` — spanda-runtime ([`crates/spanda-runtime/src/providers/hri.rs`](../crates/spanda-runtime/src/providers/hri.rs))
 - `webots` — spanda-providers ([`crates/spanda-providers/src/package_stubs.rs`](../crates/spanda-providers/src/package_stubs.rs))
 - `WebsocketTransportAdapterLive` — spanda-transport-websocket ([`crates/spanda-transport-websocket/src/adapter.rs`](../crates/spanda-transport-websocket/src/adapter.rs))
+- `weight_for_sensor_type` — spanda-runtime ([`crates/spanda-runtime/src/fusion.rs`](../crates/spanda-runtime/src/fusion.rs))
+- `weighted_confidence` — spanda-runtime ([`crates/spanda-runtime/src/fusion.rs`](../crates/spanda-runtime/src/fusion.rs))
 - `wire_session_material` — spanda-security ([`crates/spanda-security/src/runtime.rs`](../crates/spanda-security/src/runtime.rs))
-- `WireCryptoSession` — spanda-security ([`crates/spanda-security/src/wire_crypto.rs`](../crates/spanda-security/src/wire_crypto.rs))
+- `WireCryptoSession` — spanda-runtime ([`crates/spanda-runtime/src/wire_crypto.rs`](../crates/spanda-runtime/src/wire_crypto.rs))
 - `WireCryptoSession` — TypeScript core ([`src/transport/wire-crypto.ts`](../src/transport/wire-crypto.ts))
-- `WireCryptoSession::from_material` — spanda-security ([`crates/spanda-security/src/wire_crypto.rs`](../crates/spanda-security/src/wire_crypto.rs))
+- `WireCryptoSession::from_material` — spanda-runtime ([`crates/spanda-runtime/src/wire_crypto.rs`](../crates/spanda-runtime/src/wire_crypto.rs))
 - `with_bridges` — spanda-ffi ([`crates/spanda-ffi/src/lib.rs`](../crates/spanda-ffi/src/lib.rs))
+- `with_connectivity` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
+- `with_entity_id` — spanda-audit ([`crates/spanda-audit/src/platform_event.rs`](../crates/spanda-audit/src/platform_event.rs))
+- `with_fleet` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
+- `with_hri_input` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
 - `with_identity` — spanda-audit ([`crates/spanda-audit/src/runtime.rs`](../crates/spanda-audit/src/runtime.rs))
+- `with_ledger` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
+- `with_limit` — spanda-security ([`crates/spanda-security/src/rate_limit.rs`](../crates/spanda-security/src/rate_limit.rs))
+- `with_navigation` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
+- `with_overlay` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
 - `with_permissions` — spanda-security ([`crates/spanda-security/src/runtime.rs`](../crates/spanda-security/src/runtime.rs))
+- `with_positioning` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
 - `with_provenance` — spanda-audit ([`crates/spanda-audit/src/runtime.rs`](../crates/spanda-audit/src/runtime.rs))
 - `with_secrets` — spanda-transport ([`crates/spanda-transport/src/security.rs`](../crates/spanda-transport/src/security.rs))
+- `with_simulation` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
+- `with_slam` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
+- `with_spatial_session` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
 - `with_sync` — spanda-runtime ([`crates/spanda-runtime/src/twin.rs`](../crates/spanda-runtime/src/twin.rs))
+- `with_timestamp` — spanda-audit ([`crates/spanda-audit/src/platform_event.rs`](../crates/spanda-audit/src/platform_event.rs))
 - `with_transport` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
 - `with_transport_for_kind` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
+- `with_trust` — spanda-runtime ([`crates/spanda-runtime/src/security_types.rs`](../crates/spanda-runtime/src/security_types.rs))
 - `with_trust` — spanda-security ([`crates/spanda-security/src/identity.rs`](../crates/spanda-security/src/identity.rs))
+- `with_url` — spanda-cli ([`crates/spanda-cli/src/control_center_client.rs`](../crates/spanda-cli/src/control_center_client.rs))
+- `with_vision` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
+- `with_wearable_telemetry` — spanda-runtime ([`crates/spanda-runtime/src/providers/registry.rs`](../crates/spanda-runtime/src/providers/registry.rs))
 - `wordAtPosition` — TypeScript core ([`src/lsp/symbols.ts`](../src/lsp/symbols.ts))
+- `WorldModelDecl` — spanda-ast ([`crates/spanda-ast/src/foundations.rs`](../crates/spanda-ast/src/foundations.rs))
+- `WorldModelRuntime` — spanda-runtime ([`crates/spanda-runtime/src/world_model.rs`](../crates/spanda-runtime/src/world_model.rs))
+- `WorldModelRuntime::new` — spanda-runtime ([`crates/spanda-runtime/src/world_model.rs`](../crates/spanda-runtime/src/world_model.rs))
 - `wrap_completion` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
 - `wrap_detection` — spanda-ai ([`crates/spanda-ai/src/lib.rs`](../crates/spanda-ai/src/lib.rs))
 - `wrapCompletion` — TypeScript core ([`src/ai/index.ts`](../src/ai/index.ts))
 - `wrapDetection` — TypeScript core ([`src/ai/index.ts`](../src/ai/index.ts))
+- `write_checksum_sidecar` — spanda-package ([`crates/spanda-package/src/integrity.rs`](../crates/spanda-package/src/integrity.rs))
+- `write_modbus_register` — spanda-providers ([`crates/spanda-providers/src/iot_hub.rs`](../crates/spanda-providers/src/iot_hub.rs))
 - `write_plain_response` — spanda-deploy-http ([`crates/spanda-deploy-http/src/lib.rs`](../crates/spanda-deploy-http/src/lib.rs))
 - `writeAgentRegistryToDisk` — TypeScript core ([`src/deploy-remote.ts`](../src/deploy-remote.ts))
 - `writeAgentStateToDisk` — TypeScript core ([`src/deploy-agent.ts`](../src/deploy-agent.ts))

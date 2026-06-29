@@ -52,7 +52,7 @@ In-repo code (`spanda-cli`, `spanda-node`, `spanda-wasm`, …) imports **owning 
 | Compile / run | `spanda_driver::{check, run, compile}` |
 | AST | `spanda_ast::nodes::Program` |
 | Parse | `spanda_parser::parse` |
-| Verify | `spanda_driver::verify_compatibility` |
+| Verify | `spanda_core::verify_compatibility` (or `spanda_core::hardware_verify`) |
 | Transport routing | `spanda_transport_routing::RoutingCommBus` |
 | Live hooks | `spanda_transport_routing::transport_live` |
 

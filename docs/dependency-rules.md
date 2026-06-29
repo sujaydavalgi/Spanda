@@ -63,22 +63,31 @@ Only **upward** Rust path dependencies fail CI (unless waived). Same-layer and d
 
 ## Waiver process
 
-Existing upward dependencies are baselined in `scripts/architecture-manifest.yaml` under `dependency_waivers`. Each waiver has:
+Production upward dependencies are tracked in `scripts/architecture-manifest.yaml` under `dependency_waivers`. As of Phase 8, **all baselines are cleared** — Rust, TypeScript, and SCC waiver lists are empty.
+
+Each waiver entry (when needed) has:
 
 - `from` / `to` crate names
 - `reason` — why the edge exists today
-- `ticket` — tracking ID (`ARCH-xxx`)
+- `ticket` — tracking ID (`ARCH-xxx` or `TS-ARCH-xxx`)
 
 **Adding a new waiver** requires:
 
-1. Architecture review (explain why downward refactor is not immediate)
-2. Entry in `dependency_waivers` with ticket ID
-3. Regenerate `architecture-manifest.json`
+1. Architecture review (explain why a downward refactor is not immediate)
+2. Entry in the appropriate waiver list with ticket ID
+3. Run `scripts/sync_architecture_manifest.sh`
 4. Note in PR description
 
-**Removing a waiver** is the goal — refactors that eliminate upward edges should remove the corresponding waiver in the same PR.
+**Removing a waiver** is the default outcome of refactors — delete the entry in the same PR that eliminates the edge.
 
-Current waiver count: see CI output from `validate_architecture.py`.
+Current counts (should stay at zero):
+
+```bash
+python3 scripts/validate_architecture.py
+# Layer violations (waived): 0
+# TypeScript layer violations (waived): 0
+# Circular dependencies (waived): 0
+```
 
 ---
 
@@ -131,9 +140,7 @@ Full TS layer map: `scripts/architecture-manifest.yaml` → `typescript_packages
 python3 scripts/validate_architecture.py
 
 # Regenerate JSON after manifest edit
-ruby -ryaml -rjson -e \
-  'puts JSON.pretty_generate(YAML.load_file("scripts/architecture-manifest.yaml"))' \
-  > scripts/architecture-manifest.json
+scripts/sync_architecture_manifest.sh
 
 # Dependency graph
 python3 scripts/validate_architecture.py --write-graph docs/architecture-dependency-graph.dot
@@ -162,4 +169,4 @@ flowchart TB
   LEX --> AST[spanda-ast]
 ```
 
-Full edge list: 471 path dependencies across 75 workspace crates (see validation output).
+Full edge list: 399 production path dependencies across 75 workspace crates (see `validate_architecture.py` output).

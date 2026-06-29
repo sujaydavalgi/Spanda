@@ -4,7 +4,7 @@
 
 > **Canonical deep dive:** [architecture.md](../architecture.md) · [lean-core.md](../lean-core.md)
 
-Spanda uses a **lean-core, package-first** workspace. `spanda-driver` orchestrates compile and run; `spanda-interpreter` is the runtime composition root.
+Spanda uses a **lean-core, package-first** workspace. `spanda-driver` orchestrates compile and run; `spanda-interpreter` is the runtime composition root. Hardware compatibility checks are exposed via `spanda-core::hardware_verify`. Platform Architecture v2.1 enforces **zero production upward dependency waivers** in CI — see [platform-architecture.md](../platform-architecture.md).
 
 ## Compiler pipeline
 
@@ -15,9 +15,9 @@ Spanda uses a **lean-core, package-first** workspace. `spanda-driver` orchestrat
         ↓
    lexer → parser → AST → type checker (+ units, safety, capabilities)
         ↓
-   hardware verifier · behavioral verify · capability / health gates
+   hardware verifier (`spanda-core::hardware_verify`) · behavioral verify · capability / health gates
         ↓
-   spanda-certify runtime gate → interpreter + simulator
+   assurance runtime gate (injected) → interpreter + simulator
         ↓
    provider registry ← official packages (ROS2, MQTT, GPS, …)
         ↓

@@ -144,10 +144,10 @@ Architecture governance is enforced by `scripts/validate_architecture.py`:
 | Check | Behavior |
 |-------|----------|
 | Module classification | Every workspace crate must appear in `scripts/architecture-manifest.yaml` |
-| Layer violations | Upward dependencies fail CI unless listed in `dependency_waivers` |
-| Circular dependencies | New strongly connected components fail CI; baseline SCC documented |
+| Layer violations | Upward Rust dependencies fail CI; `dependency_waivers` is empty (0 baseline) |
+| Circular dependencies | Any new strongly connected component in production deps fails CI |
 | Duplicate entity types | Warn if forbidden types appear outside `spanda-config` |
-| TypeScript layer imports | Fail on new upward imports (37 baseline waivers) |
+| TypeScript layer imports | Fail on new upward imports; `typescript_dependency_waivers` is empty (0 baseline) |
 | Manifest YAML/JSON sync | Fail when `.json` is stale |
 | Blueprint governance | Fail when blueprints contain forbidden artifacts |
 | Public API docs | Covered by `scripts/validate_documentation.py` |
@@ -157,8 +157,7 @@ Architecture governance is enforced by `scripts/validate_architecture.py`:
 python3 scripts/validate_architecture.py --verbose
 
 # Regenerate machine-readable manifest after editing YAML
-ruby -ryaml -rjson -e 'puts JSON.pretty_generate(YAML.load_file("scripts/architecture-manifest.yaml"))' \
-  > scripts/architecture-manifest.json
+scripts/sync_architecture_manifest.sh
 
 # Generate dependency graph (Graphviz)
 python3 scripts/validate_architecture.py --write-graph docs/architecture-dependency-graph.dot
@@ -178,7 +177,7 @@ The lean-core refactor (Phases 1–17) established workspace crate boundaries do
 3. **Solution blueprint** governance above interfaces
 4. **Enforceable dependency rules** with regression baselines
 
-Known upward dependencies are tracked as waivers (`ARCH-*`, `TS-ARCH-*`) pending incremental refactors — not blockers for shipping, but **must not grow** without explicit waiver review. The production crate graph is acyclic (no SCC waivers).
+As of **Phase 8** (Platform Architecture v2.1), the production Rust and TypeScript graphs have **zero upward dependency waivers** and **zero SCC waivers**. Any new upward edge or circular strongly connected component fails CI unless an architecture review adds a tracked waiver with a ticket ID. See [architecture-waiver-burn-down.md](./architecture-waiver-burn-down.md) for the completed burn-down history.
 
 ---
 
@@ -192,4 +191,4 @@ Known upward dependencies are tracked as waivers (`ARCH-*`, `TS-ARCH-*`) pending
 | [platform-services.md](./platform-services.md) | Service responsibilities and boundaries |
 | [event-model.md](./event-model.md) | Common event schema and publishers |
 | [design-principles.md](./design-principles.md) | Guiding principles for contributors |
-| [architecture-waiver-burn-down.md](./architecture-waiver-burn-down.md) | Incremental refactor plan for baseline waivers |
+| [architecture-waiver-burn-down.md](./architecture-waiver-burn-down.md) | Completed waiver burn-down history (Phases 1–8) |

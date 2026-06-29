@@ -4,9 +4,10 @@
 
 ## What this crate is
 
-After lean-core Phases 1–20, `spanda-core` is intentionally thin:
+After lean-core Phases 1–20 and Platform Architecture Phase 8, `spanda-core` is intentionally thin:
 
 - **Re-exports** the compile/run pipeline from [`spanda-driver`](../spanda-driver/README.md)
+- **Owns** `hardware_verify` — hardware compatibility checks for embedders and CLI
 - **Re-exports** AST, runtime, tooling, fleet, OTA, and security surfaces via `pub use` shims
 - **Keeps** a small set of compatibility modules (deploy/fleet shims, `providers` facade)
 - **Does not** contain the interpreter body, parser, transport adapters, or transport routing
@@ -24,10 +25,12 @@ use spanda_core::providers::ProviderRegistry;
 Equivalent direct paths (preferred for in-repo code):
 
 ```rust
-use spanda_driver::{check, run, verify_compatibility, RunOptions};
+use spanda_driver::{check, run, RunOptions};
 use spanda_error::SpandaError;
 use spanda_ast::nodes::Program;
 use spanda_providers::ProviderRegistry;
+// Hardware verify stays on the facade for embedders:
+use spanda_core::verify_compatibility;
 ```
 
 ## Removed modules (Phases 17 & 19)
@@ -70,3 +73,4 @@ Integration tests for fleet, OTA, providers, and certify live in the owning work
 
 - [Workspace crate index](../README.md)
 - [lean-core-roadmap.md](../../docs/lean-core-roadmap.md)
+- [platform-architecture.md](../../docs/platform-architecture.md)

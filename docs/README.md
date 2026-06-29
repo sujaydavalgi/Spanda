@@ -39,12 +39,12 @@
 | [architecture.md](./architecture.md) | **Compiler pipeline with diagrams** |
 | [platform-architecture.md](./platform-architecture.md) | **Platform Architecture v2.0 — layers, governance, validation** |
 | [layered-architecture.md](./layered-architecture.md) | **Official layer stack and crate mapping** |
-| [dependency-rules.md](./dependency-rules.md) | **Dependency rules, waivers, anti-patterns** |
+| [dependency-rules.md](./dependency-rules.md) | **Dependency rules, waiver process, anti-patterns** |
 | [module-ownership.md](./module-ownership.md) | **Module ownership matrix** |
 | [platform-services.md](./platform-services.md) | **Platform service boundaries** |
 | [event-model.md](./event-model.md) | **Common event model** |
 | [design-principles.md](./design-principles.md) | **Architectural design principles** |
-| [architecture-waiver-burn-down.md](./architecture-waiver-burn-down.md) | **Waiver burn-down and SCC refactor plan** |
+| [architecture-waiver-burn-down.md](./architecture-waiver-burn-down.md) | **Completed waiver burn-down (Phases 1–8; 0 waivers)** |
 | [lean-core.md](./lean-core.md) | **Lean-core workspace architecture (Phases 1–17)** |
 | [crates/README.md](../crates/README.md) | **Workspace crate index and dependency rules** |
 | [lean-core-roadmap.md](./lean-core-roadmap.md) | **Phased plan — Phases 1–35 complete; crate extraction and verification/DX** |
@@ -241,14 +241,15 @@
 
 ```
 crates/                     Rust workspace — see crates/README.md for full index
-  spanda-core/              Public facade (re-exports + thin shims)
-  spanda-driver/            compile, check, run, verify, SIR, replay, debug
+  spanda-core/              Public facade (re-exports, hardware_verify, thin shims)
+  spanda-driver/            compile, check, run, SIR, replay, debug
+  spanda-connectivity/      Connectivity catalogs and hardware profile foundation types
   spanda-cli/               Native `spanda` binary (crate package name: `spanda`)
   spanda-interpreter/       Tree-walking runtime (~21 modules under src/runtime/)
   spanda-parser/            Parser (lexer → AST)
   spanda-ast/               AST nodes and foundation types
   spanda-typecheck/         Type checker and units
-  spanda-hardware/          Hardware compatibility verification
+  spanda-hardware/          Builtin hardware profile catalog (re-exports connectivity types)
   spanda-transport-routing/ RoutingCommBus, transport_live, live_bridges
   spanda-fleet/             Fleet orchestration, agents, mesh, swarm
   spanda-ota/               OTA deploy, rollout, remote agents

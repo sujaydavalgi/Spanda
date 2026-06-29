@@ -100,7 +100,7 @@ Architecture decisions are worthless without enforcement.
 
 ## 12. Incremental refactor over big bang
 
-Known upward dependencies and the compile-run-verify SCC are baselined with waivers. New violations are blocked; existing waivers are removed incrementally — not ignored permanently.
+Platform Architecture v2.1 reached **zero production upward waivers** (Rust and TypeScript) and **zero SCC waivers** after Phases 1–8. New violations are blocked in CI; waivers are an exception path requiring architecture review — not a permanent escape hatch.
 
 ---
 

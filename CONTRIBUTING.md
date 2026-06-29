@@ -84,6 +84,8 @@ Before each meaningful logic block (`if`, `match`, loops, error paths), add a pl
 | Script | Purpose |
 |--------|---------|
 | `scripts/validate_documentation.py` | Audit coverage; CI warnings |
+| `scripts/validate_architecture.py` | Layer classification, zero-waiver baseline, manifest sync (CI) |
+| `scripts/sync_architecture_manifest.sh` | Regenerate `architecture-manifest.json` after YAML edits |
 | `scripts/add_structured_api_docs.py` | Generate structured API doc blocks |
 | `scripts/fix_structured_doc_gaps.py` | Fix empty Inputs and legacy single-line comments |
 | `scripts/repair_doc_param_typos.py` | Repair truncated parameter names in generated docs |
@@ -106,8 +108,8 @@ Always run `cargo fmt --all` before committing — inline doc insertion can affe
 
 ```
 crates/                 Rust workspace — see crates/README.md
-  spanda-core/          Public facade (re-exports + shims)
-  spanda-driver/        compile, check, run, verify pipeline
+  spanda-core/          Public facade (re-exports, hardware_verify, shims)
+  spanda-driver/        compile, check, run pipeline
   spanda-cli/           Native spanda binary
   spanda-interpreter/   Tree-walking runtime
   spanda-parser/        Parser
@@ -191,11 +193,14 @@ After major work, review and update every file that applies:
 | `docs/feature-status.md` | Stability or capability matrix changes |
 | `docs/getting-started.md` | New commands, workflows, or demo paths |
 | `docs/README.md` | New guides or doc index changes |
+| `docs/platform-architecture.md` | Layer rules, CI governance, dependency policy |
+| `docs/architecture-waiver-burn-down.md` | Waiver baseline changes (should remain at 0) |
 
 Topic-specific docs (update when the area changed):
 
 - Language: `docs/spanda-language.md` (+ dedicated guide if one exists, e.g. `docs/triggers.md`)
-- Runtime / compiler: `docs/architecture.md`
+- Runtime / compiler: `docs/architecture.md`, `docs/lean-core.md`
+- Platform layers / dependencies: `docs/platform-architecture.md`, `docs/dependency-rules.md`
 - Concurrency / fleet / triggers: `docs/concurrency.md`, `docs/triggers.md`
 - Hardware / verify: `docs/hardware-compatibility.md`
 - Packages: `docs/packages.md`, `docs/spanda-toml.md`

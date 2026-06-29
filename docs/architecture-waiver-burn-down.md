@@ -1,6 +1,6 @@
 # Architecture Waiver Burn-Down Plan
 
-Incremental refactor plan for Platform Architecture v2.0 baseline waivers.
+Completed incremental refactor plan for Platform Architecture v2.0 — **all production upward waivers eliminated** (Phase 8).
 
 **Parent:** [platform-architecture.md](./platform-architecture.md) · [dependency-rules.md](./dependency-rules.md)
 
@@ -55,7 +55,7 @@ Validation: `python3 scripts/validate_architecture.py --check-manifest-sync` and
 
 **Closed waivers:** `ARCH-004`–`ARCH-012`, `ARCH-214`, `ARCH-213`. **SCC:** `ARCH-SCC-001`, `ARCH-C02`, `ARCH-C03` dissolved (production graph acyclic).
 
-**Remaining:** None for interpreter upward edges. Remaining `ARCH-*` waivers are interface/platform same-layer edges outside Phase 3 scope.
+**Remaining:** None. All interpreter upward edges and platform-service composition edges closed in Phases 3–8.
 
 **Success:** Interpreter depends on core platform + runtime only; services injected at interface layer.
 

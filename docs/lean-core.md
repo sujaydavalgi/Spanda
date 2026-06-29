@@ -56,11 +56,11 @@ flowchart TB
   LLVM --> DRIVER
   DRIVER --> LEX --> PAR --> TC
   DRIVER --> INT
-  DRIVER --> HW
   INT --> RT
   INT --> ROUTE
   CORE -.-> DRIVER
   CORE -.-> INT
+  CORE -.-> HW
 ```
 
 Full crate index: [crates/README.md](../crates/README.md).
@@ -85,7 +85,8 @@ Full crate index: [crates/README.md](../crates/README.md).
 | Concern | Crate |
 |---------|-------|
 | `compile`, `check`, `run` | `spanda-driver` |
-| Hardware verify | `spanda-hardware` |
+| Hardware verify (`verify_compatibility`) | `spanda-core::hardware_verify` (connectivity + hardware profiles) |
+| Deploy plan extraction | `spanda-ota` (shimmed as `spanda_core::deploy_service`) |
 | Certification | `spanda-certify` |
 | Interpreter | `spanda-interpreter` |
 | `RuntimeHost` wiring | `spanda-runtime-host` |

@@ -136,7 +136,7 @@ FACADE_MAP: list[tuple[str, str, str]] = [
     ("Type check", "spanda_core::types", "spanda_driver::type_check"),
     ("SIR", "spanda_core::sir", "spanda_sir"),
     ("Errors / diagnostics", "spanda_core::SpandaError", "spanda_error"),
-    ("Hardware verify", "spanda_core::verify_compatibility", "spanda_driver / spanda_hardware"),
+    ("Hardware verify", "spanda_core::verify_compatibility", "spanda_core::hardware_verify (connectivity + hardware profiles)"),
     ("Interpreter runtime", "spanda_core::runtime", "spanda_interpreter::runtime"),
     ("RoutingCommBus", "spanda_core::transport", "spanda_transport_routing"),
     ("Live transport hooks", "spanda_core::transport_live (removed)", "spanda_transport_routing::transport_live"),

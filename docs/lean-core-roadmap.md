@@ -146,10 +146,11 @@ Goal: move remaining non-shim bodies into workspace crates; `spanda-driver` owns
 
 | Step | Status |
 |------|--------|
-| Move `build_deploy_plan` AST extraction to `spanda-ota` (+ certify wrapper in `spanda-driver`) | **Complete** |
+| Move `build_deploy_plan` AST extraction to `spanda-ota` | **Complete** (Phase 13); driver OTA dep removed in Phase 8 |
 | Move reliability validators to `spanda-typecheck::reliability_validation` | **Complete** |
 | Move type-check host wiring to `spanda-driver::type_check` | **Complete** |
-| Move `verify_compatibility`, `lower_to_sir`, replay/debug helpers to `spanda-driver` | **Complete** |
+| Move `lower_to_sir`, replay/debug helpers to `spanda-driver` | **Complete** |
+| Move `verify_compatibility` to `spanda-core::hardware_verify` | **Complete** (Phase 8) |
 | Move `validate_certification_standard` to `spanda-runtime-host` | **Complete** |
 | Guard compatibility shims and Phase 13 extractions in `lean_core_shims` | **Complete** |
 
@@ -157,8 +158,9 @@ Goal: move remaining non-shim bodies into workspace crates; `spanda-driver` owns
 
 | Area | Location |
 |------|----------|
-| Compile / verify / run / SIR / replay / debug | `spanda-driver` (re-exported by core) |
-| OTA plan extraction | `spanda-ota::plan` + `spanda-driver::deploy_plan` |
+| Compile / run / SIR / replay / debug | `spanda-driver` (re-exported by core) |
+| Hardware verify | `spanda-core::hardware_verify` |
+| OTA plan extraction | `spanda-ota` (shimmed as `spanda_core::deploy_service`) |
 | Type-check host wiring | `spanda-driver::type_check` |
 | Reliability validators | `spanda-typecheck` |
 | Provider bootstrap | `spanda-core::providers` (intentional composition root) |

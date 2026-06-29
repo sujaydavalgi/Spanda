@@ -7,19 +7,26 @@
 | API | Description |
 |-----|-------------|
 | `compile` / `check` | Lex → parse → type-check (`spanda-lexer`, `spanda-parser`, `spanda-typecheck`) |
-| `run` / `run_program` | Certify gate + FFI defaults + `spanda-interpreter` execution |
-| `verify_compatibility` | Hardware/profile verification via `spanda-hardware` |
+| `run` / `run_program` | Optional FFI defaults + `spanda-interpreter` execution |
 | `lower_to_sir` | AST → SIR for LLVM and tooling |
 | `replay_mission` / `playback_mission` | Mission trace replay helpers |
 | `run_debug` | Debugger integration with `spanda-debug` |
-| `build_deploy_plan` | Deploy plan extraction (with `spanda-ota` + certify) |
 | `debug_session` | Debugger machine (`DebugMachine`, step kinds) |
 | `tokenize` | Lexer wrapper with `SpandaError` diagnostics |
 
+## Related surfaces (not in this crate)
+
+| API | Owner |
+|-----|-------|
+| `verify_compatibility` | `spanda-core::hardware_verify` (public facade) |
+| `build_deploy_plan` | `spanda-ota` (shimmed via `spanda_core::deploy_service`) |
+| Certification runtime gate | `spanda-assurance` (injected at CLI boundary) |
+
 ## Who depends on this crate
 
-- `spanda-cli`, `spanda-node`, `spanda-wasm`, `spanda-dap`, `spanda-llvm` (first-party)
-- `spanda-core` (re-exports public API)
+- `spanda-cli`, `spanda-node`, `spanda-wasm`, `spanda-dap` (first-party)
+- `spanda-llvm` (dev-deps / tests only — no production upward edge)
+- `spanda-core` (re-exports compile/run API)
 
 ## Example
 
@@ -33,4 +40,5 @@ let result = run(source, RunOptions::default())?;
 ## Related
 
 - [spanda-interpreter](../spanda-interpreter/README.md) — runtime execution
-- [spanda-hardware](../spanda-hardware/README.md) — `verify_compatibility`
+- [spanda-core](../spanda-core/README.md) — `verify_compatibility` facade
+- [spanda-ota](../spanda-ota/README.md) — deploy plan extraction

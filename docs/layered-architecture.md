@@ -54,7 +54,7 @@ flowchart LR
 
 1. A module may depend on **strictly lower** layers (e.g. platform services → core platform → runtime).
 2. **Same-layer** dependencies are allowed for horizontal composition (e.g. assurance → readiness).
-3. **Upward** dependencies (lower layer → higher layer) are forbidden unless waived and tracked.
+3. **Upward** dependencies (lower layer → higher layer) are forbidden. The production baseline has **zero** waived upward edges (Phase 8 complete).
 4. **No new circular strongly connected components** without architecture review.
 
 See [dependency-rules.md](./dependency-rules.md).
@@ -68,7 +68,7 @@ Shared primitives with minimal Spanda semantics.
 | Module | Path | Role |
 |--------|------|------|
 | `spanda-audit` | `crates/spanda-audit` | Audit records, provenance, ledger |
-| `spanda-connectivity` | `crates/spanda-connectivity` | GPS/Wi-Fi/BLE/cellular type catalogs |
+| `spanda-connectivity` | `crates/spanda-connectivity` | GPS/Wi-Fi/BLE/cellular catalogs; `HardwareProfile` / `CompatItem` foundation types |
 | `spanda-deploy-http` | `crates/spanda-deploy-http` | Minimal HTTP/1.1 for deploy agents |
 
 ---
@@ -127,7 +127,7 @@ Canonical platform infrastructure — entity model, registries, transport.
 | Module | Path | Role |
 |--------|------|------|
 | `spanda-config` | `crates/spanda-config` | **Entity model**, cascading config, device tree |
-| `spanda-hardware` | `crates/spanda-hardware` | Hardware profiles |
+| `spanda-hardware` | `crates/spanda-hardware` | Builtin profile catalog (re-exports connectivity foundation types) |
 | `spanda-capability` | `crates/spanda-capability` | Capability registry |
 | `spanda-certify` | `crates/spanda-certify` | Deploy certification |
 | `spanda-package` | `crates/spanda-package` | Package registry |
@@ -135,7 +135,7 @@ Canonical platform infrastructure — entity model, registries, transport.
 | `spanda-transport*` | `crates/spanda-transport-*` | Transport adapters and routing |
 | `spanda-fleet` | `crates/spanda-fleet` | Fleet coordination |
 | `spanda-ota` | `crates/spanda-ota` | OTA rollout |
-| `spanda-core` | `crates/spanda-core` | Public facade for embedders |
+| `spanda-core` | `crates/spanda-core` | Public facade for embedders (`hardware_verify`, deploy shims) |
 
 ---
 
