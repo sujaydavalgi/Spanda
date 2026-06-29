@@ -1,0 +1,51 @@
+# Smart space provider wiring — optional packages only.
+# See docs/smart-space-packages.md
+
+[providers.matter]
+package = "spanda-matter"
+gateway_id = "matter-hub-primary"
+
+[providers.thread]
+package = "spanda-thread"
+gateway_id = "matter-hub-backup"
+
+[providers.zigbee]
+package = "spanda-zigbee"
+
+[providers.bacnet]
+package = "spanda-bacnet"
+gateway_id = "bacnet-gw-primary"
+
+[providers.knx]
+package = "spanda-knx"
+enabled = false
+
+[providers.modbus]
+package = "spanda-modbus"
+devices = ["grid-meter-001"]
+
+[providers.mqtt]
+package = "spanda-mqtt"
+broker = "mqtt://localhost:1883"
+
+[providers.home_assistant]
+package = "spanda-home-assistant"
+enabled = false
+url = "http://localhost:8123"
+note = "Interop bridge — Home Assistant remains device authority"
+
+[providers.energy]
+package = "spanda-energy"
+systems = ["solar-001", "battery-001", "ev-charger-001"]
+
+[providers.locks]
+package = "spanda-smart-locks"
+devices = ["lock-front"]
+
+[providers.environment]
+package = "spanda-environment"
+devices = ["co2-lobby"]
+
+[providers.wearables]
+package = "spanda-smartwatch"
+devices = ["watch-patient-001"]

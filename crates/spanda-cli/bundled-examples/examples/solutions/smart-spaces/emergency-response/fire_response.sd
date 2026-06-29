@@ -1,0 +1,72 @@
+// Fire response — evacuation readiness, emergency notification, robot assist
+//
+//   spanda check fire_response.sd
+//   spanda verify fire_response.sd --target BuildingEdgeV1 --config ../spanda.toml
+
+hardware BuildingEdgeV1 {
+  cpu: CortexA72;
+  memory: 8 GB;
+  connectivity [ WiFi, Ethernet, BACnet ];
+}
+
+kill_switch LifeSafetyOverride {
+  priority: critical;
+  action { emergency_stop; }
+}
+
+requires_capability safety_monitoring {}
+requires_capability emergency_notification {}
+
+robot EmergencyOrchestrator {
+  uses hardware BuildingEdgeV1;
+
+  exposes capabilities [
+    safety_monitoring,
+    emergency_notification,
+    lighting_control,
+    access_control,
+    robot_assistance,
+  ];
+
+  mission FireResponse {
+    requires capabilities [ safety_monitoring, emergency_notification ];
+    fire_sequence;
+  }
+
+  mission Evacuation {
+    requires capabilities [ emergency_notification, lighting_control ];
+    evac_sequence;
+  }
+
+  behavior fire_sequence() {
+    loop every 2s {
+      // Fire panel signal → PA, egress lighting, operator notify
+    }
+  }
+
+  behavior evac_sequence() {
+    loop every 5s {
+      // Unlock egress, guide via emergency lighting path
+    }
+  }
+}
+
+health_check EmergencyHealth for robot EmergencyOrchestrator {
+  check connectivity.status == Healthy;
+}
+
+continuity_policy EmergencyLighting {
+  on sensor.failed {
+    verify remaining_capabilities;
+    mode degraded;
+  }
+}
+
+recovery_policy FireRecovery {
+  on sensor.degraded {
+    reassign mission;
+    mode degraded;
+  }
+}
+
+deploy EmergencyOrchestrator to BuildingEdgeV1;

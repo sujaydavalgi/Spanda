@@ -1,0 +1,51 @@
+[package]
+name = "smart-spaces-blueprint"
+version = "0.1.0"
+description = "Official Smart Spaces & Ambient Intelligence Solution Blueprint"
+license = "Apache-2.0"
+
+[dependencies]
+spanda-matter = "0.1"
+spanda-thread = "0.1"
+spanda-zigbee = "0.1"
+spanda-zwave = "0.1"
+spanda-mqtt = "0.1"
+spanda-ble = "0.1"
+spanda-bacnet = "0.1"
+spanda-knx = "0.1"
+spanda-modbus = "0.1"
+spanda-home-assistant = "0.1"
+spanda-energy = "0.1"
+spanda-building = "0.1"
+spanda-smart-locks = "0.1"
+spanda-environment = "0.1"
+spanda-mission-continuity = "0.1"
+spanda-smartwatch = "0.1"
+spanda-voice = "0.1"
+spanda-anomaly = "0.1"
+
+[hardware]
+targets = ["SmartSpaceGatewayV1", "BuildingEdgeV1"]
+
+[capabilities]
+required = [
+  "lighting_control",
+  "climate_control",
+  "access_control",
+  "safety_monitoring",
+  "energy_monitoring",
+]
+
+[safety]
+level = "experimental"
+profile = "smart_space"
+
+[readiness]
+min_score = 85
+profile = "smart_space"
+
+[config]
+devices = "spanda.devices.toml"
+readiness = "spanda.readiness.toml"
+security = "spanda.security.toml"
+providers = "spanda.providers.toml"

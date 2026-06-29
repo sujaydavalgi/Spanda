@@ -37,6 +37,12 @@ rm -rf "${ADAS_DEST}"
 mkdir -p "${ADAS_DEST}"
 cp -R "${ROOT}/examples/solutions/adas/"* "${ADAS_DEST}/"
 
+# Smart Spaces solution blueprint (spanda demo smart-spaces).
+SMART_SPACES_DEST="${ROOT}/crates/spanda-cli/bundled-examples/examples/solutions/smart-spaces"
+rm -rf "${SMART_SPACES_DEST}"
+mkdir -p "${SMART_SPACES_DEST}"
+cp -R "${ROOT}/examples/solutions/smart-spaces/"* "${SMART_SPACES_DEST}/"
+
 echo "✓ Synced bundled examples to crates/spanda-cli/bundled-examples/"
 
 if [[ -x "${ROOT}/scripts/sync_bundled_registry.sh" ]]; then

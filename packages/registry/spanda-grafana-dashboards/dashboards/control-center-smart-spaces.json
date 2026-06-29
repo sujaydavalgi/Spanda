@@ -1,0 +1,111 @@
+{
+  "title": "Spanda Control Center — Smart Spaces",
+  "uid": "spanda-cc-smart-spaces",
+  "tags": ["spanda", "control-center", "smart-spaces", "building", "iot"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Facilities online",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "spanda_control_center_facilities_total",
+          "legendFormat": "facilities"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Zones with occupancy",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "targets": [
+        {
+          "expr": "spanda_control_center_zones_occupied",
+          "legendFormat": "occupied"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Energy systems",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "spanda_control_center_energy_systems_total",
+          "legendFormat": "systems"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Emergency status",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "targets": [
+        {
+          "expr": "spanda_control_center_emergency_active",
+          "legendFormat": "active"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Facility readiness score",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "targets": [
+        {
+          "expr": "spanda_control_center_facility_readiness_score",
+          "legendFormat": "readiness"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Gateway health ratio",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "targets": [
+        {
+          "expr": "spanda_control_center_gateways_healthy / spanda_control_center_gateways_total",
+          "legendFormat": "healthy_ratio"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "table",
+      "title": "Open alerts by severity",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "targets": [
+        {
+          "expr": "spanda_control_center_alerts_total",
+          "legendFormat": "total"
+        },
+        {
+          "expr": "spanda_control_center_alerts_critical",
+          "legendFormat": "critical"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Energy demand (24h)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "targets": [
+        {
+          "expr": "increase(spanda_control_center_energy_demand_kwh[24h])",
+          "legendFormat": "demand_kwh"
+        }
+      ]
+    }
+  ]
+}

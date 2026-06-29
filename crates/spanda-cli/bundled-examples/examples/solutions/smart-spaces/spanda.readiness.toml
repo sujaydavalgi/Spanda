@@ -1,0 +1,54 @@
+# Smart space readiness — pre-mode and emergency gates.
+# See docs/smart-space-readiness.md
+
+[readiness.profiles.smart_space]
+min_score = 85
+min_score_emergency = 95
+require_gateway = true
+require_critical_sensors = true
+
+[readiness.profiles.smart_space.weights]
+gateway_availability = 0.20
+network_connectivity = 0.10
+device_health = 0.15
+battery_levels = 0.10
+calibration = 0.05
+security_status = 0.15
+critical_sensors = 0.15
+emergency_systems = 0.10
+
+[readiness.profiles.smart_space.residential]
+required_devices = [
+  "matter-hub-primary",
+  "lock-front",
+  "smoke-bedroom",
+  "leak-basement",
+]
+optional_devices = [
+  "vacuum-001",
+  "solar-001",
+  "ev-charger-001",
+]
+
+[readiness.profiles.smart_space.commercial]
+required_devices = [
+  "bacnet-gw-primary",
+  "fire-panel-12",
+  "ahu-12",
+]
+optional_devices = [
+  "service-robot-12",
+  "grid-meter-001",
+]
+
+[readiness.profiles.smart_space.missions]
+night_mode = { min_score = 85, required_capabilities = ["lighting_control", "climate_control", "access_control"] }
+fire_response = { min_score = 95, required_capabilities = ["safety_monitoring", "emergency_notification"] }
+leak_response = { min_score = 90, required_capabilities = ["safety_monitoring"] }
+demand_response = { min_score = 85, required_capabilities = ["energy_monitoring", "load_control"] }
+patient_monitoring = { min_score = 90, required_capabilities = ["medical_monitoring"], health_opt_in = true }
+building_lockdown = { min_score = 95, required_capabilities = ["access_control", "safety_monitoring"], require_operator_approval = true }
+
+[readiness.profiles.smart_space.redundancy]
+gateway_failover_required = true
+life_safety_independent_path = true

@@ -1,0 +1,80 @@
+// Night mode — residential readiness-gated lock, light, and HVAC setback
+//
+//   spanda check night_mode.sd
+//   spanda verify night_mode.sd --target SmartSpaceGatewayV1 --config ../spanda.toml
+//   spanda readiness night_mode.sd --profile smart_space --config ../spanda.toml
+
+hardware SmartSpaceGatewayV1 {
+  cpu: CortexA55;
+  memory: 4 GB;
+  connectivity [ WiFi, Ethernet, Thread, Zigbee ];
+  battery { capacity: 0 Wh; }
+}
+
+kill_switch EmergencyStop {
+  priority: critical;
+  action { emergency_stop; }
+}
+
+requires_capability access_control {}
+requires_capability lighting_control {}
+requires_capability climate_control {}
+
+robot HomeOrchestrator {
+  uses hardware SmartSpaceGatewayV1;
+
+  exposes capabilities [
+    lighting_control,
+    climate_control,
+    access_control,
+    safety_monitoring,
+    energy_monitoring,
+  ];
+
+  mission NightMode {
+    requires capabilities [ lighting_control, climate_control, access_control ];
+    night_sequence;
+  }
+
+  mission LeakResponse {
+    requires capabilities [ safety_monitoring ];
+    leak_sequence;
+  }
+
+  behavior night_sequence() {
+    loop every 60s {
+      // Readiness gate enforced by platform before mission start
+    }
+  }
+
+  behavior leak_sequence() {
+    loop every 5s {
+      // Water leak sensor quorum triggers shutoff via providers
+    }
+  }
+}
+
+health_check GatewayHealth for robot HomeOrchestrator {
+  check connectivity.status == Healthy;
+}
+
+health_policy HomeSafety {
+  on Degraded { emergency_stop; }
+  on Critical { emergency_stop; }
+}
+
+continuity_policy NightContinuity {
+  on connectivity.lost {
+    reassign mission;
+    mode degraded;
+  }
+}
+
+recovery_policy LeakRecovery {
+  on sensor.degraded {
+    reassign mission;
+    mode degraded;
+  }
+}
+
+deploy HomeOrchestrator to SmartSpaceGatewayV1;

@@ -1,0 +1,72 @@
+// Floor readiness — commercial building go/no-go, lockdown, inspection patrol
+//
+//   spanda check floor_readiness.sd
+//   spanda verify floor_readiness.sd --target BuildingEdgeV1 --config ../spanda.toml
+
+hardware BuildingEdgeV1 {
+  cpu: CortexA72;
+  memory: 8 GB;
+  connectivity [ WiFi, Ethernet, BACnet, KNX ];
+}
+
+requires_capability access_control {}
+requires_capability safety_monitoring {}
+
+robot BuildingOrchestrator {
+  uses hardware BuildingEdgeV1;
+
+  exposes capabilities [
+    climate_control,
+    access_control,
+    safety_monitoring,
+    emergency_notification,
+    robot_assistance,
+    indoor_navigation,
+  ];
+
+  mission FloorReadiness {
+    requires capabilities [ climate_control, safety_monitoring ];
+    readiness_loop;
+  }
+
+  mission BuildingLockdown {
+    requires capabilities [ access_control, safety_monitoring ];
+    lockdown_sequence;
+  }
+
+  mission InspectionMission {
+    requires capabilities [ robot_assistance, indoor_navigation ];
+    patrol_loop;
+  }
+
+  behavior readiness_loop() {
+    loop every 60s {
+      // Floor readiness rollup for Control Center
+    }
+  }
+
+  behavior lockdown_sequence() {
+    loop every 10s {
+      // Deny access, enable camera record — operator approval required
+    }
+  }
+
+  behavior patrol_loop() {
+    loop every 600s {
+      // Service robot inspection route
+    }
+  }
+}
+
+health_check FirePanelHealth for robot BuildingOrchestrator {
+  check connectivity.status == Healthy;
+}
+
+continuity_policy BuildingContinuity {
+  on robot.failed {
+    resume from checkpoint;
+    reassign mission;
+  }
+}
+
+deploy BuildingOrchestrator to BuildingEdgeV1;

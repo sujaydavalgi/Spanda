@@ -1,0 +1,315 @@
+# Smart space device hierarchy — buildings, zones, gateways, IoT, robots, energy, humans.
+# See docs/smart-space-device-tree.md and docs/solutions/smart-spaces.md
+
+[fleet]
+id = "smart-spaces-fleet"
+
+[[facilities]]
+id = "tower-demo"
+name = "Demo Commercial Tower"
+entity_kind = "facility"
+type = "commercial_building"
+
+[[facilities]]
+id = "home-demo"
+name = "Demo Residence"
+entity_kind = "facility"
+type = "single_family_home"
+parent_fleet = "smart-spaces-fleet"
+
+[[facilities.zones]]
+id = "floor-12"
+facility = "tower-demo"
+name = "Floor 12"
+type = "floor"
+
+[[facilities.zones]]
+id = "room-lobby"
+facility = "tower-demo"
+name = "Lobby"
+parent = "floor-12"
+type = "room"
+
+[[facilities.zones]]
+id = "floor-main"
+facility = "home-demo"
+name = "Main Floor"
+type = "floor"
+
+[[facilities.zones]]
+id = "room-living"
+facility = "home-demo"
+name = "Living Room"
+parent = "floor-main"
+type = "room"
+
+[[facilities.zones]]
+id = "room-bedroom"
+facility = "home-demo"
+name = "Bedroom"
+parent = "floor-main"
+type = "room"
+
+[[facilities.zones]]
+id = "zone-basement"
+facility = "home-demo"
+name = "Basement"
+type = "zone"
+
+[[facilities.zones]]
+id = "patient-room"
+facility = "home-demo"
+name = "Patient Room"
+type = "room"
+health_zone = true
+
+[[facilities.gateways]]
+id = "matter-hub-primary"
+facility = "home-demo"
+type = "MatterHub"
+provider = "spanda-matter"
+role = "primary"
+capabilities = ["lighting_control", "climate_control", "access_control", "safety_monitoring"]
+
+[[facilities.gateways]]
+id = "matter-hub-backup"
+facility = "home-demo"
+type = "MatterHub"
+provider = "spanda-thread"
+role = "backup"
+failover_from = "matter-hub-primary"
+capabilities = ["lighting_control", "climate_control", "safety_monitoring"]
+
+[[facilities.gateways]]
+id = "bacnet-gw-primary"
+facility = "tower-demo"
+type = "BACnetGateway"
+provider = "spanda-bacnet"
+role = "primary"
+capabilities = ["climate_control", "environmental_monitoring"]
+
+[[facilities.gateways]]
+id = "bacnet-gw-backup"
+facility = "tower-demo"
+type = "BACnetGateway"
+provider = "spanda-bacnet"
+role = "backup"
+failover_from = "bacnet-gw-primary"
+
+[[facilities.zones.devices]]
+id = "thermostat-living"
+facility = "home-demo"
+zone = "room-living"
+type = "Thermostat"
+provider = "spanda-matter"
+capabilities = ["climate_control"]
+
+[[facilities.zones.devices]]
+id = "lock-front"
+facility = "home-demo"
+zone = "room-living"
+type = "DoorLock"
+provider = "spanda-smart-locks"
+capabilities = ["access_control"]
+
+[[facilities.zones.devices]]
+id = "smoke-bedroom"
+facility = "home-demo"
+zone = "room-bedroom"
+type = "SmokeDetector"
+provider = "spanda-matter"
+capabilities = ["safety_monitoring"]
+
+[[facilities.zones.devices]]
+id = "co-bedroom"
+facility = "home-demo"
+zone = "room-bedroom"
+type = "CODetector"
+provider = "spanda-matter"
+capabilities = ["safety_monitoring"]
+
+[[facilities.zones.devices]]
+id = "leak-basement"
+facility = "home-demo"
+zone = "zone-basement"
+type = "WaterLeakSensor"
+provider = "spanda-zigbee"
+capabilities = ["safety_monitoring"]
+
+[[facilities.zones.devices]]
+id = "lights-living"
+facility = "home-demo"
+zone = "room-living"
+type = "Lighting"
+provider = "spanda-matter"
+capabilities = ["lighting_control"]
+
+[[facilities.zones.devices]]
+id = "camera-entry"
+facility = "home-demo"
+zone = "room-living"
+type = "Camera"
+provider = "spanda-matter"
+capabilities = ["safety_monitoring", "occupancy_detection"]
+
+[[facilities.zones.devices]]
+id = "ahu-12"
+facility = "tower-demo"
+zone = "floor-12"
+type = "HVAC"
+provider = "spanda-bacnet"
+capabilities = ["climate_control"]
+
+[[facilities.zones.devices]]
+id = "co2-lobby"
+facility = "tower-demo"
+zone = "room-lobby"
+type = "CO2Sensor"
+provider = "spanda-environment"
+capabilities = ["environmental_monitoring"]
+
+[[facilities.zones.devices]]
+id = "fire-panel-12"
+facility = "tower-demo"
+zone = "floor-12"
+type = "FirePanel"
+provider = "spanda-bacnet"
+capabilities = ["safety_monitoring", "emergency_notification"]
+
+[[facilities.robots]]
+id = "vacuum-001"
+facility = "home-demo"
+type = "RobotVacuum"
+provider = "spanda-mqtt"
+capabilities = ["robot_assistance", "occupancy_detection"]
+
+[[facilities.robots]]
+id = "service-robot-12"
+facility = "tower-demo"
+type = "ServiceRobot"
+provider = "spanda-mqtt"
+capabilities = ["robot_assistance", "indoor_navigation"]
+
+[[facilities.energy_systems]]
+id = "solar-001"
+facility = "home-demo"
+type = "SolarInverter"
+provider = "spanda-energy"
+capabilities = ["energy_monitoring", "generation_control"]
+
+[[facilities.energy_systems]]
+id = "battery-001"
+facility = "home-demo"
+type = "BatteryStorage"
+provider = "spanda-energy"
+capabilities = ["energy_storage", "backup_power"]
+
+[[facilities.energy_systems]]
+id = "ev-charger-001"
+facility = "home-demo"
+type = "EVCharger"
+provider = "spanda-energy"
+capabilities = ["ev_charging", "load_shed"]
+
+[[facilities.energy_systems]]
+id = "grid-meter-001"
+facility = "home-demo"
+type = "UtilityMeter"
+provider = "spanda-modbus"
+capabilities = ["energy_monitoring", "grid_import"]
+
+[[facilities.humans]]
+id = "occupant-001"
+facility = "home-demo"
+role = "occupant"
+display_name = "Resident"
+capabilities = ["enter_zone"]
+availability = "home"
+
+[[facilities.humans]]
+id = "patient-001"
+facility = "home-demo"
+role = "occupant"
+health_opt_in = true
+capabilities = ["receive_care"]
+availability = "home"
+
+[[facilities.humans]]
+id = "operator-facilities"
+facility = "tower-demo"
+role = "operator"
+display_name = "Facilities NOC"
+capabilities = ["approve_mission", "emergency_override", "operate_building"]
+trust_level = "trusted"
+
+[[facilities.wearables]]
+id = "watch-patient-001"
+facility = "home-demo"
+type = "SmartWatch"
+provider = "spanda-smartwatch"
+human_id = "patient-001"
+capabilities = ["medical_monitoring", "fall_detection"]
+
+[[facilities.control_center]]
+id = "cc-smart-spaces"
+type = "ControlCenter"
+capabilities = [
+  "building_dashboard",
+  "readiness_rollup",
+  "energy_panel",
+  "emergency_status",
+  "approval_queue",
+]
+
+[[continuity_pairs]]
+primary = "matter-hub-primary"
+backup = "matter-hub-backup"
+on_failure = "promote_backup"
+missions = ["night_mode", "leak_response"]
+
+[[continuity_pairs]]
+primary = "bacnet-gw-primary"
+backup = "bacnet-gw-backup"
+on_failure = "promote_backup"
+missions = ["occupancy_climate", "floor_readiness"]
+
+[[continuity_pairs]]
+primary = "service-robot-12"
+backup = "vacuum-001"
+on_failure = "reassign_robot"
+missions = ["cleaning_mission", "inspection_mission"]
+
+[[twins]]
+id = "building-twin-tower"
+entity_id = "tower-demo"
+entity_type = "facility"
+mirror = ["readiness", "occupancy", "energy", "environment", "emergency_status"]
+replay = true
+
+[[twins]]
+id = "building-twin-home"
+entity_id = "home-demo"
+entity_type = "facility"
+mirror = ["readiness", "occupancy", "energy", "safety_status"]
+replay = true
+
+[[twins]]
+id = "energy-twin-home"
+entity_id = "home-demo"
+entity_type = "energy"
+mirror = ["generation", "storage_soc", "grid_import", "critical_loads"]
+replay = true
+
+[[twins]]
+id = "occupancy-twin-floor-12"
+entity_id = "floor-12"
+entity_type = "occupancy"
+mirror = ["presence", "counts", "zone_flow"]
+replay = true
+
+[[twins]]
+id = "environment-twin-lobby"
+entity_id = "room-lobby"
+entity_type = "environment"
+mirror = ["co2", "temperature", "humidity", "aq_index"]
+replay = true

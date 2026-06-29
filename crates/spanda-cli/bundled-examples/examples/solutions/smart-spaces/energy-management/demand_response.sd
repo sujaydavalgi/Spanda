@@ -1,0 +1,57 @@
+// Demand response — solar, battery, EV, and load shed with readiness gates
+//
+//   spanda check demand_response.sd
+//   spanda verify demand_response.sd --target SmartSpaceGatewayV1 --config ../spanda.toml
+
+hardware SmartSpaceGatewayV1 {
+  cpu: CortexA55;
+  memory: 4 GB;
+  connectivity [ WiFi, Ethernet, Modbus ];
+}
+
+robot EnergyOrchestrator {
+  uses hardware SmartSpaceGatewayV1;
+
+  exposes capabilities [
+    energy_monitoring,
+    energy_storage,
+    ev_charging,
+    load_control,
+    backup_power,
+  ];
+
+  mission DemandResponse {
+    requires capabilities [ energy_monitoring, load_control ];
+    shed_loop;
+  }
+
+  mission PowerFailure {
+    requires capabilities [ backup_power, energy_storage ];
+    island_loop;
+  }
+
+  behavior shed_loop() {
+    loop every 300s {
+      // Shed non-critical loads when grid price signal high
+    }
+  }
+
+  behavior island_loop() {
+    loop every 30s {
+      // Maintain critical circuits on battery during outage
+    }
+  }
+}
+
+health_check EnergyHealth for robot EnergyOrchestrator {
+  check connectivity.status == Healthy;
+}
+
+continuity_policy EnergyContinuity {
+  on connectivity.lost {
+    reassign mission;
+    mode degraded;
+  }
+}
+
+deploy EnergyOrchestrator to SmartSpaceGatewayV1;

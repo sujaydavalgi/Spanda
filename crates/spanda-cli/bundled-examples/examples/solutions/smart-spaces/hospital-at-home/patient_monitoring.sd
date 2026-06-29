@@ -1,0 +1,59 @@
+// Hospital-at-home — patient monitoring with opt-in wearables (Connected Healthcare bridge)
+//
+//   spanda check patient_monitoring.sd
+//   spanda verify patient_monitoring.sd --target SmartSpaceGatewayV1 --config ../spanda.toml
+
+hardware SmartSpaceGatewayV1 {
+  cpu: CortexA55;
+  memory: 4 GB;
+  connectivity [ WiFi, BLE, MQTT ];
+}
+
+requires_capability medical_monitoring {}
+
+robot CareOrchestrator {
+  uses hardware SmartSpaceGatewayV1;
+
+  exposes capabilities [
+    medical_monitoring,
+    safety_monitoring,
+    emergency_notification,
+    occupancy_detection,
+  ];
+
+  mission PatientMonitoring {
+    requires capabilities [ medical_monitoring ];
+    monitor_loop;
+  }
+
+  mission FallAlert {
+    requires capabilities [ medical_monitoring, emergency_notification ];
+    alert_sequence;
+  }
+
+  behavior monitor_loop() {
+    loop every 30s {
+      // Vital sync from wearable — health_opt_in required in device tree
+    }
+  }
+
+  behavior alert_sequence() {
+    loop every 5s {
+      // Fall detection escalates to operator queue
+    }
+  }
+}
+
+health_policy PatientSafety {
+  on Degraded { emergency_stop; }
+  on Critical { emergency_stop; }
+}
+
+recovery_policy CareRecovery {
+  on connectivity.lost {
+    reassign mission;
+    mode degraded;
+  }
+}
+
+deploy CareOrchestrator to SmartSpaceGatewayV1;

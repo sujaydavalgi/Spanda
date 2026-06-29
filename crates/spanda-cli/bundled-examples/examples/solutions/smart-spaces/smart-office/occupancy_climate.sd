@@ -1,0 +1,56 @@
+// Occupancy climate — office zone setback and cleaning robot coordination
+//
+//   spanda check occupancy_climate.sd
+//   spanda verify occupancy_climate.sd --target SmartSpaceGatewayV1 --config ../spanda.toml
+
+hardware SmartSpaceGatewayV1 {
+  cpu: CortexA55;
+  memory: 4 GB;
+  connectivity [ WiFi, Ethernet, BACnet ];
+}
+
+robot OfficeOrchestrator {
+  uses hardware SmartSpaceGatewayV1;
+
+  exposes capabilities [
+    climate_control,
+    occupancy_detection,
+    environmental_monitoring,
+    robot_assistance,
+  ];
+
+  mission OccupancyClimate {
+    requires capabilities [ climate_control, occupancy_detection ];
+    climate_loop;
+  }
+
+  mission CleaningMission {
+    requires capabilities [ robot_assistance, occupancy_detection ];
+    cleaning_loop;
+  }
+
+  behavior climate_loop() {
+    loop every 120s {
+      // BACnet setback when zone unoccupied
+    }
+  }
+
+  behavior cleaning_loop() {
+    loop every 300s {
+      // Assign vacuum when occupancy clears
+    }
+  }
+}
+
+health_check BmsHealth for robot OfficeOrchestrator {
+  check connectivity.status == Healthy;
+}
+
+continuity_policy OfficeContinuity {
+  on connectivity.lost {
+    reassign mission;
+    mode degraded;
+  }
+}
+
+deploy OfficeOrchestrator to SmartSpaceGatewayV1;

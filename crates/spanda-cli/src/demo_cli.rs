@@ -1061,6 +1061,88 @@ fn demo_adas(root: &Path) {
     println!("\nDemo complete. See examples/solutions/adas/README.md and docs/solutions/adas.md");
 }
 
+fn demo_smart_spaces(root: &Path) {
+    crate::bundled_registry::ensure_bundled_registry_env();
+
+    let ss_root = solution(root, &["smart-spaces"]);
+    let config = ss_root.join("spanda.toml");
+    let config_str = config.to_str().unwrap();
+
+    println!("== Smart Spaces & Ambient Intelligence Solution Blueprint ==\n");
+
+    let examples = [
+        (
+            "smart-building/floor_readiness.sd",
+            "Smart building floor readiness",
+            "BuildingEdgeV1",
+        ),
+        (
+            "smart-home/night_mode.sd",
+            "Smart home night mode",
+            "SmartSpaceGatewayV1",
+        ),
+        (
+            "smart-office/occupancy_climate.sd",
+            "Office occupancy and climate",
+            "SmartSpaceGatewayV1",
+        ),
+        (
+            "hospital-at-home/patient_monitoring.sd",
+            "Hospital-at-home monitoring",
+            "SmartSpaceGatewayV1",
+        ),
+        (
+            "energy-management/demand_response.sd",
+            "Energy demand response",
+            "SmartSpaceGatewayV1",
+        ),
+        (
+            "emergency-response/fire_response.sd",
+            "Emergency fire response",
+            "BuildingEdgeV1",
+        ),
+    ];
+
+    for (file, label, target) in examples {
+        let path = ss_root.join(file);
+        if !path.is_file() {
+            continue;
+        }
+        let path_str = path.to_str().unwrap();
+        println!("--- verify {label} ---");
+        run_spanda_args(&["verify", path_str, "--target", target, "--capabilities"]);
+        if config.is_file() {
+            println!("--- readiness {label} ---");
+            run_spanda_args(&[
+                "readiness",
+                path_str,
+                "--profile",
+                "smart_space",
+                "--config",
+                config_str,
+            ]);
+        }
+    }
+
+    let main = ss_root.join("smart-building/floor_readiness.sd");
+    if main.is_file() && config.is_file() {
+        println!("\n--- device tree (tower-demo) ---");
+        run_spanda_args(&[
+            "device-tree",
+            "inspect",
+            "tower-demo",
+            "--config",
+            config_str,
+        ]);
+    }
+
+    println!(
+        "\nDemo complete. Serve Control Center:\n  spanda control-center serve --config {} --program smart-building/floor_readiness.sd",
+        config_str
+    );
+    println!("See examples/solutions/smart-spaces/README.md and docs/solutions/smart-spaces.md");
+}
+
 fn demo_spatial(root: &Path) {
     crate::bundled_registry::ensure_bundled_registry_env();
 
@@ -1136,6 +1218,7 @@ pub fn demo_dispatch(args: &[String]) {
         "gaps" | "platform-gaps" | "maturity-gaps" => demo_gaps(&root),
         "compliance" | "profiles" => demo_compliance(&root),
         "adas" | "automotive" | "highway" => demo_adas(&root),
+        "smart-spaces" | "smartspaces" | "ambient" | "building-automation" => demo_smart_spaces(&root),
         "spatial" | "hri" | "human-collaboration" | "spatial-computing" => demo_spatial(&root),
         "" | "list" | "--help" | "-h" => {
             eprintln!(
@@ -1158,6 +1241,7 @@ pub fn demo_dispatch(args: &[String]) {
                    spoof — GPS spoof-check coverage, trace alerts, mock ML merge\n\
                    compliance — industry profile verification (defense, medical, ISO 26262, ISO 13849, IEC 61508)\n\
                    adas — ADAS & Autonomous Driving Solution Blueprint (verify, readiness, replay, compliance)\n\
+                   smart-spaces — Smart Spaces & Ambient Intelligence blueprint (verify, readiness, device tree)\n\
                    spatial — Human Interaction & Spatial Computing blueprint (human readiness, collaboration)\n\
                    gaps — vendor TPM, AK chain, compliance export, confidence gates\n\n\
                  Set SPANDA_ROOT to the repository root if examples are not found.\n\

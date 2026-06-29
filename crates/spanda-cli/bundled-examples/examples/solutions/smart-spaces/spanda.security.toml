@@ -1,0 +1,25 @@
+# Smart space security — access, trust, audit.
+# See docs/smart-space-security.md
+
+[security.profile]
+name = "smart_space"
+require_tls = true
+audit_access = true
+tamper_block_automation = true
+
+[security.access]
+lock_firmware_allowlist = ["matter-lock-2.1", "zigbee-lock-1.4"]
+after_hours_require_approval = true
+visitor_default_deny = true
+
+[security.trust]
+min_package_trust = 70
+require_device_attestation = false
+
+[security.privacy]
+health_data_opt_in = true
+camera_record_on_lockdown = true
+retention_days = 90
+
+[security.integrations]
+home_assistant_bridge = { enabled = false, read_only_default = true }
