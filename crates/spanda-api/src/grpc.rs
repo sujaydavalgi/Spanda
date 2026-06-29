@@ -1072,6 +1072,64 @@ impl ControlCenter for GrpcControlCenter {
             .json;
         self.respond_mutation("SyncEntities", json, ctx)
     }
+
+    async fn get_smart_spaces_summary(
+        &self,
+        request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        self.with_state(|state| crate::smart_spaces::smart_spaces_summary(state).body)
+            .map(Response::new)
+    }
+
+    async fn list_facilities(
+        &self,
+        request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        self.with_state(|state| crate::smart_spaces::facilities_list(state).body)
+            .map(Response::new)
+    }
+
+    async fn get_facility_readiness(
+        &self,
+        request: Request<EntityIdRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let facility_id = request.into_inner().entity_id;
+        self.with_state(|state| {
+            crate::smart_spaces::facility_readiness_get(state, &facility_id).body
+        })
+        .map(Response::new)
+    }
+
+    async fn get_zone_occupancy(
+        &self,
+        request: Request<EntityIdRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let zone_id = request.into_inner().entity_id;
+        self.with_state(|state| crate::smart_spaces::zone_occupancy_get(state, &zone_id).body)
+            .map(Response::new)
+    }
+
+    async fn list_energy_systems(
+        &self,
+        request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        self.with_state(|state| crate::smart_spaces::energy_systems_list(state).body)
+            .map(Response::new)
+    }
+
+    async fn get_emergency_status(
+        &self,
+        request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        self.with_state(|state| crate::smart_spaces::emergency_status_get(state).body)
+            .map(Response::new)
+    }
 }
 
 /// Start tonic gRPC server on `bind` (blocks the current thread's tokio runtime).

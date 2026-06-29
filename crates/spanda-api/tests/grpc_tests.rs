@@ -493,3 +493,74 @@ async fn grpc_entity_graph_and_mutations_with_warehouse_config() {
         .into_inner();
     assert!(tagged.json.contains("grpc-smoke"));
 }
+
+#[tokio::test]
+async fn grpc_smart_spaces_endpoints_with_blueprint_config() {
+    let _guard = GRPC_TEST_LOCK.lock().unwrap();
+    let ss_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .join("examples/solutions/smart-spaces");
+    let program = ss_root.join("smart-building/floor_readiness.sd");
+    let http_port = pick_port();
+    let grpc_port = pick_port();
+    let options = ControlCenterOptions {
+        bind: format!("127.0.0.1:{http_port}"),
+        grpc_bind: Some(format!("127.0.0.1:{grpc_port}")),
+        config_path: Some(ss_root.clone()),
+        program_path: Some(program),
+        once: true,
+        timeout_ms: 500,
+        ..Default::default()
+    };
+    let grpc_bind = spawn_control_center(options);
+    let mut client = connect(&grpc_bind).await;
+
+    let summary = client
+        .get_smart_spaces_summary(Empty {})
+        .await
+        .expect("smart spaces summary")
+        .into_inner();
+    assert!(summary.json.contains("smart_spaces"));
+
+    let facilities = client
+        .list_facilities(Empty {})
+        .await
+        .expect("list facilities")
+        .into_inner();
+    assert!(facilities.json.contains("tower-demo"));
+
+    let readiness = client
+        .get_facility_readiness(EntityIdRequest {
+            entity_id: "tower-demo".into(),
+        })
+        .await
+        .expect("facility readiness")
+        .into_inner();
+    assert!(readiness.json.contains("readiness_profile"));
+
+    let occupancy = client
+        .get_zone_occupancy(EntityIdRequest {
+            entity_id: "floor-12".into(),
+        })
+        .await
+        .expect("zone occupancy")
+        .into_inner();
+    assert!(occupancy.json.contains("floor-12"));
+
+    let energy = client
+        .list_energy_systems(Empty {})
+        .await
+        .expect("energy systems")
+        .into_inner();
+    assert!(energy.json.contains("solar-001"));
+
+    let emergency = client
+        .get_emergency_status(Empty {})
+        .await
+        .expect("emergency status")
+        .into_inner();
+    assert!(emergency.json.contains("continuity_pairs"));
+}
