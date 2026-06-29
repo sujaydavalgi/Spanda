@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Release `dist plan`:** sync WiX installer product name to `spanda`; exclude maintainer utility binaries (`spanda-compliance`, `spanda-package`) from cargo-dist packaging.
+- **`@davalgi-spanda/web` PR CI:** validate publish tarball with `npm pack --dry-run` instead of `npm publish --dry-run` (fails when the registry version already exists).
 - **Rust SDK crates.io packaging:** make `tonic-build` a required build-dependency so `cargo package` verifies without the `grpc` feature.
 - **Sim `stop_if` false E-stop:** `RunOptions::default()` now sets `lidar_range = 10.0 m` (was `0.0` from derived `Default`, forcing `nearest_distance = 0.01 m` and spurious `stop_if` triggers in `spanda sim` / `spanda run`).
 - **Behavior loop trace recording:** `loop every` in behaviors now emits `behavior_tick` mission trace frames when `--record` is enabled (ADAS `highway_drive.trace` replays deterministically).
