@@ -219,6 +219,19 @@ impl GrpcClient {
         Self::parse_json(resp.into_inner().json)
     }
 
+    /// Unified verification via `VerifyEntity`.
+    pub async fn entity_verify(&mut self, entity_id: &str, body: &Value) -> SpandaResult<Value> {
+        let resp = self
+            .inner
+            .verify_entity(EntityBodyRequest {
+                entity_id: entity_id.to_string(),
+                body_json: body.to_string(),
+            })
+            .await
+            .map_err(|e| SpandaError::connection(e.to_string()))?;
+        Self::parse_json(resp.into_inner().json)
+    }
+
     /// Register or update an entity via `RegisterEntity` (Bearer API key required).
     pub async fn register_entity(&mut self, body: &Value) -> SpandaResult<Value> {
         let request = self.with_bearer(tonic::Request::new(JsonBodyRequest {

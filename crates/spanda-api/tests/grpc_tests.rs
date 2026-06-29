@@ -424,6 +424,21 @@ async fn grpc_entity_graph_and_mutations_with_warehouse_config() {
         .into_inner();
     assert!(trace.json.contains("traceability"));
 
+    let mut verify_req = tonic::Request::new(EntityBodyRequest {
+        entity_id: "rover-001".into(),
+        body_json: "{}".into(),
+    });
+    verify_req.metadata_mut().insert(
+        "authorization",
+        tonic::metadata::MetadataValue::try_from("Bearer grpc-device-test-key").unwrap(),
+    );
+    let verified = client
+        .verify_entity(verify_req)
+        .await
+        .expect("verify entity")
+        .into_inner();
+    assert!(verified.json.contains("entity_id"));
+
     let mut register_req = tonic::Request::new(spanda_api::grpc::spanda_v1::JsonBodyRequest {
         body_json: r#"{
             "id": "grpc-smoke-bay",

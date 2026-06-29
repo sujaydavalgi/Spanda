@@ -999,6 +999,18 @@ impl ControlCenter for GrpcControlCenter {
             .map(Response::new)
     }
 
+    async fn verify_entity(
+        &self,
+        request: Request<EntityBodyRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let inner = request.into_inner();
+        self.with_state(|state| {
+            crate::sdk_ops::entity_verify_json(state, &inner.entity_id, &inner.body_json)
+        })
+        .map(Response::new)
+    }
+
     async fn register_entity(
         &self,
         request: Request<JsonBodyRequest>,
