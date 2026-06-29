@@ -151,6 +151,19 @@ impl SpandaClient {
         json!({ "file": file })
     }
 
+    fn percent_encode_query(value: &str) -> String {
+        let mut out = String::new();
+        for byte in value.bytes() {
+            match byte {
+                b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
+                    out.push(byte as char);
+                }
+                _ => out.push_str(&format!("%{byte:02X}")),
+            }
+        }
+        out
+    }
+
     /// Evaluate operational readiness for a program file.
     pub fn readiness(&self, file_or_project: &str) -> SpandaResult<ReadinessReport> {
         let body = Self::program_body(file_or_project);
@@ -210,6 +223,31 @@ impl SpandaClient {
     /// Fetch the full entity graph for traversal and visualization.
     pub fn entity_graph(&self) -> SpandaResult<Value> {
         self.request("GET", "/v1/entities/graph", None, false)
+    }
+
+    /// Unified traceability across entity registry, program graph, and digital thread.
+    pub fn entity_traceability(
+        &self,
+        entity_id: Option<&str>,
+        capability: Option<&str>,
+        device_id: Option<&str>,
+    ) -> SpandaResult<Value> {
+        let mut query = String::from("/v1/entities/traceability");
+        let mut parts = Vec::new();
+        if let Some(id) = entity_id {
+            parts.push(format!("entity_id={}", Self::percent_encode_query(id)));
+        }
+        if let Some(cap) = capability {
+            parts.push(format!("capability={}", Self::percent_encode_query(cap)));
+        }
+        if let Some(dev) = device_id {
+            parts.push(format!("device_id={}", Self::percent_encode_query(dev)));
+        }
+        if !parts.is_empty() {
+            query.push('?');
+            query.push_str(&parts.join("&"));
+        }
+        self.request("GET", &query, None, false)
     }
 
     /// Get a single entity by id.

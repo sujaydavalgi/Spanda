@@ -148,6 +148,50 @@ class SpandaClient:
     def get_trust(self, entity_id: str) -> Any:
         return self._request("GET", f"/v1/entities/{entity_id}/trust")
 
+    def entity_graph(self) -> Any:
+        return self._request("GET", "/v1/entities/graph")
+
+    def entity_traceability(
+        self,
+        *,
+        entity_id: Optional[str] = None,
+        capability: Optional[str] = None,
+        device_id: Optional[str] = None,
+    ) -> Any:
+        params: list[str] = []
+        if entity_id:
+            params.append(f"entity_id={entity_id}")
+        if capability:
+            params.append(f"capability={capability}")
+        if device_id:
+            params.append(f"device_id={device_id}")
+        query = f"?{'&'.join(params)}" if params else ""
+        return self._request("GET", f"/v1/entities/traceability{query}")
+
+    def query_entities(self, body: Mapping[str, Any]) -> Any:
+        return self._request("POST", "/v1/entities/query", body)
+
+    def register_entity(self, body: Mapping[str, Any]) -> Any:
+        return self._request("POST", "/v1/entities/register", body, auth=True)
+
+    def tag_entity(
+        self,
+        entity_id: str,
+        body: Mapping[str, Any],
+    ) -> Any:
+        return self._request(
+            "POST",
+            f"/v1/entities/{entity_id}/tags",
+            body,
+            auth=True,
+        )
+
+    def relate_entities(self, body: Mapping[str, Any]) -> Any:
+        return self._request("POST", "/v1/entities/relationships", body, auth=True)
+
+    def sync_entities(self) -> Any:
+        return self._request("POST", "/v1/entities/sync", {}, auth=True)
+
     def get_package_trust(self, package: str, version: Optional[str] = None) -> Any:
         path = f"/v1/trust/package?name={package}"
         if version:

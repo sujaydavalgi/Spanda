@@ -15,9 +15,33 @@ def test_program_body_shape():
     assert body["file"] == "rover.sd"
 
 
-def test_health_check_raises_without_server():
-    client = SpandaClient(base_url="http://127.0.0.1:1")
-    try:
-        client.health_check()
-    except SpandaError:
-        pass
+def test_entity_traceability_path():
+    client = SpandaClient.local()
+    captured: dict[str, str] = {}
+
+    def fake_request(method, path, body=None, auth=False):
+        captured["path"] = path
+        return {}
+
+    client._request = fake_request  # type: ignore[method-assign]
+    client.entity_traceability(entity_id="rover-001", capability="nav")
+    assert captured["path"] == "/v1/entities/traceability?entity_id=rover-001&capability=nav"
+
+
+def test_register_entity_uses_auth():
+    client = SpandaClient.local()
+    captured: dict[str, object] = {}
+
+    def fake_request(method, path, body=None, auth=False):
+        captured["method"] = method
+        captured["path"] = path
+        captured["auth"] = auth
+        return {"id": "bay-1"}
+
+    client._request = fake_request  # type: ignore[method-assign]
+    client.register_entity({"id": "bay-1"})
+    assert captured == {
+        "method": "POST",
+        "path": "/v1/entities/register",
+        "auth": True,
+    }

@@ -120,4 +120,27 @@ console.log('ts-sdk entity smoke ok');
   )
 fi
 
+echo "== Python SDK entity mutations =="
+if command -v python3 >/dev/null 2>&1 && [[ -f "${ROOT}/sdk/python/pyproject.toml" ]]; then
+  PYTHONPATH="${ROOT}/sdk/python${PYTHONPATH:+:${PYTHONPATH}}" \
+  SPANDA_CONTROL_CENTER_URL="http://${BIND}" \
+  SPANDA_API_KEY="${SPANDA_API_KEY}" \
+  python3 - <<'PY'
+from spanda_sdk import SpandaClient
+
+client = SpandaClient()
+entities = client.list_entities().get("entities", [])
+if not any(e.get("id") == "smoke-bay" for e in entities):
+    raise SystemExit("smoke-bay missing after register")
+client.tag_entity("smoke-bay", {"add": ["py-sdk-smoke"]})
+graph = client.entity_graph()
+if "graph" not in graph:
+    raise SystemExit("entity graph missing")
+trace = client.entity_traceability(entity_id="rover-001")
+if "traceability" not in trace:
+    raise SystemExit("entity traceability missing")
+print("py-sdk entity smoke ok")
+PY
+fi
+
 echo "Entity model smoke OK"
