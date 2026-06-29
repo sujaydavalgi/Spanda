@@ -36,7 +36,8 @@ jobs:
       - run: cargo clippy --workspace -- -D warnings
       - run: cargo build -p spanda-core --no-default-features
       - run: cargo run -q -p spanda-package --bin registry-index-maintain -- --verify
-      - run: python3 scripts/validate_architecture.py
+      - run: python3 scripts/validate_architecture.py --check-manifest-sync
+      - run: python3 scripts/validate_blueprints.py
       - run: cargo test --workspace
       - run: pip install pytest
       - run: PYTHONPATH=sdk/python python -m pytest sdk/python

@@ -14,7 +14,9 @@ See docs/platform-architecture.md and docs/dependency-rules.md.
 from __future__ import annotations
 
 import argparse
+import json
 import re
+import subprocess
 import sys
 from collections import defaultdict
 from dataclasses import dataclass
@@ -29,10 +31,12 @@ ROOT = Path(__file__).resolve().parent.parent
 MANIFEST_YAML = Path(__file__).resolve().parent / "architecture-manifest.yaml"
 MANIFEST_JSON = Path(__file__).resolve().parent / "architecture-manifest.json"
 CRATES_DIR = ROOT / "crates"
+SRC_DIR = ROOT / "src"
 
 RE_PATH_DEP = re.compile(r'spanda-[\w-]+\s*=\s*\{\s*path\s*=\s*"\.\./([^"]+)"', re.M)
 RE_PACKAGE_NAME = re.compile(r'^name\s*=\s*"([^"]+)"', re.M)
 RE_STRUCT = re.compile(r"^pub struct (Entity\w+|RobotRecord|DeviceRecord|MissionRecord|FleetRecord)\b", re.M)
+RE_TS_IMPORT = re.compile(r"""from\s+['"](\.[^'"]+)['"]""")
 
 
 @dataclass
@@ -342,30 +346,152 @@ def check_cycles(
     return violations, waived
 
 
+def build_layer_index(manifest: dict) -> dict[str, int]:
+    return {layer["id"]: layer["index"] for layer in manifest["layers"]}
+
+
+def check_manifest_sync() -> list[Violation]:
+    if not MANIFEST_YAML.exists() or not MANIFEST_JSON.exists():
+        return [Violation("manifest_sync", "Missing architecture-manifest.yaml or .json")]
+
+    try:
+        proc = subprocess.run(
+            [
+                "ruby",
+                "-ryaml",
+                "-rjson",
+                "-e",
+                f"puts JSON.pretty_generate(YAML.load_file('{MANIFEST_YAML}'))",
+            ],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except (FileNotFoundError, subprocess.CalledProcessError) as exc:
+        return [Violation("manifest_sync", f"Cannot regenerate manifest JSON: {exc}")]
+
+    expected = json.loads(proc.stdout)
+    actual = json.loads(MANIFEST_JSON.read_text(encoding="utf-8"))
+    if expected != actual:
+        return [
+            Violation(
+                "manifest_sync",
+                "architecture-manifest.json is out of sync with architecture-manifest.yaml "
+                "(run scripts/sync_architecture_manifest.sh)",
+            )
+        ]
+    return []
+
+
+def _ts_prefixes(manifest: dict) -> list[tuple[str, str]]:
+    layers = manifest.get("typescript_module_layers", {})
+    return sorted(layers.items(), key=lambda item: -len(item[0]))
+
+
+def _ts_module_id(path: Path) -> str:
+    rel = path.resolve().relative_to(SRC_DIR.resolve()).as_posix()
+    if rel.endswith("/index.ts"):
+        rel = rel[: -len("/index.ts")]
+    elif rel.endswith(".ts"):
+        rel = rel[: -len(".ts")]
+    return rel
+
+
+def _ts_layer_for(path: Path, manifest: dict, layer_index: dict[str, int]) -> int | None:
+    if not path.is_relative_to(SRC_DIR.resolve()):
+        return None
+    rel = path.resolve().relative_to(SRC_DIR.resolve()).as_posix()
+    for prefix, layer_id in _ts_prefixes(manifest):
+        key = prefix.removeprefix("src/")
+        if rel == key or rel.startswith(key + "/"):
+            return layer_index.get(layer_id)
+    return layer_index.get("language_runtime")
+
+
+def _resolve_ts_import(from_file: Path, imp: str) -> Path | None:
+    if not imp.startswith("."):
+        return None
+    spec = imp[:-3] if imp.endswith(".js") else imp
+    base = (from_file.parent / spec).resolve()
+    for candidate in (Path(str(base) + ".ts"), base, base / "index.ts"):
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+def _ts_waiver_key(from_mod: str, to_mod: str) -> tuple[str, str]:
+    return (f"src/{from_mod}", f"src/{to_mod}")
+
+
+def check_typescript_layers(manifest: dict) -> tuple[list[Violation], list[Violation]]:
+    if not SRC_DIR.is_dir():
+        return [], []
+
+    layer_index = build_layer_index(manifest)
+    waivers = {
+        (w["from"], w["to"]) for w in manifest.get("typescript_dependency_waivers", [])
+    }
+    violations: list[Violation] = []
+    waived: list[Violation] = []
+    seen: set[tuple[str, str]] = set()
+
+    for ts_file in sorted(SRC_DIR.rglob("*.ts")):
+        from_layer = _ts_layer_for(ts_file, manifest, layer_index)
+        if from_layer is None:
+            continue
+        text = ts_file.read_text(encoding="utf-8", errors="replace")
+        from_mod = _ts_module_id(ts_file)
+        for match in RE_TS_IMPORT.finditer(text):
+            target = _resolve_ts_import(ts_file, match.group(1))
+            if target is None:
+                continue
+            to_layer = _ts_layer_for(target, manifest, layer_index)
+            if to_layer is None or to_layer <= from_layer:
+                continue
+            to_mod = _ts_module_id(target)
+            edge = (from_mod, to_mod)
+            if edge in seen:
+                continue
+            seen.add(edge)
+            msg = (
+                f"TypeScript layer violation: `src/{from_mod}` (layer {from_layer}) "
+                f"imports `src/{to_mod}` (layer {to_layer})"
+            )
+            if _ts_waiver_key(from_mod, to_mod) in waivers:
+                waived.append(Violation("ts_layer_waiver", msg))
+            else:
+                violations.append(Violation("ts_layer_violation", msg))
+    return violations, waived
+
+
 def check_duplicate_entity_types(manifest: dict) -> list[Violation]:
     owner = manifest["canonical_entity_types"]["owner_crate"]
     forbidden = set(manifest["canonical_entity_types"].get("forbidden_duplicates", []))
+    canonical_primary = set(manifest["canonical_entity_types"].get("primary_types", []))
+    exceptions = {
+        (entry["crate"], entry["type"])
+        for entry in manifest.get("duplicate_type_exceptions", [])
+    }
     violations: list[Violation] = []
 
-    for cargo in CRATES_DIR.glob("*/Cargo.toml"):
-        pkg = crate_dir_to_package(cargo.parent.name)
+    for rs_file in CRATES_DIR.glob("*/src/**/*.rs"):
+        pkg = crate_dir_to_package(rs_file.parts[rs_file.parts.index("crates") + 1])
         if pkg == owner:
             continue
-        lib_rs = cargo.parent / "src" / "lib.rs"
-        if not lib_rs.exists():
-            continue
-        text = lib_rs.read_text(encoding="utf-8", errors="replace")
+        text = rs_file.read_text(encoding="utf-8", errors="replace")
         for match in RE_STRUCT.finditer(text):
             name = match.group(1)
-            if name in forbidden or (name.startswith("Entity") and name not in {
-                "EntityId",  # lightweight newtype aliases may exist
-            }):
-                violations.append(
-                    Violation(
-                        "duplicate_model",
-                        f"`{pkg}` defines `{name}` — canonical entity types live in `{owner}`",
-                    )
+            if (pkg, name) in exceptions:
+                continue
+            if name not in forbidden and name not in canonical_primary:
+                continue
+            violations.append(
+                Violation(
+                    "duplicate_model",
+                    f"`{pkg}` defines `{name}` in `{rs_file.relative_to(ROOT)}` "
+                    f"— canonical entity types live in `{owner}`",
                 )
+            )
     return violations
 
 
@@ -430,6 +556,16 @@ def main() -> int:
         action="store_true",
         help="Treat orphaned crates as warnings instead of errors.",
     )
+    parser.add_argument(
+        "--check-manifest-sync",
+        action="store_true",
+        help="Fail when architecture-manifest.json is out of sync with .yaml.",
+    )
+    parser.add_argument(
+        "--skip-typescript",
+        action="store_true",
+        help="Skip TypeScript layer import validation.",
+    )
     args = parser.parse_args()
 
     manifest = load_manifest()
@@ -439,17 +575,26 @@ def main() -> int:
     all_errors: list[Violation] = []
     all_warnings: list[Violation] = []
 
+    if args.check_manifest_sync:
+        all_errors.extend(check_manifest_sync())
+
     unclassified = check_unclassified(manifest, graph)
     all_errors.extend(unclassified)
 
     layer_violations, layer_waived = check_layer_violations(manifest, graph, layers)
     all_errors.extend(layer_violations)
 
+    if not args.skip_typescript:
+        ts_violations, ts_waived = check_typescript_layers(manifest)
+        all_errors.extend(ts_violations)
+    else:
+        ts_violations, ts_waived = [], []
+
     cycle_violations, cycle_waived = check_cycles(manifest, graph)
     all_errors.extend(cycle_violations)
 
     duplicates = check_duplicate_entity_types(manifest)
-    all_warnings.extend(duplicates)
+    all_errors.extend(duplicates)
 
     orphans = check_orphaned(manifest, graph, layers)
     if args.warn_orphans:
@@ -468,14 +613,16 @@ def main() -> int:
     print(f"Dependency edges: {sum(len(v) for v in graph.values())}")
     print(f"Layer violations (new): {len(layer_violations)}")
     print(f"Layer violations (waived): {len(layer_waived)}")
+    print(f"TypeScript layer violations (new): {len(ts_violations)}")
+    print(f"TypeScript layer violations (waived): {len(ts_waived)}")
     print(f"Circular dependencies (new): {len(cycle_violations)}")
     print(f"Circular dependencies (waived): {len(cycle_waived)}")
     print(f"Unclassified crates: {len(unclassified)}")
-    print(f"Duplicate model warnings: {len(duplicates)}")
+    print(f"Duplicate model violations: {len(duplicates)}")
     print(f"Orphan warnings: {len(orphans)}")
 
     if args.verbose:
-        for v in layer_waived + cycle_waived:
+        for v in layer_waived + cycle_waived + ts_waived:
             print(f"  [waived] {v.message}")
 
     for v in all_warnings:
