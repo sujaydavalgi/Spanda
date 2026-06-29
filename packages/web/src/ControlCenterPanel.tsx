@@ -82,6 +82,7 @@ type Tab =
   | "digital-thread"
   | "adas"
   | "humans"
+  | "smart-spaces"
   | "executive"
   | "traceability";
 
@@ -154,6 +155,12 @@ export function ControlCenterPanel({ apiBase }: Props) {
   const [adasDiagnosis, setAdasDiagnosis] = useState<Record<string, unknown> | null>(null);
   const [adasTrust, setAdasTrust] = useState<Record<string, unknown> | null>(null);
   const [humansList, setHumansList] = useState<Record<string, unknown>[]>([]);
+  const [smartSpacesSummary, setSmartSpacesSummary] = useState<Record<string, unknown> | null>(
+    null,
+  );
+  const [smartSpacesReadiness, setSmartSpacesReadiness] = useState<Record<string, unknown> | null>(
+    null,
+  );
   const [wearablesList, setWearablesList] = useState<Record<string, unknown>[]>([]);
   const [hriSessions, setHriSessions] = useState<Record<string, unknown>[]>([]);
   const [humanHealthPolicy, setHumanHealthPolicy] = useState<Record<string, unknown> | null>(
@@ -463,6 +470,7 @@ export function ControlCenterPanel({ apiBase }: Props) {
     if (tab === "entities") void loadEntities();
     if (tab === "adas") void loadAdas();
     if (tab === "humans") void loadHumans();
+    if (tab === "smart-spaces") void loadSmartSpaces();
     if (tab === "config") void loadConfig();
   }, [tab, base, trustPackageName, apiKey]);
 
@@ -526,6 +534,27 @@ export function ControlCenterPanel({ apiBase }: Props) {
       setHriContext(contextBody);
       setHumanTwins((twinsBody?.twins as Record<string, unknown>[]) ?? []);
       setMissionApprovals((missionApprovalsBody?.approvals as Record<string, unknown>[]) ?? []);
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const loadSmartSpaces = async () => {
+    setBusy(true);
+    try {
+      const [summaryRes, readinessRes] = await Promise.all([
+        fetch(`${base}/v1/smart-spaces/summary`),
+        fetch(`${base}/v1/facilities/tower-demo/readiness`).catch(() =>
+          fetch(`${base}/v1/facilities/home-demo/readiness`),
+        ),
+      ]);
+      if (!summaryRes.ok) throw new Error(`smart-spaces summary ${summaryRes.status}`);
+      setSmartSpacesSummary(await summaryRes.json());
+      if (readinessRes.ok) {
+        setSmartSpacesReadiness(await readinessRes.json());
+      }
     } catch (e) {
       setError(String(e));
     } finally {
@@ -975,6 +1004,7 @@ export function ControlCenterPanel({ apiBase }: Props) {
   const tabLabel = (name: Tab): string => {
     if (name === "adas") return "ADAS";
     if (name === "humans") return "Humans";
+    if (name === "smart-spaces") return "Smart Spaces";
     if (name === "sre") return "SRE";
     if (name === "ota") return "OTA";
     return name.charAt(0).toUpperCase() + name.slice(1).replace(/-/g, " ");
@@ -1001,6 +1031,7 @@ export function ControlCenterPanel({ apiBase }: Props) {
     "digital-thread",
     "adas",
     "humans",
+    "smart-spaces",
     "executive",
     "traceability",
   ];
@@ -1765,6 +1796,55 @@ export function ControlCenterPanel({ apiBase }: Props) {
             Per operator: <code>GET /v1/humans/&#123;id&#125;/readiness</code> · Annotate:{" "}
             <code>POST /v1/hri/sessions/&#123;id&#125;/annotate</code>
           </p>
+        </div>
+      )}
+
+      {tab === "smart-spaces" && (
+        <div>
+          <p className="demo-hint">
+            Serve with{" "}
+            <code>
+              spanda control-center serve --config examples/solutions/smart-spaces/spanda.toml
+              --program smart-building/floor_readiness.sd
+            </code>
+          </p>
+          {smartSpacesSummary ? (
+            <>
+              <dl>
+                <dt>Facilities</dt>
+                <dd>
+                  {String(
+                    (smartSpacesSummary.facilities as { count?: number } | undefined)?.count ?? "—",
+                  )}
+                </dd>
+                <dt>Energy systems</dt>
+                <dd>
+                  {String(
+                    (smartSpacesSummary.energy as { count?: number } | undefined)?.count ?? "—",
+                  )}
+                </dd>
+                <dt>Readiness profile</dt>
+                <dd>{String(smartSpacesSummary.readiness_profile ?? "smart_space")}</dd>
+                <dt>Emergency status</dt>
+                <dd>
+                  {String(
+                    (smartSpacesSummary.emergency as { status?: string } | undefined)?.status ??
+                      "—",
+                  )}
+                </dd>
+              </dl>
+              <h3>Summary</h3>
+              <pre>{JSON.stringify(smartSpacesSummary, null, 2)}</pre>
+              {smartSpacesReadiness && (
+                <>
+                  <h3>Facility readiness</h3>
+                  <pre>{JSON.stringify(smartSpacesReadiness, null, 2)}</pre>
+                </>
+              )}
+            </>
+          ) : (
+            <p>Load with the Smart Spaces blueprint configuration.</p>
+          )}
         </div>
       )}
 
