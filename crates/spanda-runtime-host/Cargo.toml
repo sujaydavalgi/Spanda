@@ -18,6 +18,4 @@ spanda-ai = { path = "../spanda-ai" }
 spanda-ffi = { path = "../spanda-ffi" }
 spanda-hal = { path = "../spanda-hal" }
 spanda-lib-registry = { path = "../spanda-lib-registry" }
-spanda-package = { path = "../spanda-package" }
-spanda-security = { path = "../spanda-security" }
 spanda-typecheck = { path = "../spanda-typecheck" }

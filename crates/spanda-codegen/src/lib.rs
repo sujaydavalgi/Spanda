@@ -29,8 +29,9 @@ pub fn generate(source: &str, target: CodegenTarget) -> Result<String, SpandaErr
     // Example:
     //     let result = spanda_codegen::generate(source, arge);
 
-    // Tokenize the source before parsing.
-    let program = spanda_driver::compile(source)?.program;
+    // Tokenize, parse, then lower to SIR without requiring the full driver pipeline.
+    let tokens = spanda_lexer::tokenize(source)?;
+    let program = spanda_parser::parse(tokens)?;
     let sir = spanda_sir::lower_program(&program);
     Ok(render_from_sir(&sir, &program, target))
 }

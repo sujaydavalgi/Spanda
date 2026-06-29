@@ -13,7 +13,5 @@ serde = { version = "1", features = ["derive"] }
 spanda-ast = { path = "../spanda-ast" }
 spanda-error = { path = "../spanda-error" }
 spanda-lexer = { path = "../spanda-lexer" }
-spanda-lib-registry = { path = "../spanda-lib-registry" }
 spanda-parser = { path = "../spanda-parser" }
-spanda-runtime-host = { path = "../spanda-runtime-host" }
 spanda-typecheck = { path = "../spanda-typecheck" }

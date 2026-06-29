@@ -6,7 +6,6 @@ description = "Spanda SIR → LLVM IR emitter (Milestone 2 foundation)"
 
 [dependencies]
 spanda-ast = { path = "../spanda-ast" }
-spanda-driver = { path = "../spanda-driver" }
 spanda-sir = { path = "../spanda-sir" }
 
 [dev-dependencies]

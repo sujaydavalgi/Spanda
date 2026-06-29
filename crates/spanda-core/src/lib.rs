@@ -47,6 +47,7 @@ pub mod format;
 pub mod foundations;
 pub mod hal;
 pub mod hardware;
+pub mod hardware_verify;
 pub mod hardware_monitor;
 pub mod language_reference;
 pub mod lexer;
@@ -66,8 +67,6 @@ pub mod runtime;
 mod runtime_host;
 pub mod safety;
 pub mod scheduler;
-pub mod security;
-pub mod security_validate;
 pub mod serialize;
 pub mod simulator;
 pub mod sir;
@@ -158,6 +157,9 @@ pub use hardware::{
     list_hardware_profiles, CompatItem, CompatSeverity, CompatibilityMatrix, CompatibilityReport,
     MatrixCell, VerifyOptions,
 };
+pub use hardware_verify::{
+    verify_compatibility, verify_compatibility_target, verify_compatibility_with_registry,
+};
 pub use language_reference::{generate_cli_man_pages, generate_language_reference};
 pub use lint::{lint, LintIssue, LintReport, LintSeverity};
 pub use modules::{load_project_modules, ModuleRegistry};
@@ -167,9 +169,6 @@ pub use replay::{
 };
 pub use robotics_platform::SwarmPolicy;
 pub use scheduler::SchedulerClock;
-pub use security_validate::{
-    security_audit, security_check, SecurityFinding, SecurityReport, SecuritySeverity,
-};
 pub use sir::{
     lower_program, SirBehavior, SirExtern, SirFunction, SirParam, SirProgram, SirStmt,
     SirVisibility,
@@ -187,8 +186,8 @@ pub use telemetry::{
 
 pub use spanda_driver::{
     compile, compile_with_registry, lower_to_sir, playback_mission, replay_mission, run, run_debug,
-    run_program, run_tests, run_tests_with_registry, verify_compatibility,
-    verify_compatibility_target, CompileResult, RunOptions, RunResult, TestRunResult,
+    run_program, run_tests, run_tests_with_registry, CompileResult, RunOptions, RunResult,
+    TestRunResult,
 };
 
 pub fn check(source: &str) -> Result<(), SpandaError> {

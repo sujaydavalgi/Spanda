@@ -2,9 +2,10 @@
 
 use spanda_core::ast::RobotDecl;
 use spanda_core::comm::BusDecl;
-use spanda_core::{check, lexer::tokenize, parser::parse, security_check};
+use spanda_core::{check, lexer::tokenize, parser::parse};
 use spanda_security::{
-    EncryptedMessage, EncryptionMode, SecurePolicy, TrustBoundaryKind, TrustBoundaryRegistry,
+    security_check, EncryptedMessage, EncryptionMode, SecurePolicy, TrustBoundaryKind,
+    TrustBoundaryRegistry,
 };
 
 #[test]
@@ -462,7 +463,7 @@ fn transport_wire_frame_with_source_id() {
 
     use spanda_comm::{CommBus, TransportKind};
     use spanda_runtime::value::RuntimeValue;
-    use spanda_security::{AuthenticationMode, EncryptionMode, IntegrityMode};
+    use spanda_runtime::security_types::{AuthenticationMode, EncryptionMode, IntegrityMode};
     use spanda_transport::security::{TlsTransportSession, TransportSecurityConfig};
     use spanda_transport::TransportConfig;
     use spanda_transport_routing::RoutingCommBus;

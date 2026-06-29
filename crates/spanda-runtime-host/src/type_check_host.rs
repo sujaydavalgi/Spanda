@@ -6,8 +6,9 @@ use spanda_ffi::resolve_ffi_import;
 use spanda_hal::{get_soc_profile, hal_member_from_decl, soc::validate_hal_against_soc};
 use spanda_lib_registry::{all_library_sensor_types, resolve_import};
 use spanda_typecheck::{
-    resolve_std_import, validate_resource_budget, validate_task_priority, validate_task_timing,
-    Diagnostic, TypeCheckHost,
+    import_catalog::resolve_package_import, resolve_std_import, security_capabilities,
+    validate_resource_budget, validate_task_priority, validate_task_timing, Diagnostic,
+    TypeCheckHost,
 };
 use std::collections::HashMap;
 
@@ -44,7 +45,7 @@ impl TypeCheckHost for CoreTypeCheckHost {
             || resolve_ai_import(path).is_some()
             || resolve_std_import(path)
             || resolve_ffi_import(path)
-            || spanda_package::resolve_package_import(path)
+            || resolve_package_import(path)
             || module_registry_has_export
     }
 
@@ -317,7 +318,7 @@ impl TypeCheckHost for CoreTypeCheckHost {
 
         //     let result = spanda_runtime_host::type_check_host::security_capability_known(&self, capability);
 
-        spanda_security::is_known_capability(capability)
+        security_capabilities::is_known_capability(capability)
     }
 
     fn validate_task_timing(&self, task: &spanda_ast::foundations::TaskDecl) -> Vec<Diagnostic> {

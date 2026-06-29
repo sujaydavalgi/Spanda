@@ -5,42 +5,41 @@
 
 use crate::builtin_methods::BUILTIN_METHODS;
 use spanda_lexer::reserved_keywords;
-use spanda_lib_registry::list_libraries;
 use spanda_typecheck::type_system::std_namespaces;
 use spanda_typecheck::{
-    format_type_name, MethodSig, BUILTIN_FUNCTIONS, OBJECT_PROPERTIES, ROBOT_METHODS,
-    SCAN_PROPERTIES,
+    format_type_name, MethodSig, TypeCheckHost, BUILTIN_FUNCTIONS, OBJECT_PROPERTIES,
+    ROBOT_METHODS, SCAN_PROPERTIES,
 };
 use std::collections::BTreeMap;
 
 /// Generate the full Spanda language reference as Markdown.
-pub fn generate_language_reference() -> String {
-    // Description:
-    //     Generate language reference.
-    //
-    // Inputs:
-    //     None.
-    //
-    // Outputs:
-    //     result: String
-    //         Return value from `generate_language_reference`.
-    //
-    // Example:
-
-    //     let result = spanda_docs::language_reference::generate_language_reference();
-
+///
+/// Parameters:
+/// - `host` — type-check host supplying domain-specific validation hooks (capabilities, imports)
+/// - `libraries` — hardware sensor library entries as `(id, description)` pairs
+///
+/// Returns:
+/// Full language reference in Markdown format.
+///
+/// Options:
+/// None.
+///
+/// Example:
+/// let md = generate_language_reference(core_type_check_host(), &libraries);
+pub fn generate_language_reference(host: &dyn TypeCheckHost, libraries: &[(String, String)]) -> String {
+    // Render each section of the language reference in order.
     let mut out = String::new();
     render_header(&mut out);
     render_toc(&mut out);
     render_keywords(&mut out);
     render_triggers(&mut out);
-    render_std_library(&mut out);
+    render_std_library(host, &mut out);
     render_global_functions(&mut out);
-    render_robot_methods(&mut out);
-    render_type_methods(&mut out);
+    render_robot_methods(host, &mut out);
+    render_type_methods(host, &mut out);
     render_object_properties(&mut out);
     render_scan_properties(&mut out);
-    render_hardware_libraries(&mut out);
+    render_hardware_libraries(libraries, &mut out);
     render_cli_reference(&mut out);
     out
 }
@@ -336,7 +335,7 @@ fn namespace_summary(ns: &str) -> &'static str {
     }
 }
 
-fn render_std_library(out: &mut String) {
+fn render_std_library(host: &dyn TypeCheckHost, out: &mut String) {
     // Description:
     //     Render std library.
     //
@@ -367,7 +366,7 @@ fn render_std_library(out: &mut String) {
         }
     }
 
-    let type_methods = BUILTIN_METHODS();
+    let type_methods = BUILTIN_METHODS(host);
     for (ns, types) in &namespaces {
         let anchor = ns.replace('.', "-");
         out.push_str(&format!("### `{ns}` {{#{anchor}}}\n\n"));
@@ -613,7 +612,7 @@ fn render_global_functions(out: &mut String) {
     }
 }
 
-fn render_robot_methods(out: &mut String) {
+fn render_robot_methods(host: &dyn TypeCheckHost, out: &mut String) {
     // Description:
     //     Render robot methods.
     //
@@ -648,7 +647,7 @@ fn render_robot_methods(out: &mut String) {
     }
 }
 
-fn render_type_methods(out: &mut String) {
+fn render_type_methods(host: &dyn TypeCheckHost, out: &mut String) {
     // Description:
     //     Render type methods.
     //
@@ -669,7 +668,7 @@ fn render_type_methods(out: &mut String) {
          Actuator/sensor instances use the type declared in the robot graph.\n\n",
     );
 
-    let methods = BUILTIN_METHODS();
+    let methods = BUILTIN_METHODS(host);
     let mut type_names: Vec<_> = methods.keys().cloned().collect();
     type_names.sort_unstable();
 
@@ -766,60 +765,24 @@ fn render_scan_properties(out: &mut String) {
     out.push('\n');
 }
 
-fn render_hardware_libraries(out: &mut String) {
-    // Description:
-    //     Render hardware libraries.
-    //
-    // Inputs:
-    //     o: &mut String
-    //         Caller-supplied o.
-    //
-    // Outputs:
-    //     None.
-    //
-    // Example:
-
-    //     let result = spanda_docs::language_reference::render_hardware_libraries(o);
-
+fn render_hardware_libraries(libraries: &[(String, String)], out: &mut String) {
+    // Render each hardware library entry from the injected (id, description) list.
     out.push_str("## Hardware sensor libraries\n\n");
     out.push_str(
         "Vendor sensor drivers registered in the runtime. Each sensor type exposes \
          `read()` and `calibrate()` unless noted otherwise.\n\n",
     );
 
-    let mut by_vendor: BTreeMap<String, Vec<_>> = BTreeMap::new();
-    for lib in list_libraries() {
-        by_vendor.entry(lib.vendor.clone()).or_default().push(lib);
+    if libraries.is_empty() {
+        out.push_str("_No hardware libraries registered._\n\n");
+        return;
     }
 
-    for (vendor, libs) in by_vendor {
-        out.push_str(&format!("### {vendor}\n\n"));
-        for lib in libs {
-            out.push_str(&format!(
-                "#### `{id}` — {name} v{version}\n\n",
-                id = lib.id,
-                name = lib.name,
-                version = lib.version
-            ));
-            out.push_str(&lib.description);
-            out.push_str("\n\n");
-            if !lib.sensors.is_empty() {
-                out.push_str("| Sensor type | Model | Interfaces |\n");
-                out.push_str("|-------------|-------|------------|\n");
-                let mut sensors: Vec<_> = lib.sensors.values().collect();
-                sensors.sort_by(|a, b| a.sensor_type.cmp(&b.sensor_type));
-                for sensor in sensors {
-                    let ifaces: Vec<_> = sensor.interfaces.iter().map(|i| i.as_str()).collect();
-                    out.push_str(&format!(
-                        "| `{}` | {} | {} |\n",
-                        sensor.sensor_type,
-                        sensor.model,
-                        ifaces.join(", ")
-                    ));
-                }
-                out.push('\n');
-            }
-        }
+    // Render each (id, description) library entry.
+    for (id, description) in libraries {
+        out.push_str(&format!("### `{id}`\n\n"));
+        out.push_str(description);
+        out.push_str("\n\n");
     }
 }
 
@@ -1308,7 +1271,29 @@ mod tests {
 
         //     let result = spanda_docs::language_reference::language_reference_contains_core_sections();
 
-        let md = generate_language_reference();
+        // Use a minimal noop host for tests to avoid pulling in runtime-host.
+        use spanda_ast::foundations::{ResourceBudgetDecl, TaskDecl};
+        use spanda_ast::nodes::{HalMemberDecl, Span, SpandaType};
+        use spanda_typecheck::diagnostics::Diagnostic;
+        struct NoopHost;
+        impl spanda_typecheck::TypeCheckHost for NoopHost {
+            fn import_path_known(&self, _: &str, _: bool) -> bool { false }
+            fn slam_import_known(&self, _: &str) -> bool { false }
+            fn library_exports_sensor(&self, _: &str, _: &str) -> Option<bool> { None }
+            fn library_sensor_type_known(&self, _: &str) -> bool { false }
+            fn library_sensor_robo_types(&self) -> std::collections::HashMap<String, SpandaType> { Default::default() }
+            fn library_for_sensor_type(&self, _: &str) -> Option<String> { None }
+            fn soc_profile_known(&self, _: &str) -> bool { false }
+            fn validate_hal_against_soc(&self, _: &str, _: &[HalMemberDecl]) -> Vec<String> { vec![] }
+            fn validate_fleet_members(&self, _: &str, _: &[String], _: &[String]) -> Option<String> { None }
+            fn validate_swarm_fleet(&self, _: &str, _: &str, _: &[String]) -> Option<String> { None }
+            fn validate_mission_decl(&self, _: &Option<String>, _: Option<f64>, _: &[String]) -> Option<String> { None }
+            fn security_capability_known(&self, _: &str) -> bool { false }
+            fn validate_task_timing(&self, _: &TaskDecl) -> Vec<Diagnostic> { vec![] }
+            fn validate_task_priority(&self, _: &TaskDecl) -> Vec<Diagnostic> { vec![] }
+            fn validate_resource_budget(&self, _: &ResourceBudgetDecl, _: Span) -> Vec<Diagnostic> { vec![] }
+        }
+        let md = generate_language_reference(&NoopHost, &[]);
         assert!(md.contains("# Spanda Language Reference"));
         assert!(md.contains("## Keywords"));
         assert!(md.contains("## Global functions"));

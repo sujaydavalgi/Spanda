@@ -3,11 +3,16 @@
 pub mod checker;
 pub mod diagnostics;
 pub mod host;
+pub mod import_catalog;
 pub mod message_registry;
 pub mod module_registry;
 pub mod reliability_validation;
+pub mod security_capabilities;
 pub mod type_system;
 pub mod units;
+
+pub use import_catalog::resolve_package_import;
+pub use security_capabilities::is_known_capability;
 
 pub use checker::{
     check, check_with_registry, format_type_name, get_library_for_sensor_type,

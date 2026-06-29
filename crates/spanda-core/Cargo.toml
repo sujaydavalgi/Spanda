@@ -11,7 +11,6 @@ serde_json = "1"
 serde_yaml = "0.9"
 thiserror = "2"
 spanda-audit = { path = "../spanda-audit" }
-spanda-security = { path = "../spanda-security" }
 sha2 = "0.10"
 spanda-connectivity = { path = "../spanda-connectivity" }
 spanda-deploy-http = { path = "../spanda-deploy-http", optional = true }
@@ -66,6 +65,7 @@ glob = "0.3"
 tempfile = "3"
 spanda-capability = { path = "../spanda-capability" }
 spanda-package = { path = "../spanda-package" }
+spanda-security = { path = "../spanda-security" }
 spanda-transport = { path = "../spanda-transport" }
 spanda-transport-routing = { path = "../spanda-transport-routing" }
 spanda-transport-ros2 = { path = "../spanda-transport-ros2" }

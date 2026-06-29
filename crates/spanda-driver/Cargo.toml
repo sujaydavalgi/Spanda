@@ -18,17 +18,14 @@ spanda-typecheck = { path = "../spanda-typecheck" }
 spanda-interpreter = { path = "../spanda-interpreter", default-features = false }
 spanda-bridge = { path = "../spanda-bridge", optional = true }
 spanda-debug = { path = "../spanda-debug" }
-spanda-hardware = { path = "../spanda-hardware" }
-spanda-ota = { path = "../spanda-ota", optional = true }
 spanda-runtime = { path = "../spanda-runtime" }
 spanda-sir = { path = "../spanda-sir" }
 serde = { version = "1", features = ["derive"] }
 
 [features]
 default = ["full"]
-full = ["bridge", "ota", "spanda-interpreter/fleet-http"]
+full = ["bridge", "spanda-interpreter/fleet-http"]
 bridge = ["dep:spanda-bridge"]
-ota = ["dep:spanda-ota"]
 live-ai = ["spanda-interpreter/live-ai"]
 cpp-native = ["bridge", "spanda-bridge/cpp-native"]
 python-native = ["bridge", "spanda-bridge/python-native"]
