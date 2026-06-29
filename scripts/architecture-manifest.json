@@ -922,12 +922,6 @@
       "ticket": "ARCH-212"
     },
     {
-      "from": "spanda-interpreter",
-      "to": "spanda-fleet",
-      "reason": "Interpreter executes fleet coordination builtins.",
-      "ticket": "ARCH-213"
-    },
-    {
       "from": "spanda-llvm",
       "to": "spanda-driver",
       "reason": "LLVM backend shares driver compile context.",
@@ -977,67 +971,7 @@
     }
   ],
   "circular_dependency_waivers": [
-    {
-      "members": [
-        "spanda-ai",
-        "spanda-assurance",
-        "spanda-bridge",
-        "spanda-capability",
-        "spanda-certify",
-        "spanda-comm",
-        "spanda-concurrency",
-        "spanda-config",
-        "spanda-connectivity-runtime",
-        "spanda-driver",
-        "spanda-error",
-        "spanda-ffi",
-        "spanda-fleet",
-        "spanda-hal",
-        "spanda-hardware",
-        "spanda-interpreter",
-        "spanda-lib-registry",
-        "spanda-ota",
-        "spanda-package",
-        "spanda-parser",
-        "spanda-readiness",
-        "spanda-regex-lang",
-        "spanda-runtime",
-        "spanda-runtime-host",
-        "spanda-safety",
-        "spanda-security",
-        "spanda-sir",
-        "spanda-spoofing",
-        "spanda-tamper",
-        "spanda-telemetry-store",
-        "spanda-threat",
-        "spanda-transport",
-        "spanda-transport-dds",
-        "spanda-transport-mqtt",
-        "spanda-transport-ros2",
-        "spanda-transport-routing",
-        "spanda-transport-websocket"
-      ],
-      "ticket": "ARCH-SCC-001",
-      "reason": "Compile-run-verify mesh SCC — refactor tracked in ARCH-2xx roadmap."
-    },
-    {
-      "cycle": [
-        "spanda-driver",
-        "spanda-hardware",
-        "spanda-driver"
-      ],
-      "ticket": "ARCH-C02"
-    },
-    {
-      "cycle": [
-        "spanda-driver",
-        "spanda-interpreter",
-        "spanda-assurance",
-        "spanda-capability",
-        "spanda-driver"
-      ],
-      "ticket": "ARCH-C03"
-    }
+
   ],
   "typescript_dependency_waivers": [
     {

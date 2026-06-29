@@ -168,12 +168,30 @@ def crate_dir_to_package(crate_dir: str) -> str:
 
 
 def discover_crates() -> dict[str, list[str]]:
+    """Build production dependency graph from workspace Cargo.toml files.
+
+    Only ``[dependencies]`` and feature-specific ``[dependencies.*]`` tables are
+    included. ``[dev-dependencies]`` and ``[build-dependencies]`` are excluded
+    because they exist for tests and tooling and must not define runtime layering.
+    """
     graph: dict[str, list[str]] = {}
     for cargo in sorted(CRATES_DIR.glob("*/Cargo.toml")):
         crate_dir = cargo.parent.name
         pkg = crate_dir_to_package(crate_dir)
         text = cargo.read_text(encoding="utf-8")
-        deps = RE_PATH_DEP.findall(text)
+        deps: list[str] = []
+        section: str | None = None
+        for line in text.splitlines():
+            stripped = line.strip()
+            if stripped.startswith("[") and stripped.endswith("]"):
+                section = stripped
+                continue
+            if section is None:
+                continue
+            if section == "[dependencies]" or (
+                section.startswith("[dependencies.") and section.endswith("]")
+            ):
+                deps.extend(RE_PATH_DEP.findall(line))
         graph[pkg] = sorted({crate_dir_to_package(d) for d in deps})
     return graph
 
