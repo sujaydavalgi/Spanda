@@ -58,6 +58,7 @@
     <button type="button" data-tab="digital-thread">Digital Thread</button>
     <button type="button" data-tab="adas">ADAS</button>
     <button type="button" data-tab="humans">Humans</button>
+    <button type="button" data-tab="smart-spaces">Smart Spaces</button>
     <button type="button" data-tab="executive">Executive</button>
   </nav>
   <div id="error" class="error" hidden></div>
@@ -80,9 +81,10 @@
   <section id="tab-digital-thread" class="panel" hidden></section>
   <section id="tab-adas" class="panel" hidden></section>
   <section id="tab-humans" class="panel" hidden></section>
+  <section id="tab-smart-spaces" class="panel" hidden></section>
   <section id="tab-executive" class="panel" hidden></section>
   <script>
-    const tabs = ["dashboard", "fleet", "readiness", "devices", "alerts", "health", "assurance", "diagnosis", "provision", "config", "drift", "ota", "security", "sre", "operator", "audit", "digital-thread", "adas", "humans", "executive"];
+    const tabs = ["dashboard", "fleet", "readiness", "devices", "alerts", "health", "assurance", "diagnosis", "provision", "config", "drift", "ota", "security", "sre", "operator", "audit", "digital-thread", "adas", "humans", "smart-spaces", "executive"];
     const errEl = document.getElementById("error");
 
     function initAuthSetup() {
@@ -136,6 +138,7 @@
         if (tab === "digital-thread") loadDigitalThread();
         if (tab === "adas") loadAdas();
         if (tab === "humans") loadHumans();
+        if (tab === "smart-spaces") loadSmartSpaces();
         if (tab === "executive") loadExecutive();
       });
     });
@@ -670,6 +673,56 @@
         document.getElementById("tab-humans").innerHTML = `
           <h2>Human Interaction</h2>
           <p class="error">Load with spatial-computing <code>--config</code>. ${e}</p>`;
+      }
+    }
+
+    async function loadSmartSpaces() {
+      try {
+        errEl.hidden = true;
+        const [summary, dashboard, readiness] = await Promise.all([
+          api("/v1/smart-spaces/summary"),
+          api("/v1/dashboard"),
+          api("/v1/facilities/tower-demo/readiness").catch(() => api("/v1/facilities/home-demo/readiness")),
+        ]);
+        const facilities = summary.facilities || {};
+        const energy = summary.energy || {};
+        const emergency = summary.emergency || {};
+        const p = dashboard.device_pool || {};
+        const facilityRows = (facilities.facilities || []).map((f) =>
+          `<tr><td>${f.id}</td><td>${f.name || "—"}</td><td>${f.facility_type || "—"}</td></tr>`
+        ).join("");
+        const gatewayRows = (facilities.gateways || []).map((g) =>
+          `<tr><td>${g.id}</td><td>${g.role || "—"}</td><td>${g.provider || "—"}</td><td>${g.failover_from || "—"}</td></tr>`
+        ).join("");
+        const energyRows = (energy.systems || []).map((s) =>
+          `<tr><td>${s.id}</td><td>${s.type || "—"}</td><td>${s.provider || "—"}</td></tr>`
+        ).join("");
+        document.getElementById("tab-smart-spaces").innerHTML = `
+          <h2>Smart Spaces &amp; Ambient Intelligence</h2>
+          <p class="subtitle">Serve with <code>--config examples/solutions/smart-spaces/spanda.toml --program smart-building/floor_readiness.sd</code></p>
+          <div class="grid">
+            <div class="stat"><dt>Facilities</dt><dd>${facilities.count || 0}</dd></div>
+            <div class="stat"><dt>Gateways</dt><dd>${(facilities.gateways || []).length}</dd></div>
+            <div class="stat"><dt>Energy systems</dt><dd>${energy.count || 0}</dd></div>
+            <div class="stat"><dt>Device pool healthy</dt><dd class="ok">${p.healthy || 0}</dd></div>
+            <div class="stat"><dt>Readiness profile</dt><dd>${summary.readiness_profile || "smart_space"}</dd></div>
+            <div class="stat"><dt>Emergency status</dt><dd>${emergency.status || "normal"}</dd></div>
+          </div>
+          <h3>Buildings</h3>
+          <table><thead><tr><th>ID</th><th>Name</th><th>Type</th></tr></thead><tbody>${facilityRows || "<tr><td colspan=3>none</td></tr>"}</tbody></table>
+          <h3>Gateways</h3>
+          <table><thead><tr><th>ID</th><th>Role</th><th>Provider</th><th>Failover</th></tr></thead><tbody>${gatewayRows || "<tr><td colspan=4>none</td></tr>"}</tbody></table>
+          <h3>Energy</h3>
+          <table><thead><tr><th>ID</th><th>Type</th><th>Provider</th></tr></thead><tbody>${energyRows || "<tr><td colspan=3>none</td></tr>"}</tbody></table>
+          <h3>Facility readiness</h3>
+          <pre>${JSON.stringify(readiness, null, 2)}</pre>
+          <h3>Emergency &amp; continuity</h3>
+          <pre>${JSON.stringify(emergency, null, 2)}</pre>
+          <p>API: <code>GET /v1/facilities</code> · <code>GET /v1/energy/systems</code> · <code>GET /v1/emergency/status</code> · <code>GET /v1/zones/{id}/occupancy</code></p>`;
+      } catch (e) {
+        document.getElementById("tab-smart-spaces").innerHTML = `
+          <h2>Smart Spaces</h2>
+          <p class="error">Load with smart-spaces <code>--config</code>. ${e}</p>`;
       }
     }
 

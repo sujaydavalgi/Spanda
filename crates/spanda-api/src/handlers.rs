@@ -266,6 +266,18 @@ pub fn handle_request(
         );
         return (response, correlation_id);
     }
+    if let Some(response) = route_smart_spaces(state, path, &request.method) {
+        e3::record_trace(
+            state,
+            &correlation_id,
+            &request.method,
+            path,
+            response.status,
+            started_ms,
+            ctx.as_ref(),
+        );
+        return (response, correlation_id);
+    }
     let response = match (path, request.method.as_str()) {
         ("/v1/tenant", "GET") => tenant_info(state),
         ("/v1/audit/mutations", "GET") => mutation_audit_list(state, ctx.as_ref()),
@@ -984,6 +996,34 @@ fn route_humans(state: &ControlCenterState, path: &str, method: &str) -> Option<
         ("readiness", "GET") => Some(crate::humans::human_readiness_get(state, human_id)),
         _ => None,
     }
+}
+
+fn route_smart_spaces(state: &ControlCenterState, path: &str, method: &str) -> Option<HttpResponse> {
+    if path == "/v1/facilities" && method == "GET" {
+        return Some(crate::smart_spaces::facilities_list(state));
+    }
+    if path == "/v1/energy/systems" && method == "GET" {
+        return Some(crate::smart_spaces::energy_systems_list(state));
+    }
+    if path == "/v1/emergency/status" && method == "GET" {
+        return Some(crate::smart_spaces::emergency_status_get(state));
+    }
+    if path == "/v1/smart-spaces/summary" && method == "GET" {
+        return Some(crate::smart_spaces::smart_spaces_summary(state));
+    }
+    if let Some(rest) = path.strip_prefix("/v1/facilities/") {
+        let (facility_id, action) = rest.split_once('/').unwrap_or((rest, ""));
+        if action == "readiness" && method == "GET" {
+            return Some(crate::smart_spaces::facility_readiness_get(state, facility_id));
+        }
+    }
+    if let Some(zone_id) = path.strip_prefix("/v1/zones/") {
+        let zone_id = zone_id.strip_suffix("/occupancy").unwrap_or(zone_id);
+        if path.ends_with("/occupancy") && method == "GET" {
+            return Some(crate::smart_spaces::zone_occupancy_get(state, zone_id));
+        }
+    }
+    None
 }
 
 fn route_device_subresource(

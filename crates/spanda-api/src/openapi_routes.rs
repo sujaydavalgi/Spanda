@@ -426,4 +426,28 @@ pub const REST_V1_ROUTES: &[ApiRoute] = &[
         method: "GET",
         path: "/v1/human-health/policy",
     },
+    ApiRoute {
+        method: "GET",
+        path: "/v1/facilities",
+    },
+    ApiRoute {
+        method: "GET",
+        path: "/v1/facilities/{id}/readiness",
+    },
+    ApiRoute {
+        method: "GET",
+        path: "/v1/zones/{id}/occupancy",
+    },
+    ApiRoute {
+        method: "GET",
+        path: "/v1/energy/systems",
+    },
+    ApiRoute {
+        method: "GET",
+        path: "/v1/emergency/status",
+    },
+    ApiRoute {
+        method: "GET",
+        path: "/v1/smart-spaces/summary",
+    },
 ];
