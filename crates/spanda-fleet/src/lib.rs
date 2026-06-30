@@ -5,6 +5,7 @@ pub mod continuity_agent;
 pub mod continuity_mesh;
 pub mod mesh;
 pub mod orchestrator;
+pub mod platform_events;
 pub mod recovery_agent;
 pub mod recovery_mesh;
 pub mod remote;

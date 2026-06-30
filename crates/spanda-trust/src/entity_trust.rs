@@ -2,6 +2,7 @@
 //!
 use serde::{Deserialize, Serialize};
 use spanda_ast::nodes::Program;
+use crate::platform_events::record_entity_trust_platform_events;
 use spanda_config::{
     evaluate_quarantine_policy, EntityKind, EntityRecord, EntityRegistry, EntityTrustStatus,
     ResolvedSystemConfig,
@@ -120,7 +121,7 @@ pub fn evaluate_entity_trust(
             EntityTrustStatus::Untrusted | EntityTrustStatus::Compromised
         );
     let score = trust_score(&categories, entity);
-    Some(EntityTrustReport {
+    let report = EntityTrustReport {
         entity_id: entity.id.clone(),
         entity_type: entity.kind().to_string(),
         trust_status: entity.trust_status.as_str().to_string(),
@@ -132,7 +133,9 @@ pub fn evaluate_entity_trust(
         tamper_status,
         threat_status,
         sources,
-    })
+    };
+    record_entity_trust_platform_events(&report);
+    Some(report)
 }
 
 fn is_device_kind(kind: &EntityKind) -> bool {

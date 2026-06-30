@@ -1,6 +1,7 @@
 //! Remote OTA rollout via HTTP deploy agents.
 
 use crate::bundle::DeployArtifactBundle;
+use crate::platform_events::record_ota_rollout_completed;
 use crate::service::{deploy_target_key, plan_rollout};
 use crate::types::{
     CertificationProofSummary, DeployAssignment, DeployPlan, RolloutOptions, RolloutResult,
@@ -605,13 +606,15 @@ pub fn execute_remote_rollout(
         }
     }
 
-    RolloutResult {
+    let result = RolloutResult {
         strategy: options.strategy,
         version: options.version.clone(),
         dry_run: false,
         steps,
         success,
-    }
+    };
+    record_ota_rollout_completed(plan, &result);
+    result
 }
 
 pub fn execute_remote_rollback(plan: &DeployPlan, registry: &DeployAgentRegistry) -> RolloutResult {

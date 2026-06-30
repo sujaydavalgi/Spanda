@@ -7,6 +7,7 @@ pub mod detect;
 pub mod diagnosis;
 pub mod fleet;
 pub mod integrity;
+pub mod platform_events;
 pub mod policy;
 pub mod remote_attestation;
 pub mod runtime;

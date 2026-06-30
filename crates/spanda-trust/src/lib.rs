@@ -2,6 +2,7 @@
 //!
 pub mod composite;
 pub mod entity_trust;
+pub mod platform_events;
 
 pub use composite::{
     evaluate_composite_trust, format_composite_trust, CompositeTrustFormat, CompositeTrustOptions,

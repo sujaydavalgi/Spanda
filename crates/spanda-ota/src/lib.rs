@@ -4,6 +4,7 @@ pub mod agent;
 pub mod bundle;
 pub mod deploy_plan;
 pub mod plan;
+pub mod platform_events;
 pub mod remote;
 pub mod service;
 pub mod types;

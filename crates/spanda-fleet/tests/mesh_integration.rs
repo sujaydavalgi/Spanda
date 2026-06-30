@@ -19,6 +19,7 @@ fn init_runtimes() {
     RUNTIME_INIT.call_once(|| {
         spanda_tamper::runtime_bridge::register();
         spanda_telemetry_store::fleet_runtime_bridge::register();
+        spanda_telemetry_store::register_platform_event_runtime();
     });
 }
 

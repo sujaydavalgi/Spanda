@@ -2,11 +2,12 @@
 //!
 use spanda_audit::platform_event::names;
 use spanda_audit::{AuditRuntime, PlatformEvent};
+use spanda_runtime::publish_platform_event;
 use serde_json::json;
 
 use crate::entity_readiness::EntityReadinessReport;
 
-/// Record a `ReadinessChanged` platform event for an entity readiness report.
+/// Record readiness platform events for an entity readiness report.
 pub fn record_readiness_platform_event(
     audit: &mut AuditRuntime,
     report: &EntityReadinessReport,
@@ -24,6 +25,19 @@ pub fn record_readiness_platform_event(
         }),
     )
     .with_entity_id(report.entity_id.clone());
-    let _ = audit.record_platform_event(&event);
-    let _ = spanda_telemetry_store::record_platform_event(&event);
+    publish_platform_event(Some(audit), &event);
+
+    if !report.mission_ready {
+        let gate_event = PlatformEvent::new(
+            names::READINESS_GATE_FAILED,
+            "spanda-readiness",
+            json!({
+                "entity_type": report.entity_type,
+                "score": report.score,
+                "issues": report.issues,
+            }),
+        )
+        .with_entity_id(report.entity_id.clone());
+        publish_platform_event(Some(audit), &gate_event);
+    }
 }

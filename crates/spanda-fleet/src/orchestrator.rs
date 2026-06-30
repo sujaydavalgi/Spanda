@@ -4,6 +4,7 @@
 //! then executes a round-robin mission coordination pass across fleet members.
 
 use crate::mesh::relay_deliveries_via_mesh;
+use crate::platform_events::record_fleet_member_joined;
 use crate::remote::{relay_peer_deliveries, FleetAgentRegistry};
 pub use crate::types::PeerDelivery;
 use serde::{Deserialize, Serialize};
@@ -331,6 +332,7 @@ pub fn orchestrate_fleets(program: &Program, program_path: &str) -> FleetOrchest
         let mut mesh = FleetPeerMesh::new();
 
         for member_name in members {
+            record_fleet_member_joined(name, member_name);
             mesh.register_robot(member_name);
         }
 

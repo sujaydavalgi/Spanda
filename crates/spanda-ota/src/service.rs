@@ -1,5 +1,6 @@
 //! OTA rollout planning, state tracking, and certification gates.
 //!
+use crate::platform_events::{record_ota_rollout_completed, record_ota_rollout_started};
 use crate::types::*;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -128,25 +129,30 @@ pub fn plan_rollout(plan: &DeployPlan, options: &RolloutOptions) -> RolloutResul
     // Example:
     //     let result = spanda_ota::service::plan_rollout(plan, options);
     if validate_rollout_certification(plan, options).is_err() {
-        return RolloutResult {
+        let result = RolloutResult {
             strategy: options.strategy,
             version: options.version.clone(),
             dry_run: options.dry_run,
             steps: vec![],
             success: false,
         };
+        record_ota_rollout_completed(plan, &result);
+        return result;
     }
+    record_ota_rollout_started(plan, options, plan.assignments.len());
     let total = plan.assignments.len();
     let mut steps = Vec::new();
 
     if total == 0 {
-        return RolloutResult {
+        let result = RolloutResult {
             strategy: options.strategy,
             version: options.version.clone(),
             dry_run: options.dry_run,
             steps,
             success: true,
         };
+        record_ota_rollout_completed(plan, &result);
+        return result;
     }
 
     match options.strategy {
@@ -237,13 +243,15 @@ pub fn plan_rollout(plan: &DeployPlan, options: &RolloutOptions) -> RolloutResul
         }
     }
 
-    RolloutResult {
+    let result = RolloutResult {
         strategy: options.strategy,
         version: options.version.clone(),
         dry_run: options.dry_run,
         success: !steps.iter().any(|s| s.status == RolloutStepStatus::Failed),
         steps,
-    }
+    };
+    record_ota_rollout_completed(plan, &result);
+    result
 }
 
 /// Apply a successful rollout to persistent deploy state.

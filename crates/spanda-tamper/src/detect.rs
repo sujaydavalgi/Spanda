@@ -1,5 +1,6 @@
 //! Verify-time tamper detection composing threat, audit, and security engines.
 
+use crate::platform_events::record_tamper_platform_events;
 use crate::policy::tamper_policy_coverage;
 use crate::secure_boot::{evaluate_secure_boot_coverage, is_secure_boot_contract};
 use serde::{Deserialize, Serialize};
@@ -138,13 +139,15 @@ pub fn generate_tamper_check(program: &Program, source_label: &str) -> TamperRep
     let status = derive_status(&findings, trust_score);
     let passed = matches!(status, TamperStatus::Trusted | TamperStatus::Suspicious);
 
-    TamperReport {
+    let report = TamperReport {
         program: source_label.into(),
         status,
         trust_score,
         findings,
         passed,
-    }
+    };
+    record_tamper_platform_events(&report);
+    report
 }
 
 /// Format a tamper report for CLI output.
