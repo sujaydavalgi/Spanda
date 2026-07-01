@@ -104,7 +104,7 @@ Validation: `python3 scripts/validate_architecture.py --check-manifest-sync` and
 |-----------|--------|--------|
 | Entity API mutations | `EntityCreated`, `EntityTagged`, `EntityRelated`, `EntityUpdated` | **Shipped** |
 | Readiness | `ReadinessChanged`, `ReadinessGateFailed` | **Shipped** |
-| Health | `HealthChanged`, `HealthCheckFailed`, `DegradedModeEntered` | **Shipped** (entity health evaluation) |
+| Health | `HealthChanged`, `HealthCheckFailed`, `DegradedModeEntered` | **Shipped** (transition-only `HealthChanged`; entity health evaluation) |
 | Interpreter missions | `MissionStarted`, `MissionCompleted`, `MissionPaused`, `MissionAborted` | **Shipped** |
 | Recovery | `RecoveryTriggered`, `RecoveryCompleted`, `RecoveryFailed` | **Shipped** (runtime recovery execution) |
 | Trust | `TrustUpdated`, `TrustGateFailed` | **Shipped** |

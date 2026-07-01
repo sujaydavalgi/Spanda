@@ -50,6 +50,8 @@ See [entity-apis.md](./entity-apis.md).
 
 Published by runtime HAL, watchdogs, and entity health evaluation.
 
+`HealthChanged` is emitted only when an entity's cached health status changes (not on every evaluation). The first observation uses `from: "unknown"`. `HealthCheckFailed` and `DegradedModeEntered` still emit when their conditions match each evaluation.
+
 | Event | When | Key fields |
 |-------|------|------------|
 | `HealthChanged` | Health status transition | `entity_id`, `from`, `to`, `reason` |
