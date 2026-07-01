@@ -50,7 +50,7 @@ pub use entity_readiness::{
 };
 pub use platform_events::{
     record_entity_health_platform_events, record_readiness_platform_event,
-    reset_health_status_cache_for_tests,
+    reset_health_status_cache_for_tests, reset_platform_event_caches_for_tests,
 };
 pub use entity_verify::{
     verify_entity, EntityVerifyFinding, EntityVerifyOptions, EntityVerifyReport,
