@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Smart Spaces live readiness:** weighted factor scoring from `spanda.readiness.toml` (gateways, devices, sensors, emergency); robots/wearables/trust panels in Control Center UI; `spanda control-center smart-spaces` CLI; REST/gRPC SDK wrappers (`smart_spaces_summary`, `facility_readiness`, …).
 - **Smart Spaces extended panels:** device inventory, facility health/security/floor-map, zone environment, energy detail, occupancy timeline; six additional golden traces; `smart_spaces_stable_init.sh` and `smart_spaces_security_self_audit.sh`.
 - **Smart Spaces promotion hardening:** `smart-spaces-promotion-gate` CI job; promotion gate auto-builds release `spanda` when `SPANDA_BIN` unset; blueprint `certify` + `safety` blocks and fleet orchestrator robots; KNX package bridge docs parity with BACnet.
+- **Smart Spaces native BACnet/KNX:** bacpypes3 and xknx reads in `spanda_python_bridge.py` with mock fallback; package `read_point` / `read_group` scripts and optional `requirements-*.txt`; hardware smoke via `SPANDA_LIVE_IOT_HARDWARE=1`.
 
 ### Changed
 

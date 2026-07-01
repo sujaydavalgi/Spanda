@@ -20,7 +20,7 @@ The Smart Spaces Solution Blueprint is shipped at **Experimental** tier with CI 
 | Grafana dashboard | `control-center-smart-spaces.json` template | **Shipped** |
 | Golden traces | Emergency / mode-change deterministic replay | **Shipped** — fire, gateway failover, power island, water leak fixtures |
 | Bundled offline registry | Smart Spaces packages in `bundled-registry` | **Shipped** |
-| Live building I/O | BACnet/KNX/Thread/Z-Wave/HA env bridges | **Shipped** (experimental) — `SPANDA_LIVE_*` + `scripts/smart_spaces_live_iot_smoke.sh` |
+| Live building I/O | BACnet/KNX/Thread/Z-Wave/HA env bridges + bacpypes3/xknx | **Shipped** (experimental) — `SPANDA_LIVE_*`, package `read_*.sh` scripts, `scripts/smart_spaces_live_iot_smoke.sh` |
 | Field soak | 30-day smart-building pilot without regression | **Pending** (operational) — `./scripts/smart_spaces_stable_init.sh` |
 | Security audit | Third-party review of life-safety and access-control paths | **Pending** (operational) — automated self-audit **shipped** |
 | Extended panels API | devices, health, security, environment, floor-map, energy detail | **Shipped** |
@@ -65,4 +65,4 @@ The gate runs:
 
 1. **30-day field soak** — run `./scripts/smart_spaces_stable_init.sh` then pilot; gate with `SPANDA_SMART_SPACES_SKIP_SOAK=0`
 2. **Third-party security audit sign-off** — human review after `./scripts/smart_spaces_security_self_audit.sh`; full gate requires `signed_off` in the self-audit artifact or `SPANDA_SMART_SPACES_AUDIT_SIGNED_OFF=1`
-3. **Production protocol adapters** — hardware-specific BACnet/KNX/Matter libraries beyond env-bridge pattern (env bridges and package docs **shipped**)
+3. **Production protocol adapters** — optional `bacpypes3` / `xknx` via `spanda_python_bridge.py` and package scripts (**shipped**); vendor-specific tuning still site-specific

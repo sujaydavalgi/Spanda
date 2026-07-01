@@ -74,6 +74,13 @@ Example: [examples/solutions/smart-spaces/smart-building/](../examples/solutions
 | Commercial | `spanda-bacnet`, `spanda-knx`, `spanda-modbus` |
 | Mixed / retrofit | `spanda-home-assistant`, `spanda-mqtt` |
 
+### Native BACnet / KNX on site
+
+1. Install optional Python deps: `requirements-bacnet.txt` / `requirements-knx.txt` under each registry package.
+2. Set `SPANDA_LIVE_BACNET=1` or `SPANDA_LIVE_KNX=1` and network env vars (see [iot.md](./iot.md#live-hardware-optional)).
+3. Point `SPANDA_BACNET_CMD` / `SPANDA_KNX_CMD` at the package `scripts/read_*.sh` helpers, or rely on `spanda_python_bridge.py` when no cmd is set.
+4. Verify with `./scripts/smart_spaces_live_iot_smoke.sh` (mock) before `SPANDA_LIVE_IOT_HARDWARE=1` on the building network.
+
 Provider pattern: packages implement `iot.*` import paths; missions use `requires capabilities` — see [iot.md](./iot.md).
 
 ---

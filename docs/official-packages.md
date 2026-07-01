@@ -68,8 +68,8 @@ See [solutions/adas.md](solutions/adas.md) for the ADAS Solution Blueprint.
 |---------|-------------|-------------|
 | `spanda-thread` | `iot.thread` | Thread mesh networking |
 | `spanda-zwave` | `iot.zwave` | Z-Wave home automation |
-| `spanda-bacnet` | `iot.bacnet` | BACnet building automation |
-| `spanda-knx` | `iot.knx` | KNX building control bus |
+| `spanda-bacnet` | `iot.bacnet` | BACnet building automation (bacpypes3 + env bridge) |
+| `spanda-knx` | `iot.knx` | KNX building control bus (xknx + env bridge) |
 | `spanda-home-assistant` | `bridge.home_assistant` | Home Assistant bridge |
 | `spanda-energy` | `energy.solar` | Solar, battery, and demand response |
 | `spanda-building` | `building.entity` | Facility zones and readiness |

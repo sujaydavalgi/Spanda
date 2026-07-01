@@ -32,8 +32,8 @@ IoT integrations live in official packages. Core defines generic contracts; pack
 | `spanda-matter` | Matter (stub + live bridge) |
 | `spanda-thread` | Thread mesh (stub) |
 | `spanda-zwave` | Z-Wave (stub) |
-| `spanda-bacnet` | BACnet building automation (stub) |
-| `spanda-knx` | KNX building bus (stub) |
+| `spanda-bacnet` | BACnet building automation (bacpypes3 + env bridge) |
+| `spanda-knx` | KNX building bus (xknx + env bridge) |
 | `spanda-home-assistant` | Home Assistant bridge (stub) |
 | `spanda-energy` | Solar, battery, and demand-response (stub) |
 | `spanda-building` | Facility zones and readiness orchestration (stub) |
@@ -96,8 +96,15 @@ Enable live reads with environment flags (build with `--features live-iot` on `s
 | `SPANDA_LIVE_CANBUS=1` | Read CAN frames via Python bridge |
 | `SPANDA_LIVE_BACNET=1` | Read BACnet points via `SPANDA_BACNET_CMD` or Python bridge |
 | `SPANDA_BACNET_CMD` | Shell template for BACnet reads (`{device}`, `{object_id}`) |
+| `SPANDA_BACNET_NETWORK` | Local BACnet/IP bind (bacpypes3), e.g. `192.168.1.50/24` |
+| `SPANDA_BACNET_TARGET` | Remote BACnet device IP for bacpypes3 reads |
+| `SPANDA_BACNET_OBJECT` | Default object id when `object_id` is a property name |
+| `SPANDA_BACNET_FORCE_MOCK` | Force mock BACnet reads (`1` for CI) |
 | `SPANDA_LIVE_KNX=1` | Read KNX group addresses via `SPANDA_KNX_CMD` or Python bridge |
 | `SPANDA_KNX_CMD` | Shell template for KNX reads (`{address}`) |
+| `SPANDA_KNX_GATEWAY` | KNX/IP gateway IP for xknx reads |
+| `SPANDA_KNX_VALUE_TYPE` | Optional xknx decode hint (`temperature`, etc.) |
+| `SPANDA_KNX_FORCE_MOCK` | Force mock KNX reads (`1` for CI) |
 | `SPANDA_LIVE_THREAD=1` | Read Thread endpoints via `SPANDA_THREAD_CMD` or Python bridge |
 | `SPANDA_THREAD_CMD` | Shell template for Thread reads (`{device}`) |
 | `SPANDA_LIVE_ZWAVE=1` | Read Z-Wave values via `SPANDA_ZWAVE_CMD` or Python bridge |

@@ -197,6 +197,32 @@ Ecosystem bridges (interop only):
 
 See [iot.md](../iot.md) · [smart-space-packages.md](../smart-space-packages.md)
 
+### Live building I/O (BACnet / KNX)
+
+Commercial blueprints read BMS points through optional packages and env bridges — no smart-home keywords in the language.
+
+| Layer | BACnet | KNX |
+|-------|--------|-----|
+| Package | `spanda-bacnet` (`iot.bacnet.read_point`) | `spanda-knx` (`iot.knx.read_group_address`) |
+| Native libs | `pip install -r packages/registry/spanda-bacnet/requirements-bacnet.txt` (bacpypes3) | `pip install -r packages/registry/spanda-knx/requirements-knx.txt` (xknx) |
+| Env gate | `SPANDA_LIVE_BACNET=1` | `SPANDA_LIVE_KNX=1` |
+| Config | `SPANDA_BACNET_NETWORK`, `SPANDA_BACNET_TARGET`, `SPANDA_BACNET_OBJECT` | `SPANDA_KNX_GATEWAY`, optional `SPANDA_KNX_VALUE_TYPE` |
+| CLI helper | `packages/registry/spanda-bacnet/scripts/read_point.sh` | `packages/registry/spanda-knx/scripts/read_group.sh` |
+
+```bash
+# BACnet example (mock in CI; set TARGET/NETWORK on site)
+export SPANDA_LIVE_BACNET=1
+export SPANDA_BACNET_CMD='packages/registry/spanda-bacnet/scripts/read_point.sh {device} {object_id}'
+
+# KNX example
+export SPANDA_LIVE_KNX=1
+export SPANDA_KNX_GATEWAY=192.168.1.40
+export SPANDA_KNX_CMD='packages/registry/spanda-knx/scripts/read_group.sh {address}'
+
+./scripts/smart_spaces_live_iot_smoke.sh          # mock CI path
+SPANDA_LIVE_IOT_HARDWARE=1 ./scripts/smart_spaces_live_iot_smoke.sh  # on-site hardware
+```
+
 ---
 
 ## Smart space capabilities

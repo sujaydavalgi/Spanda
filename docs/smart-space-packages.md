@@ -14,8 +14,8 @@ Optional packages and ecosystem integration for [Smart Spaces & Ambient Intellig
 | `spanda-thread` | IoT | `iot.thread` | Experimental (stub) |
 | `spanda-zigbee` | IoT | `iot.zigbee` | Experimental (stub) |
 | `spanda-zwave` | IoT | `iot.zwave` | Experimental (stub) |
-| `spanda-bacnet` | IoT | `iot.bacnet` | Experimental (stub) |
-| `spanda-knx` | IoT | `iot.knx` | Experimental (env bridge + stub) |
+| `spanda-bacnet` | IoT | `iot.bacnet` | Experimental (bacpypes3 + env bridge) |
+| `spanda-knx` | IoT | `iot.knx` | Experimental (xknx + env bridge) |
 | `spanda-modbus` | IoT | `iot.modbus` | Experimental (stub) |
 | `spanda-mqtt` | IoT | `iot.mqtt` | Experimental |
 | `spanda-ble` | Connectivity | `connectivity.ble` | Experimental |
@@ -51,6 +51,8 @@ External hub (e.g. Home Assistant)
   ↔ Spanda provider runtime
   ↔ .sd mission / readiness / assurance
 ```
+
+**Field buses (BACnet / KNX):** install `requirements-bacnet.txt` or `requirements-knx.txt`, set `SPANDA_LIVE_*` env vars, and use package `scripts/read_*.sh` helpers — see [iot.md](../iot.md#live-hardware-optional) and each package README.
 
 ### Layer 3 — Orchestration (Spanda core)
 
