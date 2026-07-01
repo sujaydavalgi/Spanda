@@ -1141,6 +1141,94 @@ impl ControlCenter for GrpcControlCenter {
         self.with_state(|state| crate::smart_spaces::emergency_status_get(state).body)
             .map(Response::new)
     }
+
+    async fn list_smart_spaces_devices(
+        &self,
+        request: Request<QueryRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let query = request.into_inner().query;
+        let params = crate::handlers::parse_query(&query);
+        let facility_id = params.get("facility_id").map(String::as_str);
+        self.with_state(|state| {
+            crate::smart_spaces_panels::devices_inventory_get(state, facility_id).body
+        })
+        .map(Response::new)
+    }
+
+    async fn list_smart_spaces_gateways(
+        &self,
+        request: Request<QueryRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let query = request.into_inner().query;
+        let params = crate::handlers::parse_query(&query);
+        let facility_id = params.get("facility_id").map(String::as_str);
+        self.with_state(|state| {
+            crate::smart_spaces_panels::gateway_status_list(state, facility_id).body
+        })
+        .map(Response::new)
+    }
+
+    async fn get_facility_health(
+        &self,
+        request: Request<EntityIdRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let facility_id = request.into_inner().entity_id;
+        self.with_state(|state| {
+            crate::smart_spaces_panels::facility_health_get(state, &facility_id).body
+        })
+        .map(Response::new)
+    }
+
+    async fn get_facility_security(
+        &self,
+        request: Request<EntityIdRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let facility_id = request.into_inner().entity_id;
+        self.with_state(|state| {
+            crate::smart_spaces_panels::facility_security_get(state, &facility_id).body
+        })
+        .map(Response::new)
+    }
+
+    async fn get_facility_floor_map(
+        &self,
+        request: Request<EntityIdRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let facility_id = request.into_inner().entity_id;
+        self.with_state(|state| {
+            crate::smart_spaces_panels::facility_floor_map_get(state, &facility_id).body
+        })
+        .map(Response::new)
+    }
+
+    async fn get_zone_environment(
+        &self,
+        request: Request<EntityIdRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let zone_id = request.into_inner().entity_id;
+        self.with_state(|state| {
+            crate::smart_spaces_panels::zone_environment_get(state, &zone_id).body
+        })
+        .map(Response::new)
+    }
+
+    async fn get_energy_system(
+        &self,
+        request: Request<EntityIdRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let system_id = request.into_inner().entity_id;
+        self.with_state(|state| {
+            crate::smart_spaces_panels::energy_system_get(state, &system_id).body
+        })
+        .map(Response::new)
+    }
 }
 
 /// Start tonic gRPC server on `bind` (blocks the current thread's tokio runtime).

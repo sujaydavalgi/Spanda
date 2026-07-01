@@ -563,4 +563,58 @@ async fn grpc_smart_spaces_endpoints_with_blueprint_config() {
         .expect("emergency status")
         .into_inner();
     assert!(emergency.json.contains("continuity_pairs"));
+
+    let devices = client
+        .list_smart_spaces_devices(QueryRequest {
+            query: "facility_id=tower-demo".into(),
+        })
+        .await
+        .expect("smart spaces devices")
+        .into_inner();
+    assert!(devices.json.contains("bacnet-gw-primary"));
+
+    let health = client
+        .get_facility_health(EntityIdRequest {
+            entity_id: "tower-demo".into(),
+        })
+        .await
+        .expect("facility health")
+        .into_inner();
+    assert!(health.json.contains("device_pool"));
+
+    let security = client
+        .get_facility_security(EntityIdRequest {
+            entity_id: "tower-demo".into(),
+        })
+        .await
+        .expect("facility security")
+        .into_inner();
+    assert!(security.json.contains("locks_and_cameras"));
+
+    let floor_map = client
+        .get_facility_floor_map(EntityIdRequest {
+            entity_id: "tower-demo".into(),
+        })
+        .await
+        .expect("facility floor map")
+        .into_inner();
+    assert!(floor_map.json.contains("floor_map"));
+
+    let environment = client
+        .get_zone_environment(EntityIdRequest {
+            entity_id: "room-lobby".into(),
+        })
+        .await
+        .expect("zone environment")
+        .into_inner();
+    assert!(environment.json.contains("co2_ppm"));
+
+    let energy_detail = client
+        .get_energy_system(EntityIdRequest {
+            entity_id: "battery-001".into(),
+        })
+        .await
+        .expect("energy system detail")
+        .into_inner();
+    assert!(energy_detail.json.contains("soc_percent"));
 }

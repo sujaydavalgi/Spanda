@@ -371,6 +371,98 @@ impl GrpcClient {
         Self::parse_json(resp.into_inner().json)
     }
 
+    /// Smart Spaces device inventory via `ListSmartSpacesDevices` (`facility_id=` query).
+    pub async fn smart_spaces_devices(
+        &mut self,
+        facility_id: Option<&str>,
+    ) -> SpandaResult<Value> {
+        let query = facility_id
+            .map(|id| format!("facility_id={id}"))
+            .unwrap_or_default();
+        let resp = self
+            .inner
+            .list_smart_spaces_devices(QueryRequest { query })
+            .await
+            .map_err(|e| SpandaError::connection(e.to_string()))?;
+        Self::parse_json(resp.into_inner().json)
+    }
+
+    /// Smart Spaces gateway status via `ListSmartSpacesGateways` (`facility_id=` query).
+    pub async fn smart_spaces_gateways(
+        &mut self,
+        facility_id: Option<&str>,
+    ) -> SpandaResult<Value> {
+        let query = facility_id
+            .map(|id| format!("facility_id={id}"))
+            .unwrap_or_default();
+        let resp = self
+            .inner
+            .list_smart_spaces_gateways(QueryRequest { query })
+            .await
+            .map_err(|e| SpandaError::connection(e.to_string()))?;
+        Self::parse_json(resp.into_inner().json)
+    }
+
+    /// Facility health panel via `GetFacilityHealth`.
+    pub async fn facility_health(&mut self, facility_id: &str) -> SpandaResult<Value> {
+        let resp = self
+            .inner
+            .get_facility_health(EntityIdRequest {
+                entity_id: facility_id.to_string(),
+            })
+            .await
+            .map_err(|e| SpandaError::connection(e.to_string()))?;
+        Self::parse_json(resp.into_inner().json)
+    }
+
+    /// Facility security panel via `GetFacilitySecurity`.
+    pub async fn facility_security(&mut self, facility_id: &str) -> SpandaResult<Value> {
+        let resp = self
+            .inner
+            .get_facility_security(EntityIdRequest {
+                entity_id: facility_id.to_string(),
+            })
+            .await
+            .map_err(|e| SpandaError::connection(e.to_string()))?;
+        Self::parse_json(resp.into_inner().json)
+    }
+
+    /// Facility floor map via `GetFacilityFloorMap`.
+    pub async fn facility_floor_map(&mut self, facility_id: &str) -> SpandaResult<Value> {
+        let resp = self
+            .inner
+            .get_facility_floor_map(EntityIdRequest {
+                entity_id: facility_id.to_string(),
+            })
+            .await
+            .map_err(|e| SpandaError::connection(e.to_string()))?;
+        Self::parse_json(resp.into_inner().json)
+    }
+
+    /// Zone environment readings via `GetZoneEnvironment`.
+    pub async fn zone_environment(&mut self, zone_id: &str) -> SpandaResult<Value> {
+        let resp = self
+            .inner
+            .get_zone_environment(EntityIdRequest {
+                entity_id: zone_id.to_string(),
+            })
+            .await
+            .map_err(|e| SpandaError::connection(e.to_string()))?;
+        Self::parse_json(resp.into_inner().json)
+    }
+
+    /// Energy system detail via `GetEnergySystem`.
+    pub async fn energy_system(&mut self, system_id: &str) -> SpandaResult<Value> {
+        let resp = self
+            .inner
+            .get_energy_system(EntityIdRequest {
+                entity_id: system_id.to_string(),
+            })
+            .await
+            .map_err(|e| SpandaError::connection(e.to_string()))?;
+        Self::parse_json(resp.into_inner().json)
+    }
+
     /// List devices via `ListDevices`.
     pub async fn list_devices(&mut self) -> SpandaResult<Value> {
         let resp = self

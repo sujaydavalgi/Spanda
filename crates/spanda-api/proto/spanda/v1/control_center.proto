@@ -1,5 +1,5 @@
 syntax = "proto3";
-// Spanda Control Center gRPC API — proto semver 1.0.4 (package spanda.v1).
+// Spanda Control Center gRPC API — proto semver 1.0.5 (package spanda.v1).
 package spanda.v1;
 
 message Empty {}
@@ -154,4 +154,11 @@ service ControlCenter {
   rpc GetZoneOccupancy(EntityIdRequest) returns (JsonResponse);
   rpc ListEnergySystems(Empty) returns (JsonResponse);
   rpc GetEmergencyStatus(Empty) returns (JsonResponse);
+  rpc ListSmartSpacesDevices(QueryRequest) returns (JsonResponse);
+  rpc ListSmartSpacesGateways(QueryRequest) returns (JsonResponse);
+  rpc GetFacilityHealth(EntityIdRequest) returns (JsonResponse);
+  rpc GetFacilitySecurity(EntityIdRequest) returns (JsonResponse);
+  rpc GetFacilityFloorMap(EntityIdRequest) returns (JsonResponse);
+  rpc GetZoneEnvironment(EntityIdRequest) returns (JsonResponse);
+  rpc GetEnergySystem(EntityIdRequest) returns (JsonResponse);
 }
