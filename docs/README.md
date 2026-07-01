@@ -173,15 +173,15 @@
 | [differentiation-roadmap.md](./differentiation-roadmap.md) | **Signature capabilities — mission contracts, explainability, coverage, risk (15 areas)** |
 | [platform-maturity-roadmap.md](./platform-maturity-roadmap.md) | **Platform maturity expansion — adoption, trust, operations (16 areas)** |
 | [enterprise-operations-roadmap.md](./enterprise-operations-roadmap.md) | **Enterprise operations — Control Center, Device Pool, RBAC, APIs, observability (20 pillars)** |
-| [stable-hardening-enterprise-ops.md](./stable-hardening-enterprise-ops.md) | **Experimental → Stable promotion checklist for enterprise operations** |
-| [enterprise-ops-stable-promotion.md](./enterprise-ops-stable-promotion.md) | **Stable promotion runbook** (soak, audit prep, promotion gate) |
+| [stable-hardening-enterprise-ops.md](./stable-hardening-enterprise-ops.md) | **Stable promotion checklist for enterprise operations (E1–E4 promoted)** |
+| [enterprise-ops-stable-promotion.md](./enterprise-ops-stable-promotion.md) | **Stable promotion runbook** (soak, audit prep, SDK/desktop releases) |
 | [stable-hardening-human-interaction.md](./stable-hardening-human-interaction.md) | **Experimental → Stable promotion checklist for Human Interaction (H1–H4)** |
 | [stable-hardening-adas.md](./stable-hardening-adas.md) | **Experimental → Stable promotion checklist for ADAS Solution Blueprint** |
 | [stable-hardening-smart-spaces.md](./stable-hardening-smart-spaces.md) | **Experimental → Stable promotion checklist for Smart Spaces Solution Blueprint** |
 | [field-soak-gate.md](./field-soak-gate.md) | **30-day field pilot gate before Stable promotion** |
 | [security-audit-third-party.md](./security-audit-third-party.md) | **Third-party security audit scope and prep workflow** |
-| [desktop-release-runbook.md](./desktop-release-runbook.md) | **Signed/notarized desktop builds and auto-update** |
-| [control-center.md](./control-center.md) | **Control Center — `spanda control-center serve`, REST v1, Tauri desktop (`@spanda/control-center-desktop`)** |
+| [desktop-release-runbook.md](./desktop-release-runbook.md) | **Control Center desktop `desktop-v*` tags, GitHub Releases, optional signing** |
+| [control-center.md](./control-center.md) | **Control Center — `spanda control-center serve`, REST v1, Tauri desktop 0.4.2** |
 | [mission-contracts.md](./mission-contracts.md) | **Mission Contracts — guarantees, constraints, assumptions** |
 | [decision-audit-trail.md](./decision-audit-trail.md) | **Decision audit trail — mission → decision → evidence → action** |
 | [safety-coverage.md](./safety-coverage.md) | **Safety scenario coverage reporting** |

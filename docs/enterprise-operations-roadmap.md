@@ -379,7 +379,7 @@ Web-based operational visibility for robots, fleets, swarms, devices, sensors, m
 |-------|-------|
 | UI | React + TypeScript (`ControlCenterPanel` in `@davalgi-spanda/web`) |
 | State | React Query + context |
-| Desktop | Tauri (`@spanda/control-center-desktop`) — CI signing scaffold + env-gated auto-update ([desktop-release-runbook.md](./desktop-release-runbook.md)) |
+| Desktop | Tauri (`@spanda/control-center-desktop`) **0.4.2** — `desktop-v*` GitHub Releases + optional codesign/auto-update ([desktop-release-runbook.md](./desktop-release-runbook.md)) |
 | Backend | Rust `spanda-api` (`spanda control-center serve`) |
 | Build | Vite (shared with `@davalgi-spanda/web`) |
 
@@ -673,7 +673,7 @@ Builds on `spanda-capability` traceability matrices + `spanda-audit` + mission c
 |---------|----------|---------|
 | **NOW** | 0–6 months (v0.5–v0.6) | Control Center, Device Pool, Provisioning, Telemetry, Alerting, RBAC, Secrets — **E1 shipped** (experimental) |
 | **NEXT** | 6–12 months (v0.6–v0.7) | SDKs, Configuration Drift (full), OTA strategies, Package Trust (UI), Observability — **E2–E3 shipped** (experimental) |
-| **LATER** | 12–18 months (v0.8–v1.0) | Compliance Packs, Executive Dashboards, Digital Thread (full graph UI), **Predictive Analytics** (readiness forecasting, anomaly trends) — **E4 shipped** (experimental; Tauri scaffold) |
+| **LATER** | 12–18 months (v0.8–v1.0) | Compliance Packs, Executive Dashboards, Digital Thread (full graph UI), **Predictive Analytics** (readiness forecasting, anomaly trends) — **E4 shipped** (Stable; desktop **0.4.2** released) |
 
 ### Phase E1 — Control plane foundation (v0.5+, Q3–Q4 2026)
 
@@ -739,7 +739,7 @@ Builds on `spanda-capability` traceability matrices + `spanda-audit` + mission c
 | Tauri desktop packaging | `@spanda/control-center-desktop` |
 | WebSocket SDK | real-time telemetry stream |
 
-**Exit criteria:** Compliance report export; signed profile catalog; scheduled report delivery; digital thread lifecycle graph — **shipped** (`scripts/enterprise_ops_smoke.sh`). PDF executive export — **shipped** (`format=pdf`). Tauri desktop CI/signing scaffold — **shipped** (`scripts/control_center_desktop_smoke.sh`, `scripts/build_control_center_desktop.sh`, `.github/workflows/desktop-release.yml`). Stable promotion gates — [stable-hardening-enterprise-ops.md](./stable-hardening-enterprise-ops.md).
+**Exit criteria:** Compliance report export; signed profile catalog; scheduled report delivery; digital thread lifecycle graph — **shipped** (`scripts/enterprise_ops_smoke.sh`). PDF executive export — **shipped** (`format=pdf`). Tauri desktop production release — **shipped** (`desktop-v0.4.2`, `scripts/verify_desktop_release_ready.sh`, `.github/workflows/desktop-release.yml`). Stable promotion gates — [stable-hardening-enterprise-ops.md](./stable-hardening-enterprise-ops.md).
 
 ---
 

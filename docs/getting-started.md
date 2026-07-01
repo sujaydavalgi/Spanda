@@ -647,7 +647,7 @@ See [platform-maturity-roadmap.md](./platform-maturity-roadmap.md) · [policy-en
 
 ## Control Center (enterprise operations)
 
-Experimental E1–E4 control plane for fleet operators. Full reference: [control-center.md](./control-center.md) · [enterprise-operations-roadmap.md](./enterprise-operations-roadmap.md).
+**Stable** E1–E4 control plane for fleet operators. Full reference: [control-center.md](./control-center.md) · [enterprise-operations-roadmap.md](./enterprise-operations-roadmap.md).
 
 ### Start the API and embedded UI
 
@@ -691,13 +691,16 @@ export SPANDA_REPORT_SCHEDULE_INTERVAL_SECS=3600
 ./scripts/control_center_desktop_smoke.sh
 ./scripts/security_audit_prep.sh
 ./scripts/verify_sdk_publish_ready.sh
+./scripts/verify_desktop_release_ready.sh
 ```
 
 ### Field soak and stable promotion
 
-Before promoting enterprise operations to **Stable**: start a 30-day pilot clock ([field-soak-gate.md](./field-soak-gate.md)), complete third-party security audit ([security-audit-third-party.md](./security-audit-third-party.md)), and cut production SDK/desktop releases ([desktop-release-runbook.md](./desktop-release-runbook.md)).
+Enterprise operations pillars are **Stable** in [feature-status.md](./feature-status.md). Production SDK **0.4.2** and desktop **0.4.2** (`desktop-v0.4.2`) are published. Remaining **organizational** gates (not tier blockers): 30-day field pilot ([field-soak-gate.md](./field-soak-gate.md)) and third-party security audit sign-off ([security-audit-third-party.md](./security-audit-third-party.md)). See [enterprise-ops-stable-promotion.md](./enterprise-ops-stable-promotion.md).
 
-### Desktop shell (optional)
+### Desktop shell
+
+**Dev** (API must be running separately):
 
 ```bash
 # Terminal 1 — API (see above)
@@ -706,6 +709,8 @@ npm run control-center:desktop:dev
 ```
 
 Point the UI at a different API URL with `VITE_CONTROL_CENTER_URL=http://host:port`.
+
+**Production install (macOS):** download the **0.4.2** installer from the GitHub Release for tag [`desktop-v0.4.2`](https://github.com/Davalgi/Spanda/releases/tag/desktop-v0.4.2) (`.dmg` or workflow artifact if unsigned). Start the API with `spanda control-center serve`, then launch the desktop app. Maintainer release process: [desktop-release-runbook.md](./desktop-release-runbook.md).
 
 ### Official SDKs
 

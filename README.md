@@ -124,7 +124,7 @@ pip install spanda-sdk
 npm install @davalgi-spanda/sdk
 ```
 
-Guide: [docs/sdk.md](docs/sdk.md) · Publish: [docs/sdk-publishing.md](docs/sdk-publishing.md)
+Guide: [docs/sdk.md](docs/sdk.md) · Publish: [docs/sdk-publishing.md](docs/sdk-publishing.md) · Desktop: [docs/desktop-release-runbook.md](docs/desktop-release-runbook.md) (`desktop-v0.4.2`)
 
 ---
 

@@ -159,7 +159,7 @@ Extensibility through official and community packages.
 
 Production operations layer for fleet visibility, provisioning, governance, and integration — composes existing engines without duplicating them.
 
-- **Control Center:** `spanda control-center serve` — React/TypeScript UI (`ControlCenterPanel`), Rust `spanda-api` backend, Tauri desktop scaffold.
+- **Control Center:** `spanda control-center serve` — React/TypeScript UI (`ControlCenterPanel`), Rust `spanda-api` backend, Tauri desktop **0.4.2** (`desktop-v0.4.2` GitHub Release).
 - **Device Pool & Provisioning:** Central inventory, lifecycle states, discover → verify → assign → ready workflow.
 - **Governance:** RBAC, secret management, alerting, compliance exports, digital thread query.
 - **Integration:** REST v1, Python SDK, WebSocket telemetry, OTLP observability.
@@ -207,7 +207,8 @@ See [product-strategy.md](./product-strategy.md) for competitive positioning and
 | [product-strategy.md](./product-strategy.md) | Priorities, pillars, release scope |
 | [roadmap.md](./roadmap.md) | Roadmap by platform area |
 | [enterprise-operations-roadmap.md](./enterprise-operations-roadmap.md) | Control Center, Device Pool, provisioning, APIs (20 pillars) |
-| [control-center.md](./control-center.md) | `spanda control-center serve`, REST v1, desktop scaffold |
+| [control-center.md](./control-center.md) | `spanda control-center serve`, REST v1, desktop **0.4.2** release |
+| [desktop-release-runbook.md](./desktop-release-runbook.md) | Tauri desktop `desktop-v*` tags, GitHub Releases, optional signing |
 | [mission-assurance.md](./mission-assurance.md) | Mission assurance CLI, packages, and examples |
 | [mission-continuity.md](./mission-continuity.md) | Mission continuity, takeover, delegation, succession |
 | [continuity-policies.md](./continuity-policies.md) | `continuity_policy` syntax and validation |

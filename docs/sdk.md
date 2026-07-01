@@ -6,10 +6,11 @@ Official SDKs integrate with Spanda through the **Control Center API** (`spanda-
 
 | SDK | Package | Priority | Status |
 |-----|---------|----------|--------|
-| Rust | [`spanda-sdk`](https://crates.io/crates/spanda-sdk) on crates.io | P0 | Experimental (v0.4.0 published) |
+| Rust | [`spanda-sdk`](https://crates.io/crates/spanda-sdk) on crates.io | P0 | Stable (v0.4.2 — publish via `crates-sdk-v0.4.2`) |
 | Python | [`spanda-sdk`](https://pypi.org/project/spanda-sdk/) on PyPI | P1 | Stable (v0.4.2 — publish via `sdk-python-v0.4.2`) |
 | TypeScript | [`@davalgi-spanda/sdk`](https://www.npmjs.com/package/@davalgi-spanda/sdk) on npm | P2 | Stable (v0.4.2 published) |
 | Web panel | [`@davalgi-spanda/web`](https://www.npmjs.com/package/@davalgi-spanda/web) on npm | — | Experimental (publish via `npm-web-v*`) |
+| Desktop | `@spanda/control-center-desktop` (Tauri) | — | Stable (v0.4.2 — publish via `desktop-v0.4.2` GitHub Release) |
 
 Install from registries:
 
@@ -20,7 +21,7 @@ npm install @davalgi-spanda/sdk
 npm install @davalgi-spanda/web
 ```
 
-Maintainers: [Publishing SDKs](sdk-publishing.md) (`crates-sdk-v*`, `sdk-python-v*`, `npm-sdk-v*` tags).
+Maintainers: [Publishing SDKs](sdk-publishing.md) (`crates-sdk-v*`, `sdk-python-v*`, `npm-sdk-v*`, `desktop-v*` tags).
 
 Legacy Python client: `packages/sdk-python` (Control Center helpers; use `sdk/python` for full SDK surface).
 
@@ -109,7 +110,7 @@ All SDKs expose structured errors:
 - [Rust SDK](sdk-rust.md)
 - [Python SDK](sdk-python.md)
 - [TypeScript SDK](sdk-typescript.md)
-- [Publishing SDKs (PyPI / npm)](sdk-publishing.md)
+- [Publishing SDKs (PyPI / npm / desktop)](sdk-publishing.md)
 - [Control Center API](control-center-api.md)
 
 ## Examples

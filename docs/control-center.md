@@ -566,6 +566,7 @@ Default: log to stderr.
 ./scripts/security_audit_prep.sh      # third-party audit intake
 ./scripts/field_soak_gate.sh          # after 30-day pilot start date
 ./scripts/verify_sdk_publish_ready.sh # PyPI + npm pack readiness
+./scripts/verify_desktop_release_ready.sh # desktop version sync + Tauri compile # PyPI + npm pack readiness
 ```
 
 ---
@@ -584,10 +585,12 @@ Package: `@spanda/control-center-desktop` (`packages/control-center-desktop`).
 2. Dev shell: `npm run control-center:desktop:dev` (Vite on port **5174**)
 3. Optional API URL: `VITE_CONTROL_CENTER_URL=http://host:port`
 
-The desktop shell reuses `ControlCenterPanel` from `@davalgi-spanda/web`; it does not embed `spanda-api`. Production release: tag `desktop-v*`, CI workflow `.github/workflows/desktop-release.yml`, optional `./scripts/sign_tauri_macos.sh`. See [packages/control-center-desktop/README.md](../packages/control-center-desktop/README.md) · [desktop-release-runbook.md](./desktop-release-runbook.md).
+The desktop shell reuses `ControlCenterPanel` from `@davalgi-spanda/web`; it does not embed `spanda-api`. Production installers ship via **`desktop-v*`** tags → `.github/workflows/desktop-release.yml` → GitHub Release (macOS `.dmg` / `.app.tar.gz`) plus workflow artifacts. Pre-flight: `./scripts/verify_desktop_release_ready.sh`. Optional codesign/notarize: `./scripts/sign_tauri_macos.sh` when Apple secrets are set. See [packages/control-center-desktop/README.md](../packages/control-center-desktop/README.md) · [desktop-release-runbook.md](./desktop-release-runbook.md).
+
+**Current release:** **0.4.2** — tag `desktop-v0.4.2` on GitHub Releases.
 
 ---
 
 ## Status
 
-**Experimental** (Phase E1–E4). Includes device pool provisioning, multi-transport discovery with production TLS policy, WebSocket telemetry streaming, OTLP trace/metrics export, SLO burn-rate monitor, PagerDuty bi-directional sync, compliance export with **signed profile catalog**, scheduled report delivery, digital thread query with **full lifecycle graph UI**, executive scorecard, report composer (including PDF), Grafana dashboard templates (`spanda-grafana-dashboards`), and Tauri desktop CI/signing scaffold.
+**Stable** (Phase E1–E4). Includes device pool provisioning, multi-transport discovery with production TLS policy, WebSocket telemetry streaming, OTLP trace/metrics export, SLO burn-rate monitor, PagerDuty bi-directional sync, compliance export with **signed profile catalog**, scheduled report delivery, digital thread query with **full lifecycle graph UI**, executive scorecard, report composer (including PDF), Grafana dashboard templates (`spanda-grafana-dashboards`), official SDKs **0.4.2**, and Tauri desktop **0.4.2** production release (`desktop-v0.4.2`).

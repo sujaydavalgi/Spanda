@@ -29,6 +29,7 @@ Compact snapshot — full matrix: [feature-status.md](../feature-status.md)
 | LLVM | **Experimental** | `spanda ir`, `compile-native` — interpreter is primary runtime |
 | WASM | **Experimental** | Browser check/run/verify; limited vs native CLI |
 | ROS2 | **Experimental** | rclrs/rclpy bridge; requires ROS Humble setup |
-| Control Center | **Experimental** | `spanda control-center serve` (REST v1 + optional `--grpc-bind` tonic), embedded UI, Tauri desktop; stable-hardening checklist **shipped** — see [stable-hardening-enterprise-ops.md](../stable-hardening-enterprise-ops.md) |
-| Official SDKs | **Experimental** | Published: [crates.io/spanda-sdk](https://crates.io/crates/spanda-sdk), [PyPI](https://pypi.org/project/spanda-sdk/), [npm @davalgi-spanda/sdk](https://www.npmjs.com/package/@davalgi-spanda/sdk) |
+| Control Center | **Stable** | `spanda control-center serve` (REST v1 + optional `--grpc-bind` tonic), embedded UI, Tauri desktop **0.4.2** (`desktop-v0.4.2` GitHub Release) — [desktop-release-runbook.md](../desktop-release-runbook.md) |
+| Official SDKs | **Stable** | **0.4.2** on [crates.io/spanda-sdk](https://crates.io/crates/spanda-sdk), [PyPI](https://pypi.org/project/spanda-sdk/), [npm @davalgi-spanda/sdk](https://www.npmjs.com/package/@davalgi-spanda/sdk) |
+| Control Center desktop | **Stable** | `@spanda/control-center-desktop` **0.4.2** — tag `desktop-v*` → GitHub Release |
 | GitHub Pages / Docs Site | **Experimental** | mdBook under [docs-site/](../../docs-site/); build with `mdbook build docs-site` |
