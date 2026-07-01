@@ -24,6 +24,10 @@ The Smart Spaces Solution Blueprint is shipped at **Experimental** tier with CI 
 | Field soak | 30-day smart-building pilot without regression | **Pending** (operational) — `./scripts/smart_spaces_stable_init.sh` |
 | Security audit | Third-party review of life-safety and access-control paths | **Pending** (operational) — automated self-audit **shipped** |
 | Extended panels API | devices, health, security, environment, floor-map, energy detail | **Shipped** |
+| gRPC extended panels | devices, health, security, floor-map, environment, energy detail, gateways | **Shipped** — proto **1.0.5**, **96 RPCs** |
+| CI promotion gate | `smart-spaces-promotion-gate` job (API + OpenAPI + live probe) | **Shipped** |
+| Blueprint certify metadata | `certify ISO13849` + robot `safety` on all six apps | **Shipped** |
+| Fleet orchestrator robots | `fleet.robots` for all blueprint orchestrators | **Shipped** |
 
 ---
 
@@ -60,8 +64,5 @@ The gate runs:
 ## Remaining before Stable tier label
 
 1. **30-day field soak** — run `./scripts/smart_spaces_stable_init.sh` then pilot; gate with `SPANDA_SMART_SPACES_SKIP_SOAK=0`
-2. **Third-party security audit sign-off** — human review after `./scripts/smart_spaces_security_self_audit.sh` (automated config checks ship)
-3. **Production protocol adapters** — hardware-specific BACnet/KNX/Matter libraries beyond env-bridge pattern (env bridges **shipped**)
-4. **Simulation matrix** — **Shipped** — ten golden traces under `fixtures/*.trace`
-5. **gRPC parity** — **Shipped** (proto semver 1.0.4, 89 RPCs)
-6. **Extended Control Center panels** — **Shipped** — devices, health, security, environmental, floor map, occupancy timeline, energy detail
+2. **Third-party security audit sign-off** — human review after `./scripts/smart_spaces_security_self_audit.sh`; full gate requires `signed_off` in the self-audit artifact or `SPANDA_SMART_SPACES_AUDIT_SIGNED_OFF=1`
+3. **Production protocol adapters** — hardware-specific BACnet/KNX/Matter libraries beyond env-bridge pattern (env bridges and package docs **shipped**)

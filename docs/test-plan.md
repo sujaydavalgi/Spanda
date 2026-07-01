@@ -66,6 +66,7 @@
 | `scripts/adas_smoke.sh` | ADAS Solution Blueprint (verify, readiness, replay, compliance, examples) |
 | `scripts/smart_spaces_smoke.sh` | Smart Spaces blueprint (six apps, verify + check) |
 | `scripts/smart_spaces_promotion_gate.sh` | Smart Spaces scaffold promotion (smoke, API tests, OpenAPI parity, Control Center probe) |
+| `scripts/smart_spaces_stable_init.sh` | Start field soak clock + security audit artifacts for Smart Spaces |
 | `scripts/adas_stable_promotion_gate.sh` | ADAS Stable promotion (soak + audit prep + smoke + Control Center ADAS API probe) |
 | `scripts/adas_automotive_sensors_smoke.sh` | Automotive sensor hub + live `SPANDA_*_CMD` bridge tests |
 | `scripts/hri_field_soak_init.sh` | Start 30-day HRI field soak clock |
@@ -84,7 +85,7 @@ spanda readiness examples/showcase/policy/warehouse.sd --policy WarehousePolicy
 
 ## CI
 
-`.github/workflows/ci.yml`: TypeScript tests, Rust tests, architecture validation (`validate_architecture.py`), WASM + web build, enterprise ops smoke (when enabled).
+`.github/workflows/ci.yml`: TypeScript tests, Rust tests, architecture validation (`validate_architecture.py`), WASM + web build, enterprise ops smoke (when enabled), `smart-spaces-promotion-gate` (API + live probe after smoke).
 
 ## Acceptance criteria per feature
 

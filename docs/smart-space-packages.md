@@ -15,7 +15,7 @@ Optional packages and ecosystem integration for [Smart Spaces & Ambient Intellig
 | `spanda-zigbee` | IoT | `iot.zigbee` | Experimental (stub) |
 | `spanda-zwave` | IoT | `iot.zwave` | Experimental (stub) |
 | `spanda-bacnet` | IoT | `iot.bacnet` | Experimental (stub) |
-| `spanda-knx` | IoT | `iot.knx` | Experimental (stub) |
+| `spanda-knx` | IoT | `iot.knx` | Experimental (env bridge + stub) |
 | `spanda-modbus` | IoT | `iot.modbus` | Experimental (stub) |
 | `spanda-mqtt` | IoT | `iot.mqtt` | Experimental |
 | `spanda-ble` | Connectivity | `connectivity.ble` | Experimental |

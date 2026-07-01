@@ -61,7 +61,7 @@ Smoke test (all three SDKs): `scripts/entity_model_smoke.sh`
 | Energy detail | `energy_system(id)` | `energySystem(id)` | `energy_system(id)` |
 | Floor map | `facility_floor_map(id)` | `facilityFloorMap(id)` | `facility_floor_map(id)` |
 
-gRPC: `smart_spaces_summary`, `list_facilities`, `facility_readiness`, `zone_occupancy`, `list_energy_systems`, `emergency_status` on `GrpcClient` (`grpc` feature).
+gRPC (`GrpcClient`, `grpc` feature): `smart_spaces_summary`, `list_facilities`, `facility_readiness`, `zone_occupancy`, `list_energy_systems`, `emergency_status`, `smart_spaces_devices`, `smart_spaces_gateways`, `facility_health`, `facility_security`, `facility_floor_map`, `zone_environment`, `energy_system` — proto semver **1.0.5**.
 
 API shapes: [entity-apis.md](./entity-apis.md)
 

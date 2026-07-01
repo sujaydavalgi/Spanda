@@ -9,10 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Smart Spaces gRPC parity:** six `ControlCenter` RPCs (`GetSmartSpacesSummary`, `ListFacilities`, `GetFacilityReadiness`, `GetZoneOccupancy`, `ListEnergySystems`, `GetEmergencyStatus`); proto semver **1.0.4**, **89 RPCs**; `grpc_tests.rs` smart-spaces blueprint coverage.
+- **Smart Spaces gRPC parity:** thirteen `ControlCenter` Smart Spaces RPCs including extended panels (`ListSmartSpacesDevices`, `GetFacilityHealth`, `GetFacilitySecurity`, `GetFacilityFloorMap`, `GetZoneEnvironment`, `GetEnergySystem`, `ListSmartSpacesGateways`); proto semver **1.0.5**, **96 RPCs**; `grpc_tests.rs` extended panel coverage.
 - **Smart Spaces live building I/O:** BACnet/KNX/Thread/Z-Wave/Home Assistant env bridges in `iot_live.rs` with Python bridge mock handlers; `scripts/smart_spaces_live_iot_smoke.sh`; golden trace fixtures `gateway_failover`, `power_loss_island`, `water_leak_basement`; demo replay wiring.
 - **Smart Spaces live readiness:** weighted factor scoring from `spanda.readiness.toml` (gateways, devices, sensors, emergency); robots/wearables/trust panels in Control Center UI; `spanda control-center smart-spaces` CLI; REST/gRPC SDK wrappers (`smart_spaces_summary`, `facility_readiness`, …).
 - **Smart Spaces extended panels:** device inventory, facility health/security/floor-map, zone environment, energy detail, occupancy timeline; six additional golden traces; `smart_spaces_stable_init.sh` and `smart_spaces_security_self_audit.sh`.
+- **Smart Spaces promotion hardening:** `smart-spaces-promotion-gate` CI job; promotion gate auto-builds release `spanda` when `SPANDA_BIN` unset; blueprint `certify` + `safety` blocks and fleet orchestrator robots; KNX package bridge docs parity with BACnet.
 
 ### Changed
 
