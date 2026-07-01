@@ -2582,6 +2582,7 @@ dependencies = [
  "sha2",
  "spanda-audit",
  "spanda-hardware",
+ "spanda-runtime",
  "tar",
  "tempfile",
  "thiserror 2.0.18",
@@ -2803,10 +2804,12 @@ dependencies = [
  "serde",
  "serde_json",
  "spanda-ast",
+ "spanda-audit",
  "spanda-connectivity",
  "spanda-deploy-http",
  "spanda-lexer",
  "spanda-parser",
+ "spanda-runtime",
 ]
 
 [[package]]

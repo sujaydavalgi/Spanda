@@ -14,6 +14,7 @@ pub mod integrity;
 pub mod lockfile;
 pub mod manifest;
 pub mod official;
+pub mod platform_events;
 pub mod project;
 pub mod provenance_gate;
 pub mod publish;
@@ -54,6 +55,9 @@ pub use integrity::{
 pub use lockfile::{Lockfile, LOCKFILE_FILENAME};
 pub use manifest::{
     find_project_root, PackageEntityKindDecl, PackageManifest, PackageSection, MANIFEST_FILENAME,
+};
+pub use platform_events::{
+    record_package_removed, record_package_verified, record_packages_installed,
 };
 pub use official::{
     dependency_provenance, installed_official_packages, is_official_package,

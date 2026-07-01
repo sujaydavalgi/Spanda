@@ -5,10 +5,10 @@ use spanda_modules::load_project_modules;
 use spanda_package::{
     adapter_verify_ok, add_dependency, collect_source_files, evaluate_package_trust,
     find_project_root, init_package, load_official_packages_for_source, publish_package,
-    registry_info, remove_dependency, resolve_dependencies, search_registry,
-    search_registry_merged, validate_package_in, verify_adapter_package, ApplicationPermissions,
-    DependencySpec, Lockfile, PackageManifest, ResolveOptions, LOCKFILE_FILENAME,
-    MANIFEST_FILENAME,
+    record_package_removed, record_package_verified, record_packages_installed, registry_info,
+    remove_dependency, resolve_dependencies, search_registry, search_registry_merged,
+    validate_package_in, verify_adapter_package, ApplicationPermissions, DependencySpec, Lockfile,
+    PackageManifest, ResolveOptions, LOCKFILE_FILENAME, MANIFEST_FILENAME,
 };
 use std::env;
 use std::fs;
@@ -587,7 +587,10 @@ pub fn cmd_remove(args: &[String]) {
 
     // Match on remove dependency and handle each case.
     match remove_dependency(&root, name) {
-        Ok(true) => println!("✓ Removed dependency '{name}'"),
+        Ok(true) => {
+            record_package_removed(name);
+            println!("✓ Removed dependency '{name}'");
+        }
         Ok(false) => {
             eprintln!("Dependency '{name}' not found");
             process::exit(1);
@@ -675,6 +678,13 @@ fn run_install_inner(root: &Path, manifest: &PackageManifest, verbose: bool) -> 
         eprintln!("Error writing lockfile: {e}");
         process::exit(1);
     });
+    record_packages_installed(
+        &lockfile
+            .dependencies
+            .values()
+            .map(|dep| (dep.name.clone(), dep.version.clone()))
+            .collect::<Vec<_>>(),
+    );
 
     // Match on vendor dependencies and handle each case.
     match spanda_package::vendor_dependencies(root, &lockfile) {
@@ -1114,6 +1124,11 @@ pub fn cmd_verify_adapter(args: &[String]) {
     if !adapter_verify_ok(&issues) {
         process::exit(1);
     }
+    record_package_verified(
+        &manifest.package.name,
+        &manifest.package.version,
+        import_path.as_deref(),
+    );
     println!(
         "✓ Adapter package verification passed for {}",
         manifest.package.name
