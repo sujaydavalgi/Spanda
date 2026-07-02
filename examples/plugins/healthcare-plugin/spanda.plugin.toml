@@ -1,0 +1,39 @@
+[plugin]
+name = "spanda-plugin-healthcare"
+version = "0.1.0"
+publisher = "spanda"
+description = "Healthcare Control Center plugin — patient devices and vitals dashboard"
+license = "Apache-2.0"
+type = "control-center-ui"
+
+[compatibility]
+spanda_version = ">=0.4.0"
+api_version = "v1"
+
+[capabilities]
+requires = [
+  "entity.read",
+  "device.read",
+  "health.read",
+  "telemetry.read"
+]
+
+[security]
+signed = false
+sandbox = true
+network = false
+filesystem = "read-only"
+
+[control_center]
+panels = [
+  { id = "patient-devices", title = "Patient Devices", component = "PatientDevicePanel" },
+  { id = "vitals-dashboard", title = "Vitals Dashboard", component = "VitalsDashboard" }
+]
+entity_tabs = [
+  { id = "patient-vitals", title = "Vitals", component = "PatientVitalsTab" }
+]
+
+[cli]
+commands = [
+  { name = "readiness", namespace = "healthcare", description = "Healthcare readiness checks" }
+]

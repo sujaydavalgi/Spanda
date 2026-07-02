@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Plugin system:** New `spanda-plugin` crate with versioned `spanda.plugin.toml` manifests, capability-controlled host API, registry trust tiers (official/verified/community/experimental/deprecated/blocked), sandboxed WASM loading (`wasm-loader` feature), lifecycle hooks, and CLI (`spanda plugin search|install|uninstall|inspect|trust|enable|disable|list`). Six examples under `examples/plugins/`; docs in `docs/plugins.md` and related guides. Complements existing packages and providers without replacing them.
 - **Smart Spaces gRPC parity:** thirteen `ControlCenter` Smart Spaces RPCs including extended panels (`ListSmartSpacesDevices`, `GetFacilityHealth`, `GetFacilitySecurity`, `GetFacilityFloorMap`, `GetZoneEnvironment`, `GetEnergySystem`, `ListSmartSpacesGateways`); proto semver **1.0.5**, **96 RPCs**; `grpc_tests.rs` extended panel coverage.
 - **Smart Spaces live building I/O:** BACnet/KNX/Thread/Z-Wave/Home Assistant env bridges in `iot_live.rs` with Python bridge mock handlers; `scripts/smart_spaces_live_iot_smoke.sh`; golden trace fixtures `gateway_failover`, `power_loss_island`, `water_leak_basement`; demo replay wiring.
 - **Smart Spaces live readiness:** weighted factor scoring from `spanda.readiness.toml` (gateways, devices, sensors, emergency); robots/wearables/trust panels in Control Center UI; `spanda control-center smart-spaces` CLI; REST/gRPC SDK wrappers (`smart_spaces_summary`, `facility_readiness`, …).

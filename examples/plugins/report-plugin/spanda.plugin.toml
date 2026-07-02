@@ -1,0 +1,28 @@
+[plugin]
+name = "spanda-plugin-report-example"
+version = "0.1.0"
+publisher = "spanda"
+description = "Example report generator plugin"
+license = "Apache-2.0"
+type = "report-generator"
+
+[compatibility]
+spanda_version = ">=0.4.0"
+api_version = "v1"
+
+[capabilities]
+requires = [
+  "entity.read",
+  "readiness.read",
+  "telemetry.read",
+  "report.generate"
+]
+
+[security]
+signed = false
+sandbox = true
+network = false
+filesystem = "read-only"
+
+[hooks]
+enabled = ["on_report_requested"]

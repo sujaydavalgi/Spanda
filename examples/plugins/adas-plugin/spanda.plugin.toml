@@ -1,0 +1,37 @@
+[plugin]
+name = "spanda-plugin-adas"
+version = "0.1.0"
+publisher = "spanda"
+description = "ADAS Control Center plugin — vehicle readiness and sensor calibration"
+license = "Apache-2.0"
+type = "control-center-ui"
+
+[compatibility]
+spanda_version = ">=0.4.0"
+api_version = "v1"
+
+[capabilities]
+requires = [
+  "entity.read",
+  "device.read",
+  "readiness.read",
+  "health.read",
+  "diagnosis.read"
+]
+
+[security]
+signed = false
+sandbox = true
+network = false
+filesystem = "read-only"
+
+[control_center]
+panels = [
+  { id = "vehicle-readiness", title = "Vehicle Readiness", component = "VehicleReadinessPanel" },
+  { id = "sensor-calibration", title = "Sensor Calibration", component = "SensorCalibrationPanel" }
+]
+
+[cli]
+commands = [
+  { name = "sensor-check", namespace = "adas", description = "Run ADAS sensor calibration check" }
+]

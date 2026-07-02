@@ -1,0 +1,35 @@
+[plugin]
+name = "spanda-plugin-control-center-panel"
+version = "0.1.0"
+publisher = "spanda"
+description = "Example Control Center dashboard panel plugin"
+license = "Apache-2.0"
+type = "control-center-ui"
+
+[compatibility]
+spanda_version = ">=0.4.0"
+api_version = "v1"
+
+[capabilities]
+requires = [
+  "entity.read",
+  "health.read",
+  "telemetry.read"
+]
+
+[security]
+signed = false
+sandbox = true
+network = false
+filesystem = "read-only"
+
+[control_center]
+panels = [
+  { id = "fleet-overview", title = "Fleet Overview", component = "FleetOverviewPanel" }
+]
+entity_tabs = [
+  { id = "device-detail", title = "Device Detail", component = "DeviceDetailTab" }
+]
+routes = [
+  { path = "/plugins/fleet-overview", title = "Fleet Overview" }
+]
