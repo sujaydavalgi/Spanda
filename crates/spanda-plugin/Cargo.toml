@@ -21,7 +21,7 @@ thiserror = "2"
 sha2 = "0.10"
 spanda-audit = { path = "../spanda-audit" }
 spanda-package = { path = "../spanda-package" }
-wasmtime = { version = "28", optional = true }
+wasmtime = { version = "36", optional = true }
 libloading = { version = "0.8", optional = true }
 
 [dev-dependencies]
