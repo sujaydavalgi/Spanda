@@ -5,10 +5,7 @@ use spanda_certify::{certification_runtime_enabled_from_env, enforce_certificati
 use spanda_error::SpandaError;
 
 /// Enforce deploy certification proof before interpreter execution when requested.
-pub fn enforce_runtime_certification(
-    program: &Program,
-    enforce: bool,
-) -> Result<(), SpandaError> {
+pub fn enforce_runtime_certification(program: &Program, enforce: bool) -> Result<(), SpandaError> {
     if enforce || certification_runtime_enabled_from_env() {
         enforce_certification_runtime(program, true)?;
     }

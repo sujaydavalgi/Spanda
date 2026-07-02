@@ -1,9 +1,9 @@
 //! Platform event emission for readiness evaluation.
 //!
+use serde_json::json;
 use spanda_audit::platform_event::names;
 use spanda_audit::{AuditRuntime, PlatformEvent};
 use spanda_runtime::publish_platform_event;
-use serde_json::json;
 use std::collections::HashMap;
 use std::sync::{LazyLock, Mutex};
 
@@ -65,15 +65,14 @@ fn health_change_reason(report: &EntityHealthReport) -> String {
 }
 
 fn entity_in_degraded_mode(report: &EntityHealthReport) -> bool {
-    report.diagnostics.iter().any(|diagnostic| {
-        diagnostic.severity == "critical" || diagnostic.severity == "error"
-    })
+    report
+        .diagnostics
+        .iter()
+        .any(|diagnostic| diagnostic.severity == "critical" || diagnostic.severity == "error")
 }
 
 fn take_health_status_transition(entity_id: &str, to: &str) -> Option<String> {
-    let mut cache = HEALTH_STATUS_CACHE
-        .lock()
-        .expect("health status cache");
+    let mut cache = HEALTH_STATUS_CACHE.lock().expect("health status cache");
     match cache.get(entity_id) {
         Some(previous) if previous == to => None,
         Some(previous) => {
@@ -120,15 +119,11 @@ fn take_readiness_snapshot_transition(
 
 fn take_readiness_gate_failed_transition(entity_id: &str, mission_ready: bool) -> bool {
     if mission_ready {
-        let mut cache = MISSION_READY_CACHE
-            .lock()
-            .expect("mission ready cache");
+        let mut cache = MISSION_READY_CACHE.lock().expect("mission ready cache");
         cache.insert(entity_id.to_string(), true);
         return false;
     }
-    let mut cache = MISSION_READY_CACHE
-        .lock()
-        .expect("mission ready cache");
+    let mut cache = MISSION_READY_CACHE.lock().expect("mission ready cache");
     match cache.get(entity_id) {
         Some(true) => {
             cache.insert(entity_id.to_string(), false);
@@ -143,9 +138,7 @@ fn take_readiness_gate_failed_transition(entity_id: &str, mission_ready: bool) -
 }
 
 fn take_degraded_mode_entry(entity_id: &str, in_degraded: bool) -> bool {
-    let mut cache = DEGRADED_STATE_CACHE
-        .lock()
-        .expect("degraded state cache");
+    let mut cache = DEGRADED_STATE_CACHE.lock().expect("degraded state cache");
     match cache.get(entity_id) {
         Some(previous) if *previous == in_degraded => false,
         Some(_) => {
@@ -160,10 +153,7 @@ fn take_degraded_mode_entry(entity_id: &str, in_degraded: bool) -> bool {
 }
 
 /// Record readiness platform events for an entity readiness report.
-pub fn record_readiness_platform_event(
-    audit: &mut AuditRuntime,
-    report: &EntityReadinessReport,
-) {
+pub fn record_readiness_platform_event(audit: &mut AuditRuntime, report: &EntityReadinessReport) {
     if let Some(from) = take_readiness_snapshot_transition(&report.entity_id, report) {
         let event = PlatformEvent::new(
             names::READINESS_CHANGED,

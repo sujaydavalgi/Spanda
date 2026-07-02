@@ -3,9 +3,9 @@
 use crate::adapter::TransportConfig;
 use serde::{Deserialize, Serialize};
 use spanda_comm::TransportKind;
+use spanda_runtime::security_types::EncryptionMode;
 use spanda_runtime::serialize::{runtime_from_json_string, runtime_to_json_string};
 use spanda_runtime::value::RuntimeValue;
-use spanda_runtime::security_types::EncryptionMode;
 
 /// Versioned transport envelope exchanged between adapters and the comm bus.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

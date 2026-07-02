@@ -6,8 +6,8 @@ use crate::continuity_primitives::{
     record_checkpoint, save_checkpoint_store,
 };
 use crate::continuity_types::{
-    ContinuityCheckpointStore, ContinuityContext, ContinuityEvidence, ContinuityPolicySpec,
-    ContinuityTrigger, ContinuationDecision, MissionStateSnapshot, MissionStateTransfer,
+    ContinuationDecision, ContinuityCheckpointStore, ContinuityContext, ContinuityEvidence,
+    ContinuityPolicySpec, ContinuityTrigger, MissionStateSnapshot, MissionStateTransfer,
     TakeoverMode, TakeoverReport,
 };
 use crate::recovery_primitives::{
@@ -125,7 +125,8 @@ pub trait AssuranceRuntime: Send + Sync {
     ///
     /// Example:
     /// let report = platform_assurance_runtime().evaluate_recovery_program(&program);
-    fn evaluate_recovery_program(&self, program: &Program) -> crate::recovery_types::RecoveryReport;
+    fn evaluate_recovery_program(&self, program: &Program)
+        -> crate::recovery_types::RecoveryReport;
 }
 
 /// Minimal built-in assurance runtime with permissive validation defaults.

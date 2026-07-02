@@ -1,12 +1,12 @@
 //! Bootstrap default provider registrations from core compatibility shims.
 //!
-use super::platform_events::record_packages_installed;
 use super::package_stubs::{
     CloudPackageStub, ConnectivityPackageStub, FleetPackageStub, GpsPositioningStub,
     HriInputPackageStub, LedgerPackageStub, MaintenancePackageStub, NavNavigationStub,
     OverlayPackageStub, SimulationPackageStub, SlamPackageStub, SpatialSessionPackageStub,
     VisionPackageStub, WearablePackageStub,
 };
+use super::platform_events::record_packages_installed;
 use super::transport_adapter::TransportAdapterProvider;
 use spanda_comm::TransportKind;
 use spanda_runtime::providers::{transport_registry_key, ProviderRegistry, TransportConfig};

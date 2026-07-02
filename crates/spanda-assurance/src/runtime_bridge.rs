@@ -1,5 +1,6 @@
 //! Assurance-backed implementation of the runtime assurance boundary.
 //!
+use spanda_ast::nodes::Program;
 use spanda_runtime::assurance_runtime::AssuranceRuntime;
 use spanda_runtime::continuity_primitives::{
     default_checkpoint_store_path, extract_continuity_policies, issue_to_continuity_trigger,
@@ -19,7 +20,6 @@ use spanda_runtime::recovery_types::{
     FailureClassification, RecoveryContext, RecoveryKnowledgeBase, RecoveryPlan, RecoveryResult,
     SafeRecoveryAction,
 };
-use spanda_ast::nodes::Program;
 use std::path::{Path, PathBuf};
 
 use crate::continuity::plan_takeover;
@@ -64,7 +64,10 @@ impl AssuranceRuntime for AssuranceBackedRuntime {
         record_recovery_outcome(kb, result);
     }
 
-    fn extract_recovery_policies(&self, program: &Program) -> Vec<spanda_runtime::recovery_types::RecoveryPolicySpec> {
+    fn extract_recovery_policies(
+        &self,
+        program: &Program,
+    ) -> Vec<spanda_runtime::recovery_types::RecoveryPolicySpec> {
         extract_recovery_policies(program)
     }
 
@@ -200,7 +203,7 @@ impl AssuranceRuntime for AssuranceBackedRuntime {
 /// spanda_assurance::runtime_bridge::register();
 pub fn register() {
     // Inject the real assurance engine into the global platform runtime slot.
-    spanda_runtime::assurance_runtime::set_platform_assurance_runtime(
-        std::sync::Arc::new(AssuranceBackedRuntime),
-    );
+    spanda_runtime::assurance_runtime::set_platform_assurance_runtime(std::sync::Arc::new(
+        AssuranceBackedRuntime,
+    ));
 }

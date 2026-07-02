@@ -1,9 +1,9 @@
 //! Safe plugin loading with sandboxed WASM as the default format.
 
 use crate::audit::PluginAuditLog;
-use crate::error::PluginResult;
 #[cfg(feature = "wasm-loader")]
 use crate::error::PluginError;
+use crate::error::PluginResult;
 use crate::hooks::{HookContext, HookExecutionResult, PluginHook};
 use crate::manifest::PluginManifest;
 use crate::types::PluginType;

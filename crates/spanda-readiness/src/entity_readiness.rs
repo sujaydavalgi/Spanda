@@ -524,16 +524,12 @@ mod tests {
         let config = warehouse_config();
         let registry = build_entity_registry(&config);
         let mut readiness_options = EntityReadinessOptions {
-                now_ms: 0.0,
-                ..Default::default()
-            };
-        let report = evaluate_entity_readiness(
-            "rover-001",
-            &registry,
-            &config,
-            &mut readiness_options,
-        )
-        .expect("rover-001");
+            now_ms: 0.0,
+            ..Default::default()
+        };
+        let report =
+            evaluate_entity_readiness("rover-001", &registry, &config, &mut readiness_options)
+                .expect("rover-001");
         assert_eq!(report.entity_id, "rover-001");
         assert!(report.score.is_some());
     }

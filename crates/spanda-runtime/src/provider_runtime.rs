@@ -17,11 +17,7 @@ pub struct ProviderDispatchContext<'a> {
 pub trait ProviderRuntime: Send + Sync {
     fn bootstrap_providers_for_packages(&self, package_names: &[&str]) -> ProviderRegistry;
 
-    fn sync_comm_bus(
-        &self,
-        comm_bus: &mut dyn std::any::Any,
-        registry: &mut ProviderRegistry,
-    );
+    fn sync_comm_bus(&self, comm_bus: &mut dyn std::any::Any, registry: &mut ProviderRegistry);
 
     fn dispatch_official_package_call(
         &self,

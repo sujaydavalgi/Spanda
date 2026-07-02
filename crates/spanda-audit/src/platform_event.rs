@@ -83,11 +83,7 @@ pub struct PlatformEvent {
 }
 
 impl PlatformEvent {
-    pub fn new(
-        event_type: impl Into<String>,
-        source: impl Into<String>,
-        payload: Value,
-    ) -> Self {
+    pub fn new(event_type: impl Into<String>, source: impl Into<String>, payload: Value) -> Self {
         Self {
             event_type: PlatformEventType::new(event_type),
             timestamp: Utc::now(),
@@ -112,8 +108,7 @@ impl PlatformEvent {
     }
 
     pub fn to_json_string(&self) -> AuditResult<String> {
-        serde_json::to_string(self)
-            .map_err(|error| AuditError::Serialization(error.to_string()))
+        serde_json::to_string(self).map_err(|error| AuditError::Serialization(error.to_string()))
     }
 }
 

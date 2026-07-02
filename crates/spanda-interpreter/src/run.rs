@@ -172,11 +172,7 @@ pub fn run_program(program: &Program, options: RunOptions) -> Result<RunResult, 
         }
     }
     if options.persist_telemetry {
-        telemetry_sink.end_run_session(
-            mission_trace_path.as_deref(),
-            Some(&metrics),
-            sim_time_ms,
-        );
+        telemetry_sink.end_run_session(mission_trace_path.as_deref(), Some(&metrics), sim_time_ms);
     }
     let twin_replay = interp.twin_replay_export();
     if let Some(path) = &options.twin_export_path {

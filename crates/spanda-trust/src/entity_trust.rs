@@ -1,8 +1,8 @@
 //! Unified entity trust — routes trust engines through [`EntityRegistry`].
 //!
+use crate::platform_events::record_entity_trust_platform_events;
 use serde::{Deserialize, Serialize};
 use spanda_ast::nodes::Program;
-use crate::platform_events::record_entity_trust_platform_events;
 use spanda_config::{
     evaluate_quarantine_policy, EntityKind, EntityRecord, EntityRegistry, EntityTrustStatus,
     ResolvedSystemConfig,

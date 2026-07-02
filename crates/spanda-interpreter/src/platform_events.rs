@@ -1,12 +1,12 @@
 //! Platform event emission for interpreter lifecycle hooks.
 //!
+use serde_json::json;
 use spanda_ast::nodes::{Program, RobotDecl};
 use spanda_audit::platform_event::names;
 use spanda_audit::{AuditRuntime, PlatformEvent};
 use spanda_runtime::publish_platform_event;
-use spanda_runtime::RecoveryStatus;
 use spanda_runtime::telemetry_sink::TelemetrySink;
-use serde_json::json;
+use spanda_runtime::RecoveryStatus;
 
 /// Record a mission lifecycle platform event when audit runtime is configured.
 pub(crate) fn emit_mission_platform_event(

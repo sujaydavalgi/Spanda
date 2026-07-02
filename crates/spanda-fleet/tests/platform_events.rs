@@ -2,9 +2,7 @@
 
 use spanda_audit::platform_event::names;
 use spanda_fleet::{deregister_fleet_agent, register_fleet_agent, FleetAgentRegistry};
-use spanda_runtime::platform_event_runtime::{
-    set_platform_event_runtime, PlatformEventRuntime,
-};
+use spanda_runtime::platform_event_runtime::{set_platform_event_runtime, PlatformEventRuntime};
 use std::sync::{Arc, Mutex};
 
 struct CapturePlatformEvents {

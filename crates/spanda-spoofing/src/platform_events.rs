@@ -1,9 +1,9 @@
 //! Platform event emission when spoof-check finds actionable alerts.
 //!
+use serde_json::json;
 use spanda_audit::platform_event::names;
 use spanda_audit::PlatformEvent;
 use spanda_runtime::publish_platform_event;
-use serde_json::json;
 
 use crate::detect::SpoofingReport;
 use crate::trace::SpoofingSeverity;

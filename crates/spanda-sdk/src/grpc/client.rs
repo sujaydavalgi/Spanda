@@ -372,10 +372,7 @@ impl GrpcClient {
     }
 
     /// Smart Spaces device inventory via `ListSmartSpacesDevices` (`facility_id=` query).
-    pub async fn smart_spaces_devices(
-        &mut self,
-        facility_id: Option<&str>,
-    ) -> SpandaResult<Value> {
+    pub async fn smart_spaces_devices(&mut self, facility_id: Option<&str>) -> SpandaResult<Value> {
         let query = facility_id
             .map(|id| format!("facility_id={id}"))
             .unwrap_or_default();

@@ -6,7 +6,6 @@ use super::{
     RuntimeValue, RUNTIME_TASK_COST_MS,
 };
 use crate::platform_events::emit_degraded_mode_entered;
-use spanda_runtime::{RecoveryContext, RecoveryLevel, RecoveryStatus};
 use spanda_ast::nodes::{Expr, RobotDecl};
 use spanda_error::SpandaError;
 use spanda_runtime::reliability_runtime::{
@@ -14,6 +13,7 @@ use spanda_runtime::reliability_runtime::{
 };
 use spanda_runtime::replay::MissionTrace;
 use spanda_runtime::scheduler::SchedulerClock;
+use spanda_runtime::{RecoveryContext, RecoveryLevel, RecoveryStatus};
 
 impl<B: RobotBackend> Interpreter<B> {
     /// Validate recovery through the assurance framework before executing handlers.
@@ -45,8 +45,13 @@ impl<B: RobotBackend> Interpreter<B> {
             level: RecoveryLevel::Level3AutomaticWithValidation,
         };
         let plan = self.assurance().plan_recovery(program, &context);
-        let result = self.assurance().build_recovery_result_from_plan(program, &plan);
-        !matches!(result.status, RecoveryStatus::Unsafe | RecoveryStatus::Failed)
+        let result = self
+            .assurance()
+            .build_recovery_result_from_plan(program, &plan);
+        !matches!(
+            result.status,
+            RecoveryStatus::Unsafe | RecoveryStatus::Failed
+        )
     }
 
     pub(super) fn load_reliability_config(&mut self, robot: &RobotDecl) -> Result<(), SpandaError> {
@@ -728,7 +733,13 @@ impl<B: RobotBackend> Interpreter<B> {
 fn is_degraded_operating_mode(mode: &str) -> bool {
     matches!(
         mode.to_ascii_lowercase().as_str(),
-        "degraded" | "degradedmode" | "safe" | "safemode" | "emergency" | "emergencymode"
-            | "recovery" | "recoverymode"
+        "degraded"
+            | "degradedmode"
+            | "safe"
+            | "safemode"
+            | "emergency"
+            | "emergencymode"
+            | "recovery"
+            | "recoverymode"
     )
 }

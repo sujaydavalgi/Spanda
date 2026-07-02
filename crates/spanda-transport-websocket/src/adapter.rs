@@ -1,7 +1,7 @@
 //! WebSocket `TransportAdapter` implementation with optional live broker bridge.
 //!
-use spanda_runtime::RuntimeValue;
 use spanda_runtime::security_types::EncryptionMode;
+use spanda_runtime::RuntimeValue;
 use spanda_transport::{AdapterMessage, StubTransportState, TransportAdapter, TransportConfig};
 
 use crate::LiveWebsocketBridge;

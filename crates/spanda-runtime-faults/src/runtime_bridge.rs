@@ -1,9 +1,9 @@
 //! Runtime-faults-backed implementation of the runtime fault boundary.
 //!
+use spanda_ast::nodes::Program;
 use spanda_runtime::fault_runtime::FaultRuntime;
 use spanda_runtime::fault_types::{FaultScanOptions, FaultScanReport, RuntimeFault};
 use spanda_runtime::replay::MissionTrace;
-use spanda_ast::nodes::Program;
 
 use crate::engine::scan_program_faults as store_scan_program_faults;
 use spanda_runtime::fault_primitives::{

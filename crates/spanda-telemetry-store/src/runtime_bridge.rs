@@ -50,8 +50,7 @@ impl TelemetrySink for TelemetryStoreSink {
         timestamp_ms: f64,
     ) {
         use chrono::{TimeZone, Utc};
-        let mut event =
-            spanda_audit::PlatformEvent::new(event_type, source, payload);
+        let mut event = spanda_audit::PlatformEvent::new(event_type, source, payload);
         if let Some(id) = entity_id {
             event = event.with_entity_id(id);
         }
@@ -68,12 +67,8 @@ impl TelemetrySink for TelemetryStoreSink {
         robot_id: Option<&str>,
         history_interval_ms: f64,
     ) {
-        let _ = crate::record_task_heartbeat(
-            task_name,
-            timestamp_ms,
-            robot_id,
-            history_interval_ms,
-        );
+        let _ =
+            crate::record_task_heartbeat(task_name, timestamp_ms, robot_id, history_interval_ms);
     }
 
     fn record_topic_publish(

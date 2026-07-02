@@ -14,7 +14,10 @@ struct LearnedAnomalyTestRuntime;
 impl ProviderRuntime for LearnedAnomalyTestRuntime {
     fn bootstrap_providers_for_packages(&self, package_names: &[&str]) -> ProviderRegistry {
         let mut registry = ProviderRegistry::new();
-        let mut names: Vec<String> = package_names.iter().map(|name| (*name).to_string()).collect();
+        let mut names: Vec<String> = package_names
+            .iter()
+            .map(|name| (*name).to_string())
+            .collect();
         if !names.iter().any(|name| name == "spanda-anomaly") {
             names.push("spanda-anomaly".into());
         }
@@ -23,12 +26,7 @@ impl ProviderRuntime for LearnedAnomalyTestRuntime {
         registry
     }
 
-    fn sync_comm_bus(
-        &self,
-        _comm_bus: &mut dyn std::any::Any,
-        _registry: &mut ProviderRegistry,
-    ) {
-    }
+    fn sync_comm_bus(&self, _comm_bus: &mut dyn std::any::Any, _registry: &mut ProviderRegistry) {}
 
     fn dispatch_official_package_call(
         &self,

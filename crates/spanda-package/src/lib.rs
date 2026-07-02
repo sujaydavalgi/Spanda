@@ -56,15 +56,15 @@ pub use lockfile::{Lockfile, LOCKFILE_FILENAME};
 pub use manifest::{
     find_project_root, PackageEntityKindDecl, PackageManifest, PackageSection, MANIFEST_FILENAME,
 };
-pub use platform_events::{
-    record_package_removed, record_package_verified, record_packages_installed,
-};
 pub use official::{
     dependency_provenance, installed_official_packages, is_official_package,
     load_official_packages_for_project, load_official_packages_for_source,
     locked_dependency_provenance, official_packages_from_lockfile, official_packages_from_manifest,
     provenance_wires_official_providers, unofficial_official_overrides_from_lockfile,
     unofficial_official_overrides_from_manifest, OfficialProvenance,
+};
+pub use platform_events::{
+    record_package_removed, record_package_verified, record_packages_installed,
 };
 pub use project::{add_dependency, collect_source_files, init_package, remove_dependency};
 pub use provenance_gate::{

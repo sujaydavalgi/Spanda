@@ -189,10 +189,12 @@ impl SecurityRuntime for BuiltinSecurityRuntime {
             .get(name)
             .ok_or_else(|| format!("secret '{name}' not found"))?;
         match &handle.source {
-            crate::security_types::SecretSource::Env { var } => std::env::var(var)
-                .map_err(|_| format!("environment variable '{var}' not found")),
-            crate::security_types::SecretSource::File { path } => std::fs::read_to_string(path)
-                .map_err(|_| format!("secret file '{path}' not found")),
+            crate::security_types::SecretSource::Env { var } => {
+                std::env::var(var).map_err(|_| format!("environment variable '{var}' not found"))
+            }
+            crate::security_types::SecretSource::File { path } => {
+                std::fs::read_to_string(path).map_err(|_| format!("secret file '{path}' not found"))
+            }
             crate::security_types::SecretSource::Literal { value } => Ok(value.clone()),
         }
     }
@@ -295,7 +297,9 @@ impl BuiltinSecurityRuntime {
             .security_faults_active
             .contains("SecureHandshakeDropped")
         {
-            return Err(format!("secure endpoint '{path}': secure handshake dropped"));
+            return Err(format!(
+                "secure endpoint '{path}': secure handshake dropped"
+            ));
         }
         Ok(())
     }

@@ -17,11 +17,7 @@ impl ProviderRuntime for ProviderBackedRuntime {
         bootstrap_providers_for_packages(package_names)
     }
 
-    fn sync_comm_bus(
-        &self,
-        comm_bus: &mut dyn std::any::Any,
-        registry: &mut ProviderRegistry,
-    ) {
+    fn sync_comm_bus(&self, comm_bus: &mut dyn std::any::Any, registry: &mut ProviderRegistry) {
         if let Some(bus) = comm_bus.downcast_mut::<RoutingCommBus>() {
             sync_comm_bus_for_official_packages(bus, registry);
         }

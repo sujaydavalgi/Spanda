@@ -6,7 +6,9 @@ use crate::resolver::ConfigResolver;
 use crate::validation::ValidationSeverity;
 use spanda_ast::nodes::Program;
 use spanda_certify::verify_certification_proof;
-use spanda_hardware::{verify_program_compatibility, CompatSeverity, CompatibilityReport, VerifyOptions};
+use spanda_hardware::{
+    verify_program_compatibility, CompatSeverity, CompatibilityReport, VerifyOptions,
+};
 use spanda_package::{
     official_packages_from_lockfile, official_packages_from_manifest, PackageManifest,
     LOCKFILE_FILENAME, MANIFEST_FILENAME,

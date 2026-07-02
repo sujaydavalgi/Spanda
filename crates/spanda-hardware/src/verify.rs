@@ -1,9 +1,6 @@
 //! Hardware profiles and compile-time deployment compatibility verification.
 
 use crate::compat::{CompatItem, CompatSeverity};
-use spanda_connectivity_runtime::connectivity_validate::{
-    validate_connectivity_policy, validate_geofence, verify_requires_connectivity,
-};
 pub use crate::profiles::{builtin_profiles, list_hardware_profiles, HardwareProfile};
 use serde::{Deserialize, Serialize};
 use spanda_ast::foundations::{
@@ -14,6 +11,9 @@ use spanda_ast::nodes::{
     AiModelDecl, BehaviorDecl, ConfigValue, Program, RobotDecl, SensorDecl, Stmt, TopicDecl,
 };
 use spanda_comm::{default_message_size, estimate_topic_bandwidth_mbps, TopicRole};
+use spanda_connectivity_runtime::connectivity_validate::{
+    validate_connectivity_policy, validate_geofence, verify_requires_connectivity,
+};
 use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

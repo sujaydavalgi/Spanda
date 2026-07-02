@@ -87,8 +87,8 @@ pub(crate) mod snapshot_env_test {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::snapshot_env_test::lock;
+    use super::*;
 
     #[test]
     fn encrypted_snapshot_roundtrip() {

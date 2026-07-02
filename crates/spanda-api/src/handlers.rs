@@ -1035,21 +1035,27 @@ fn route_smart_spaces(
         let (facility_id, action) = rest.split_once('/').unwrap_or((rest, ""));
         match (action, method) {
             ("readiness", "GET") => {
-                return Some(crate::smart_spaces::facility_readiness_get(state, facility_id));
+                return Some(crate::smart_spaces::facility_readiness_get(
+                    state,
+                    facility_id,
+                ));
             }
             ("floor-map", "GET") => {
                 return Some(crate::smart_spaces_panels::facility_floor_map_get(
-                    state, facility_id,
+                    state,
+                    facility_id,
                 ));
             }
             ("security", "GET") => {
                 return Some(crate::smart_spaces_panels::facility_security_get(
-                    state, facility_id,
+                    state,
+                    facility_id,
                 ));
             }
             ("health", "GET") => {
                 return Some(crate::smart_spaces_panels::facility_health_get(
-                    state, facility_id,
+                    state,
+                    facility_id,
                 ));
             }
             _ => {}
@@ -1063,7 +1069,9 @@ fn route_smart_spaces(
         }
         if let Some(zone_id) = rest.strip_suffix("/environment") {
             if method == "GET" {
-                return Some(crate::smart_spaces_panels::zone_environment_get(state, zone_id));
+                return Some(crate::smart_spaces_panels::zone_environment_get(
+                    state, zone_id,
+                ));
             }
         }
     }
@@ -1462,7 +1470,10 @@ pub(crate) fn unauthorized() -> HttpResponse {
 }
 
 /// Reject a mutation when RBAC context is missing or insufficient; emits `AuthFailed` on missing auth.
-pub(crate) fn ensure_rbac(ctx: Option<&RbacContext>, action: RbacAction) -> Result<(), HttpResponse> {
+pub(crate) fn ensure_rbac(
+    ctx: Option<&RbacContext>,
+    action: RbacAction,
+) -> Result<(), HttpResponse> {
     if ctx.is_none() {
         record_auth_failed("missing_or_invalid_token", None);
         return Err(unauthorized());

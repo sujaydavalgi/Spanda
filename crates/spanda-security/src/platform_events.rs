@@ -1,9 +1,9 @@
 //! Platform event emission for security lifecycle hooks.
 //!
+use serde_json::json;
 use spanda_audit::platform_event::names;
 use spanda_audit::PlatformEvent;
 use spanda_runtime::publish_platform_event;
-use serde_json::json;
 
 /// Record `AuthFailed` when authentication is rejected.
 pub fn record_auth_failed(reason: &str, principal: Option<&str>) {

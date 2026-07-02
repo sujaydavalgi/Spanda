@@ -1,11 +1,9 @@
 //! Security platform event emission tests.
 
 use spanda_audit::platform_event::names;
-use spanda_runtime::platform_event_runtime::{
-    set_platform_event_runtime, PlatformEventRuntime,
-};
-use spanda_security::{record_auth_failed, ManagedSecretVault, SecretHandle, SecretMetadata};
+use spanda_runtime::platform_event_runtime::{set_platform_event_runtime, PlatformEventRuntime};
 use spanda_security::SecretSource;
+use spanda_security::{record_auth_failed, ManagedSecretVault, SecretHandle, SecretMetadata};
 use std::sync::{Arc, Mutex};
 
 struct CapturePlatformEvents {
@@ -40,7 +38,9 @@ fn security_platform_events_emit_auth_and_secret_rotation() {
         },
         SecretMetadata::new("robot_cred", 1.0),
     );
-    vault.rotate_literal("robot_cred", "rotated-value").expect("rotate");
+    vault
+        .rotate_literal("robot_cred", "rotated-value")
+        .expect("rotate");
 
     let types = capture.types.lock().unwrap();
     assert!(types.iter().any(|t| t == names::AUTH_FAILED));

@@ -26,7 +26,10 @@ use std::collections::BTreeMap;
 ///
 /// Example:
 /// let md = generate_language_reference(core_type_check_host(), &libraries);
-pub fn generate_language_reference(host: &dyn TypeCheckHost, libraries: &[(String, String)]) -> String {
+pub fn generate_language_reference(
+    host: &dyn TypeCheckHost,
+    libraries: &[(String, String)],
+) -> String {
     // Render each section of the language reference in order.
     let mut out = String::new();
     render_header(&mut out);
@@ -1277,21 +1280,61 @@ mod tests {
         use spanda_typecheck::diagnostics::Diagnostic;
         struct NoopHost;
         impl spanda_typecheck::TypeCheckHost for NoopHost {
-            fn import_path_known(&self, _: &str, _: bool) -> bool { false }
-            fn slam_import_known(&self, _: &str) -> bool { false }
-            fn library_exports_sensor(&self, _: &str, _: &str) -> Option<bool> { None }
-            fn library_sensor_type_known(&self, _: &str) -> bool { false }
-            fn library_sensor_robo_types(&self) -> std::collections::HashMap<String, SpandaType> { Default::default() }
-            fn library_for_sensor_type(&self, _: &str) -> Option<String> { None }
-            fn soc_profile_known(&self, _: &str) -> bool { false }
-            fn validate_hal_against_soc(&self, _: &str, _: &[HalMemberDecl]) -> Vec<String> { vec![] }
-            fn validate_fleet_members(&self, _: &str, _: &[String], _: &[String]) -> Option<String> { None }
-            fn validate_swarm_fleet(&self, _: &str, _: &str, _: &[String]) -> Option<String> { None }
-            fn validate_mission_decl(&self, _: &Option<String>, _: Option<f64>, _: &[String]) -> Option<String> { None }
-            fn security_capability_known(&self, _: &str) -> bool { false }
-            fn validate_task_timing(&self, _: &TaskDecl) -> Vec<Diagnostic> { vec![] }
-            fn validate_task_priority(&self, _: &TaskDecl) -> Vec<Diagnostic> { vec![] }
-            fn validate_resource_budget(&self, _: &ResourceBudgetDecl, _: Span) -> Vec<Diagnostic> { vec![] }
+            fn import_path_known(&self, _: &str, _: bool) -> bool {
+                false
+            }
+            fn slam_import_known(&self, _: &str) -> bool {
+                false
+            }
+            fn library_exports_sensor(&self, _: &str, _: &str) -> Option<bool> {
+                None
+            }
+            fn library_sensor_type_known(&self, _: &str) -> bool {
+                false
+            }
+            fn library_sensor_robo_types(&self) -> std::collections::HashMap<String, SpandaType> {
+                Default::default()
+            }
+            fn library_for_sensor_type(&self, _: &str) -> Option<String> {
+                None
+            }
+            fn soc_profile_known(&self, _: &str) -> bool {
+                false
+            }
+            fn validate_hal_against_soc(&self, _: &str, _: &[HalMemberDecl]) -> Vec<String> {
+                vec![]
+            }
+            fn validate_fleet_members(
+                &self,
+                _: &str,
+                _: &[String],
+                _: &[String],
+            ) -> Option<String> {
+                None
+            }
+            fn validate_swarm_fleet(&self, _: &str, _: &str, _: &[String]) -> Option<String> {
+                None
+            }
+            fn validate_mission_decl(
+                &self,
+                _: &Option<String>,
+                _: Option<f64>,
+                _: &[String],
+            ) -> Option<String> {
+                None
+            }
+            fn security_capability_known(&self, _: &str) -> bool {
+                false
+            }
+            fn validate_task_timing(&self, _: &TaskDecl) -> Vec<Diagnostic> {
+                vec![]
+            }
+            fn validate_task_priority(&self, _: &TaskDecl) -> Vec<Diagnostic> {
+                vec![]
+            }
+            fn validate_resource_budget(&self, _: &ResourceBudgetDecl, _: Span) -> Vec<Diagnostic> {
+                vec![]
+            }
         }
         let md = generate_language_reference(&NoopHost, &[]);
         assert!(md.contains("# Spanda Language Reference"));

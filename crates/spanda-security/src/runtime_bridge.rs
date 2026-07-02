@@ -123,7 +123,8 @@ fn map_secret(handle: SecretHandle) -> SecSecretHandle {
 }
 
 fn map_identity(identity: RobotIdentity) -> SecurityRobotIdentity {
-    SecurityRobotIdentity::new(identity.id, identity.public_key).with_trust(map_trust(identity.trust))
+    SecurityRobotIdentity::new(identity.id, identity.public_key)
+        .with_trust(map_trust(identity.trust))
 }
 
 fn security_err(err: SecurityError) -> String {
@@ -167,7 +168,9 @@ impl SecurityRuntime for SecurityBackedRuntime {
     }
 
     fn grant_capabilities(&mut self, capabilities: &[&str]) {
-        self.inner.capabilities.grant_all(capabilities.iter().copied());
+        self.inner
+            .capabilities
+            .grant_all(capabilities.iter().copied());
     }
 
     fn granted_capability_count(&self) -> usize {
@@ -187,7 +190,9 @@ impl SecurityRuntime for SecurityBackedRuntime {
     }
 
     fn require_operation(&self, operation: &str) -> Result<(), String> {
-        self.inner.require_operation(operation).map_err(security_err)
+        self.inner
+            .require_operation(operation)
+            .map_err(security_err)
     }
 
     fn register_secret(&mut self, handle: SecretHandle) {

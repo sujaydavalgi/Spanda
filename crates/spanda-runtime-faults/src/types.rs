@@ -1,8 +1,8 @@
 //! Core runtime fault types and health status values.
 
 pub use spanda_runtime::fault_types::{
-    FaultEvidence, FaultScanOptions, FaultScanReport, FaultTimeline, RuntimeFault,
-    RuntimeFaultKind, RuntimeHealth, RuntimeHealthStatus, HeartbeatStatus, ProcessHealth,
+    FaultEvidence, FaultScanOptions, FaultScanReport, FaultTimeline, HeartbeatStatus,
+    ProcessHealth, RuntimeFault, RuntimeFaultKind, RuntimeHealth, RuntimeHealthStatus,
 };
 
 use serde::{Deserialize, Serialize};

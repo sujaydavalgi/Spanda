@@ -7,9 +7,7 @@ use spanda_readiness::{
     reset_platform_event_caches_for_tests, EntityHealthDiagnostic, EntityHealthMetrics,
     EntityHealthReport, EntityReadinessFinding, EntityReadinessReport,
 };
-use spanda_runtime::platform_event_runtime::{
-    set_platform_event_runtime, PlatformEventRuntime,
-};
+use spanda_runtime::platform_event_runtime::{set_platform_event_runtime, PlatformEventRuntime};
 use std::sync::{Arc, Mutex};
 
 struct CapturePlatformEvents {
@@ -25,7 +23,11 @@ impl PlatformEventRuntime for CapturePlatformEvents {
     }
 }
 
-fn sample_health_report(entity_id: &str, health_status: &str, severity: &str) -> EntityHealthReport {
+fn sample_health_report(
+    entity_id: &str,
+    health_status: &str,
+    severity: &str,
+) -> EntityHealthReport {
     EntityHealthReport {
         entity_id: entity_id.into(),
         entity_type: "robot".into(),
@@ -70,7 +72,10 @@ fn sample_readiness_report(
 }
 
 fn count_event(events: &[String], name: &str) -> usize {
-    events.iter().filter(|event_type| event_type.as_str() == name).count()
+    events
+        .iter()
+        .filter(|event_type| event_type.as_str() == name)
+        .count()
 }
 
 #[test]
@@ -93,7 +98,11 @@ fn platform_event_transitions_emit_once_per_state_change() {
     record_entity_health_platform_events(&sample_health_report("rover-002", "degraded", "error"));
     record_entity_health_platform_events(&sample_health_report("rover-002", "degraded", "error"));
     record_entity_health_platform_events(&sample_health_report("rover-002", "healthy", "warning"));
-    record_entity_health_platform_events(&sample_health_report("rover-002", "degraded", "critical"));
+    record_entity_health_platform_events(&sample_health_report(
+        "rover-002",
+        "degraded",
+        "critical",
+    ));
     let events = capture.events.lock().unwrap();
     let section = &events[start..];
     assert_eq!(count_event(section, names::DEGRADED_MODE_ENTERED), 2);

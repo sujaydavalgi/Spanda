@@ -9,15 +9,12 @@ use spanda_ai::create_ai_model;
 use spanda_ast::foundations::{StateMachineDecl, TwinDecl};
 use spanda_ast::nodes::{AgentDecl, RobotDecl, SafetyRule, TopicDecl};
 use spanda_audit::{AuditRuntime, DeviceIdentity, MockLedgerBackend};
+use spanda_comm::default_comm_bus_factory_fn;
 use spanda_error::SpandaError;
 use spanda_hal::get_soc_profile;
 use spanda_hal::hal::{hal_member_from_decl, HalBackend};
 use spanda_hal::HardwareMonitor;
 use spanda_runtime::events::EventBus;
-use spanda_runtime::state_machine::StateMachineRuntime;
-use spanda_runtime::triggers::{ConditionTriggerState, TriggerRegistry, TriggerTimerSchedule};
-use spanda_runtime::twin::TwinRuntime;
-use spanda_safety::{create_safety_config_from_robot, SafetyMonitor};
 use spanda_runtime::security_primitives::{
     boundary_for_transport_name, bus_security_from_fields, effective_bus_security,
     resolve_broker_url, validate_bus_security,
@@ -25,7 +22,10 @@ use spanda_runtime::security_primitives::{
 use spanda_runtime::security_types::{
     CommTransportSetup, RobotIdentity, SecretHandle, SecretSource, SecureCommPolicy, TrustLevel,
 };
-use spanda_comm::default_comm_bus_factory_fn;
+use spanda_runtime::state_machine::StateMachineRuntime;
+use spanda_runtime::triggers::{ConditionTriggerState, TriggerRegistry, TriggerTimerSchedule};
+use spanda_runtime::twin::TwinRuntime;
+use spanda_safety::{create_safety_config_from_robot, SafetyMonitor};
 use std::collections::HashMap;
 use std::rc::Rc;
 
@@ -203,10 +203,10 @@ impl<B: RobotBackend> Interpreter<B> {
         self.twin_faults_dispatched.clear();
         self.audit_runtime = None;
         self.mock_ledger = MockLedgerBackend::new();
-        self.security = (self
-            .options
-            .security_runtime_factory
-            .unwrap_or_else(spanda_runtime::security_runtime::default_security_runtime_factory))();
+        self.security =
+            (self.options.security_runtime_factory.unwrap_or_else(
+                spanda_runtime::security_runtime::default_security_runtime_factory,
+            ))();
         self.geofences.clear();
         self.geofence_active.clear();
         self.connectivity_events_seen.clear();
@@ -617,8 +617,7 @@ impl<B: RobotBackend> Interpreter<B> {
             let spanda_ast::foundations::PermissionsDecl::PermissionsDecl { capabilities, .. } =
                 perm_decl;
             self.security.enable_strict_permissions();
-            let capability_refs: Vec<&str> =
-                capabilities.iter().map(String::as_str).collect();
+            let capability_refs: Vec<&str> = capabilities.iter().map(String::as_str).collect();
             self.security.grant_capabilities(&capability_refs);
             self.log(format!(
                 "permissions: strict mode, granted {} capability(ies)",
@@ -676,8 +675,8 @@ impl<B: RobotBackend> Interpreter<B> {
                 .find(|(k, _)| k == "public_key" || k == "signing_key")
                 .map(|(_, v)| v.clone())
                 .unwrap_or_default();
-            let robot_id =
-                RobotIdentity::new(id.clone(), public_key.clone()).with_trust(self.security.trust_level());
+            let robot_id = RobotIdentity::new(id.clone(), public_key.clone())
+                .with_trust(self.security.trust_level());
             self.env.define(
                 String::from("identity"),
                 RuntimeValue::Identity {

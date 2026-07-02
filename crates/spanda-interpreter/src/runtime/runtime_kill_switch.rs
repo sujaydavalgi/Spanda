@@ -89,10 +89,7 @@ impl<B: RobotBackend> Interpreter<B> {
                 })?;
             self.security
                 .verify_remote_signature(signature_json)
-                .map_err(|message| SpandaError::Runtime {
-                    message,
-                    line: 1,
-                })?;
+                .map_err(|message| SpandaError::Runtime { message, line: 1 })?;
             self.log(format!("kill_switch: verified remote signature for {name}"));
         }
 

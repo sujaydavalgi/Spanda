@@ -1,6 +1,8 @@
 //! gRPC server smoke tests for Control Center.
 use spanda_api::grpc::spanda_v1::control_center_client::ControlCenterClient;
-use spanda_api::grpc::spanda_v1::{DeviceBodyRequest, DeviceIdRequest, EntityBodyRequest, EntityIdRequest};
+use spanda_api::grpc::spanda_v1::{
+    DeviceBodyRequest, DeviceIdRequest, EntityBodyRequest, EntityIdRequest,
+};
 use spanda_api::grpc::spanda_v1::{Empty, QueryRequest, ReadinessRequest, TrustPackageRequest};
 use spanda_api::{run_control_center_server, ControlCenterOptions};
 use std::net::TcpListener;

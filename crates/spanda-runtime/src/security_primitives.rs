@@ -68,7 +68,10 @@ pub fn boundary_for_transport_name(transport: &str) -> Option<TrustBoundaryKind>
 }
 
 /// Validate bus security against a transport name.
-pub fn validate_bus_security(security: &BusTransportSecurity, transport: &str) -> Result<(), String> {
+pub fn validate_bus_security(
+    security: &BusTransportSecurity,
+    transport: &str,
+) -> Result<(), String> {
     if security.encryption == EncryptionMode::Required
         && security.cert_path.is_none()
         && matches!(transport, "mqtt" | "websocket" | "dds")

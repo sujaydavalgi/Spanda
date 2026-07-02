@@ -145,9 +145,7 @@ pub fn record_checkpoint(
     robot: &str,
     snapshot: MissionStateSnapshot,
 ) {
-    store
-        .entries
-        .insert(store_key(mission, robot), snapshot);
+    store.entries.insert(store_key(mission, robot), snapshot);
 }
 
 /// Load a stored snapshot for a mission/robot pair.

@@ -4,21 +4,21 @@ use super::super::super::fleet_http::{
     relay_continuity_via_mesh, relay_recovery_via_mesh, FleetContinuityRequest,
     FleetRecoveryRequest,
 };
+use super::super::super::options::{RecoveryRunOptions, RecoveryRunResult};
 use super::super::super::platform_events::{
     emit_mission_paused, emit_recovery_outcome, emit_recovery_triggered,
 };
-use super::super::super::options::{RecoveryRunOptions, RecoveryRunResult};
 use super::super::super::simulator::{create_default_simulator, SimulatorConfig};
 use super::{Interpreter, RobotBackend};
 use serde::{Deserialize, Serialize};
-use spanda_runtime::{
-    RecoveryContext, RecoveryEvidence, RecoveryLevel, RecoveryResult, RecoveryStatus,
-};
 use spanda_ast::nodes::{Program, RobotDecl};
 use spanda_comm::CommBus;
 use spanda_error::SpandaError;
 use spanda_runtime::robotics::MissionState;
 use spanda_runtime::value::RuntimeValue;
+use spanda_runtime::{
+    RecoveryContext, RecoveryEvidence, RecoveryLevel, RecoveryResult, RecoveryStatus,
+};
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -522,10 +522,9 @@ impl<B: RobotBackend> Interpreter<B> {
             .merge_recovery_knowledge(&program, &persisted);
         self.assurance()
             .record_recovery_outcome(&mut knowledge, &result);
-        let _ = self.assurance().save_recovery_knowledge_store(
-            &self.recovery_knowledge_path,
-            &knowledge,
-        );
+        let _ = self
+            .assurance()
+            .save_recovery_knowledge_store(&self.recovery_knowledge_path, &knowledge);
 
         let _ = self.try_invoke_continuity_for_event(issue);
 
@@ -541,7 +540,11 @@ impl<B: RobotBackend> Interpreter<B> {
         let Some(program) = self.health_program.clone() else {
             return Ok(None);
         };
-        if self.assurance().extract_recovery_policies(&program).is_empty() {
+        if self
+            .assurance()
+            .extract_recovery_policies(&program)
+            .is_empty()
+        {
             return Ok(None);
         }
         if !self
@@ -999,9 +1002,9 @@ pub fn execute_recovery_on_program(
 mod recovery_execute_tests {
     use super::super::super::super::options::RecoveryRunOptions;
     use super::execute_recovery_on_program;
-    use spanda_runtime::RecoveryStatus;
     use spanda_lexer::tokenize;
     use spanda_parser::parse;
+    use spanda_runtime::RecoveryStatus;
 
     #[test]
     fn interpreter_recovery_enters_degraded_mode() {

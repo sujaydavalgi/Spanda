@@ -5,15 +5,15 @@ use super::super::super::options::{ContinuityRunOptions, ContinuityRunResult};
 use super::super::super::simulator::{create_default_simulator, SimulatorConfig};
 use super::{Interpreter, RobotBackend};
 use serde::{Deserialize, Serialize};
-use spanda_runtime::{
-    parse_trigger, ContinuityContext, ContinuityTrigger, SuccessionScope, TakeoverMode,
-    TakeoverReport,
-};
 use spanda_ast::nodes::Program;
 use spanda_comm::CommBus;
 use spanda_error::SpandaError;
 use spanda_runtime::robotics::MissionState;
 use spanda_runtime::value::RuntimeValue;
+use spanda_runtime::{
+    parse_trigger, ContinuityContext, ContinuityTrigger, SuccessionScope, TakeoverMode,
+    TakeoverReport,
+};
 use std::cell::RefCell;
 use std::path::PathBuf;
 use std::rc::Rc;
@@ -35,10 +35,10 @@ impl<B: RobotBackend> Interpreter<B> {
             &report.failed_entity,
             report.state_transfer.snapshot.clone(),
         );
-        if let Err(err) = self.assurance().save_checkpoint_store(
-            &self.checkpoint_store_path(),
-            &store,
-        ) {
+        if let Err(err) = self
+            .assurance()
+            .save_checkpoint_store(&self.checkpoint_store_path(), &store)
+        {
             self.log(format!("continuity: checkpoint persist failed: {err}"));
         } else {
             self.log(format!(
@@ -96,7 +96,11 @@ impl<B: RobotBackend> Interpreter<B> {
         let Some(program) = self.health_program.clone() else {
             return Ok(None);
         };
-        if self.assurance().extract_continuity_policies(&program).is_empty() {
+        if self
+            .assurance()
+            .extract_continuity_policies(&program)
+            .is_empty()
+        {
             return Ok(None);
         }
         let Some(trigger) = self.assurance().issue_to_continuity_trigger(issue) else {

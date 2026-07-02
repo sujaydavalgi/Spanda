@@ -48,10 +48,6 @@ pub use entity_readiness::{
     evaluate_entity_readiness, EntityReadinessFinding, EntityReadinessOptions,
     EntityReadinessReport,
 };
-pub use platform_events::{
-    record_entity_health_platform_events, record_readiness_platform_event,
-    reset_health_status_cache_for_tests, reset_platform_event_caches_for_tests,
-};
 pub use entity_verify::{
     verify_entity, EntityVerifyFinding, EntityVerifyOptions, EntityVerifyReport,
 };
@@ -66,6 +62,10 @@ pub use human::{
     HumanReadinessReport, HumanReadinessWeights,
 };
 pub use mission::{verify_mission, verify_mission_source, MissionVerificationReport};
+pub use platform_events::{
+    record_entity_health_platform_events, record_readiness_platform_event,
+    reset_health_status_cache_for_tests, reset_platform_event_caches_for_tests,
+};
 pub use report::{
     format_audit, format_failure_analysis, format_fleet_readiness, format_mission_verification,
     format_readiness, format_root_cause, format_safety_report, format_twin_readiness,

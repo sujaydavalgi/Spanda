@@ -1,9 +1,9 @@
 //! Platform event emission for OTA rollouts.
 //!
+use serde_json::json;
 use spanda_audit::platform_event::names;
 use spanda_audit::PlatformEvent;
 use spanda_runtime::publish_platform_event;
-use serde_json::json;
 
 use crate::types::{DeployPlan, RolloutOptions, RolloutResult, RolloutStrategy};
 
@@ -12,7 +12,11 @@ fn fleet_scope(plan: &DeployPlan) -> String {
 }
 
 /// Record `OtaRolloutStarted` when a rollout plan is accepted.
-pub fn record_ota_rollout_started(plan: &DeployPlan, options: &RolloutOptions, target_count: usize) {
+pub fn record_ota_rollout_started(
+    plan: &DeployPlan,
+    options: &RolloutOptions,
+    target_count: usize,
+) {
     let event = PlatformEvent::new(
         names::OTA_ROLLOUT_STARTED,
         "spanda-ota",
@@ -36,7 +40,8 @@ pub fn record_ota_rollout_completed(plan: &DeployPlan, result: &RolloutResult) {
         .filter(|s| {
             matches!(
                 s.status,
-                crate::types::RolloutStepStatus::Deployed | crate::types::RolloutStepStatus::Pending
+                crate::types::RolloutStepStatus::Deployed
+                    | crate::types::RolloutStepStatus::Pending
             )
         })
         .count();

@@ -91,7 +91,10 @@ pub fn verify_requires_connectivity(
         if satisfied {
             items.push(pass(
                 "connectivity",
-                format!("Required connectivity '{key}' present on '{}'", profile.name),
+                format!(
+                    "Required connectivity '{key}' present on '{}'",
+                    profile.name
+                ),
                 line,
                 column,
             ));
@@ -220,9 +223,7 @@ pub fn validate_geofence(geofence: &GeofenceDecl) -> Vec<CompatItem> {
     } else if !(-180.0..=180.0).contains(center_lon) {
         items.push(error(
             "geofence",
-            format!(
-                "Geofence '{name}' center longitude {center_lon} out of range [-180, 180]"
-            ),
+            format!("Geofence '{name}' center longitude {center_lon} out of range [-180, 180]"),
             line,
             column,
         ));
@@ -270,9 +271,7 @@ pub fn validate_connectivity_policy(policy: &ConnectivityPolicyDecl) -> Vec<Comp
     let column = span.start.column;
     let mut items = vec![pass(
         "connectivity_policy",
-        format!(
-            "Connectivity policy '{name}' parsed: preferred={preferred}, fallback={fallback}"
-        ),
+        format!("Connectivity policy '{name}' parsed: preferred={preferred}, fallback={fallback}"),
         line,
         column,
     )];

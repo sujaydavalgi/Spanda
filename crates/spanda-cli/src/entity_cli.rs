@@ -281,13 +281,8 @@ fn cmd_readiness(args: &[String]) {
         include_dependencies: args.iter().any(|a| a == "--dependencies"),
         platform_audit: None,
     };
-    let report = evaluate_entity_readiness(
-        &id,
-        &registry,
-        &resolved,
-        &mut readiness_options,
-    )
-    .expect("entity readiness report");
+    let report = evaluate_entity_readiness(&id, &registry, &resolved, &mut readiness_options)
+        .expect("entity readiness report");
     if json_output(args) {
         println!("{}", serde_json::to_string_pretty(&report).unwrap());
         return;

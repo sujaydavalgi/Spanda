@@ -6,11 +6,11 @@ use spanda_interpreter::{execute_continuity_on_program, ContinuityRunOptions};
 use spanda_lexer::tokenize;
 use spanda_parser::parse;
 use spanda_runtime::assurance_runtime::platform_assurance_runtime;
+use spanda_runtime::security_runtime::default_security_runtime_factory;
 use spanda_runtime::{
-    ContinuityContext, ContinuityEvidence, ContinuityTrigger, ContinuationDecision,
+    ContinuationDecision, ContinuityContext, ContinuityEvidence, ContinuityTrigger,
     MissionStateSnapshot, MissionStateTransfer, SuccessionScope, TakeoverMode, TakeoverReport,
 };
-use spanda_runtime::security_runtime::default_security_runtime_factory;
 use spanda_transport_routing::runtime_bridge::routing_comm_bus_factory_fn;
 
 fn parse_takeover_request(step: &str) -> Result<FleetContinuityRequest, String> {
@@ -92,7 +92,11 @@ pub fn execute_assurance_continuity_on_agent(
     let tokens = tokenize(program_source).map_err(|e| e.to_string())?;
     let program = parse(tokens).map_err(|e| e.to_string())?;
     let context = continuity_context_from_request(request);
-    let report = platform_assurance_runtime().plan_takeover(&program, &context, request.successor.as_deref());
+    let report = platform_assurance_runtime().plan_takeover(
+        &program,
+        &context,
+        request.successor.as_deref(),
+    );
     apply_continuity_takeover(state, &report, request);
     state.continuity_engine = Some("assurance".into());
     state.continuity_validation = Some(if report.succeeded {

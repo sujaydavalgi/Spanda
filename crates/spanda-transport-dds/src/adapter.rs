@@ -1,7 +1,7 @@
 //! DDS `TransportAdapter` implementation with optional live UDP multicast bridge.
 //!
-use spanda_runtime::RuntimeValue;
 use spanda_runtime::security_types::EncryptionMode;
+use spanda_runtime::RuntimeValue;
 use spanda_transport::{AdapterMessage, StubTransportState, TransportAdapter, TransportConfig};
 
 use crate::LiveDdsBridge;

@@ -1,9 +1,9 @@
 //! Platform event emission when official packages bootstrap providers.
 //!
+use serde_json::json;
 use spanda_audit::platform_event::names;
 use spanda_audit::PlatformEvent;
 use spanda_runtime::publish_platform_event;
-use serde_json::json;
 
 /// Record `PackageInstalled` events for each bootstrapped official package.
 pub fn record_packages_installed(package_names: &[&str]) {

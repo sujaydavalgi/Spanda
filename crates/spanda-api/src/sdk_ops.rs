@@ -424,12 +424,9 @@ pub fn entity_readiness(state: &mut ControlCenterState, entity_id: &str) -> Http
             include_dependencies: false,
             platform_audit: Some(&mut state.mutation_audit),
         };
-        if let Some(report) = evaluate_entity_readiness(
-            entity_id,
-            &registry,
-            resolved,
-            &mut readiness_options,
-        ) {
+        if let Some(report) =
+            evaluate_entity_readiness(entity_id, &registry, resolved, &mut readiness_options)
+        {
             payload["mission_ready"] = serde_json::json!(report.mission_ready);
             payload["report"] = serde_json::to_value(report).unwrap_or_default();
         }

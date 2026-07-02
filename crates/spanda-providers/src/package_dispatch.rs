@@ -3,11 +3,10 @@
 use crate::anomaly_onnx::scan_learned_score;
 use crate::automotive_hub::{read_lidar_distance, read_radar_distance, read_ultrasonic_distance};
 use crate::iot_hub::{
-    number_arg, publish_telemetry, read_canbus_frame, read_lora_payload, read_matter_cluster,
-    read_modbus_register, read_opcua_node, read_zigbee_attribute, read_bacnet_point,
-    read_knx_group, read_thread_endpoint, read_zwave_value, read_string_stub,
-    register_device, send_command,
-    string_arg, update_shadow,
+    number_arg, publish_telemetry, read_bacnet_point, read_canbus_frame, read_knx_group,
+    read_lora_payload, read_matter_cluster, read_modbus_register, read_opcua_node,
+    read_string_stub, read_thread_endpoint, read_zigbee_attribute, read_zwave_value,
+    register_device, send_command, string_arg, update_shadow,
 };
 use spanda_runtime::fusion::{weight_for_sensor_type, weighted_confidence};
 use spanda_runtime::providers::{transport_registry_key, ProviderRegistry};
@@ -900,8 +899,8 @@ pub fn dispatch_official_package_call(
             );
             Some(RuntimeValue::String { value })
         }
-        ("bridge.home_assistant", "get_state") if registry.has_capability("bridge.home_assistant")
-        =>
+        ("bridge.home_assistant", "get_state")
+            if registry.has_capability("bridge.home_assistant") =>
         {
             let entity_id = string_arg(args, 0);
             let value = read_string_stub(&format!("home_assistant:{entity_id}"));

@@ -1,10 +1,10 @@
 //! Swarm member continuity handoff planning and mesh relay.
 
 use serde::{Deserialize, Serialize};
-use spanda_runtime::assurance_runtime::platform_assurance_runtime;
-use spanda_runtime::{ContinuityContext, ContinuityTrigger, SuccessionScope};
 use spanda_ast::nodes::Program;
 use spanda_deploy_http::FleetContinuityRequest;
+use spanda_runtime::assurance_runtime::platform_assurance_runtime;
+use spanda_runtime::{ContinuityContext, ContinuityTrigger, SuccessionScope};
 
 use crate::swarm_coordinator::SwarmCoordinationResult;
 

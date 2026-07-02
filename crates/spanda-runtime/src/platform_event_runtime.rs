@@ -43,9 +43,9 @@ pub fn publish_platform_event(audit: Option<&mut AuditRuntime>, event: &Platform
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde_json::json;
     use spanda_audit::platform_event::names;
     use spanda_audit::AuditRuntime;
-    use serde_json::json;
 
     #[test]
     fn publish_platform_event_records_audit() {

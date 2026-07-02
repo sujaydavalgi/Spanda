@@ -55,7 +55,8 @@ pub fn apply_system_config_to_run_options(
         opts.fault_runtime = Some(crate::fault_runtime::default_fault_runtime());
     }
     if opts.security_runtime_factory.is_none() {
-        opts.security_runtime_factory = Some(crate::security_runtime::default_security_runtime_factory());
+        opts.security_runtime_factory =
+            Some(crate::security_runtime::default_security_runtime_factory());
     }
     if opts.comm_bus_factory.is_none() {
         opts.comm_bus_factory = Some(crate::comm_bus_runtime::default_comm_bus_factory());

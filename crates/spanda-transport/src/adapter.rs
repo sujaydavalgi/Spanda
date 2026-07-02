@@ -254,9 +254,7 @@ macro_rules! stub_adapter {
 
                 // Call connected = true; on the current instance.
                 config.security.validate(self.kind().as_str())?;
-                if config.security.encryption != EncryptionMode::None
-                    && !config.tls.negotiated
-                {
+                if config.security.encryption != EncryptionMode::None && !config.tls.negotiated {
                     return Err(format!(
                         "{} adapter requires negotiated TLS session",
                         self.kind().as_str()

@@ -80,8 +80,7 @@ impl CommBus for SimCommBusHost {
         service_type: &str,
         request: Option<RuntimeValue>,
     ) -> RuntimeValue {
-        self.inner
-            .call_service(service_name, service_type, request)
+        self.inner.call_service(service_name, service_type, request)
     }
 
     fn send_action(

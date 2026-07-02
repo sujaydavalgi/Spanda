@@ -1,9 +1,9 @@
 //! Fault detection logic — static scan and runtime signal evaluation.
 
+use crate::types::FaultScanOptions;
 use crate::types::{
     FaultEvidence, ResourcePressure, RuntimeFault, RuntimeFaultKind, RuntimeHealthStatus,
 };
-use crate::types::FaultScanOptions;
 use spanda_ast::fault_decl::{
     HeartbeatDecl, MemoryWatchDecl, ResourceWatchDecl, RestartPolicyDecl, RuntimeFaultTriggerDecl,
 };

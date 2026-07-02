@@ -6,7 +6,8 @@ use spanda_deploy_http::HttpRequest;
 use std::path::PathBuf;
 
 fn smart_spaces_state() -> ControlCenterState {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../examples/solutions/smart-spaces");
+    let root =
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../examples/solutions/smart-spaces");
     let program = root.join("smart-building/floor_readiness.sd");
     let resolved = ConfigResolver::new()
         .with_validation(false)
@@ -57,7 +58,8 @@ fn facilities_energy_and_emergency_from_smart_spaces_blueprint() {
     assert!(summary.body.contains("readiness_rollups"));
     assert!(summary.body.contains("robots"));
 
-    let devices = spanda_api::smart_spaces_panels::devices_inventory_get(&state, Some("tower-demo"));
+    let devices =
+        spanda_api::smart_spaces_panels::devices_inventory_get(&state, Some("tower-demo"));
     assert_eq!(devices.status, 200);
     assert!(devices.body.contains("bacnet-gw-primary"));
 

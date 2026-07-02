@@ -24,7 +24,10 @@ fn facility_known(resolved: &spanda_config::ResolvedSystemConfig, facility_id: &
         .any(|entry| table_field_str(entry, "id").as_deref() == Some(facility_id))
 }
 
-fn summarize_device(entry: &toml::Value, registry: &spanda_config::DeviceRegistry) -> serde_json::Value {
+fn summarize_device(
+    entry: &toml::Value,
+    registry: &spanda_config::DeviceRegistry,
+) -> serde_json::Value {
     let id = table_field_str(entry, "id").unwrap_or_default();
     let pool = registry.get(&id);
     let health = pool.map(|device| spanda_config::evaluate_device_readiness(device, 0.0));
@@ -42,7 +45,10 @@ fn summarize_device(entry: &toml::Value, registry: &spanda_config::DeviceRegistr
     })
 }
 
-pub fn devices_inventory_get(state: &ControlCenterState, facility_id: Option<&str>) -> HttpResponse {
+pub fn devices_inventory_get(
+    state: &ControlCenterState,
+    facility_id: Option<&str>,
+) -> HttpResponse {
     let resolved = match require_resolved(state) {
         Ok(value) => value,
         Err(response) => return response,
@@ -217,9 +223,9 @@ pub fn zone_environment_get(state: &ControlCenterState, zone_id: &str) -> HttpRe
     let twin = nested_table_array(&resolved.raw, &["twins"])
         .into_iter()
         .find(|entry| table_field_str(entry, "entity_id").as_deref() == Some(zone_id));
-    let seed = zone_id
-        .bytes()
-        .fold(0u32, |acc, byte| acc.wrapping_mul(31).wrapping_add(byte as u32));
+    let seed = zone_id.bytes().fold(0u32, |acc, byte| {
+        acc.wrapping_mul(31).wrapping_add(byte as u32)
+    });
     let co2 = 420 + (seed % 180);
     let temp = 21.0 + (seed % 10) as f64 * 0.3;
     let humidity = 40 + (seed % 25);
@@ -260,9 +266,9 @@ pub fn energy_system_get(state: &ControlCenterState, system_id: &str) -> HttpRes
         return bad_request("energy system not found");
     };
     let kind = table_field_str(system, "type").unwrap_or_default();
-    let seed = system_id
-        .bytes()
-        .fold(0u32, |acc, byte| acc.wrapping_mul(31).wrapping_add(byte as u32));
+    let seed = system_id.bytes().fold(0u32, |acc, byte| {
+        acc.wrapping_mul(31).wrapping_add(byte as u32)
+    });
     let detail = match kind.as_str() {
         "BatteryStorage" => serde_json::json!({
             "soc_percent": 55 + (seed % 40),

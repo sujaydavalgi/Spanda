@@ -358,22 +358,19 @@ impl IotHub {
         self.canbus_frames.insert(0x100, 42.0);
         self.bacnet_points
             .insert("ahu-12:present-value".into(), "72.0".into());
-        self.knx_groups
-            .insert("1/2/3".into(), "occupied".into());
+        self.knx_groups.insert("1/2/3".into(), "occupied".into());
         self.thread_endpoints
             .insert("matter-hub-backup".into(), "online".into());
         self.zwave_values
             .insert("leak-basement".into(), "dry".into());
-        self.string_stubs.insert(
-            "energy:solar-001".into(),
-            "generation_kw:4.2".into(),
-        );
-        self.string_stubs.insert(
-            "building:tower-demo".into(),
-            "readiness:85".into(),
-        );
-        self.string_stubs.insert("lock:lock-front".into(), "locked".into());
-        self.string_stubs.insert("environment:co2-lobby".into(), "co2:620".into());
+        self.string_stubs
+            .insert("energy:solar-001".into(), "generation_kw:4.2".into());
+        self.string_stubs
+            .insert("building:tower-demo".into(), "readiness:85".into());
+        self.string_stubs
+            .insert("lock:lock-front".into(), "locked".into());
+        self.string_stubs
+            .insert("environment:co2-lobby".into(), "co2:620".into());
         self.string_stubs
             .insert("home_assistant:climate.living_room".into(), "heat".into());
     }
@@ -688,7 +685,10 @@ pub fn read_zwave_value(device: &str, command_class: &str) -> String {
     if let Some(value) = crate::iot_live::read_zwave_value_live(device, command_class) {
         return value;
     }
-    hub().lock().unwrap().read_zwave_value(device, command_class)
+    hub()
+        .lock()
+        .unwrap()
+        .read_zwave_value(device, command_class)
 }
 
 pub fn read_string_stub(key: &str) -> String {

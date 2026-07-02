@@ -59,8 +59,11 @@ pub fn correlate_mesh_tamper_shards(
     if state.tamper_shards.is_empty() {
         return Err("no tamper trace shards ingested".into());
     }
-    let shards: std::collections::HashMap<String, String> =
-        state.tamper_shards.iter().map(|(k, v)| (k.clone(), v.clone())).collect();
+    let shards: std::collections::HashMap<String, String> = state
+        .tamper_shards
+        .iter()
+        .map(|(k, v)| (k.clone(), v.clone()))
+        .collect();
     fleet_tamper_runtime().correlate_fleet_tamper_traces_json(fleet_name, &shards)
 }
 

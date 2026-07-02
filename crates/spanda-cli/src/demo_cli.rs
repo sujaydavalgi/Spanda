@@ -1150,8 +1150,14 @@ fn demo_smart_spaces(root: &Path) {
         ("network_failure_offline", "network_failure_offline.trace"),
         ("hvac_failure_floor", "hvac_failure_floor.trace"),
         ("robot_failure_service", "robot_failure_service.trace"),
-        ("medical_emergency_patient", "medical_emergency_patient.trace"),
-        ("security_breach_perimeter", "security_breach_perimeter.trace"),
+        (
+            "medical_emergency_patient",
+            "medical_emergency_patient.trace",
+        ),
+        (
+            "security_breach_perimeter",
+            "security_breach_perimeter.trace",
+        ),
     ] {
         let trace = ss_root.join("fixtures").join(name);
         if trace.is_file() {
@@ -1242,7 +1248,9 @@ pub fn demo_dispatch(args: &[String]) {
         "gaps" | "platform-gaps" | "maturity-gaps" => demo_gaps(&root),
         "compliance" | "profiles" => demo_compliance(&root),
         "adas" | "automotive" | "highway" => demo_adas(&root),
-        "smart-spaces" | "smartspaces" | "ambient" | "building-automation" => demo_smart_spaces(&root),
+        "smart-spaces" | "smartspaces" | "ambient" | "building-automation" => {
+            demo_smart_spaces(&root)
+        }
         "spatial" | "hri" | "human-collaboration" | "spatial-computing" => demo_spatial(&root),
         "" | "list" | "--help" | "-h" => {
             eprintln!(

@@ -17,19 +17,21 @@ impl FleetTamperRuntime for TamperBackedFleetRuntime {
         // Deserialise each shard, correlate via real engine, and return serialised report.
         let mut traces = Vec::new();
         for (robot_id, trace_json) in shards {
-        let trace: crate::runtime::MissionTrace = serde_json::from_str(trace_json)
-            .map_err(|e| format!("parse {robot_id}: {e}"))?;
-        let label = format!("{robot_id}.trace");
-        traces.push((robot_id.clone(), trace, label));
+            let trace: crate::runtime::MissionTrace =
+                serde_json::from_str(trace_json).map_err(|e| format!("parse {robot_id}: {e}"))?;
+            let label = format!("{robot_id}.trace");
+            traces.push((robot_id.clone(), trace, label));
+        }
+        let report = crate::fleet::correlate_fleet_tamper_traces(fleet_name, &traces);
+        serde_json::to_string(&report).map_err(|e| e.to_string())
     }
-    let report = crate::fleet::correlate_fleet_tamper_traces(fleet_name, &traces);
-    serde_json::to_string(&report).map_err(|e| e.to_string())
-}
 
     fn format_fleet_tamper_report_json(&self, report_json: &str) -> String {
         // Deserialise the report and format it as human-readable text.
         match serde_json::from_str::<crate::fleet::FleetTamperReport>(report_json) {
-            Ok(report) => crate::fleet::format_fleet_tamper_report(&report, crate::detect::TamperFormat::Text),
+            Ok(report) => {
+                crate::fleet::format_fleet_tamper_report(&report, crate::detect::TamperFormat::Text)
+            }
             Err(e) => format!("Fleet tamper report parse error: {e}"),
         }
     }

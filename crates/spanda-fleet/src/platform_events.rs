@@ -1,9 +1,9 @@
 //! Platform event emission for fleet orchestration.
 //!
+use serde_json::json;
 use spanda_audit::platform_event::names;
 use spanda_audit::PlatformEvent;
 use spanda_runtime::publish_platform_event;
-use serde_json::json;
 
 /// Record `FleetMemberJoined` when a robot joins an orchestrated fleet group.
 pub fn record_fleet_member_joined(fleet_id: &str, member_id: &str) {

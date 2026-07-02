@@ -1,7 +1,7 @@
 //! Package-scoped provider stubs registered when official packages are installed.
 //!
-use spanda_ast::nodes::UnitKind;
 use sha2::{Digest, Sha256};
+use spanda_ast::nodes::UnitKind;
 use spanda_runtime::providers::hri::{
     HriInputProvider, OverlayProvider, SpatialSessionInfo, SpatialSessionProvider,
     WearableTelemetryProvider,

@@ -30,9 +30,9 @@ pub use analyze::{
     assure_program, assure_program_with_config, diagnosis_report, diagnosis_report_with_config,
     mitigation_report, MissionAssuranceSummary,
 };
+pub use anomaly::{learned_models, scan_anomalies, AnomalyReport};
 #[cfg(feature = "certify-runtime")]
 pub use certify::enforce_runtime_certification;
-pub use anomaly::{learned_models, scan_anomalies, AnomalyReport};
 pub use continuity::{
     evaluate_continuity, extract_continuity_policies, issue_to_continuity_trigger, parse_scope,
     parse_trigger, plan_delegation, plan_succession, plan_takeover,
@@ -82,13 +82,13 @@ pub use recovery_coverage::{
     RecoveryCoverageReport, RecoveryCoverageStatus, RecoveryGap, RecoveryPlanSummary,
 };
 pub use recovery_diagnostics::collect_recovery_diagnostics;
-pub use runtime_bridge::AssuranceBackedRuntime;
 pub use report::{
     format_anomaly, format_assurance, format_continuity, format_delegation, format_diagnosis,
     format_mission_assurance, format_mitigation, format_prognostics, format_recovery,
     format_resilience, format_state, format_succession, format_takeover,
 };
 pub use resilience::{check_resilience, ResilienceReport};
+pub use runtime_bridge::AssuranceBackedRuntime;
 pub use state::{
     build_belief_state, evaluate_state_assurance, extract_sensor_fusion, validate_state_estimators,
     StateAssuranceReport,

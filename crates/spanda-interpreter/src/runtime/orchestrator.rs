@@ -6,7 +6,7 @@ use spanda_ast::comm_decl::{QosDecl, TransportKind};
 use spanda_ast::foundations::{CapabilityDecl, TaskPriority};
 use spanda_ast::nodes::{Expr, Program, RobotDecl, Stmt};
 use spanda_audit::{AuditRuntime, MockLedgerBackend};
-use spanda_comm::{CommBus, CommBusFactory, CommBusHost, default_comm_bus_factory_fn};
+use spanda_comm::{default_comm_bus_factory_fn, CommBus, CommBusFactory, CommBusHost};
 use spanda_concurrency::ConcurrencyRuntime;
 use spanda_connectivity_runtime::ConnectivityPolicyRuntime;
 use spanda_debug::DebugController;
@@ -17,19 +17,23 @@ use spanda_hal::HardwareMonitor;
 use spanda_runtime::assurance_runtime::{
     default_assurance_runtime, AssuranceRuntime, SharedAssuranceRuntime,
 };
+use spanda_runtime::events::EventBus;
 use spanda_runtime::fault_runtime::{default_fault_runtime, FaultRuntime, SharedFaultRuntime};
 use spanda_runtime::provider_runtime::{
     default_provider_runtime, ProviderRuntime, SharedProviderRuntime,
 };
-use spanda_runtime::telemetry_sink::{default_telemetry_sink, SharedTelemetrySink, TelemetrySink};
-use spanda_runtime::events::EventBus;
 use spanda_runtime::reliability_runtime::{
     ModeRuntime, PipelineRuntime, RecoverHandlers, RetryRuntime, WatchdogRuntime,
 };
 use spanda_runtime::replay::MissionTrace;
 use spanda_runtime::robot_state::{PoseState, RobotState, VelocityState};
 use spanda_runtime::scheduler::SchedulerClock;
+use spanda_runtime::security_runtime::{
+    default_security_runtime_factory, SecurityRuntime, SecurityRuntimeFactory,
+};
 use spanda_runtime::state_machine::StateMachineRuntime;
+use spanda_runtime::tamper_policy::{TamperPolicySpec, TamperSeverity};
+use spanda_runtime::telemetry_sink::{default_telemetry_sink, SharedTelemetrySink, TelemetrySink};
 use spanda_runtime::triggers::{
     ConditionTriggerState, TriggerRegistry, TriggerTimerSchedule, MAX_TRIGGERS_PER_TICK,
 };
@@ -37,10 +41,6 @@ use spanda_runtime::twin::TwinRuntime;
 use spanda_runtime::world_model::WorldModelRuntime;
 use spanda_runtime_host::core_runtime_host;
 use spanda_safety::{Pose2d, SafetyMonitor, SafetyZoneRuntime};
-use spanda_runtime::security_runtime::{
-    default_security_runtime_factory, SecurityRuntime, SecurityRuntimeFactory,
-};
-use spanda_runtime::tamper_policy::{TamperPolicySpec, TamperSeverity};
 use spanda_typecheck::ModuleRegistry;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -1378,7 +1378,7 @@ impl<B: RobotBackend> Interpreter<B> {
                 program,
                 policy_name,
             )
-                .map_err(|message| RuntimeError::new(message, 0).into_spanda())?;
+            .map_err(|message| RuntimeError::new(message, 0).into_spanda())?;
             self.load_runtime_policy(monitor)?;
         }
         let Program::Program { swarms, .. } = program;

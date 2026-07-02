@@ -53,8 +53,11 @@ pub fn handle_fleet_telemetry_ingest_post(body: &str, state: &mut FleetMeshState
 /// Handle `GET /v1/fleet/telemetry` — merged OTLP/JSON across ingested robots.
 pub fn handle_fleet_telemetry_get(state: &FleetMeshState) -> HttpResponse {
     // Delegate merge to the injected fleet telemetry runtime.
-    let shards: std::collections::HashMap<String, String> =
-        state.telemetry_shards.iter().map(|(k, v)| (k.clone(), v.clone())).collect();
+    let shards: std::collections::HashMap<String, String> = state
+        .telemetry_shards
+        .iter()
+        .map(|(k, v)| (k.clone(), v.clone()))
+        .collect();
     match fleet_telemetry_runtime().merge_fleet_otlp_json(&shards) {
         Ok(body) => HttpResponse { status: 200, body },
         Err(error) => HttpResponse {

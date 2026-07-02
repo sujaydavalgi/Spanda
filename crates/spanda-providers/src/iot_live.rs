@@ -504,7 +504,11 @@ fn read_string_via_external_cmd_single(cmd_env: &str, arg: &str) -> Option<Strin
     read_command_stdout(&command)
 }
 
-fn read_string_via_external_cmd_pair(cmd_env: &str, device: &str, object_id: &str) -> Option<String> {
+fn read_string_via_external_cmd_pair(
+    cmd_env: &str,
+    device: &str,
+    object_id: &str,
+) -> Option<String> {
     let template = std::env::var(cmd_env)
         .ok()
         .filter(|value| !value.trim().is_empty())?;
@@ -529,7 +533,11 @@ fn read_command_stdout(command: &str) -> Option<String> {
         .next()?
         .trim()
         .to_string();
-    if line.is_empty() { None } else { Some(line) }
+    if line.is_empty() {
+        None
+    } else {
+        Some(line)
+    }
 }
 
 fn registry_script_path(candidates: &[String]) -> Option<String> {
@@ -543,11 +551,7 @@ fn registry_script_path(candidates: &[String]) -> Option<String> {
 
 fn run_registry_python_script(script: &str, args: &[&str]) -> Option<String> {
     let python = std::env::var("SPANDA_PYTHON").unwrap_or_else(|_| "python3".into());
-    let output = Command::new(python)
-        .arg(script)
-        .args(args)
-        .output()
-        .ok()?;
+    let output = Command::new(python).arg(script).args(args).output().ok()?;
     if !output.status.success() {
         return None;
     }
@@ -556,7 +560,11 @@ fn run_registry_python_script(script: &str, args: &[&str]) -> Option<String> {
         .next()?
         .trim()
         .to_string();
-    if line.is_empty() { None } else { Some(line) }
+    if line.is_empty() {
+        None
+    } else {
+        Some(line)
+    }
 }
 
 #[cfg(feature = "live-building")]
@@ -607,9 +615,7 @@ fn homeassistant_registry_script_candidates() -> Vec<String> {
             "{root}/packages/registry/spanda-home-assistant/scripts/get_state.py"
         ));
     }
-    candidates.push(
-        "packages/registry/spanda-home-assistant/scripts/get_state.py".into(),
-    );
+    candidates.push("packages/registry/spanda-home-assistant/scripts/get_state.py".into());
     candidates.push(format!(
         "{}/../../packages/registry/spanda-home-assistant/scripts/get_state.py",
         env!("CARGO_MANIFEST_DIR")

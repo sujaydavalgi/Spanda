@@ -5,9 +5,15 @@
 //! Composes with readiness, recovery, capability, hardware, and trust gates.
 
 use crate::recovery::{RecoveryContext, RecoveryLevel, RecoveryPlanner};
+use serde::{Deserialize, Serialize};
+use spanda_ast::nodes::Program;
+use spanda_ast::robotics_decl::FleetDecl;
+use spanda_readiness::{
+    evaluate_fleet_readiness, evaluate_readiness, ReadinessOptions, ReadinessStatus,
+};
 pub use spanda_runtime::continuity_primitives::{
-    extract_continuity_policies, issue_to_continuity_trigger, program_has_continuity_for_trigger,
-    parse_trigger,
+    extract_continuity_policies, issue_to_continuity_trigger, parse_trigger,
+    program_has_continuity_for_trigger,
 };
 pub use spanda_runtime::continuity_types::{
     ContinuationDecision, ContinuityContext, ContinuityEvidence, ContinuityPolicySpec,
@@ -15,12 +21,6 @@ pub use spanda_runtime::continuity_types::{
     MissionStateTransfer, SuccessionScope, TakeoverMode, TakeoverReport,
 };
 use spanda_runtime::recovery_types::ValidationGateResult;
-use serde::{Deserialize, Serialize};
-use spanda_ast::nodes::Program;
-use spanda_ast::robotics_decl::FleetDecl;
-use spanda_readiness::{
-    evaluate_fleet_readiness, evaluate_readiness, ReadinessOptions, ReadinessStatus,
-};
 
 /// Trust tier for successor eligibility.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]

@@ -5,7 +5,9 @@ use crate::state::ControlCenterState;
 use spanda_config::facility::FacilityRegistry;
 use spanda_deploy_http::HttpResponse;
 
-fn require_resolved(state: &ControlCenterState) -> Result<&spanda_config::ResolvedSystemConfig, HttpResponse> {
+fn require_resolved(
+    state: &ControlCenterState,
+) -> Result<&spanda_config::ResolvedSystemConfig, HttpResponse> {
     state
         .resolved
         .as_ref()
@@ -30,7 +32,10 @@ fn facility_entries<'a>(raw: &'a toml::Value) -> Vec<&'a toml::Value> {
     nested_table_array(raw, &["facilities"])
 }
 
-pub(crate) fn collect_facility_nested<'a>(raw: &'a toml::Value, field: &str) -> Vec<&'a toml::Value> {
+pub(crate) fn collect_facility_nested<'a>(
+    raw: &'a toml::Value,
+    field: &str,
+) -> Vec<&'a toml::Value> {
     let mut collected = nested_table_array(raw, &["facilities", field]);
     for entry in facility_entries(raw) {
         if let Some(items) = entry.get(field).and_then(|v| v.as_array()) {
@@ -104,7 +109,9 @@ pub(crate) fn facility_device_ids(raw: &toml::Value, facility_id: &str) -> Vec<S
     ids
 }
 
-fn smart_space_profile_table(resolved: &spanda_config::ResolvedSystemConfig) -> Option<&toml::Value> {
+fn smart_space_profile_table(
+    resolved: &spanda_config::ResolvedSystemConfig,
+) -> Option<&toml::Value> {
     resolved
         .readiness_config()
         .and_then(|cfg| cfg.get("profiles"))
@@ -230,7 +237,10 @@ fn score_gateway_availability(
     let mut score = 100u32;
     for gateway in &primaries {
         let gateway_id = gateway.get("id").and_then(|v| v.as_str()).unwrap_or("");
-        let provider = gateway.get("provider").and_then(|v| v.as_str()).unwrap_or("");
+        let provider = gateway
+            .get("provider")
+            .and_then(|v| v.as_str())
+            .unwrap_or("");
         if !gateway_live_reachable(gateway_id, provider) {
             score = score.saturating_sub(40);
             blockers.push(format!("gateway_unreachable:{gateway_id}"));
@@ -259,7 +269,11 @@ fn score_gateway_availability(
     }
 }
 
-fn score_config_presence(ids: &[String], available: &[String], blocker_prefix: &str) -> ReadinessDimension {
+fn score_config_presence(
+    ids: &[String],
+    available: &[String],
+    blocker_prefix: &str,
+) -> ReadinessDimension {
     if ids.is_empty() {
         return ReadinessDimension {
             name: "",
@@ -372,8 +386,7 @@ fn evaluate_facility_readiness(
                 .is_some_and(|provider| !provider.is_empty())
         })
         .count();
-    let network_score =
-        ((connected as f64 / gateway_count as f64) * 100.0).round() as u32;
+    let network_score = ((connected as f64 / gateway_count as f64) * 100.0).round() as u32;
     dimensions.push(ReadinessDimension {
         name: "network_connectivity",
         score: network_score,
@@ -410,7 +423,11 @@ fn evaluate_facility_readiness(
         .collect();
     let mut battery = score_config_presence(&wireless_ids, &wireless_ids, "battery_low");
     battery.name = "battery_levels";
-    battery.score = if wireless_ids.is_empty() { 100 } else { battery.score.max(85) };
+    battery.score = if wireless_ids.is_empty() {
+        100
+    } else {
+        battery.score.max(85)
+    };
     battery.weight = profile
         .map(|cfg| profile_weight_pct(cfg, "battery_levels"))
         .unwrap_or(10);
@@ -459,7 +476,11 @@ fn evaluate_facility_readiness(
         .collect();
     let mut security = score_config_presence(&security_ids, &security_ids, "security_fault");
     security.name = "security_status";
-    security.score = if security_ids.is_empty() { 70 } else { security.score };
+    security.score = if security_ids.is_empty() {
+        70
+    } else {
+        security.score
+    };
     security.weight = profile
         .map(|cfg| profile_weight_pct(cfg, "security_status"))
         .unwrap_or(15);
@@ -489,7 +510,11 @@ fn evaluate_facility_readiness(
         .collect();
     let mut emergency = score_config_presence(&emergency_ids, &emergency_ids, "emergency_offline");
     emergency.name = "emergency_systems";
-    emergency.score = if emergency_ids.is_empty() { 60 } else { emergency.score };
+    emergency.score = if emergency_ids.is_empty() {
+        60
+    } else {
+        emergency.score
+    };
     emergency.weight = profile
         .map(|cfg| profile_weight_pct(cfg, "emergency_systems"))
         .unwrap_or(10);
@@ -702,12 +727,14 @@ pub fn facility_readiness_get(state: &ControlCenterState, facility_id: &str) -> 
         .collect();
     let continuity: Vec<_> = nested_table_array(&resolved.raw, &["continuity_pairs"])
         .into_iter()
-        .map(|entry| serde_json::json!({
-            "primary": table_field_str(entry, "primary"),
-            "backup": table_field_str(entry, "backup"),
-            "on_failure": table_field_str(entry, "on_failure"),
-            "missions": entry.get("missions").cloned().unwrap_or(toml::Value::Array(vec![])),
-        }))
+        .map(|entry| {
+            serde_json::json!({
+                "primary": table_field_str(entry, "primary"),
+                "backup": table_field_str(entry, "backup"),
+                "on_failure": table_field_str(entry, "on_failure"),
+                "missions": entry.get("missions").cloned().unwrap_or(toml::Value::Array(vec![])),
+            })
+        })
         .collect();
     let profile = readiness_profile_name(resolved);
     let min_score = resolved
@@ -754,9 +781,9 @@ pub fn facility_readiness_get(state: &ControlCenterState, facility_id: &str) -> 
 }
 
 fn occupancy_snapshot(zone_id: &str, twin: Option<&toml::Value>) -> serde_json::Value {
-    let seed = zone_id
-        .bytes()
-        .fold(0u32, |acc, byte| acc.wrapping_mul(31).wrapping_add(byte as u32));
+    let seed = zone_id.bytes().fold(0u32, |acc, byte| {
+        acc.wrapping_mul(31).wrapping_add(byte as u32)
+    });
     let entity_type = twin.and_then(|entry| table_field_str(entry, "entity_type"));
     if entity_type.as_deref() == Some("occupancy") || zone_id == "floor-12" {
         return serde_json::json!({
@@ -865,11 +892,13 @@ pub fn emergency_status_get(state: &ControlCenterState) -> HttpResponse {
         .collect();
     let continuity: Vec<_> = nested_table_array(&resolved.raw, &["continuity_pairs"])
         .into_iter()
-        .map(|entry| serde_json::json!({
-            "primary": table_field_str(entry, "primary"),
-            "backup": table_field_str(entry, "backup"),
-            "on_failure": table_field_str(entry, "on_failure"),
-        }))
+        .map(|entry| {
+            serde_json::json!({
+                "primary": table_field_str(entry, "primary"),
+                "backup": table_field_str(entry, "backup"),
+                "on_failure": table_field_str(entry, "on_failure"),
+            })
+        })
         .collect();
     json_ok(&serde_json::json!({
         "version": "v1",

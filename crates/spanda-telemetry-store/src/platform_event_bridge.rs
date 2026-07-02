@@ -1,8 +1,6 @@
 //! Telemetry-store-backed platform event runtime bridge.
 //!
-use spanda_runtime::platform_event_runtime::{
-    set_platform_event_runtime, PlatformEventRuntime,
-};
+use spanda_runtime::platform_event_runtime::{set_platform_event_runtime, PlatformEventRuntime};
 use std::sync::Arc;
 
 /// Persist platform events through the global telemetry store.
